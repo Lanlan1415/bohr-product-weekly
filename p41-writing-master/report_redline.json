@@ -1,0 +1,98 @@
+{
+  "schema_version": "redline-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "quantity_dropped",
+      "expected": [
+        "quantity.dropped"
+      ],
+      "fired": [
+        "quantity.dropped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "citation_dropped",
+      "expected": [
+        "citation.dropped"
+      ],
+      "fired": [
+        "citation.dropped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "claim_strengthened",
+      "expected": [
+        "claim.strengthened"
+      ],
+      "fired": [
+        "claim.strengthened"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "term_drift",
+      "expected": [
+        "term.drift"
+      ],
+      "fired": [
+        "term.drift",
+        "terminology.variant"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "sentence_removed",
+      "expected": [
+        "sentence.removed"
+      ],
+      "fired": [
+        "sentence.removed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "quantity_introduced",
+      "expected": [
+        "quantity.introduced"
+      ],
+      "fired": [
+        "quantity.introduced"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 7,
+    "of": 7
+  },
+  "note": "Each scenario plants one rewrite defect between an original and an edited text; the faithful-polish baseline must stay silent."
+}

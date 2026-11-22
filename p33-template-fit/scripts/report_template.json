@@ -1,0 +1,138 @@
+{
+  "schema_version": "template-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [
+        "audit.no_section"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "no_file",
+      "expected": [],
+      "fired": [
+        "audit.no_section"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "layout_not_found",
+      "expected": [
+        "template.layout_not_found"
+      ],
+      "fired": [
+        "format.undeclared_layout",
+        "template.layout_not_found"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "theme_font_mismatch",
+      "expected": [
+        "template.theme_font_mismatch"
+      ],
+      "fired": [
+        "template.theme_font_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "title_size_off",
+      "expected": [
+        "template.title_size_off"
+      ],
+      "fired": [
+        "format.size_ladder_flat",
+        "template.title_size_off"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "slide_size_mismatch",
+      "expected": [
+        "template.slide_size_mismatch"
+      ],
+      "fired": [
+        "template.slide_size_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "template_unreadable",
+      "expected": [
+        "template.unreadable"
+      ],
+      "fired": [
+        "template.unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "title_geometry_drift",
+      "expected": [
+        "template.title_geometry_drift"
+      ],
+      "fired": [
+        "format.title_drift",
+        "template.title_geometry_drift"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "n/a"
+    },
+    {
+      "scenario": "template_measured_echo",
+      "pass": true,
+      "template_measured": {
+        "file": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\skills\\p33-template-fit\\scripts\\_run_template\\probe_meas.potx",
+        "read": true,
+        "slide_size_emu": [
+          12192000,
+          6858000
+        ],
+        "layouts": [
+          "Title Slide",
+          "Title and Content"
+        ],
+        "theme_fonts": {
+          "major_latin": "Arial",
+          "major_ea": "Microsoft YaHei",
+          "minor_latin": "Arial",
+          "minor_ea": "Microsoft YaHei"
+        },
+        "masters": [
+          "ppt/slideMasters/slideMaster1.xml"
+        ]
+      }
+    }
+  ],
+  "totals": {
+    "passed": 9,
+    "of": 9
+  },
+  "note": "Template constraints are measured from a real .potx-shaped package built by this bench; clean and no-file scenarios guard against firing without a template."
+}

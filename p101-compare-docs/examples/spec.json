@@ -1,0 +1,87 @@
+{
+  "_comment": "示例 spec（SYNTHETIC EXAMPLE - not a formal case result）。展示一次两篇论文带隙比较的完整输入：case_id、output_contract、字段表（含 comparability 判定）、两篇文档的逐格取值。所有数据为自拟示意，不是正式案例。",
+  "case_id": "example-compare-001",
+  "section": "compare_docs",
+  "output_contract": {
+    "case_id": "与输入一致",
+    "comparison_table": "字段 x 文档矩阵",
+    "comparability_judgment": "可比性判定说明",
+    "run_status": "运行状态"
+  },
+  "field_groups": ["metric", "conclusion"],
+  "fields": [
+    {
+      "name": "bandgap",
+      "group": "metric",
+      "definition": "室温下报道的光学带隙（Tauc 法，UV-vis 漫反射）",
+      "target_unit": "eV",
+      "comparability": "同为光学带隙测定，测定方法一致",
+      "condition_variance": "对照状态不同（退火 vs 原生）；按原值并排比较，不并池为同条件"
+    },
+    {
+      "name": "trend",
+      "group": "conclusion",
+      "definition": "氧空位浓度对带隙的影响方向",
+      "conflict_note": "none observed",
+      "consistency": "consistent"
+    }
+  ],
+  "condition_keys": ["material", "anneal_state"],
+  "documents": [
+    {
+      "id": "A",
+      "text": "TiO2 thin films were annealed at 500 C for 2 h. The bandgap of 3.20 eV was measured for sample A by Tauc analysis of UV-vis diffuse reflectance (Table 1 row 2, p.4). Oxygen vacancies shift the bandgap in our annealed films.",
+      "fields": {
+        "bandgap": {
+          "value": "3.20 eV",
+          "unit": "eV",
+          "locator": "Table 1 row 2, p.4",
+          "paragraph_id": "P12",
+          "source_document_id": "A",
+          "dataset": "sample A (annealed)",
+          "metric": "optical bandgap (Tauc)",
+          "control": "annealed at 500 C",
+          "verbatim": "bandgap of 3.20 eV was measured for sample A",
+          "material": "TiO2 thin film",
+          "anneal_state": "annealed"
+        },
+        "trend": {
+          "value": "oxygen vacancies vs bandgap",
+          "direction": "decreases",
+          "strength": "moderate",
+          "locator": "p.5",
+          "paragraph_id": "P18",
+          "source_document_id": "A"
+        }
+      }
+    },
+    {
+      "id": "B",
+      "text": "WO3 films were measured as-grown without annealing. The bandgap of 2.60 eV was measured for sample B by Tauc analysis (Table 2 row 1, p.3). As-grown films contain oxygen vacancies.",
+      "fields": {
+        "bandgap": {
+          "value": "2.60 eV",
+          "unit": "eV",
+          "locator": "Table 2 row 1, p.3",
+          "paragraph_id": "P7",
+          "source_document_id": "B",
+          "dataset": "sample B (as-grown)",
+          "metric": "optical bandgap (Tauc)",
+          "control": "as-grown",
+          "verbatim": "bandgap of 2.60 eV was measured for sample B",
+          "material": "WO3 film",
+          "anneal_state": "as-grown",
+          "noncomparable": true
+        },
+        "trend": {
+          "value": "oxygen vacancies vs bandgap",
+          "direction": "decreases",
+          "strength": "moderate",
+          "locator": "p.4",
+          "paragraph_id": "P11",
+          "source_document_id": "B"
+        }
+      }
+    }
+  ]
+}

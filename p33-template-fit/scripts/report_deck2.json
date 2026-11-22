@@ -1,0 +1,156 @@
+{
+  "schema_version": "deck2-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "clean3",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "ladder_flat",
+      "expected": [
+        "format.size_ladder_flat"
+      ],
+      "fired": [
+        "format.size_ladder_flat"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "undeclared_layout",
+      "expected": [
+        "format.undeclared_layout"
+      ],
+      "fired": [
+        "format.undeclared_layout"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "overflow_cjk",
+      "expected": [
+        "text.overflow"
+      ],
+      "fired": [
+        "format.size_ladder_flat",
+        "text.body_too_large",
+        "text.overflow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "font_too_small",
+      "expected": [
+        "text.font_too_small"
+      ],
+      "fired": [
+        "text.font_too_small"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "font_missing",
+      "expected": [
+        "font.declared_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "review"
+    },
+    {
+      "scenario": "missing_glyphs",
+      "expected": [
+        "export.missing_glyphs"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "nondeterministic",
+      "expected": [
+        "repro.nondeterministic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unmeasurable_glyphs",
+      "expected": [
+        "(no export.missing_glyphs)"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "dropped_bullet_artifact",
+      "expected": [
+        "format.content_dropped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "artifact": true
+    },
+    {
+      "scenario": "title_drift_artifact",
+      "expected": [
+        "format.title_drift"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "artifact": true
+    },
+    {
+      "scenario": "font_drift_artifact",
+      "expected": [
+        "format.font_drift"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "artifact": true
+    }
+  ],
+  "totals": {
+    "passed": 13,
+    "of": 13
+  },
+  "note": "Template rules plus declared-font existence, glyph coverage, build determinism, and the written-deck drift/drop rules. Three scenarios inject a defect into the engine, three patch the written .pptx."
+}

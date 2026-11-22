@@ -1,0 +1,49 @@
+{
+  "schema_version": "latest-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "window_query",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "version_merge_key",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "retracted_flagged",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cjk_record_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "window_replay_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "empty_window_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

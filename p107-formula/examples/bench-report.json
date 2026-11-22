@@ -1,0 +1,402 @@
+{
+  "schema_version": "formula-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "unbalanced_braces",
+      "expected": [
+        "formula.unbalanced_braces"
+      ],
+      "fired": [
+        "formula.unbalanced_braces"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unbalanced_delimiters",
+      "expected": [
+        "formula.unbalanced_delimiters"
+      ],
+      "fired": [
+        "formula.unbalanced_delimiters"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "variable_not_extracted",
+      "expected": [
+        "formula.variable_not_extracted"
+      ],
+      "fired": [
+        "formula.variable_not_extracted"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "variable_undefined",
+      "expected": [
+        "formula.variable_undefined"
+      ],
+      "fired": [
+        "formula.variable_undefined"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "variable_source_undeclared",
+      "expected": [
+        "formula.variable_source_undeclared"
+      ],
+      "fired": [
+        "formula.variable_source_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "variable_no_locator",
+      "expected": [
+        "formula.variable_no_locator"
+      ],
+      "fired": [
+        "formula.variable_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "dimension_mismatch",
+      "expected": [
+        "formula.dimension_mismatch"
+      ],
+      "fired": [
+        "formula.dimension_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unit_unknown",
+      "expected": [
+        "formula.unit_unknown"
+      ],
+      "fired": [
+        "formula.unit_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "derivation_missing",
+      "expected": [
+        "formula.derivation_missing"
+      ],
+      "fired": [
+        "formula.derivation_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "step_incomplete",
+      "expected": [
+        "formula.step_incomplete"
+      ],
+      "fired": [
+        "formula.step_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "step_unjustified",
+      "expected": [
+        "formula.step_unjustified"
+      ],
+      "fired": [
+        "formula.step_unjustified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "boundary_missing",
+      "expected": [
+        "formula.boundary_conditions_missing"
+      ],
+      "fired": [
+        "formula.boundary_conditions_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "verification_missing",
+      "expected": [
+        "formula.verification_missing"
+      ],
+      "fired": [
+        "formula.verification_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "substitution_mismatch",
+      "expected": [
+        "formula.substitution_mismatch"
+      ],
+      "fired": [
+        "formula.substitution_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "numeric_incomplete",
+      "expected": [
+        "formula.numeric_incomplete"
+      ],
+      "fired": [
+        "formula.numeric_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "substitution_not_evaluable",
+      "expected": [
+        "formula.substitution_not_evaluable"
+      ],
+      "fired": [
+        "formula.substitution_not_evaluable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "no_items",
+      "expected": [
+        "formula.no_items"
+      ],
+      "fired": [
+        "formula.no_items"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "bare_script",
+      "expected": [
+        "formula.bare_script"
+      ],
+      "fired": [
+        "formula.bare_script"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "step_unknown_dependency",
+      "expected": [
+        "formula.step_unknown_dependency"
+      ],
+      "fired": [
+        "formula.step_unknown_dependency"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "environment_unclosed",
+      "expected": [
+        "formula.environment_unclosed"
+      ],
+      "fired": [
+        "formula.environment_unclosed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "fp_env_balanced",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "numeric_input_undeclared",
+      "expected": [
+        "formula.numeric_input_undeclared"
+      ],
+      "fired": [
+        "formula.numeric_input_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "input_value_conflicts_variable",
+      "expected": [
+        "formula.input_value_conflicts_variable"
+      ],
+      "fired": [
+        "formula.input_value_conflicts_variable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_input_value_match",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "step_dependency_undeclared",
+      "expected": [
+        "formula.step_dependency_undeclared"
+      ],
+      "fired": [
+        "formula.step_dependency_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "tolerance_undeclared",
+      "expected": [
+        "formula.tolerance_undeclared"
+      ],
+      "fired": [
+        "formula.tolerance_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "numeric_malformed",
+      "expected": [
+        "formula.numeric_malformed"
+      ],
+      "fired": [
+        "formula.numeric_malformed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_numeric_check",
+      "expected": [
+        "formula.no_numeric_check"
+      ],
+      "fired": [
+        "formula.no_numeric_check"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_note_numeric_false",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_dimensionless",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_braced_script",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 32,
+    "of": 32
+  },
+  "note": "One scenario per rule, aligned to the formula scoring points. Clean baselines must report nothing."
+}

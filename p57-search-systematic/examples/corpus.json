@@ -1,0 +1,28 @@
+{
+ "documents": [
+  {
+   "id": "rec-001",
+   "text": "Screening record rec-001.\nDesign: randomised controlled trial. Population: adults with type 2 diabetes.\nExcerpt: HbA1c fell 0.9 percent over 24 weeks."
+  },
+  {
+   "id": "rec-002",
+   "text": "Screening record rec-002.\nDesign: cohort study. Population: adults with type 2 diabetes.\nExcerpt: retrospective allocation, 6-year follow-up."
+  },
+  {
+   "id": "rec-003",
+   "text": "Screening record rec-003.\nDesign: randomised controlled trial. Population: paediatric asthma.\nExcerpt: children aged 6 to 12 years."
+  },
+  {
+   "id": "rec-001",
+   "text": "Screening record rec-001.\nDesign: randomised controlled trial. Population: adults with type 2 diabetes.\nExcerpt: duplicate database export of the same study."
+  },
+  {
+   "id": "rec-005",
+   "text": "Screening record rec-005.\nDesign: systematic review. Population: adults with type 2 diabetes.\nExcerpt: pooled 32 trials, no new data."
+  },
+  {
+   "id": "rec-006",
+   "text": "Screening record rec-006.\nDesign: randomised controlled trial. Population: adults with hypertension.\nExcerpt: different population from the review question."
+  }
+ ]
+}

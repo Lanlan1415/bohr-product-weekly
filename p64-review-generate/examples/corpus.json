@@ -1,0 +1,24 @@
+{
+ "documents": [
+  {
+   "id": "ev-001",
+   "text": "id: ev-001\ntheme: efficacy\nTrial A reported serum biomarker Y fell by 30 percent under drug X.\nfinding: lower"
+  },
+  {
+   "id": "ev-002",
+   "text": "id: ev-002\ntheme: efficacy\nTrial B found biomarker Y unchanged after 12 weeks of drug X.\nfinding: unchanged"
+  },
+  {
+   "id": "ev-003",
+   "text": "id: ev-003\ntheme: mechanism\nDrug X inhibits the kinase that upregulates biomarker Y synthesis.\nfinding: lower"
+  },
+  {
+   "id": "ev-004",
+   "text": "id: ev-004\ntheme: safety\nNo serious adverse events attributed to drug X across 240 participants.\nfinding: safe"
+  },
+  {
+   "id": "excluded-01",
+   "text": "id: excluded-01\ntheme: protocol-only\nConference abstract with no extractable result for drug X."
+  }
+ ]
+}

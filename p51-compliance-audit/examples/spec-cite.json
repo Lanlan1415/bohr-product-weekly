@@ -1,0 +1,29 @@
+{
+  "draft": "吸收速率提高到 3 倍 [C1]。",
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "涂层使吸收速率提高三倍",
+      "strength": "strong",
+      "strength_basis": "controlled experiment, n=6, replicated",
+      "uncertainty": "",
+      "sources": [
+        {
+          "key": "doe2020",
+          "quote": "The coating increased the uptake rate three-fold.",
+          "locator": "p.7"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "key": "doe2020",
+      "title": "Porous coatings for uptake",
+      "year": 2020,
+      "source_type": "primary",
+      "text": "The coating increased the uptake rate three-fold."
+    }
+  ],
+  "section": "evidence_writing"
+}

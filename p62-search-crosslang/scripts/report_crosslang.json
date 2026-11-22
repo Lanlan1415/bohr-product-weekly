@@ -1,0 +1,49 @@
+{
+  "schema_version": "crosslang-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "bilingual_any_recall",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "source_term_language_bound",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "loanword_crosses_boundary",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "version_merge_link",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cjk_hit_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "bilingual_replay",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "note": "synthetic ground truth, not an official case result",
+  "panels": 1,
+  "series": [
+    {
+      "appearance_hue": 0.0,
+      "matched_curve": "red",
+      "max_abs_error": 1.876,
+      "p95_abs_error": 1.393,
+      "x_span": [
+        0.549,
+        9.588
+      ]
+    },
+    {
+      "appearance_hue": 226.7,
+      "matched_curve": "blue",
+      "max_abs_error": 0.412,
+      "p95_abs_error": 0.206,
+      "x_span": [
+        0.549,
+        9.588
+      ]
+    }
+  ],
+  "status": "success"
+}

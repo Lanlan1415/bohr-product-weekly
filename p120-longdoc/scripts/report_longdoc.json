@@ -1,0 +1,512 @@
+{
+  "schema_version": "longdoc-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_chapters",
+      "expected": [
+        "long.no_chapters"
+      ],
+      "fired": [
+        "long.no_chapters"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "outline_unwritten",
+      "expected": [
+        "long.outline_item_unwritten"
+      ],
+      "fired": [
+        "long.outline_item_unwritten",
+        "long.toc_entry_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "chapter_not_in_outline",
+      "expected": [
+        "long.chapter_not_in_outline"
+      ],
+      "fired": [
+        "long.chapter_not_in_outline",
+        "long.outline_item_unwritten"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "argument_element_missing",
+      "expected": [
+        "long.argument_element_missing"
+      ],
+      "fired": [
+        "long.argument_element_missing",
+        "long.toc_entry_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "reference_section_missing",
+      "expected": [
+        "long.reference_section_missing"
+      ],
+      "fired": [
+        "long.reference_section_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "figure_list_missing",
+      "expected": [
+        "long.figure_list_missing"
+      ],
+      "fired": [
+        "long.figure_list_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "appendix_missing",
+      "expected": [
+        "long.appendix_missing"
+      ],
+      "fired": [
+        "long.appendix_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "terminology_missing",
+      "expected": [
+        "long.terminology_missing"
+      ],
+      "fired": [
+        "long.terminology_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "symbol_table_missing",
+      "expected": [
+        "long.symbol_table_missing"
+      ],
+      "fired": [
+        "long.symbol_table_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "duplicate_definition",
+      "expected": [
+        "long.duplicate_definition"
+      ],
+      "fired": [
+        "long.duplicate_definition"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "term_variant_declared",
+      "expected": [
+        "long.term_variant_declared"
+      ],
+      "fired": [
+        "long.term_variant_declared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "claim_no_citation",
+      "expected": [
+        "long.claim_no_citation"
+      ],
+      "fired": [
+        "long.claim_no_citation"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_unknown",
+      "expected": [
+        "long.citation_unknown"
+      ],
+      "fired": [
+        "long.citation_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_conclusion_mismatch",
+      "expected": [
+        "long.citation_conclusion_mismatch"
+      ],
+      "fired": [
+        "long.citation_conclusion_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "conclusion_contradiction",
+      "expected": [
+        "long.conclusion_contradiction"
+      ],
+      "fired": [
+        "long.conclusion_contradiction"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "numbering_gap",
+      "expected": [
+        "long.numbering_gap"
+      ],
+      "fired": [
+        "long.numbering_gap",
+        "long.outline_item_unwritten",
+        "long.toc_entry_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "dangling_crossref",
+      "expected": [
+        "long.dangling_crossref"
+      ],
+      "fired": [
+        "long.dangling_crossref"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "figure_numbering_gap",
+      "expected": [
+        "long.figure_numbering_gap"
+      ],
+      "fired": [
+        "long.figure_numbering_gap"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "figure_ref_unknown",
+      "expected": [
+        "long.figure_ref_unknown"
+      ],
+      "fired": [
+        "long.figure_ref_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "toc_incomplete",
+      "expected": [
+        "long.toc_incomplete"
+      ],
+      "fired": [
+        "long.toc_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "no_chapter_changelog",
+      "expected": [
+        "long.no_chapter_changelog"
+      ],
+      "fired": [
+        "long.no_chapter_changelog"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "change_no_reason",
+      "expected": [
+        "long.change_no_reason"
+      ],
+      "fired": [
+        "long.change_no_reason",
+        "long.outline_item_unwritten",
+        "long.toc_entry_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "change_impact_untraced",
+      "expected": [
+        "long.change_impact_untraced"
+      ],
+      "fired": [
+        "long.change_impact_untraced",
+        "long.duplicate_definition",
+        "long.outline_item_unwritten",
+        "long.toc_entry_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "word_budget_off",
+      "expected": [
+        "long.word_budget_off"
+      ],
+      "fired": [
+        "long.word_budget_off"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_change_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_word_budget_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "reference_metadata_incomplete",
+      "expected": [
+        "long.reference_metadata_incomplete"
+      ],
+      "fired": [
+        "long.reference_metadata_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_reference_complete",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "conclusion_without_direction",
+      "expected": [
+        "long.conclusion_without_direction"
+      ],
+      "fired": [
+        "long.conclusion_without_direction"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_conclusion_with_direction",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "term_variant_used",
+      "expected": [
+        "long.term_variant_used",
+        "long.term_variant_declared"
+      ],
+      "fired": [
+        "long.term_variant_declared",
+        "long.term_variant_used"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_term_variant_unused",
+      "expected": [
+        "long.term_variant_declared"
+      ],
+      "fired": [
+        "long.term_variant_declared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "table_numbering_gap",
+      "expected": [
+        "long.table_numbering_gap"
+      ],
+      "fired": [
+        "long.table_numbering_gap"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "table_ref_unknown",
+      "expected": [
+        "long.table_ref_unknown"
+      ],
+      "fired": [
+        "long.table_ref_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "fp_table_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "toc_entry_unknown",
+      "expected": [
+        "long.toc_entry_unknown",
+        "long.toc_incomplete"
+      ],
+      "fired": [
+        "long.toc_entry_unknown",
+        "long.toc_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_toc_exact",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "evidence_plan_missing",
+      "expected": [
+        "long.evidence_plan_missing"
+      ],
+      "fired": [
+        "long.evidence_plan_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_track_complete",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 40,
+    "of": 40
+  },
+  "note": "One scenario per rule, aligned to the long-document scoring points. Clean baselines must report nothing."
+}

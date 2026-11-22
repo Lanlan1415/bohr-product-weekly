@@ -1,0 +1,28 @@
+{
+ "documents": [
+  {
+   "id": "cand-001",
+   "text": "id: cand-001\nAdditive manufacturing of Ti-6Al-4V.\nCooling rate controls the microstructure; columnar grains were mapped."
+  },
+  {
+   "id": "cand-002",
+   "text": "id: cand-002\nAdditive manufacturing process windows for 316L steel.\nSolidification mapping predicted the microstructure."
+  },
+  {
+   "id": "cand-003",
+   "text": "id: cand-003\nAdditive manufacturing machine calibration guide.\nNo microstructure or cooling measurements reported."
+  },
+  {
+   "id": "cand-004",
+   "text": "id: cand-004\nConventional casting of aluminium alloys.\nCooling rate and microstructure correlations along the casting route."
+  },
+  {
+   "id": "cand-005",
+   "text": "id: cand-005\nReview of additive manufacturing defects.\nPorosity taxonomy; microstructure briefly mentioned."
+  },
+  {
+   "id": "cand-006",
+   "text": "id: cand-006\nAdditive manufacturing of Ti-6Al-4V lattices.\nCooling rate mapped to microstructure; ductility trade-offs."
+  }
+ ]
+}

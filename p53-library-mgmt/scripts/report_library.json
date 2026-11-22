@@ -1,0 +1,134 @@
+{
+  "schema_version": "library-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "ingest_basic",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "version_siblings_separate",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reingest_never_overwrites",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reingest_unchanged",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_detection",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "folder_taxonomy",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unfiled_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "retrieval_ranks",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "export_shape",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_file_refusal",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "all_refused_is_refusal",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "metadata_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "rerun_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_ok_writes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "id_invalid_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "folder_empty_named",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "manifest_and_verify",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_verify_flag",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "meta_provenance",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "bytes_recorded",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cjk_filename",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_partial_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_contract_passthrough",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "spec_carried_case_id",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 25,
+    "of": 25
+  }
+}

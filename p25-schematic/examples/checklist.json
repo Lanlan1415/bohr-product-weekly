@@ -1,0 +1,33 @@
+{
+  "entities": [
+    {
+      "id": "a",
+      "label": "Substrate",
+      "evidence": "Methods, paragraph 2: the substrate binds first"
+    },
+    {
+      "id": "b",
+      "label": "Complex",
+      "evidence": "Figure 1b, complex formed after binding"
+    },
+    {
+      "id": "c",
+      "label": "Product",
+      "evidence": "Results, paragraph 3"
+    }
+  ],
+  "relations": [
+    {
+      "from": "a",
+      "to": "b",
+      "type": "bind",
+      "evidence": "Methods: binding precedes turnover"
+    },
+    {
+      "from": "b",
+      "to": "c",
+      "type": "activate",
+      "evidence": "Results, paragraph 3"
+    }
+  ]
+}

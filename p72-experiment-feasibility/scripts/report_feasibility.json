@@ -1,0 +1,329 @@
+{
+  "schema_version": "feasibility-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "stage_missing",
+      "expected": [
+        "repro.stage_missing"
+      ],
+      "fired": [
+        "repro.no_exit_status",
+        "repro.no_logs",
+        "repro.stage_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_protocol_version",
+      "expected": [
+        "repro.no_commit"
+      ],
+      "fired": [
+        "repro.no_commit"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_inventory_snapshot",
+      "expected": [
+        "repro.no_data_version"
+      ],
+      "fired": [
+        "repro.no_data_version"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_check_command",
+      "expected": [
+        "repro.no_command"
+      ],
+      "fired": [
+        "repro.no_command"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_review_log",
+      "expected": [
+        "repro.no_logs"
+      ],
+      "fired": [
+        "repro.no_logs"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "no_exit_status",
+      "expected": [
+        "repro.no_exit_status"
+      ],
+      "fired": [
+        "repro.no_exit_status"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "resource_no_source",
+      "expected": [
+        "repro.material_without_source"
+      ],
+      "fired": [
+        "repro.material_without_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "resource_no_version",
+      "expected": [
+        "repro.material_without_version"
+      ],
+      "fired": [
+        "repro.material_without_version"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "resource_state_undeclared",
+      "expected": [
+        "repro.material_state_undeclared"
+      ],
+      "fired": [
+        "repro.material_state_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "script_no_license",
+      "expected": [
+        "repro.material_no_license"
+      ],
+      "fired": [
+        "repro.material_no_license"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_dataset_no_license",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "conditions_incomplete",
+      "expected": [
+        "repro.environment_incomplete"
+      ],
+      "fired": [
+        "repro.environment_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "plan_inventory_conflict_unflagged",
+      "expected": [
+        "repro.env_conflict_unflagged"
+      ],
+      "fired": [
+        "repro.env_conflict_unflagged"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "param_source_undeclared",
+      "expected": [
+        "repro.parameter_source_undeclared"
+      ],
+      "fired": [
+        "repro.parameter_source_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "assumed_without_justification",
+      "expected": [
+        "repro.assumed_without_justification"
+      ],
+      "fired": [
+        "repro.assumed_without_justification"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "param_no_locator",
+      "expected": [
+        "repro.parameter_no_locator"
+      ],
+      "fired": [
+        "repro.parameter_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "no_tolerance",
+      "expected": [
+        "repro.no_tolerance"
+      ],
+      "fired": [
+        "repro.no_tolerance"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_comparison_basis",
+      "expected": [
+        "repro.no_comparison_basis"
+      ],
+      "fired": [
+        "repro.no_comparison_basis"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "no_statistic",
+      "expected": [
+        "repro.no_statistic"
+      ],
+      "fired": [
+        "repro.no_statistic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "check_no_verdict",
+      "expected": [
+        "repro.metric_no_verdict"
+      ],
+      "fired": [
+        "repro.metric_no_verdict"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "gap_unclassified",
+      "expected": [
+        "repro.difference_unclassified"
+      ],
+      "fired": [
+        "repro.difference_unclassified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "gap_unexplained",
+      "expected": [
+        "repro.difference_unexplained"
+      ],
+      "fired": [
+        "repro.difference_unexplained"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "verdict_unclassified",
+      "expected": [
+        "repro.verdict_unclassified"
+      ],
+      "fired": [
+        "repro.verdict_unclassified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "verdict_without_basis",
+      "expected": [
+        "repro.verdict_without_basis"
+      ],
+      "fired": [
+        "repro.verdict_without_basis"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    }
+  ],
+  "totals": {
+    "passed": 25,
+    "of": 25
+  },
+  "note": "One scenario per rule, aligned to the feasibility-review scoring points. Clean baselines must report nothing."
+}

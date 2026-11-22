@@ -1,0 +1,191 @@
+{
+  "schema_version": "ga3-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "empty_label",
+      "expected": [
+        "ga.empty_label"
+      ],
+      "fired": [
+        "ga.empty_label",
+        "legend.entry_unmatched"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "legend_missing",
+      "expected": [
+        "ga.legend_not_declared"
+      ],
+      "fired": [
+        "ga.legend_not_declared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "legend_exempt_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "order_unknown",
+      "expected": [
+        "ga.reading_order_unknown_node"
+      ],
+      "fired": [
+        "ga.reading_order_unknown_node"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "order_known_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "source_values_type",
+      "expected": [
+        "ga.source_values_invalid"
+      ],
+      "fired": [
+        "ga.source_values_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "takeaways_type",
+      "expected": [
+        "ga.missing_takeaway"
+      ],
+      "fired": [
+        "ga.missing_takeaway"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "caption_number",
+      "expected": [
+        "ga.value_not_in_source"
+      ],
+      "fired": [
+        "ga.value_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "caption_clean_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "contract_passthrough",
+      "expected": [
+        "case_id + contract fields"
+      ],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "refused_bad_json",
+      "expected": [
+        "undetermined + result.json"
+      ],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "refused_not_object",
+      "expected": [
+        "undetermined + result.json"
+      ],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "refused_missing_file",
+      "expected": [
+        "undetermined + result.json"
+      ],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "refused_case_id_kept",
+      "expected": [
+        "undetermined + result.json"
+      ],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "exit_code_undetermined",
+      "expected": [
+        "undetermined + result.json"
+      ],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "undetermined"
+    }
+  ],
+  "totals": {
+    "passed": 16,
+    "of": 16
+  },
+  "note": "Polish-pass rules (empty label, undeclared legend, unknown reading-order node, mistyped source values, caption numbers) with false-positive guards, the output_contract echo, and the refusal path (exit 5, no traceback)."
+}

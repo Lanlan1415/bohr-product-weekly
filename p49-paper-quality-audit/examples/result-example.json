@@ -1,0 +1,64 @@
+{
+  "_note": "示例输出——说明最终 result.json 的形状与字段，不是正式案例结果。audit_report / evidence_and_boundaries / result_status 是 output_contract 点名的键，由引擎 findings 组装填充；findings / severity_counts / checked 是引擎操作证据，原样保留。",
+  "case_id": "challenge-0999879e-case-01",
+  "section": "paper_draft",
+  "status": "review",
+  "status_reason": "2 条 high finding 待处理：一处引用不在文献表、一处摘要与正文数值不一致；其余检查面已走完",
+  "audit_report": [
+    {
+      "rule": "pd.unknown_source",
+      "severity": "high",
+      "location": "draft sentence index 2（第 3 行：Uptake rose three-fold [roe2021] 那句）",
+      "finding": "正文引用 [roe2021] 不在文献表中——读者无法核对该引用",
+      "basis": "draft 第 2 句引用键 roe2021 未出现于 references 列表",
+      "suggestion": "补全文献表条目或修正引用键拼写；不得删句",
+      "category": "引用支持"
+    },
+    {
+      "rule": "pd.abstract_result_conflict",
+      "severity": "high",
+      "location": "abstract vs 3 Results",
+      "finding": "摘要写 9-fold，正文与材料 M1 均为 three-fold——两半不一致",
+      "basis": "abstract 中数值 9 未出现在 draft 正文；材料 M1 原文为 three-fold",
+      "suggestion": "确认哪个数值与原始数据一致后修正另一处",
+      "category": "事实核验"
+    },
+    {
+      "rule": "pd.reference_no_doi",
+      "severity": "low",
+      "location": "references[doe2020]",
+      "finding": "该文献声明 needs_doi 但缺 DOI",
+      "basis": "references 条目 doi 字段为空而 needs_doi 为真",
+      "suggestion": "补登记 DOI 或移除 needs_doi 标记",
+      "category": "学术规范"
+    }
+  ],
+  "evidence_and_boundaries": {
+    "manuscript_quotes": [
+      {"locator": "sentence 2", "quote": "Uptake rose three-fold [roe2021] {M1}"},
+      {"locator": "abstract", "quote": "The coating raised uptake 9-fold."}
+    ],
+    "material_evidence": [
+      {"material": "M1", "locator": "run01.csv row 4", "text": "uptake rose three-fold with the coating"}
+    ],
+    "pending_review": [
+      {"item": "declarations.funding 的真实性", "reason": "引擎只验证声明存在，不验证内容属实"}
+    ]
+  },
+  "result_status": {
+    "pass": ["结构完整性（template 3 节齐备且顺序正确）", "图表编号连续", "材料索引全部被引用"],
+    "problems": ["pd.unknown_source", "pd.abstract_result_conflict", "pd.reference_no_doi"],
+    "pending": ["声明字段真实性（超出口径，见 limits）"],
+    "not_checked": []
+  },
+  "findings": [
+    {"rule": "pd.unknown_source", "severity": "high", "message": "the draft cites a reference that is not in the reference list", "sentence": 2, "key": "roe2021"},
+    {"rule": "pd.abstract_result_conflict", "severity": "high", "message": "a number in the abstract does not appear in the body, so the two halves of the paper disagree", "value": 9.0},
+    {"rule": "pd.reference_no_doi", "severity": "low", "message": "a reference that should carry a DOI does not", "key": "doe2020"}
+  ],
+  "severity_counts": {"high": 2, "low": 1},
+  "checked": {"section": "paper_draft", "items": 7},
+  "limits": ["声明（利益冲突/资助）只查存在性，不查真实性", "主题重合度是词汇级判断，<15% 才报 citation_mismatch"],
+  "sources": "draft 逐句扫描（7 句）、materials 2 条、references 1 条、figures 1 张、abstract 1 段",
+  "uncertainty": "citation_mismatch 的主题重合判断需人工复核（词汇级信号，非语义判断）"
+}

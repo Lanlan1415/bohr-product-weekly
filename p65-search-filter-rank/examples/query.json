@@ -1,0 +1,10 @@
+{
+ "all": [
+  "additive"
+ ],
+ "any": [
+  "cooling rate",
+  "solidification",
+  "microstructure"
+ ]
+}

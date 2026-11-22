@@ -1,0 +1,38 @@
+{
+ "section": "talk_org",
+ "goal": {
+  "objective": "向评审组说明涂层的吸收增强证据与方法",
+  "audience": "课题组开题评审",
+  "minutes": 12
+ },
+ "slides": [
+  {
+   "title": "背景",
+   "claim": "涂层吸收增强的文献基础",
+   "evidence": "绪论",
+   "strength": "cited",
+   "pace_minutes": 2
+  },
+  {
+   "title": "方法",
+   "claim": "6 重复 25 C 恒温的对照设计",
+   "evidence": "方法",
+   "strength": "measured",
+   "pace_minutes": 4
+  },
+  {
+   "title": "结果",
+   "claim": "吸收速率提高三倍",
+   "evidence": "结果",
+   "strength": "measured",
+   "pace_minutes": 4
+  },
+  {
+   "title": "结论",
+   "claim": "单一厚度限制外推",
+   "evidence": "讨论",
+   "strength": "supported",
+   "pace_minutes": 2
+  }
+ ]
+}

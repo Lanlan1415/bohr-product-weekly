@@ -1,0 +1,35 @@
+{
+  "schema_version": "reader-bench/v1",
+  "scenarios": [
+    {
+      "name": "golden_path",
+      "pass": true,
+      "why": "export carries anchor and quote"
+    },
+    {
+      "name": "quote_absent",
+      "pass": true,
+      "why": "exit=4 ok=False"
+    },
+    {
+      "name": "anchor_goestale",
+      "pass": true,
+      "why": "verify_ok=False export_exit=4"
+    },
+    {
+      "name": "persistence",
+      "pass": "b0c6bdfca90df396d19012ddc10e71ae57ecb06962f998c144dee3a4c3ef8d9c",
+      "why": "anchors=1"
+    },
+    {
+      "name": "page_attribution",
+      "pass": true,
+      "why": "page=2 (expected 2)"
+    }
+  ],
+  "totals": {
+    "passed": 5,
+    "of": 5
+  },
+  "note": "Behavioural: each scenario runs the CLI and asserts the four properties the task names. A clean run is not the baseline here, a missing refusal is."
+}

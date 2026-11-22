@@ -1,0 +1,49 @@
+{
+  "schema_version": "filter-rank-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "rank_order_scores",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "hard_exclusion_not_relaxed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "topk_cut",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ties_keep_index_order",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "layer_labels",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "hit_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

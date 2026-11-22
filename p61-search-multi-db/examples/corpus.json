@@ -1,0 +1,20 @@
+{
+ "documents": [
+  {
+   "id": "xref-001",
+   "text": "id: xref-001\nsrc: crossref\ntitle: Nanopore direct RNA detection at single-molecule resolution\ndoi: doi-10-1038-s41592-026-01234-5\nyear: 2026\njournal: Nature Methods"
+  },
+  {
+   "id": "epmc-001",
+   "text": "id: epmc-001\nsrc: europepmc\ntitle: Nanopore direct RNA detection at single-molecule resolution\ndoi: doi-10-1038-s41592-026-01234-5\nyear: 2026\nnote: abstract view"
+  },
+  {
+   "id": "xref-002",
+   "text": "id: xref-002\nsrc: crossref\ntitle: Protein complex assembly inferred from deep mutational scanning\ndoi: doi-10-1038-s41591-025-09876-1\nyear: 2025\njournal: Molecular Systems Biology"
+  },
+  {
+   "id": "epmc-002",
+   "text": "id: epmc-002\nsrc: europepmc\ntitle: Single-cell transcriptomics of the human retina\ndoi: doi-10-1038-s41586-024-07730-0\nyear: 2024"
+  }
+ ]
+}

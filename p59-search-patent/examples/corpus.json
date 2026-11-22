@@ -1,0 +1,24 @@
+{
+ "documents": [
+  {
+   "id": "pat-US10132852B2",
+   "text": "id: pat-US10132852B2\nTitle: graphene coating composition.\nnumber: US10132852B2\nfamily: F101\nstatus: granted\ncpc: C09D\nmembers: US20160264451A1, EP3061620A1"
+  },
+  {
+   "id": "pat-EP3061620A1",
+   "text": "id: pat-EP3061620A1\nTitle: graphene coating composition (European application).\nnumber: EP3061620A1\nfamily: F101\nstatus: pending\ncpc: C09D"
+  },
+  {
+   "id": "pat-US9988776B2",
+   "text": "id: pat-US9988776B2\nTitle: ceramic thermal barrier coating.\nnumber: US9988776B2\nfamily: F202\nstatus: expired\ncpc: C04B"
+  },
+  {
+   "id": "pat-WO2017166469A1",
+   "text": "id: pat-WO2017166469A1\nTitle: graphene coating via spray pyrolysis (PCT application).\nnumber: WO2017166469A1\nfamily: F101\nstatus: pending\ncpc: C23C"
+  },
+  {
+   "id": "pat-EP3061620A1",
+   "text": "id: pat-EP3061620A1\nTitle: graphene coating composition (European application).\nnumber: EP3061620A1\nfamily: F101\nstatus: pending\ncpc: C09D"
+  }
+ ]
+}

@@ -1,0 +1,145 @@
+{
+  "schema_version": "benchkit-bench/v1",
+  "scenarios": [
+    {
+      "name": "itemvalid",
+      "pass": true,
+      "why": "[]"
+    },
+    {
+      "name": "freetext_criterion_refused",
+      "pass": true,
+      "why": "[{\"id\": \"X1\", \"criterion\": 0, \"reason\": \"predicate 'prose' is not one of contains/any_of/not_contains/regex/mi"
+    },
+    {
+      "name": "weightmust_sum",
+      "pass": true,
+      "why": "[{\"id\": \"X2\", \"reason\": \"rubric weights sum to 40.0, not 100\"}]"
+    },
+    {
+      "name": "grading_iexact",
+      "pass": true,
+      "why": "R1=100.0 R2=100.0"
+    },
+    {
+      "name": "anchor_catcheunsourced",
+      "pass": true,
+      "why": "score=50.0 type=evidence_not_located"
+    },
+    {
+      "name": "reproducible",
+      "pass": true,
+      "why": "stable=True deltas=[]"
+    },
+    {
+      "name": "traceable",
+      "pass": true,
+      "why": "{\"ok\": true, \"run_id\": \"7bdf320b9618e58c\", \"itemset\": \"a2d17b6d0376ca19\", \"config\": {\"model\": \"x\"}, \"score\": 6"
+    },
+    {
+      "name": "retarget",
+      "pass": true,
+      "why": "{\"ok\": true, \"from_version\": \"a2d17b6d0376ca19\", \"to_version\": \"35335dfa8816ebd0\", \"targeted_from\": {\"item_id\""
+    },
+    {
+      "name": "retarget_needfailure",
+      "pass": true,
+      "why": "{\"ok\": false, \"reason\": \"R1 did not fail, so there is nothing to retarget\"}"
+    },
+    {
+      "name": "unattempted_izero",
+      "pass": true,
+      "why": "not_attempted"
+    },
+    {
+      "name": "raw_output_retained",
+      "pass": true,
+      "why": "total=100.0 trace-has-raw=True"
+    },
+    {
+      "name": "empty_output_identified",
+      "pass": true,
+      "why": "type=empty_output tally={'empty_output': 1}"
+    },
+    {
+      "name": "malformed_output_identified",
+      "pass": true,
+      "why": "type=malformed_output dict-R1=100.0"
+    },
+    {
+      "name": "failurelibrary",
+      "pass": true,
+      "why": "{\"missing_required_point\": 1}"
+    },
+    {
+      "name": "failureclean_run_fp",
+      "pass": true,
+      "why": "{}"
+    },
+    {
+      "name": "diff_itemsetchanged",
+      "pass": true,
+      "why": "changed=[{'id': 'R2', 'fields': ['rubric']}] comparable=['R1']"
+    },
+    {
+      "name": "diff_itemsetidentical_fp",
+      "pass": true,
+      "why": "changed=[]"
+    },
+    {
+      "name": "scale_012_declared",
+      "pass": true,
+      "why": "R1=2 R2=1 scale=0-1-2"
+    },
+    {
+      "name": "scale_unsupported_refused",
+      "pass": true,
+      "why": "score_scale '0-5' is not supported; declare '0-1-2' or omit it"
+    },
+    {
+      "name": "scale_undeclared_fp",
+      "pass": true,
+      "why": "scale-absent=True total=100.0"
+    },
+    {
+      "name": "manual_criterion_deferred",
+      "pass": true,
+      "why": "score=100.0 review=['terminology judged by a human']"
+    },
+    {
+      "name": "manual_without_note_refused",
+      "pass": true,
+      "why": "[{\"id\": \"X3\", \"criterion\": 1, \"reason\": \"manual criterion needs a note for the reviewer\"}]"
+    },
+    {
+      "name": "itemwithout_manual_unaffected_fp",
+      "pass": true,
+      "why": "total=100.0"
+    },
+    {
+      "name": "optional_card_fieldempty_refused",
+      "pass": true,
+      "why": "[{\"id\": \"X4\", \"reason\": \"difficulty declared but empty\"}, {\"id\": \"X4\", \"reason\": \"license declared but empty\"}"
+    },
+    {
+      "name": "optional_card_fieldvalid_fp",
+      "pass": true,
+      "why": "[]"
+    },
+    {
+      "name": "panel_groups",
+      "pass": true,
+      "why": "agents=['base', 'skill']"
+    },
+    {
+      "name": "panel_clean_run_fp",
+      "pass": true,
+      "why": "{\"mean\": 100.0, \"min\": 100.0, \"max\": 100.0}"
+    }
+  ],
+  "totals": {
+    "passed": 27,
+    "of": 27
+  },
+  "note": "Behavioural, and about half the scenarios assert a refusal or a clean zero-finding guard: an ungradable criterion, an unsourced quote, a retarget with no failure, an empty or malformed output, an unsupported scale, a manual criterion without a note -- each paired with the correct-input-must-find-nothing guard for the same rule."
+}

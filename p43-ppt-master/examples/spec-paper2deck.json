@@ -1,0 +1,18 @@
+{
+  "section": "paper_to_deck",
+  "spacing": {"title": 32, "body": 20},
+  "font_ea": "Microsoft YaHei",
+  "font_latin": "Arial",
+  "min_font_pt": 14,
+  "require_notes": true,
+  "available_evidence": ["Fig. 3b, p.7", "Table 1, p.6"],
+  "slides": [
+    {"title": "多孔涂层加速吸收", "layout": "title",
+     "claim": "问题是吸收速率，不是终点", "evidence": "Fig. 3b, p.7",
+     "notes": "引入问题；不读标题。"},
+    {"title": "吸收速率提高 3 倍", "claim": "涂层使速率提高三倍", "evidence": "Fig. 3b, p.7",
+     "caption": "Fig. 3b, p.7 — 对比的是速率",
+     "bullets": ["对照组 12.4 a.u.", "涂层组 31.2 a.u.", "每组 n = 6"],
+     "notes": "停顿；对比的是速率，不是终点。"}
+  ]
+}

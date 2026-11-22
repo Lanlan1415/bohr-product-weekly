@@ -1,0 +1,329 @@
+{
+  "schema_version": "method-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_study",
+      "expected": [
+        "msa.no_study"
+      ],
+      "fired": [
+        "msa.no_study"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "design_unstated",
+      "expected": [
+        "msa.design_unstated"
+      ],
+      "fired": [
+        "msa.design_unstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "control_missing",
+      "expected": [
+        "msa.control_missing"
+      ],
+      "fired": [
+        "msa.control_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "randomisation_unstated",
+      "expected": [
+        "msa.randomisation_unstated"
+      ],
+      "fired": [
+        "msa.randomisation_unstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "blinding_unstated",
+      "expected": [
+        "msa.blinding_unstated"
+      ],
+      "fired": [
+        "msa.blinding_unstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "endpoint_not_primary",
+      "expected": [
+        "msa.endpoint_not_primary"
+      ],
+      "fired": [
+        "msa.endpoint_not_primary"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "variable_undefined",
+      "expected": [
+        "msa.variable_undefined"
+      ],
+      "fired": [
+        "msa.variable_undefined"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "variable_role_missing",
+      "expected": [
+        "msa.variable_role_missing"
+      ],
+      "fired": [
+        "msa.variable_role_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "variable_type_missing",
+      "expected": [
+        "msa.variable_type_missing"
+      ],
+      "fired": [
+        "msa.variable_type_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "cutpoint_unjustified",
+      "expected": [
+        "msa.cutpoint_unjustified"
+      ],
+      "fired": [
+        "msa.cutpoint_unjustified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "missing_handling_undeclared",
+      "expected": [
+        "msa.missing_handling_undeclared"
+      ],
+      "fired": [
+        "msa.missing_handling_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "model_type_mismatch",
+      "expected": [
+        "msa.model_type_mismatch"
+      ],
+      "fired": [
+        "msa.model_type_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "model_unstated",
+      "expected": [
+        "msa.model_unstated"
+      ],
+      "fired": [
+        "msa.model_unstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "multiple_comparisons_unaddressed",
+      "expected": [
+        "msa.multiple_comparisons_unaddressed"
+      ],
+      "fired": [
+        "msa.multiple_comparisons_unaddressed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "ci_missing",
+      "expected": [
+        "msa.ci_missing"
+      ],
+      "fired": [
+        "msa.ci_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "sample_size_missing",
+      "expected": [
+        "msa.sample_size_missing"
+      ],
+      "fired": [
+        "msa.sample_size_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "sample_size_basis_missing",
+      "expected": [
+        "msa.sample_size_basis_missing"
+      ],
+      "fired": [
+        "msa.sample_size_basis_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "attrition_unaccounted",
+      "expected": [
+        "msa.attrition_unaccounted"
+      ],
+      "fired": [
+        "msa.attrition_unaccounted"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_open_label_explicit",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_single_arm_no_control",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_n_stated_inline",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_two_comparisons_no_mcp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_no_p_no_ci_demand",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_attrition_none",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "cjk_control_missing",
+      "expected": [
+        "msa.control_missing"
+      ],
+      "fired": [
+        "msa.control_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "fp_cjk_control_declared",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 27,
+    "of": 27
+  },
+  "note": "One scenario per rule across the five method-stats facets. Clean baselines must report nothing."
+}

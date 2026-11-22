@@ -1,0 +1,108 @@
+{
+  "_comment": "示例 spec（SYNTHETIC EXAMPLE - not a formal case result）。展示一次文献问答的完整输入：case_id、output_contract、论文字幕（papers，供引文回源核验）、证据池（evidence，含 paragraph_id 与短引文）、按 rubric 形状组织的逐题回答（question_id / answer / conditions / status / claims / unanswered_parts）。所有数据为自拟示意，不是正式案例。",
+  "case_id": "example-qa-001",
+  "section": "qa",
+  "output_contract": {
+    "case_id": "与输入一致",
+    "paper_id": "论文标识",
+    "material_version": "材料版本",
+    "answers": "逐题回答（rubric 形状原样回传）",
+    "coverage": "阅读范围摘要"
+  },
+  "paper_id": "paper-ex-001",
+  "material_version": "v2",
+  "questions": ["Q1", "Q2", "Q3"],
+  "papers": [
+    {
+      "paper_id": "paper-ex-001",
+      "text": "P1: Porous TiO2 coatings were deposited by anodization at 20 V for 30 min. P2: The uptake rate of methylene blue increased with the porous coating; the increase was three-fold over the flat control. P3: Samples were held at 25 C throughout the adsorption experiments. P4: Only one coating thickness was tested, which the authors name as a limitation."
+    }
+  ],
+  "material_sufficient": true,
+  "evidence": [
+    {
+      "id": "e1",
+      "quote": "The uptake rate of methylene blue increased with the porous coating; the increase was three-fold over the flat control.",
+      "locator": "p.5, Fig 3b",
+      "paragraph_id": "P2",
+      "paper_id": "paper-ex-001"
+    },
+    {
+      "id": "e2",
+      "quote": "Samples were held at 25 C throughout the adsorption experiments.",
+      "locator": "p.6",
+      "paragraph_id": "P3",
+      "paper_id": "paper-ex-001"
+    },
+    {
+      "id": "e3",
+      "quote": "Only one coating thickness was tested, which the authors name as a limitation.",
+      "locator": "p.8",
+      "paragraph_id": "P4",
+      "paper_id": "paper-ex-001"
+    }
+  ],
+  "answers": [
+    {
+      "question_id": "Q1",
+      "question": "多孔涂层对亚甲基蓝吸收速率的影响有多大？",
+      "answer": "多孔涂层使亚甲基蓝的吸收速率提高为平板对照组的 3 倍。",
+      "conditions": ["多孔 TiO2 涂层", "25 C", "亚甲基蓝"],
+      "status": "answered",
+      "unanswered_parts": [],
+      "cites": ["e1"],
+      "claims": [
+        {
+          "claim_id": "C1",
+          "text": "多孔涂层使吸收速率提高为对照组的 3 倍",
+          "kind": "reported",
+          "evidence": [{"paragraph_id": "P2", "paper_id": "paper-ex-001",
+                        "quote": "the increase was three-fold over the flat control"}]
+        }
+      ]
+    },
+    {
+      "question_id": "Q2",
+      "question": "吸收实验在什么温度下进行？",
+      "answer": "吸附实验全程在 25 C 下进行。",
+      "conditions": ["吸附实验期间"],
+      "status": "answered",
+      "unanswered_parts": [],
+      "cites": ["e2"],
+      "claims": [
+        {
+          "claim_id": "C2",
+          "text": "实验温度为 25 C",
+          "kind": "reported",
+          "evidence": [{"paragraph_id": "P3", "paper_id": "paper-ex-001",
+                        "quote": "Samples were held at 25 C throughout the adsorption experiments."}]
+        }
+      ]
+    },
+    {
+      "question_id": "Q3",
+      "question": "该研究的局限是什么？作者是否讨论了不同膜厚的影响？",
+      "answer": "作者明确说明只测试了一种涂层厚度，这是研究局限；论文未报告不同膜厚的影响，无法确定膜厚是否改变结论。",
+      "conditions": ["仅依据本文报道内容"],
+      "status": "partial",
+      "unanswered_parts": ["不同膜厚对吸收速率的定量影响：材料未报道"],
+      "cites": ["e3"],
+      "claims": [
+        {
+          "claim_id": "C3",
+          "text": "只测试了一种涂层厚度，为作者自述局限",
+          "kind": "reported",
+          "evidence": [{"paragraph_id": "P4", "paper_id": "paper-ex-001",
+                        "quote": "Only one coating thickness was tested, which the authors name as a limitation."}]
+        },
+        {
+          "claim_id": "C4",
+          "text": "膜厚对结论的影响无法判断（推断：材料未报告）",
+          "kind": "inferred",
+          "evidence": [{"paragraph_id": "P4", "paper_id": "paper-ex-001",
+                        "quote": "Only one coating thickness was tested"}]
+        }
+      ]
+    }
+  ]
+}

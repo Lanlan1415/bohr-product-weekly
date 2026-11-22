@@ -1,0 +1,49 @@
+{
+  "schema_version": "patent-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "number_lookup_exact",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_number_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "family_grouping",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "status_and_cpc_filters",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_export_named",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "record_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "figure_kind": "apparatus",
+  "canvas_mm": [140, 70],
+  "font_size": 9,
+  "materials": [
+    {"id": "m1", "name": "激光器", "source": "Methods ¶1"},
+    {"id": "m2", "name": "分束器", "source": "Methods ¶1"},
+    {"id": "m3", "name": "样品池", "source": "Methods ¶2"},
+    {"id": "m4", "name": "探测器", "source": "Methods ¶2"}
+  ],
+  "connections": [
+    {"from": "n1", "to": "n2", "source": "Methods ¶1: beam enters the splitter"},
+    {"from": "n2", "to": "n3", "source": "Methods ¶2: one arm reaches the cell"},
+    {"from": "n3", "to": "n4", "source": "Methods ¶2: transmitted light is detected"}
+  ],
+  "nodes": [
+    {"id": "n1", "label": "激光器", "evidence": "m1", "layer": 0, "color": "#56B4E9"},
+    {"id": "n2", "label": "分束器", "evidence": "m2", "layer": 1, "color": "#009E73"},
+    {"id": "n3", "label": "样品池", "evidence": "m3", "layer": 2, "color": "#E69F00"},
+    {"id": "n4", "label": "探测器", "evidence": "m4", "layer": 3, "color": "#CC79A7"}
+  ],
+  "edges": [
+    {"from": "n1", "to": "n2", "type": "flow"},
+    {"from": "n2", "to": "n3", "type": "flow"},
+    {"from": "n3", "to": "n4", "type": "flow"}
+  ]
+}

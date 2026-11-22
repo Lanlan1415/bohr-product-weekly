@@ -1,0 +1,14 @@
+{
+  "case_id": "demo-diss-000",
+  "section": "dissemination",
+  "audience": "public",
+  "evidence": ["doe2020"],
+  "text": "A porous coating raises uptake 3-fold [doe2020].",
+  "limitations": "only one material tested",
+  "source_text": "Uptake rose 3-fold under the coating.",
+  "key_conclusions": ["A porous coating raises uptake 3-fold"],
+  "open_questions": [],
+  "changes": [
+    {"action": "replaced technical terms with plain language", "reason": "audience is public"}
+  ]
+}

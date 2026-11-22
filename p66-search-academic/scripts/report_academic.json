@@ -1,0 +1,49 @@
+{
+  "schema_version": "academic-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "keyword_query_ranked",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "expansion_any_list",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "scope_guard",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_export_named",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "hit_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "replay_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

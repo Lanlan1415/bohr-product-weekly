@@ -1,0 +1,129 @@
+{
+  "schema_version": "doc-classify-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_classification",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "matched_cues_explainable",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "multi_label_recorded",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unclassified_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "empty_taxonomy_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_records_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "bare_string_record",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "record_skipped_named",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cue_collision_finding",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "batch_summary_counts",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "rerun_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "min_cue_hits_threshold",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_ok_writes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_inventory_hashes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_inventory_flags",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_plan_naming_degradation",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_plan_collision_guard",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_dup_exact_archive",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_dup_near_version",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_exec_journal_rollback",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_exec_idempotent_noop",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_exec_conflict_no_overwrite",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "land_cli_contract_and_exits",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 24,
+    "of": 24
+  }
+}

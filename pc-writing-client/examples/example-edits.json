@@ -1,0 +1,6 @@
+[
+  {"kind": "term",    "quote": "markedly", "after": "three-fold", "basis": "doe2020",
+   "covers": "W1"},
+  {"kind": "wording", "quote": "We measured", "after": "We assayed", "basis": "M1",
+   "covers": "W2", "confirm": true}
+]

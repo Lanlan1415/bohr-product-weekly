@@ -1,0 +1,71 @@
+{
+  "section": "template_fit",
+  "min_font_pt": 14,
+  "max_bullets_per_slide": 5,
+  "require_notes": true,
+  "spacing": {
+    "title": 32,
+    "body": 20
+  },
+  "font_ea": "Microsoft YaHei",
+  "font_latin": "Arial",
+  "template": {
+    "name": "conf-2026",
+    "layouts": [
+      "title",
+      "content"
+    ],
+    "file": "examples/template.potx"
+  },
+  "available_evidence": [
+    "Fig. 3b, p.7"
+  ],
+  "slides": [
+    {
+      "title": "多孔涂层加速吸收",
+      "layout": "title",
+      "claim": "吸收速率是当前工艺的瓶颈",
+      "evidence": "Fig. 3b, p.7",
+      "notes": "引入问题；不读标题。"
+    },
+    {
+      "title": "吸收速率提高 3 倍",
+      "layout": "content",
+      "claim": "涂层使吸收速率提高三倍",
+      "evidence": "Fig. 3b, p.7",
+      "bullets": [
+        "对照组 12.4 a.u.",
+        "涂层组 31.2 a.u.",
+        "每组 n = 6"
+      ],
+      "notes": "停顿；对比的是速率，不是终点。"
+    }
+  ],
+  "case_id": "ppt-710fbc72-demo",
+  "output_contract": [
+    "status",
+    "findings",
+    "severity_counts",
+    "deck",
+    "preview",
+    "reproducibility",
+    "checked",
+    "limits",
+    "case_id",
+    "slide_evidence_map"
+  ],
+  "slide_evidence_map": [
+    {
+      "slide": 1,
+      "source": "paper",
+      "locator": "Section 1, p.1"
+    },
+    {
+      "slide": 2,
+      "source": "figure",
+      "locator": "Fig. 3b, p.7"
+    }
+  ],
+  "pending_confirmation": [],
+  "gaps": []
+}

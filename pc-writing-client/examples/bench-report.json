@@ -1,0 +1,156 @@
+{
+  "schema_version": "writing-client-bench/v2",
+  "scenarios": [
+    {
+      "name": "golden",
+      "pass": true,
+      "why": "changed=1 tracked_ok=True"
+    },
+    {
+      "name": "no_basis",
+      "pass": [
+        {
+          "index": 0,
+          "quote": "markedly",
+          "reason": "edit.no_basis: an edit must rest on a material or a reference"
+        }
+      ],
+      "why": "exit=4 refused=True"
+    },
+    {
+      "name": "basiunresolved",
+      "pass": true,
+      "why": "[{\"index\": 0, \"quote\": \"markedly\", \"reason\": \"edit.basis_unresolved: basis 'ghost2019' doe"
+    },
+    {
+      "name": "rewrite_refused",
+      "pass": true,
+      "why": "[{\"index\": 0, \"quote\": \"markedly\", \"reason\": \"edit.rewrite_limit: a wording edit replaced "
+    },
+    {
+      "name": "skeleton_guard",
+      "pass": true,
+      "why": "{\"ok\": false, \"reason\": \"skeleton.moved: the edit would move the document skeleton\", \"changed\": [\"citations\"],"
+    },
+    {
+      "name": "restore",
+      "pass": true,
+      "why": "restored=v0 versions=3"
+    },
+    {
+      "name": "idempotent",
+      "pass": true,
+      "why": "{\"ok\": true, \"changed\": 0, \"version\": \"v0\", \"note\": \"nothing accepted, nothing applied (idempotent)\""
+    },
+    {
+      "name": "stale_card",
+      "pass": true,
+      "why": "{\"ok\": false, \"reason\": \"E2 was proposed against v0; the document is now v1\"}"
+    },
+    {
+      "name": "citation_edit_applies",
+      "pass": true,
+      "why": "applied=v1 repointed=True"
+    },
+    {
+      "name": "span_not_found",
+      "pass": true,
+      "why": "[{\"index\": 0, \"quote\": \"text absent from the draft\", \"reason\": \"edit.span_not_found: quote"
+    },
+    {
+      "name": "citation_library_missing",
+      "pass": true,
+      "why": "[{\"index\": 0, \"quote\": \"[doe2020]\", \"reason\": \"edit.library_missing: the reference library"
+    },
+    {
+      "name": "citation_library_resolves",
+      "pass": true,
+      "why": "cards=1"
+    },
+    {
+      "name": "empty_draft_refused",
+      "pass": true,
+      "why": "fp=0 refused=load.empty_draft: the draft is empty; nothing to edit"
+    },
+    {
+      "name": "unreadable_refused",
+      "pass": true,
+      "why": "fp=0 refused=load.unreadable: the draft could not be read as UTF-8 text"
+    },
+    {
+      "name": "export_failure_clean",
+      "pass": true,
+      "why": "fp=0 refused=export.failure: could not write the export"
+    },
+    {
+      "name": "basisupport_refused",
+      "pass": true,
+      "why": "[{\"index\": 0, \"quote\": \"markedly\", \"reason\": \"edit.basis_support: replacement 'five-fold' "
+    },
+    {
+      "name": "basisupport_declared_only",
+      "pass": true,
+      "why": "cards=2 refused=0"
+    },
+    {
+      "name": "table_column_guard",
+      "pass": true,
+      "why": "{\"ok\": false, \"reason\": \"skeleton.moved: the edit would move the document skeleton\", \"changed\": [\"table_column"
+    },
+    {
+      "name": "table_cell_edit_clean",
+      "pass": true,
+      "why": "applied=v1 cell=True"
+    },
+    {
+      "name": "deletion_applies",
+      "pass": true,
+      "why": "applied=v1 gone=True"
+    },
+    {
+      "name": "whole_paragraph_delete_refused",
+      "pass": true,
+      "why": "whole=True unfinished=True"
+    },
+    {
+      "name": "coverage_gap_named",
+      "pass": true,
+      "why": "unaddressed=['W3']"
+    },
+    {
+      "name": "coverage_full_clean",
+      "pass": true,
+      "why": "full=[] bare-planned=False"
+    },
+    {
+      "name": "confirm_flagged",
+      "pass": true,
+      "why": "kinds=['card.needs_confirm']"
+    },
+    {
+      "name": "no_confirm_flag_clean",
+      "pass": true,
+      "why": "uncertainty=[] status=complete"
+    },
+    {
+      "name": "result_contract_fields",
+      "pass": true,
+      "why": "case_id=CASE-77 status=complete refused=1"
+    },
+    {
+      "name": "result_undeclared_case_id_clean",
+      "pass": true,
+      "why": "case_id=None status=complete"
+    },
+    {
+      "name": "result_partial_status",
+      "pass": true,
+      "why": "status=partial limits=['proposed but neither accepted nor rejected']"
+    }
+  ],
+  "totals": {
+    "passed": 28,
+    "of": 28
+  },
+  "note": "Behavioural: every scenario drives the CLI. Half assert a refusal, and every new rule ships with a defect scenario and its false-positive guard (correct input must find nothing): an unsupported term replacement, a moved table column, a whole-paragraph deletion, an empty reference library, an empty or unreadable draft, an unwritable export, an undeclared confirm flag, an undeclared case_id — each paired with the clean guard for the same rule."
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": "benchkit-bench/v1",
+  "scenarios": [
+    {
+      "name": "itemvalid",
+      "pass": true,
+      "why": "[]"
+    },
+    {
+      "name": "freetext_criterion_refused",
+      "pass": true,
+      "why": "[{\"id\": \"X1\", \"criterion\": 0, \"reason\": \"predicate 'prose' is not one of contains/any_of/not_contains/regex/mi"
+    },
+    {
+      "name": "weightmust_sum",
+      "pass": true,
+      "why": "[{\"id\": \"X2\", \"reason\": \"rubric weights sum to 40.0, not 100\"}]"
+    },
+    {
+      "name": "grading_iexact",
+      "pass": true,
+      "why": "R1=100.0 R2=100.0"
+    },
+    {
+      "name": "anchor_catcheunsourced",
+      "pass": true,
+      "why": "score=50.0 type=evidence_not_located"
+    },
+    {
+      "name": "reproducible",
+      "pass": true,
+      "why": "stable=True deltas=[]"
+    },
+    {
+      "name": "traceable",
+      "pass": true,
+      "why": "{\"ok\": true, \"run_id\": \"7bdf320b9618e58c\", \"itemset\": \"a2d17b6d0376ca19\", \"config\": {\"model\": \"x\"}, \"score\": 6"
+    },
+    {
+      "name": "retarget",
+      "pass": true,
+      "why": "{\"ok\": true, \"from_version\": \"a2d17b6d0376ca19\", \"to_version\": \"35335dfa8816ebd0\", \"targeted_from\": {\"item_id\""
+    },
+    {
+      "name": "retarget_needfailure",
+      "pass": true,
+      "why": "{\"ok\": false, \"reason\": \"R1 did not fail, so there is nothing to retarget\"}"
+    },
+    {
+      "name": "unattempted_izero",
+      "pass": true,
+      "why": "not_attempted"
+    },
+    {
+      "name": "ci_variant_accepted",
+      "pass": true,
+      "why": "ci=100.0 exact=50.0"
+    },
+    {
+      "name": "min_wordfloor",
+      "pass": true,
+      "why": "thin=0.0/under_length full=100.0"
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  },
+  "note": "Behavioural, and half the scenarios assert a refusal: an ungradable criterion, an unsourced quote, a retarget that has no failure to work from."
+}

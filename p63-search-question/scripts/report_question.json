@@ -1,0 +1,49 @@
+{
+  "schema_version": "question-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "decomposition_probes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "object_scope_guard",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "gap_honest_empty",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "round2_discovered_term",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "evidence_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "probes_replay_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

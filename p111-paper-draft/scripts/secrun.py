@@ -1,0 +1,153 @@
+"""Run one structured writing section against a case spec and write result.json.
+
+The result keeps the delivery contract: every field the case declares in its
+output_contract is echoed into result.json (case-carried values pass through,
+audit-derived values are filled by the audit, the rest are null with a limits
+note), and the case identifier is recorded whenever the spec or the command
+line carries one.
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sections as S  # noqa: E402
+
+
+def _contract_echo(spec: dict, derived: dict, limits: list) -> dict:
+    """Carry every declared output_contract field into the result.
+
+    Values the case itself carries pass through untouched; keys the audit derives
+    (status, section, findings, severity counts, the checked summary and the limits)
+    are filled from the audit -- a passthrough value must never override the audited
+    status, because the audited one is the honest one; anything else becomes null
+    with a limits note, never a fabricated value.
+    """
+    contract = spec.get("output_contract")
+    if contract is None:
+        return {}
+    if not isinstance(contract, dict):
+        limits.append("output_contract is not an object, so its fields cannot be echoed")
+        return {}
+    echo: dict = {}
+    for key in contract:
+        k = str(key)
+        if k in derived:
+            echo[k] = derived[k]
+        elif k in spec:
+            echo[k] = spec[k]
+        else:
+            echo[k] = None
+            limits.append(f"output_contract field '{k}' is not derivable by this audit")
+    return echo
+
+
+def _refused(out_dir, message: str, spec: dict | None = None,
+             case_id: str | None = None) -> dict:
+    """The undetermined refusal every unrunnable case gets: an exit code, not a crash.
+
+    Self-contained on purpose: it runs before any audit exists, so it depends on
+    nothing but the json module. Even a refusal keeps the delivery contract -- the
+    case identifier and the declared output_contract fields are still echoed when
+    the spec carries them, with null for anything the refused run could not derive.
+    """
+    limits: list = ["the case could not be run as declared"]
+    result = {"schema_version": "secrun/v1", "status": "undetermined",
+              "findings": [{"rule": "audit.no_section", "severity": "high",
+                            "message": message}],
+              "limits": limits}
+    if isinstance(spec, dict):
+        cid = case_id or spec.get("case_id")
+    else:
+        cid = case_id
+    if cid is not None:
+        result["case_id"] = str(cid)
+    if isinstance(spec, dict):
+        echo = _contract_echo(spec, {}, limits)
+        if echo:
+            result["output_contract"] = echo
+    out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
+                                         encoding="utf-8")
+    return result
+
+
+def build_and_audit(spec_path, out_dir, section=None, case_id=None) -> dict:
+    try:
+        spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        # An unreadable spec is a refusal with the usual exit code, not a traceback.
+        return _refused(out_dir, f"the spec file is not readable JSON: {exc}", None, case_id)
+    except OSError:
+        return _refused(out_dir, "the spec file could not be read", None, case_id)
+    if not isinstance(spec, dict):
+        return _refused(out_dir, "the spec file is not a JSON object", None, case_id)
+    sec = section or spec.get("section")
+    out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+
+    if not isinstance(sec, str) or not sec.strip():
+        return _refused(out_dir, "no section declared, so no rules apply", spec, case_id)
+    sec = sec.strip()
+    if sec not in S.SECTIONS:
+        return _refused(out_dir, f"unknown section '{sec}', so no rules apply", spec, case_id)
+
+    findings, status, counts = S.run(spec, sec)
+    limits: list = []
+    checked = {"section": sec, "items": _count(spec, sec)}
+    if sec == "compare_docs":
+        # completeness summary for the comparison matrix: which declared field each
+        # supplied document reports, so unreported cells are named, not silent
+        checked["coverage"] = S.compare_coverage(spec)
+    derived = {"status": status, "section": sec, "findings": findings,
+               "severity_counts": counts, "checked": checked, "limits": limits}
+    echo = _contract_echo(spec, derived, limits)
+    result = {"schema_version": "secrun/v1", "section": sec, "status": status,
+              "findings": findings, "severity_counts": counts, "limits": limits,
+              "checked": checked}
+    cid = case_id or spec.get("case_id")
+    if cid is not None:
+        result["case_id"] = str(cid)
+    if echo:
+        result["output_contract"] = echo
+    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
+                                         encoding="utf-8")
+    return result
+
+
+def _count(spec: dict, section: str) -> int:
+    for key in ("materials", "claims", "documents", "formulas", "answers", "paragraphs",
+                "statements", "aims", "chapters", "nodes", "conclusions"):
+        v = spec.get(key)
+        if isinstance(v, (list, tuple, dict)):
+            return len(v)
+    if isinstance(spec.get("draft"), str):
+        return len(spec.get("draft").splitlines())
+    if isinstance(spec.get("text"), str):
+        return len(str(spec.get("text") or "").split())
+    if isinstance(spec.get("checklist"), dict):
+        return len(spec.get("checklist") or {})
+    return 0
+
+
+def main(argv=None) -> int:
+    import argparse
+    ap = argparse.ArgumentParser(prog="secrun", description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--spec", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--section", help="override the spec's declared section")
+    ap.add_argument("--case-id", help="case identifier to record in result.json")
+    a = ap.parse_args(argv)
+    r = build_and_audit(Path(a.spec), Path(a.out), a.section, a.case_id)
+    print(json.dumps({"status": r["status"], "section": r.get("section"),
+                      "case_id": r.get("case_id"),
+                      "findings": [f["rule"] for f in r["findings"]],
+                      "wrote": str(Path(a.out) / "result.json")}, ensure_ascii=False))
+    return {"clean": 0, "review": 3, "blocked": 4, "undetermined": 5}.get(r["status"], 1)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

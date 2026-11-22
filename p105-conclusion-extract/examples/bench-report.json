@@ -1,0 +1,361 @@
+{
+  "schema_version": "extract-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "schema_missing",
+      "expected": [
+        "extract.schema_missing"
+      ],
+      "fired": [
+        "extract.schema_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "field_undefined",
+      "expected": [
+        "extract.field_undefined"
+      ],
+      "fired": [
+        "extract.field_undefined"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "kind_undeclared",
+      "expected": [
+        "extract.kind_undeclared"
+      ],
+      "fired": [
+        "extract.kind_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "kind_unknown",
+      "expected": [
+        "extract.kind_unknown"
+      ],
+      "fired": [
+        "extract.kind_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "source_kind_missing",
+      "expected": [
+        "extract.source_kind_missing"
+      ],
+      "fired": [
+        "extract.source_kind_missing",
+        "extract.source_not_covered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "source_kind_unknown",
+      "expected": [
+        "extract.source_kind_unknown"
+      ],
+      "fired": [
+        "extract.source_kind_unknown",
+        "extract.source_not_covered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "source_not_covered",
+      "expected": [
+        "extract.source_not_covered"
+      ],
+      "fired": [
+        "extract.source_not_covered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "missing_locator",
+      "expected": [
+        "extract.missing_locator"
+      ],
+      "fired": [
+        "extract.missing_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "locator_vague",
+      "expected": [
+        "extract.locator_vague"
+      ],
+      "fired": [
+        "extract.locator_vague"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "missing_condition",
+      "expected": [
+        "extract.missing_condition"
+      ],
+      "fired": [
+        "extract.missing_condition"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "hedge_dropped",
+      "expected": [
+        "extract.hedge_dropped"
+      ],
+      "fired": [
+        "extract.hedge_dropped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "gap_unclassified",
+      "expected": [
+        "extract.gap_unclassified"
+      ],
+      "fired": [
+        "extract.gap_unclassified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "field_absent",
+      "expected": [
+        "extract.field_absent"
+      ],
+      "fired": [
+        "extract.field_absent"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "value_without_unit",
+      "expected": [
+        "extract.value_without_unit"
+      ],
+      "fired": [
+        "extract.value_without_unit"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "count_no_unit_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "value_not_in_source",
+      "expected": [
+        "extract.value_not_in_source_text"
+      ],
+      "fired": [
+        "extract.value_not_in_source_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_items",
+      "expected": [
+        "extract.no_items"
+      ],
+      "fired": [
+        "extract.no_items"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "empty_claim",
+      "expected": [
+        "extract.empty_claim"
+      ],
+      "fired": [
+        "extract.empty_claim"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "hedge_misdeclared",
+      "expected": [
+        "extract.hedge_misdeclared"
+      ],
+      "fired": [
+        "extract.hedge_misdeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_hedge_declared_consistent",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "comparator_missing",
+      "expected": [
+        "extract.comparator_missing"
+      ],
+      "fired": [
+        "extract.comparator_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_comparator_recorded",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "unit_verbatim_mismatch",
+      "expected": [
+        "extract.unit_verbatim_mismatch"
+      ],
+      "fired": [
+        "extract.unit_verbatim_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_unit_verbatim_match",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "conflict_without_note",
+      "expected": [
+        "extract.conflict_without_note"
+      ],
+      "fired": [
+        "extract.conflict_without_note"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_conflict_noted",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "stat_value_no_unit_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "value_type_garbage",
+      "expected": [
+        "extract.value_without_unit"
+      ],
+      "fired": [
+        "extract.value_without_unit"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    }
+  ],
+  "totals": {
+    "passed": 29,
+    "of": 29
+  },
+  "note": "One scenario per rule, aligned to the task's four scoring points. Clean baselines must report nothing."
+}

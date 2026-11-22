@@ -1,0 +1,28 @@
+[
+  {
+    "id": "W1",
+    "task": "Report the measured effect in one sentence, with its magnitude.",
+    "input": "Uptake rose three-fold under the coating. Only one thickness was tested, so the result does not generalise.",
+    "reference": "uptake rose three-fold under the coating",
+    "rubric": [
+      {"criterion": "magnitude reported", "predicate": "any_of", "weight": 50,
+       "values": ["three-fold", "3-fold", "tripled"]},
+      {"criterion": "stays within one sentence", "predicate": "max_words", "weight": 25,
+       "limit": 25},
+      {"criterion": "no causal overreach", "predicate": "not_contains", "weight": 25,
+       "values": ["causes", "proves", "demonstrates causality"]}
+    ]
+  },
+  {
+    "id": "W2",
+    "task": "State the limitation without claiming generality.",
+    "input": "Uptake rose three-fold under the coating. Only one thickness was tested, so the result does not generalise.",
+    "reference": "only one coating thickness was tested, so the result does not generalise",
+    "rubric": [
+      {"criterion": "limitation named", "predicate": "contains", "weight": 50,
+       "values": ["thickness"]},
+      {"criterion": "no over-generalisation", "predicate": "not_contains", "weight": 50,
+       "values": ["in all materials", "for any coating", "universally"]}
+    ]
+  }
+]

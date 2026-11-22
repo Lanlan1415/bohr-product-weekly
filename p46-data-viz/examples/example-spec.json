@@ -1,0 +1,29 @@
+{
+  "case_id": "demo-chart-001",
+  "output_contract": [
+    "status",
+    "findings",
+    "encoding",
+    "mark_to_row",
+    "artifacts",
+    "provenance"
+  ],
+  "kind": "bar",
+  "figsize": [
+    3.5,
+    2.8
+  ],
+  "x_label": "处理组",
+  "y_label": "响应强度",
+  "y_unit": "a.u.",
+  "errorbar_meaning": "SD",
+  "panel": "a",
+  "caption_n": 6,
+  "legend": true,
+  "encoding": {
+    "x": "condition",
+    "y": "response",
+    "y_err": "response_sd",
+    "group": "group"
+  }
+}

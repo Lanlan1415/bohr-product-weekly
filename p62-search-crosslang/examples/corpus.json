@@ -1,0 +1,20 @@
+{
+ "documents": [
+  {
+   "id": "zh-focal-01",
+   "text": "id: zh-focal-01\nlang: zh\n细胞焦亡由炎性小体驱动，gasdermin孔隙形成是关键步骤。\ndoi: doi-10-1093-zhmr-026-0345"
+  },
+  {
+   "id": "en-focal-01",
+   "text": "id: en-focal-01\nlang: en\nPyroptosis is driven by inflammasome activation and gasdermin pore formation.\ndoi: doi-10-1038-s41590-025-04567-8"
+  },
+  {
+   "id": "en-trans-01",
+   "text": "id: en-trans-01\nlang: en\ntrans-of: doi-10-1093-zhmr-026-0345\nEnglish view of the zh original: pyroptosis and gasdermin pores."
+  },
+  {
+   "id": "zh-other-01",
+   "text": "id: zh-other-01\nlang: zh\n铁死亡依赖脂质过氧化，与细胞焦亡的通路不同。\ndoi: doi-10-1093-zhmr-025-1122"
+  }
+ ]
+}

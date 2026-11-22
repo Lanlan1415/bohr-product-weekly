@@ -1,0 +1,18 @@
+{
+  "figure_kind": "route",
+  "canvas_mm": [160, 70],
+  "font_size": 9,
+  "step_order": ["s1", "s2", "d1", "s4"],
+  "nodes": [
+    {"id": "s1", "label": "合成", "stage": 1, "layer": 0, "color": "#56B4E9"},
+    {"id": "s2", "label": "表征", "stage": 2, "layer": 1, "color": "#009E73"},
+    {"id": "d1", "label": "达标？", "stage": 3, "layer": 2, "kind": "decision", "color": "#E69F00"},
+    {"id": "s4", "label": "放大", "stage": 4, "layer": 3, "color": "#CC79A7"}
+  ],
+  "edges": [
+    {"from": "s1", "to": "s2", "type": "flow"},
+    {"from": "s2", "to": "d1", "type": "flow"},
+    {"from": "d1", "to": "s4", "type": "activate"},
+    {"from": "d1", "to": "s2", "type": "bind"}
+  ]
+}

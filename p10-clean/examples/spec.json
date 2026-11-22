@@ -1,0 +1,16 @@
+{
+  "columns": [
+    {"name": "bandgap", "target_unit": "eV", "plausible": [0, 6]},
+    {"name": "conc", "target_unit": "mol/L", "plausible": [0, 100]}
+  ],
+  "key_columns": ["material"],
+  "value_columns": ["bandgap"],
+  "rows": [
+    {"material": "TiO2", "bandgap": "3.20 eV", "conc": "5 mM"},
+    {"material": "TiO2", "bandgap": "3.20 eV", "conc": "5 mM"},
+    {"material": "tio2", "bandgap": "3.05 eV", "conc": "5 mM"},
+    {"material": "ZnO", "bandgap": "not reported", "conc": "2 mol/L"},
+    {"material": "ZnO", "bandgap": "3.37 eV", "conc": "about 5 mM"},
+    {"material": "ZnO", "bandgap": "9.9 eV", "conc": "1 mM"}
+  ]
+}

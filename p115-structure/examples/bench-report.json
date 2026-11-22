@@ -1,0 +1,307 @@
+{
+  "schema_version": "structure-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_manuscript",
+      "expected": [
+        "struct.no_manuscript"
+      ],
+      "fired": [
+        "struct.no_manuscript"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_diagnosis",
+      "expected": [
+        "struct.no_diagnosis"
+      ],
+      "fired": [
+        "struct.no_diagnosis",
+        "struct.suggestion_orphaned"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "dimension_missing",
+      "expected": [
+        "struct.dimension_missing"
+      ],
+      "fired": [
+        "struct.dimension_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "dimension_unknown",
+      "expected": [
+        "struct.dimension_unknown"
+      ],
+      "fired": [
+        "struct.dimension_missing",
+        "struct.dimension_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "research_question_missing",
+      "expected": [
+        "struct.research_question_missing"
+      ],
+      "fired": [
+        "struct.research_question_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "question_absent_from_text",
+      "expected": [
+        "struct.question_absent_from_text"
+      ],
+      "fired": [
+        "struct.question_absent_from_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "contribution_unanchored",
+      "expected": [
+        "struct.contribution_unanchored"
+      ],
+      "fired": [
+        "struct.contribution_unanchored"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "finding_no_evidence",
+      "expected": [
+        "struct.finding_no_evidence"
+      ],
+      "fired": [
+        "struct.finding_no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "evidence_fabricated",
+      "expected": [
+        "struct.evidence_not_in_text"
+      ],
+      "fired": [
+        "struct.evidence_not_in_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "finding_no_locator",
+      "expected": [
+        "struct.finding_no_locator"
+      ],
+      "fired": [
+        "struct.finding_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "style_as_defect",
+      "expected": [
+        "struct.style_as_defect"
+      ],
+      "fired": [
+        "struct.style_as_defect"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "suggestion_missing",
+      "expected": [
+        "struct.suggestion_missing"
+      ],
+      "fired": [
+        "struct.suggestion_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "suggestion_no_action",
+      "expected": [
+        "struct.suggestion_no_action"
+      ],
+      "fired": [
+        "struct.suggestion_no_action"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "suggestion_orphaned",
+      "expected": [
+        "struct.suggestion_orphaned"
+      ],
+      "fired": [
+        "struct.suggestion_orphaned"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "multiple_claims",
+      "expected": [
+        "struct.multiple_claims"
+      ],
+      "fired": [
+        "struct.multiple_claims"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "claim_without_support",
+      "expected": [
+        "struct.claim_without_support"
+      ],
+      "fired": [
+        "struct.claim_without_support"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "circular_support",
+      "expected": [
+        "struct.circular_support"
+      ],
+      "fired": [
+        "struct.circular_support"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "support_weaker_than_claim",
+      "expected": [
+        "struct.support_weaker_than_claim"
+      ],
+      "fired": [
+        "struct.support_weaker_than_claim"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "duplicate_paragraph",
+      "expected": [
+        "struct.duplicate_paragraph"
+      ],
+      "fired": [
+        "struct.duplicate_paragraph"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "section_interleaved",
+      "expected": [
+        "struct.section_interleaved"
+      ],
+      "fired": [
+        "struct.section_interleaved"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "conclusion_exceeds_scope",
+      "expected": [
+        "struct.conclusion_exceeds_scope"
+      ],
+      "fired": [
+        "struct.conclusion_exceeds_scope"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "limitations_missing",
+      "expected": [
+        "struct.limitations_missing"
+      ],
+      "fired": [
+        "struct.limitations_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    }
+  ],
+  "totals": {
+    "passed": 23,
+    "of": 23
+  },
+  "note": "One scenario per rule, aligned to the structure-diagnosis scoring points. Clean baselines must report nothing."
+}

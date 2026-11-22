@@ -1,0 +1,103 @@
+{
+  "section": "proposal",
+  "elements": {
+    "rationale": {
+      "text": "现有综述与对比实验止步于 2022 年，此后扩散式采样器在新材料体系上的表现缺少与最强经典基线在同一语料、同一切分下的对照；选题评估以最近两年的工作为比较基线，并把语料冻结列为第一项工作。",
+      "evidence": "M1 语料覆盖记录"
+    },
+    "question": {
+      "text": "扩散式采样器在同一基准上是否比最强经典基线的覆盖率高至少 5 个百分点",
+      "evidence": "M1"
+    },
+    "objectives": {
+      "text": "三项可检验目标：覆盖率、复现误差、语料覆盖",
+      "evidence": "Sec 2"
+    },
+    "content": {
+      "text": "冻结语料并复现三个已有基线，再对照评测新采样器",
+      "evidence": "M2"
+    },
+    "innovation": {
+      "text": "与已有工作只报告端到端精度不同，本评估把比较锚定在同一语料、同一切分与同一算力预算下，公布每个基线的复现误差，并把创新点逐条对照到具体文献的具体段落，使新与旧的边界可以被第三方复核。",
+      "evidence": "[doe2020]"
+    },
+    "technical_route": {
+      "text": "三步：语料冻结、基线复现、对照评测，每步带风险与回退",
+      "evidence": "Sec 4"
+    },
+    "foundation": {
+      "text": "实验室语料库与已有算力平台",
+      "evidence": "M0"
+    }
+  },
+  "paragraphs": [
+    {
+      "text": "为什么现在评估这个选题",
+      "element": "rationale",
+      "evidence": "M1"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "O1",
+      "measure": "同一基准上的覆盖率对比",
+      "outcome": "至少高出 5 个百分点",
+      "content_ref": "C1"
+    }
+  ],
+  "content": [
+    {
+      "id": "C1",
+      "text": "冻结语料并复现基线"
+    }
+  ],
+  "route": [
+    {
+      "id": "R1",
+      "objective": "O1",
+      "input": "2018-2024 标注语料",
+      "output": "基线复现报告",
+      "risk": "基线复现偏差",
+      "fallback": "改用原作者公开检查点"
+    }
+  ],
+  "foundation_items": [
+    {
+      "name": "实验室语料库",
+      "capability": "已收录 3,200 篇标注文献",
+      "evidence": "M0 run 2023-04",
+      "relation": "同一语料库支撑本次评估的检索范围",
+      "status": "done"
+    }
+  ],
+  "comparison_matrix": [
+    {
+      "id": "M1",
+      "work": "doe2020",
+      "aspect": "method",
+      "comparable": true,
+      "evidence": "[doe2020] Sec 3, p.4"
+    },
+    {
+      "id": "M2",
+      "work": "roe2021",
+      "aspect": "metric",
+      "comparable": false,
+      "reason": "评价指标不同（F1 对覆盖率），数值无法对齐",
+      "evidence": "[roe2021] Table 1, p.5"
+    }
+  ],
+  "timeline": [
+    {
+      "period": "Y1",
+      "milestone": "基线复现通过容忍度检查"
+    }
+  ],
+  "budget": [
+    {
+      "item": "算力",
+      "justification": "600 GPU 小时，按现有平台报价"
+    }
+  ],
+  "budget_justification": "每项按现有供应商报价与设备清单核算"
+}

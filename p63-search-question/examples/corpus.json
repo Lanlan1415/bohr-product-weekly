@@ -1,0 +1,24 @@
+{
+ "documents": [
+  {
+   "id": "p-001",
+   "text": "id: p-001\n对象: 固态电解质\nMechanism: grain-boundary lithium transport limits ionic conductivity.\nMethod: impedance spectroscopy with blocking electrodes."
+  },
+  {
+   "id": "p-002",
+   "text": "id: p-002\n对象: 固态电解质\nMechanism: space-charge layers at electrode interfaces raise interfacial resistance.\nMethod: impedance spectroscopy, symmetric cells."
+  },
+  {
+   "id": "p-003",
+   "text": "id: p-003\n对象: liquid electrolyte\nMechanism: solvent coordination governs ion pairing.\nMethod: Raman spectroscopy."
+  },
+  {
+   "id": "p-004",
+   "text": "id: p-004\n对象: 固态电解质\nMechanism: dendrite penetration through grain boundaries at high current.\nMethod: operando microscopy."
+  },
+  {
+   "id": "p-005",
+   "text": "id: p-005\n对象: polymer electrolyte\nMechanism: segmental motion couples to ion transport.\nMethod: dielectric relaxation spectroscopy."
+  }
+ ]
+}

@@ -1,0 +1,132 @@
+{
+  "schema_version": "apparatus2-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "untraceable",
+      "expected": [
+        "trace.entity_untraceable"
+      ],
+      "fired": [
+        "trace.entity_untraceable",
+        "trace.material_not_drawn"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "bad_evidence",
+      "expected": [
+        "trace.evidence_not_in_materials"
+      ],
+      "fired": [
+        "trace.evidence_not_in_materials",
+        "trace.material_not_drawn"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "material_unused",
+      "expected": [
+        "trace.material_not_drawn"
+      ],
+      "fired": [
+        "trace.material_not_drawn"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "invented_edge",
+      "expected": [
+        "trace.edge_not_in_source"
+      ],
+      "fired": [
+        "trace.edge_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "numbering",
+      "expected": [
+        "route.numbering_vs_text"
+      ],
+      "fired": [
+        "route.numbering_vs_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "overlap",
+      "expected": [
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "fired": [
+        "apparatus.indistinguishable_components",
+        "apparatus.orphan_component",
+        "label.outside_canvas",
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "missing_glyphs",
+      "expected": [
+        "export.missing_glyphs"
+      ],
+      "fired": [
+        "export.missing_glyphs"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked",
+      "injected": true
+    },
+    {
+      "scenario": "nondeterministic",
+      "expected": [
+        "repro.nondeterministic"
+      ],
+      "fired": [
+        "repro.nondeterministic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked",
+      "injected": true
+    }
+  ],
+  "totals": {
+    "passed": 9,
+    "of": 9
+  },
+  "note": "Two scenarios inject a defect by patching a font resolver and a determinism check, because those defects cannot be expressed in a spec."
+}

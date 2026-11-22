@@ -1,0 +1,413 @@
+{
+  "schema_version": "sections-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean:conclusion_extract",
+      "section": "conclusion_extract",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:claim_verify",
+      "section": "claim_verify",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:compare_docs",
+      "section": "compare_docs",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:formula",
+      "section": "formula",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:reproduce",
+      "section": "reproduce",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:qa",
+      "section": "qa",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:paper_draft",
+      "section": "paper_draft",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:structure_logic",
+      "section": "structure_logic",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:results_discussion",
+      "section": "results_discussion",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:proposal",
+      "section": "proposal",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:longdoc",
+      "section": "longdoc",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:dissemination",
+      "section": "dissemination",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:mindmap",
+      "section": "mindmap",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "ce_no_cond",
+      "section": "conclusion_extract",
+      "expected": [
+        "extract.missing_condition"
+      ],
+      "fired": [
+        "extract.missing_condition"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "ce_no_loc",
+      "section": "conclusion_extract",
+      "expected": [
+        "extract.missing_locator"
+      ],
+      "fired": [
+        "extract.missing_locator"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "ce_hedge",
+      "section": "conclusion_extract",
+      "expected": [
+        "extract.hedge_dropped"
+      ],
+      "fired": [
+        "extract.hedge_dropped"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cv_no_ev",
+      "section": "claim_verify",
+      "expected": [
+        "verify.no_evidence"
+      ],
+      "fired": [
+        "verify.no_evidence"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cv_unrelated",
+      "section": "claim_verify",
+      "expected": [
+        "verify.evidence_unrelated"
+      ],
+      "fired": [
+        "verify.evidence_unrelated"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cv_support",
+      "section": "claim_verify",
+      "expected": [
+        "verify.support_undeclared"
+      ],
+      "fired": [
+        "verify.support_undeclared"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cd_no_schema",
+      "section": "compare_docs",
+      "expected": [
+        "compare.no_schema"
+      ],
+      "fired": [
+        "compare.no_schema"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cd_missing",
+      "section": "compare_docs",
+      "expected": [
+        "compare.field_missing"
+      ],
+      "fired": [
+        "compare.field_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_braces",
+      "section": "formula",
+      "expected": [
+        "formula.unbalanced_braces"
+      ],
+      "fired": [
+        "formula.unbalanced_braces"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_dim",
+      "section": "formula",
+      "expected": [
+        "formula.dimension_mismatch"
+      ],
+      "fired": [
+        "formula.dimension_mismatch"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_undef",
+      "section": "formula",
+      "expected": [
+        "formula.variable_undefined"
+      ],
+      "fired": [
+        "formula.variable_undefined"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rp_no_env",
+      "section": "reproduce",
+      "expected": [
+        "repro.environment_incomplete"
+      ],
+      "fired": [
+        "repro.environment_incomplete"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rp_param_src",
+      "section": "reproduce",
+      "expected": [
+        "repro.parameter_source_undeclared"
+      ],
+      "fired": [
+        "repro.parameter_source_undeclared"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rp_no_tol",
+      "section": "reproduce",
+      "expected": [
+        "repro.no_tolerance"
+      ],
+      "fired": [
+        "repro.no_tolerance"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "qa_uncited",
+      "section": "qa",
+      "expected": [
+        "qa.uncited_answer"
+      ],
+      "fired": [
+        "qa.uncited_answer"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "qa_unknown",
+      "section": "qa",
+      "expected": [
+        "qa.unknown_evidence"
+      ],
+      "fired": [
+        "qa.unknown_evidence"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "pd_missing",
+      "section": "paper_draft",
+      "expected": [
+        "draft.section_missing"
+      ],
+      "fired": [
+        "draft.section_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "pd_uncited",
+      "section": "paper_draft",
+      "expected": [
+        "draft.uncited_claim"
+      ],
+      "fired": [
+        "draft.uncited_claim"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "sl_multi",
+      "section": "structure_logic",
+      "expected": [
+        "struct.multiple_claims"
+      ],
+      "fired": [
+        "struct.multiple_claims"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "sl_orphan",
+      "section": "structure_logic",
+      "expected": [
+        "struct.orphan_paragraph"
+      ],
+      "fired": [
+        "struct.orphan_paragraph"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rd_causal",
+      "section": "results_discussion",
+      "expected": [
+        "rd.causal_overreach"
+      ],
+      "fired": [
+        "rd.causal_overreach"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rd_unitless",
+      "section": "results_discussion",
+      "expected": [
+        "rd.unitless_number"
+      ],
+      "fired": [
+        "rd.unitless_number"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "pr_no_measure",
+      "section": "proposal",
+      "expected": [
+        "prop.aim_without_measure"
+      ],
+      "fired": [
+        "prop.aim_without_measure"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "pr_no_tl",
+      "section": "proposal",
+      "expected": [
+        "prop.milestone_missing"
+      ],
+      "fired": [
+        "prop.milestone_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "ld_dangling",
+      "section": "longdoc",
+      "expected": [
+        "long.dangling_crossref"
+      ],
+      "fired": [
+        "long.dangling_crossref"
+      ],
+      "missing": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 38,
+    "of": 38
+  }
+}

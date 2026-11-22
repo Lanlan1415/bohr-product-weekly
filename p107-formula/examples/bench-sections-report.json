@@ -1,0 +1,650 @@
+{
+  "schema_version": "sections-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean:conclusion_extract",
+      "section": "conclusion_extract",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:claim_verify",
+      "section": "claim_verify",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:compare_docs",
+      "section": "compare_docs",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:formula",
+      "section": "formula",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:reproduce",
+      "section": "reproduce",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:qa",
+      "section": "qa",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:paper_draft",
+      "section": "paper_draft",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:structure_logic",
+      "section": "structure_logic",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:results_discussion",
+      "section": "results_discussion",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:proposal",
+      "section": "proposal",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:longdoc",
+      "section": "longdoc",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:dissemination",
+      "section": "dissemination",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean:mindmap",
+      "section": "mindmap",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "ce_no_cond",
+      "section": "conclusion_extract",
+      "expected": [
+        "extract.missing_condition"
+      ],
+      "fired": [
+        "extract.missing_condition",
+        "extract.source_not_covered"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "ce_no_loc",
+      "section": "conclusion_extract",
+      "expected": [
+        "extract.missing_locator"
+      ],
+      "fired": [
+        "extract.missing_locator",
+        "extract.source_not_covered"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "ce_hedge",
+      "section": "conclusion_extract",
+      "expected": [
+        "extract.hedge_dropped"
+      ],
+      "fired": [
+        "extract.hedge_dropped",
+        "extract.source_not_covered"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cv_no_ev",
+      "section": "claim_verify",
+      "expected": [
+        "verify.no_evidence"
+      ],
+      "fired": [
+        "verify.no_evidence"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cv_unrelated",
+      "section": "claim_verify",
+      "expected": [
+        "verify.evidence_unrelated"
+      ],
+      "fired": [
+        "verify.evidence_no_locator",
+        "verify.evidence_unrelated",
+        "verify.quote_not_in_source"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cv_support",
+      "section": "claim_verify",
+      "expected": [
+        "verify.support_undeclared"
+      ],
+      "fired": [
+        "verify.support_undeclared"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cd_no_schema",
+      "section": "compare_docs",
+      "expected": [
+        "compare.no_schema"
+      ],
+      "fired": [
+        "compare.no_schema"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "cd_missing",
+      "section": "compare_docs",
+      "expected": [
+        "compare.field_missing"
+      ],
+      "fired": [
+        "compare.cell_metadata_missing",
+        "compare.cell_no_locator",
+        "compare.field_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_braces",
+      "section": "formula",
+      "expected": [
+        "formula.unbalanced_braces"
+      ],
+      "fired": [
+        "formula.unbalanced_braces"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_dim",
+      "section": "formula",
+      "expected": [
+        "formula.dimension_mismatch"
+      ],
+      "fired": [
+        "formula.dimension_mismatch"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_undef",
+      "section": "formula",
+      "expected": [
+        "formula.variable_undefined"
+      ],
+      "fired": [
+        "formula.numeric_input_undeclared",
+        "formula.variable_no_locator",
+        "formula.variable_not_extracted",
+        "formula.variable_undefined"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_env_unclosed",
+      "section": "formula",
+      "expected": [
+        "formula.environment_unclosed"
+      ],
+      "fired": [
+        "formula.environment_unclosed"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_input_undecl",
+      "section": "formula",
+      "expected": [
+        "formula.numeric_input_undeclared"
+      ],
+      "fired": [
+        "formula.numeric_input_undeclared"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_step_dep",
+      "section": "formula",
+      "expected": [
+        "formula.step_dependency_undeclared"
+      ],
+      "fired": [
+        "formula.step_dependency_undeclared"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_value_conflict",
+      "section": "formula",
+      "expected": [
+        "formula.input_value_conflicts_variable"
+      ],
+      "fired": [
+        "formula.input_value_conflicts_variable"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fo_bad_numeric",
+      "section": "formula",
+      "expected": [
+        "formula.numeric_malformed"
+      ],
+      "fired": [
+        "formula.numeric_malformed"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rp_no_env",
+      "section": "reproduce",
+      "expected": [
+        "repro.environment_incomplete"
+      ],
+      "fired": [
+        "repro.environment_incomplete"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rp_param_src",
+      "section": "reproduce",
+      "expected": [
+        "repro.parameter_source_undeclared"
+      ],
+      "fired": [
+        "repro.parameter_source_undeclared"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rp_no_tol",
+      "section": "reproduce",
+      "expected": [
+        "repro.no_tolerance"
+      ],
+      "fired": [
+        "repro.no_comparison_basis",
+        "repro.no_statistic",
+        "repro.no_tolerance",
+        "repro.stage_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "qa_uncited",
+      "section": "qa",
+      "expected": [
+        "qa.uncited_answer"
+      ],
+      "fired": [
+        "qa.uncited_answer"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "qa_unknown",
+      "section": "qa",
+      "expected": [
+        "qa.unknown_evidence"
+      ],
+      "fired": [
+        "qa.unknown_evidence"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "pd_missing",
+      "section": "paper_draft",
+      "expected": [
+        "pd.sections_missing"
+      ],
+      "fired": [
+        "pd.figure_uncited",
+        "pd.material_unused",
+        "pd.sections_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "pd_uncited",
+      "section": "paper_draft",
+      "expected": [
+        "pd.uncited_claim"
+      ],
+      "fired": [
+        "pd.figure_uncited",
+        "pd.material_unused",
+        "pd.uncited_claim"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "sl_multi",
+      "section": "structure_logic",
+      "expected": [
+        "struct.multiple_claims"
+      ],
+      "fired": [
+        "struct.multiple_claims"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "sl_orphan",
+      "section": "structure_logic",
+      "expected": [
+        "struct.orphan_paragraph"
+      ],
+      "fired": [
+        "struct.orphan_paragraph"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rd_causal",
+      "section": "results_discussion",
+      "expected": [
+        "rd.causal_overreach"
+      ],
+      "fired": [
+        "rd.causal_overreach",
+        "rd.conflicting_literature_ignored",
+        "rd.negative_result_omitted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "rd_unitless",
+      "section": "results_discussion",
+      "expected": [
+        "rd.unitless_number"
+      ],
+      "fired": [
+        "rd.statistic_missing",
+        "rd.unitless_number"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "pr_no_measure",
+      "section": "proposal",
+      "expected": [
+        "prop.aim_without_measure"
+      ],
+      "fired": [
+        "prop.aim_without_measure"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "pr_no_tl",
+      "section": "proposal",
+      "expected": [
+        "prop.milestone_missing"
+      ],
+      "fired": [
+        "prop.milestone_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_edge_dangling",
+      "section": "mindmap",
+      "expected": [
+        "map.edge_dangling"
+      ],
+      "fired": [
+        "map.edge_dangling"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_edge_notype",
+      "section": "mindmap",
+      "expected": [
+        "map.edge_type_missing"
+      ],
+      "fired": [
+        "map.edge_type_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_edge_nobasis",
+      "section": "mindmap",
+      "expected": [
+        "map.edge_no_basis"
+      ],
+      "fired": [
+        "map.edge_no_basis"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_kind_missing",
+      "section": "mindmap",
+      "expected": [
+        "map.kind_undeclared"
+      ],
+      "fired": [
+        "map.kind_undeclared"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_decorative",
+      "section": "mindmap",
+      "expected": [
+        "map.decorative_label"
+      ],
+      "fired": [
+        "map.decorative_label"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "ld_dangling",
+      "section": "longdoc",
+      "expected": [
+        "long.dangling_crossref"
+      ],
+      "fired": [
+        "long.dangling_crossref",
+        "long.outline_item_unwritten"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_rd_pointer",
+      "section": "results_discussion",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_rd_stats",
+      "section": "results_discussion",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_rd_dataref",
+      "section": "results_discussion",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_pd_pointer",
+      "section": "paper_draft",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_pd_material",
+      "section": "paper_draft",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_qa_stats",
+      "section": "qa",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_diss_stats",
+      "section": "dissemination",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_map_labels",
+      "section": "mindmap",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_fo_env_balanced",
+      "section": "formula",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_fo_env_prose",
+      "section": "formula",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_fo_value_match",
+      "section": "formula",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_fo_declared_dep",
+      "section": "formula",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 60,
+    "of": 60
+  }
+}

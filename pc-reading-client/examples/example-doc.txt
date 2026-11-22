@@ -1,0 +1,5 @@
+Surface-area limitation is the binding constraint in the current process.
+We ask whether a porous coating raises the uptake rate.
+The coated samples were measured at 25 C with six replicates per arm.
+Uptake rose three-fold under the coating, and the effect persisted at week eight.
+Only one coating thickness was tested, so the result does not generalise.

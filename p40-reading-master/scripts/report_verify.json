@@ -1,0 +1,215 @@
+{
+  "schema_version": "verify-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_evidence",
+      "expected": [
+        "verify.no_evidence"
+      ],
+      "fired": [
+        "verify.no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "empty_quote",
+      "expected": [
+        "verify.evidence_empty_quote"
+      ],
+      "fired": [
+        "verify.evidence_empty_quote",
+        "verify.evidence_unrelated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "quote_not_in_source",
+      "expected": [
+        "verify.quote_not_in_source"
+      ],
+      "fired": [
+        "verify.quote_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_locator",
+      "expected": [
+        "verify.evidence_no_locator"
+      ],
+      "fired": [
+        "verify.evidence_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "locator_vague",
+      "expected": [
+        "verify.evidence_locator_vague"
+      ],
+      "fired": [
+        "verify.evidence_locator_vague"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "support_undeclared",
+      "expected": [
+        "verify.support_undeclared"
+      ],
+      "fired": [
+        "verify.support_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "rationale_missing",
+      "expected": [
+        "verify.rationale_missing"
+      ],
+      "fired": [
+        "verify.rationale_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "evidence_unrelated",
+      "expected": [
+        "verify.evidence_unrelated"
+      ],
+      "fired": [
+        "verify.evidence_unrelated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unknown_source",
+      "expected": [
+        "verify.unknown_source"
+      ],
+      "fired": [
+        "verify.unknown_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "metadata_incomplete",
+      "expected": [
+        "verify.reference_metadata_incomplete"
+      ],
+      "fired": [
+        "verify.reference_metadata_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "subjudgement_no_verdict",
+      "expected": [
+        "verify.subjudgement_verdict_missing"
+      ],
+      "fired": [
+        "verify.subjudgement_verdict_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "subjudgement_kind_unknown",
+      "expected": [
+        "verify.subjudgement_kind_unknown"
+      ],
+      "fired": [
+        "verify.subjudgement_kind_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "subjudgements_missing",
+      "expected": [
+        "verify.subjudgements_missing"
+      ],
+      "fired": [
+        "verify.subjudgements_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "counter_evidence_missing",
+      "expected": [
+        "verify.counter_evidence_missing"
+      ],
+      "fired": [
+        "verify.counter_evidence_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_claims",
+      "expected": [
+        "verify.no_claims"
+      ],
+      "fired": [
+        "verify.no_claims"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    }
+  ],
+  "totals": {
+    "passed": 16,
+    "of": 16
+  },
+  "note": "One scenario per rule, aligned to the claim->span->locator->verdict->rationale chain. Clean baselines must report nothing."
+}

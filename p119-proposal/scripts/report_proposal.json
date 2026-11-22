@@ -1,0 +1,253 @@
+{
+  "schema_version": "proposal-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "element_missing",
+      "expected": [
+        "prop.element_missing"
+      ],
+      "fired": [
+        "prop.element_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "element_no_evidence",
+      "expected": [
+        "prop.element_no_evidence"
+      ],
+      "fired": [
+        "prop.element_no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "paragraph_no_element",
+      "expected": [
+        "prop.paragraph_no_element"
+      ],
+      "fired": [
+        "prop.paragraph_no_element"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "paragraph_no_evidence",
+      "expected": [
+        "prop.paragraph_no_evidence"
+      ],
+      "fired": [
+        "prop.paragraph_no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "status_unlabelled",
+      "expected": [
+        "prop.status_unlabelled"
+      ],
+      "fired": [
+        "prop.status_unlabelled"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "foundation_no_relation",
+      "expected": [
+        "prop.foundation_no_relation"
+      ],
+      "fired": [
+        "prop.foundation_no_relation"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "question_too_broad",
+      "expected": [
+        "prop.question_too_broad"
+      ],
+      "fired": [
+        "prop.question_too_broad"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "objectives_missing",
+      "expected": [
+        "prop.objectives_missing"
+      ],
+      "fired": [
+        "prop.objectives_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "aim_without_measure",
+      "expected": [
+        "prop.aim_without_measure"
+      ],
+      "fired": [
+        "prop.aim_without_measure"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "objective_unmapped",
+      "expected": [
+        "prop.objective_unmapped"
+      ],
+      "fired": [
+        "prop.objective_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "objective_no_route",
+      "expected": [
+        "prop.objective_no_route"
+      ],
+      "fired": [
+        "prop.objective_no_route"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "route_no_io",
+      "expected": [
+        "prop.route_no_io"
+      ],
+      "fired": [
+        "prop.route_no_io"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "route_no_risk",
+      "expected": [
+        "prop.route_no_risk"
+      ],
+      "fired": [
+        "prop.route_no_risk"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "route_no_fallback",
+      "expected": [
+        "prop.route_no_fallback"
+      ],
+      "fired": [
+        "prop.route_no_fallback"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "milestone_missing",
+      "expected": [
+        "prop.milestone_missing"
+      ],
+      "fired": [
+        "prop.milestone_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "budget_unjustified",
+      "expected": [
+        "prop.budget_unjustified"
+      ],
+      "fired": [
+        "prop.budget_unjustified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "budget_line_unjustified",
+      "expected": [
+        "prop.budget_line_unjustified"
+      ],
+      "fired": [
+        "prop.budget_line_unjustified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "field_too_thin",
+      "expected": [
+        "prop.field_too_thin"
+      ],
+      "fired": [
+        "prop.field_too_thin"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    }
+  ],
+  "totals": {
+    "passed": 19,
+    "of": 19
+  },
+  "note": "One scenario per rule, aligned to the proposal scoring points. Clean baselines must report nothing."
+}

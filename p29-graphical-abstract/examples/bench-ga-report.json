@@ -1,0 +1,115 @@
+{
+  "schema_version": "ga-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_takeaway",
+      "expected": [
+        "ga.missing_takeaway"
+      ],
+      "fired": [
+        "ga.missing_takeaway"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "takeaway_not_placed",
+      "expected": [
+        "ga.takeaway_not_placed"
+      ],
+      "fired": [
+        "ga.takeaway_not_placed",
+        "ga.takeaway_panels_unlinked"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "number_not_in_source",
+      "expected": [
+        "ga.value_not_in_source"
+      ],
+      "fired": [
+        "ga.value_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "too_many_words",
+      "expected": [
+        "ga.text_too_long"
+      ],
+      "fired": [
+        "ga.text_too_long"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "size_out_of_spec",
+      "expected": [
+        "ga.size_out_of_spec"
+      ],
+      "fired": [
+        "ga.size_out_of_spec"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "unlinked_takeaways",
+      "expected": [
+        "ga.takeaway_panels_unlinked"
+      ],
+      "fired": [
+        "ga.takeaway_panels_unlinked"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "reading_order",
+      "expected": [
+        "ga.reading_order"
+      ],
+      "fired": [
+        "ga.reading_order"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "no_source_values",
+      "expected": [
+        "ga.source_values_unavailable"
+      ],
+      "fired": [
+        "ga.source_values_unavailable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 9,
+    "of": 9
+  },
+  "note": "One planted defect per scenario; the clean baseline must stay silent."
+}

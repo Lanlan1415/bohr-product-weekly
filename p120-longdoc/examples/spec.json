@@ -1,0 +1,34 @@
+{
+  "case_id": "demo-longdoc-000",
+  "section": "longdoc",
+  "outline": [
+    {"id": "O1", "title": "intro", "argument_element": "question"},
+    {"id": "O2", "title": "methods", "argument_element": "method"},
+    {"id": "O3", "title": "results", "argument_element": "result"},
+    {"id": "O4", "title": "discussion", "argument_element": "discussion"},
+    {"id": "O5", "title": "limits", "argument_element": "limitation"}
+  ],
+  "front_matter": {"toc": ["intro", "methods", "results", "discussion", "limits"],
+                   "figure_list": ["Fig 1"], "reference_section": "yes", "appendix": "yes"},
+  "terminology": [{"preferred": "uptake rate", "chapter": "1"}],
+  "symbols": [{"symbol": "r", "meaning": "rate"}],
+  "references": [{"key": "doe2020", "title": "coating raises uptake", "year": 2020,
+                  "topic": "coating raises uptake"}],
+  "figures": [{"number": 1, "caption": "uptake curves"}],
+  "chapters": [
+    {"number": 1, "title": "intro", "outline_id": "O1", "argument_element": "question",
+     "definitions": [{"term": "uptake rate", "text": "rate of uptake"}],
+     "claims": [{"text": "coating raises uptake", "reference": "doe2020"}],
+     "conclusions": [{"statement": "coating raises uptake rate", "direction": "increases"}],
+     "changelog": ["v1 drafted"]},
+    {"number": 2, "title": "methods", "outline_id": "O2", "argument_element": "method",
+     "changelog": ["v1 drafted"]},
+    {"number": 3, "title": "results", "outline_id": "O3", "argument_element": "result",
+     "figure_refs": [1], "changelog": ["v1 drafted"]},
+    {"number": 4, "title": "discussion", "outline_id": "O4", "argument_element": "discussion",
+     "conclusions": [{"statement": "coating raises uptake rate", "direction": "increases"}],
+     "changelog": ["v1 drafted"]},
+    {"number": 5, "title": "limits", "outline_id": "O5", "argument_element": "limitation",
+     "changelog": ["v1 drafted"]}
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "case_id": "case-formula-demo-01",
+  "output_contract": {
+    "status": "…",
+    "findings": "…",
+    "evidence_map": "…",
+    "boundary": "…"
+  },
+  "section": "formula",
+  "formulas": [
+    {"id": "F1",
+     "latex": "E = h c / \\lambda",
+     "lhs_unit": "J", "rhs_unit": "J",
+     "variables": [
+       {"name": "E", "definition": "photon energy", "source": "paper",
+        "locator": "Eq. 1, p.3", "unit": "J"},
+       {"name": "h", "definition": "Planck constant", "source": "convention",
+        "locator": "Eq. 1, p.3", "unit": "J*s", "value": 6.626e-34},
+       {"name": "c", "definition": "speed of light", "source": "convention",
+        "locator": "Eq. 1, p.3", "unit": "m/s", "value": 2.998e8},
+       {"name": "λ", "definition": "wavelength", "source": "paper",
+        "locator": "Eq. 1, p.3", "unit": "m", "value": 5.32e-7}
+     ],
+     "steps": [{"from": "E = h ν", "to": "E = h c / λ",
+                "justification": "ν = c / λ for light in vacuum"}],
+     "boundary_conditions": "single photon, vacuum",
+     "verified": true,
+     "numeric": {"expression": "h*c/lambda",
+                 "inputs": {"h": 6.626e-34, "c": 2.998e8, "lambda": 5.32e-7},
+                 "expected": 3.734e-19, "tolerance": 1e-21}}
+  ]
+}

@@ -1,0 +1,514 @@
+{
+  "schema_version": "topic-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "element_missing",
+      "expected": [
+        "prop.element_missing"
+      ],
+      "fired": [
+        "prop.element_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "element_no_text",
+      "expected": [
+        "prop.element_no_text"
+      ],
+      "fired": [
+        "prop.element_no_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "element_no_evidence",
+      "expected": [
+        "prop.element_no_evidence"
+      ],
+      "fired": [
+        "prop.element_no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "paragraph_no_element",
+      "expected": [
+        "prop.paragraph_no_element"
+      ],
+      "fired": [
+        "prop.paragraph_no_element"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "paragraph_element_unknown",
+      "expected": [
+        "prop.paragraph_element_unknown"
+      ],
+      "fired": [
+        "prop.paragraph_element_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "paragraph_no_evidence",
+      "expected": [
+        "prop.paragraph_no_evidence"
+      ],
+      "fired": [
+        "prop.paragraph_no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "status_unlabelled",
+      "expected": [
+        "prop.status_unlabelled"
+      ],
+      "fired": [
+        "prop.status_unlabelled"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "foundation_no_capability",
+      "expected": [
+        "prop.foundation_no_capability"
+      ],
+      "fired": [
+        "prop.foundation_no_capability"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "foundation_no_evidence",
+      "expected": [
+        "prop.foundation_no_evidence"
+      ],
+      "fired": [
+        "prop.foundation_no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "foundation_no_relation",
+      "expected": [
+        "prop.foundation_no_relation"
+      ],
+      "fired": [
+        "prop.foundation_no_relation"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "question_too_broad",
+      "expected": [
+        "prop.question_too_broad"
+      ],
+      "fired": [
+        "prop.question_too_broad"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "question_too_broad_zh_full",
+      "expected": [
+        "prop.question_too_broad"
+      ],
+      "fired": [
+        "prop.question_too_broad"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "question_too_broad_zh_all",
+      "expected": [
+        "prop.question_too_broad"
+      ],
+      "fired": [
+        "prop.question_too_broad"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "question_too_broad_zh_systematic",
+      "expected": [
+        "prop.question_too_broad"
+      ],
+      "fired": [
+        "prop.question_too_broad"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "question_bounded_zh_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "objectives_missing",
+      "expected": [
+        "prop.objectives_missing"
+      ],
+      "fired": [
+        "prop.objectives_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "aim_without_measure",
+      "expected": [
+        "prop.aim_without_measure"
+      ],
+      "fired": [
+        "prop.aim_without_measure"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "aim_without_outcome",
+      "expected": [
+        "prop.aim_without_outcome"
+      ],
+      "fired": [
+        "prop.aim_without_outcome"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "objective_unmapped",
+      "expected": [
+        "prop.objective_unmapped"
+      ],
+      "fired": [
+        "prop.objective_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "objective_content_unknown",
+      "expected": [
+        "prop.objective_content_unknown"
+      ],
+      "fired": [
+        "prop.objective_content_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "objective_no_route",
+      "expected": [
+        "prop.objective_no_route"
+      ],
+      "fired": [
+        "prop.objective_no_route"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "route_no_io",
+      "expected": [
+        "prop.route_no_io"
+      ],
+      "fired": [
+        "prop.route_no_io"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "route_no_risk",
+      "expected": [
+        "prop.route_no_risk"
+      ],
+      "fired": [
+        "prop.route_no_risk"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "route_no_fallback",
+      "expected": [
+        "prop.route_no_fallback"
+      ],
+      "fired": [
+        "prop.route_no_fallback"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "milestone_missing",
+      "expected": [
+        "prop.milestone_missing"
+      ],
+      "fired": [
+        "prop.milestone_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "budget_unjustified",
+      "expected": [
+        "prop.budget_unjustified"
+      ],
+      "fired": [
+        "prop.budget_unjustified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "budget_line_unjustified",
+      "expected": [
+        "prop.budget_line_unjustified"
+      ],
+      "fired": [
+        "prop.budget_line_unjustified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "field_too_thin",
+      "expected": [
+        "prop.field_too_thin"
+      ],
+      "fired": [
+        "prop.field_too_thin"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "comparison_matrix_missing",
+      "expected": [
+        "prop.comparison_missing"
+      ],
+      "fired": [
+        "prop.comparison_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "comparison_no_work",
+      "expected": [
+        "prop.comparison_row_no_work"
+      ],
+      "fired": [
+        "prop.comparison_row_no_work"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "comparison_no_aspect",
+      "expected": [
+        "prop.comparison_no_aspect"
+      ],
+      "fired": [
+        "prop.comparison_no_aspect"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "comparison_aspect_unknown",
+      "expected": [
+        "prop.comparison_aspect_unknown"
+      ],
+      "fired": [
+        "prop.comparison_aspect_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "comparison_comparability_unstated",
+      "expected": [
+        "prop.comparability_unstated"
+      ],
+      "fired": [
+        "prop.comparability_unstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "comparison_incomparable_no_reason",
+      "expected": [
+        "prop.incomparable_without_reason"
+      ],
+      "fired": [
+        "prop.incomparable_without_reason"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "comparison_incomparable_reason_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "comparison_no_evidence",
+      "expected": [
+        "prop.comparison_no_evidence"
+      ],
+      "fired": [
+        "prop.comparison_no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "comparison_matrix_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "comparison_row_skipped",
+      "expected": [
+        "prop.comparison_row_skipped"
+      ],
+      "fired": [
+        "prop.comparison_row_skipped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "comparison_row_id_duplicate",
+      "expected": [
+        "prop.comparison_row_id_duplicate"
+      ],
+      "fired": [
+        "prop.comparison_row_id_duplicate"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    }
+  ],
+  "totals": {
+    "passed": 40,
+    "of": 40
+  },
+  "note": "One scenario per rule, aligned to the topic-evaluation scoring points. Clean baselines must report nothing."
+}

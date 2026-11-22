@@ -1,0 +1,49 @@
+{
+  "schema_version": "multidb-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "doi_merge_key",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "source_coverage",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "source_gap_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "field_gap_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "mapped_year_field",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "merge_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

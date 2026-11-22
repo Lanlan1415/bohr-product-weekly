@@ -1,0 +1,24 @@
+{
+  "section": "qa",
+  "evidence": [
+    {
+      "id": "kb-0217",
+      "quote": "Dataset v2 raised the reported uptake to three-fold over control. v1 reported two-fold; v2 supersedes it.",
+      "locator": "datasets/uptake-2024/README.md @v2 §3"
+    },
+    {
+      "id": "kb-0088",
+      "quote": "All samples were held at 25 C during measurement.",
+      "locator": "protocols/sample-handling.md @v1 §2"
+    }
+  ],
+  "answers": [
+    {
+      "question": "知识库中记录的摄取率提升是多少",
+      "answer": "v2 记录的摄取率提升是三倍（three-fold），并注明 v1 记录已被取代",
+      "cites": [
+        "kb-0217"
+      ]
+    }
+  ]
+}

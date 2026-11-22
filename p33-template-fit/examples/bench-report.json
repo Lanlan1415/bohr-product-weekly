@@ -1,0 +1,26 @@
+{
+  "schema_version": "template-fit-bench/v1",
+  "benches": {
+    "bench_deck.py": {
+      "passed": 11,
+      "of": 11
+    },
+    "bench_deck2.py": {
+      "passed": 13,
+      "of": 13
+    },
+    "bench_extra.py": {
+      "passed": 28,
+      "of": 28
+    },
+    "bench_template.py": {
+      "passed": 9,
+      "of": 9
+    }
+  },
+  "note": "Aggregated bench totals; each scripts/report_*.json carries per-scenario rows. All run in a standard-library-only environment (python -I -X utf8).",
+  "totals": {
+    "passed": 61,
+    "of": 61
+  }
+}

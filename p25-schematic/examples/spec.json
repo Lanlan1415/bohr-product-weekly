@@ -1,0 +1,74 @@
+{
+  "canvas_mm": [
+    130,
+    60
+  ],
+  "font_size": 9,
+  "materials": [
+    {
+      "id": "m1",
+      "name": "基底",
+      "source": "Methods ¶2"
+    },
+    {
+      "id": "m2",
+      "name": "催化剂",
+      "source": "Methods ¶2"
+    },
+    {
+      "id": "m3",
+      "name": "产物",
+      "source": "Results ¶1"
+    }
+  ],
+  "connections": [
+    {
+      "from": "a",
+      "to": "b",
+      "source": "Methods ¶2: catalyst deposited on substrate"
+    },
+    {
+      "from": "b",
+      "to": "c",
+      "source": "Results ¶1: product forms on the catalyst"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "a",
+      "label": "基底 20 min",
+      "evidence": "m1",
+      "layer": 0,
+      "color": "#56B4E9",
+      "panel": "a"
+    },
+    {
+      "id": "b",
+      "label": "催化剂",
+      "evidence": "m2",
+      "layer": 1,
+      "color": "#009E73",
+      "panel": "b"
+    },
+    {
+      "id": "c",
+      "label": "产物 42 nm",
+      "evidence": "m3",
+      "layer": 2,
+      "color": "#E69F00",
+      "panel": "c"
+    }
+  ],
+  "edges": [
+    {
+      "from": "a",
+      "to": "b",
+      "type": "bind"
+    },
+    {
+      "from": "b",
+      "to": "c",
+      "type": "flow"
+    }
+  ]
+}

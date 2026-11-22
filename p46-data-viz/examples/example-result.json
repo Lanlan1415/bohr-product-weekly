@@ -1,0 +1,52 @@
+{
+  "_note": "示例输出（非正式案例结果）：由 examples/example-spec.json 与 examples/example-data.csv 实跑生成，文件路径为本机运行路径示意。",
+  "schema_version": "data-viz/v1",
+  "status": "clean",
+  "case_id": "demo-chart-001",
+  "findings": [],
+  "severity_counts": {},
+  "encoding": {
+    "chart_kind": "bar",
+    "channels": {
+      "x": "condition",
+      "y": "response",
+      "y_err": "response_sd",
+      "group": "group"
+    },
+    "rows_in_source": 4,
+    "marks_drawn": 4
+  },
+  "mark_to_row": [
+    {
+      "mark": "bar0",
+      "row": 0,
+      "x": "control",
+      "y": 12.4,
+      "series": "WT",
+      "y_err": 1.1
+    },
+    "...(共 4 条，每条一个 mark)"
+  ],
+  "artifacts": {
+    "svg": "out_example/figure.svg",
+    "pdf": "out_example/figure.pdf",
+    "png": "out_example/figure.png",
+    "source_snapshot": "out_example/source_snapshot.csv"
+  },
+  "limits": [],
+  "provenance": {
+    "engine": "chartguard/v1",
+    "matplotlib": "3.10.8",
+    "spec_file": "examples/example-spec.json",
+    "spec_sha256": "daa075c5f41c1210352f7e7480305242718a1eacd1e2828efd5e5e076e5c6898",
+    "data_file": "examples/example-data.csv",
+    "data_sha256": "91f184bdc9dd183d2150d401dbb4d3226690c0d9bde1f6afc0a9c4d91efe7fda",
+    "rows_in_source": 4,
+    "font": {
+      "family": "Microsoft YaHei",
+      "path": "C:\\Windows\\Fonts\\msyh.ttc"
+    },
+    "dpi": 300,
+    "source_snapshot": "out_example/source_snapshot.csv"
+  }
+}

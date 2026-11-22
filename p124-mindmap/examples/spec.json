@@ -1,0 +1,28 @@
+{
+  "max_depth": 4,
+  "nodes": [
+    {
+      "id": "r",
+      "label": "paper"
+    },
+    {
+      "id": "a",
+      "label": "problem",
+      "parent": "r",
+      "evidence_exempt": true
+    },
+    {
+      "id": "b",
+      "label": "method",
+      "parent": "r",
+      "evidence": "Sec 2"
+    },
+    {
+      "id": "c",
+      "label": "finding",
+      "parent": "r",
+      "evidence": "Fig 3b"
+    }
+  ],
+  "section": "mindmap"
+}

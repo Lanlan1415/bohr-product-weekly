@@ -1,0 +1,10 @@
+{
+  "documents": [
+    {"id": "paper-coating",
+     "text": "Porous coatings raise the uptake rate three-fold.\nWe measured uptake at 25 C with six replicates per arm."},
+    {"id": "paper-anneal",
+     "text": "Annealing at 500 C changed the coating hardness.\nThe uptake was unchanged after anneal."},
+    {"id": "protocol-buffer",
+     "text": "1 缓冲液配制\nTris 缓冲液 50 mM，pH 7.4，过滤后 4 C 保存。\n\n2 存储\n分装后 -20 C 冻存，避免反复冻融。"}
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "case_id": "ga-example-001",
+  "output_contract": {
+    "deliverable": "editable SVG plus 300 dpi PNG",
+    "status": "audit verdict"
+  },
+  "deliverable": "editable SVG plus 300 dpi PNG",
+  "canvas_mm": [
+    170,
+    70
+  ],
+  "size_limit_mm": [
+    180,
+    80
+  ],
+  "max_words": 60,
+  "font_size": 9,
+  "source_values": [
+    "42",
+    "3"
+  ],
+  "takeaways": {
+    "problem": "p1",
+    "method": "m1",
+    "finding": "f1"
+  },
+  "reading_order": [
+    "p1",
+    "m1",
+    "f1"
+  ],
+  "legend": [
+    "吸收缓慢",
+    "多孔涂层 42 nm",
+    "吸收快 3 倍"
+  ],
+  "materials": [
+    {
+      "id": "mat1",
+      "name": "缓慢吸收",
+      "source": "Introduction ¶1"
+    },
+    {
+      "id": "mat2",
+      "name": "多孔涂层",
+      "source": "Methods ¶2"
+    },
+    {
+      "id": "mat3",
+      "name": "吸收速率",
+      "source": "Results Fig 3b"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "p1",
+      "label": "吸收缓慢",
+      "evidence": "mat1",
+      "layer": 0,
+      "color": "#D55E00"
+    },
+    {
+      "id": "m1",
+      "label": "多孔涂层 42 nm",
+      "evidence": "mat2",
+      "layer": 1,
+      "color": "#0072B2"
+    },
+    {
+      "id": "f1",
+      "label": "吸收快 3 倍",
+      "evidence": "mat3",
+      "layer": 2,
+      "color": "#009E73"
+    }
+  ],
+  "edges": [
+    {
+      "from": "p1",
+      "to": "m1",
+      "type": "activate"
+    },
+    {
+      "from": "m1",
+      "to": "f1",
+      "type": "activate"
+    }
+  ]
+}

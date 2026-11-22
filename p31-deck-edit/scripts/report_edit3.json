@@ -1,0 +1,107 @@
+{
+  "schema_version": "edit3-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "empty_deck",
+      "expected": [
+        "deck.empty_deck"
+      ],
+      "fired": [
+        "deck.empty_deck"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "slide_over_limit",
+      "expected": [
+        "deck.slide_count_over_limit"
+      ],
+      "fired": [
+        "deck.slide_count_over_limit"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "slide_within_limit_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "instruction_missing",
+      "expected": [
+        "edit.revision_instruction_missing"
+      ],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "mistyped_spacing",
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "slides_wrong_type",
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "contract_passthrough",
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "refused_bad_json",
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "refused_not_object",
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "refused_missing_file",
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "refused_case_id_kept",
+      "pass": true,
+      "status": "undetermined"
+    },
+    {
+      "scenario": "exit_code_undetermined",
+      "pass": true,
+      "status": "undetermined"
+    }
+  ],
+  "totals": {
+    "passed": 13,
+    "of": 13
+  },
+  "note": "Page-budget and record rules with false-positive guards, defensive typing, the output_contract echo, and the refusal path (exit 5, no traceback)."
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "case-xlate-minimal-01",
+  "output_contract": {"status": "clean-or-review", "deliverable_text": "auto", "trace_ledger": "auto"},
+  "section": "translation",
+  "output_mode": "plain",
+  "source_lang": "zh",
+  "target_lang": "en",
+  "source_text": "涂层的吸收率提高到原来的3倍[1]。样品在25 °C下测量[2]。",
+  "target_text": "The coating improved uptake 3-fold [1]. Samples were measured at 25 °C [2].",
+  "limits": ["示例 spec：case_id 与 output_contract 字段应从 /input/case.json 原样携带"]
+}

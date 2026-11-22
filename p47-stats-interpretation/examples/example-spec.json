@@ -1,0 +1,25 @@
+{
+  "rows": [
+    {"group": "control", "response": "12.4"},
+    {"group": "control", "response": "11.8"},
+    {"group": "control", "response": "12.9"},
+    {"group": "drug", "response": "31.2"},
+    {"group": "drug", "response": "30.6"},
+    {"group": "drug", "response": "31.9"}
+  ],
+  "columns": [
+    {"name": "group", "semantic": "categorical"},
+    {"name": "response", "semantic": "numeric"}
+  ],
+  "stats": [
+    {
+      "metric": "response",
+      "test": "two-sample t-test",
+      "group_col": "group",
+      "group_a": "control",
+      "group_b": "drug",
+      "p": 0.01,
+      "interpretation": "给药组均值为31.23，高于对照组的12.37，差异有统计学意义"
+    }
+  ]
+}

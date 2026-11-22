@@ -1,0 +1,461 @@
+{
+  "schema_version": "compare-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_schema",
+      "expected": [
+        "compare.no_schema"
+      ],
+      "fired": [
+        "compare.no_schema"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "too_few_docs",
+      "expected": [
+        "compare.too_few_documents"
+      ],
+      "fired": [
+        "compare.too_few_documents"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "group_missing",
+      "expected": [
+        "compare.field_group_missing"
+      ],
+      "fired": [
+        "compare.field_group_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "field_undefined",
+      "expected": [
+        "compare.field_undefined"
+      ],
+      "fired": [
+        "compare.field_undefined"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "field_missing",
+      "expected": [
+        "compare.field_missing"
+      ],
+      "fired": [
+        "compare.field_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "cell_no_locator",
+      "expected": [
+        "compare.cell_no_locator"
+      ],
+      "fired": [
+        "compare.cell_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "cell_locator_vague",
+      "expected": [
+        "compare.cell_locator_vague"
+      ],
+      "fired": [
+        "compare.cell_locator_vague"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "cell_not_in_source",
+      "expected": [
+        "compare.cell_not_in_source"
+      ],
+      "fired": [
+        "compare.cell_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "duplicate_document_id",
+      "expected": [
+        "compare.duplicate_document_id"
+      ],
+      "fired": [
+        "compare.duplicate_document_id"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "metadata_missing",
+      "expected": [
+        "compare.cell_metadata_missing"
+      ],
+      "fired": [
+        "compare.cell_metadata_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "unit_mismatch",
+      "expected": [
+        "compare.unit_mismatch"
+      ],
+      "fired": [
+        "compare.unit_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "comparability_undeclared",
+      "expected": [
+        "compare.comparability_undeclared"
+      ],
+      "fired": [
+        "compare.comparability_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "condition_conflict_unmarked",
+      "expected": [
+        "compare.condition_conflict_unmarked"
+      ],
+      "fired": [
+        "compare.condition_conflict_unmarked"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "same_conditions_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "condition_keys_conflict",
+      "expected": [
+        "compare.condition_conflict_unmarked"
+      ],
+      "fired": [
+        "compare.condition_conflict_unmarked"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "condition_keys_same_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "conversion_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "conversion_mismatch",
+      "expected": [
+        "compare.conversion_unreproducible"
+      ],
+      "fired": [
+        "compare.conversion_unreproducible"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "conversion_dimension_mismatch",
+      "expected": [
+        "compare.conversion_unreproducible"
+      ],
+      "fired": [
+        "compare.conversion_unreproducible",
+        "compare.unit_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "conversion_unknown_unit_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "direction_missing",
+      "expected": [
+        "compare.direction_missing"
+      ],
+      "fired": [
+        "compare.direction_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "strength_missing",
+      "expected": [
+        "compare.strength_missing"
+      ],
+      "fired": [
+        "compare.strength_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "conflict_unattributed",
+      "expected": [
+        "compare.conflict_unattributed"
+      ],
+      "fired": [
+        "compare.conflict_unattributed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "consistency_misstated",
+      "expected": [
+        "compare.consistency_misstated"
+      ],
+      "fired": [
+        "compare.consistency_misstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "consistency_agree_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "consistency_conflict_false",
+      "expected": [
+        "compare.consistency_misstated"
+      ],
+      "fired": [
+        "compare.consistency_misstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "cell_wrong_source",
+      "expected": [
+        "compare.cell_wrong_source"
+      ],
+      "fired": [
+        "compare.cell_wrong_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "cell_wrong_source_unknown",
+      "expected": [
+        "compare.cell_wrong_source"
+      ],
+      "fired": [
+        "compare.cell_wrong_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "cell_source_own_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "paragraph_id_locator_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "target_unit_undeclared",
+      "expected": [
+        "compare.target_unit_undeclared"
+      ],
+      "fired": [
+        "compare.target_unit_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "target_unit_categorical_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "noncomparable_pooled",
+      "expected": [
+        "compare.noncomparable_pooled"
+      ],
+      "fired": [
+        "compare.noncomparable_pooled"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "comparable_subset_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "schema_entry_skipped",
+      "expected": [
+        "compare.schema_entry_skipped"
+      ],
+      "fired": [
+        "compare.schema_entry_skipped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "document_skipped",
+      "expected": [
+        "compare.document_skipped"
+      ],
+      "fired": [
+        "compare.document_skipped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "coverage_matrix_shape",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 38,
+    "of": 38
+  },
+  "note": "One scenario per rule plus false-positive guards, aligned to the comparison scoring points. Clean baselines must report nothing."
+}

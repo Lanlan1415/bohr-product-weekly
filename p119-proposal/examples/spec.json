@@ -1,0 +1,86 @@
+{
+  "elements": {
+    "rationale": {
+      "text": "Surface-area limitation is the binding constraint in the current process, and the proposed coating is the only route we can execute with the platform in hand.",
+      "evidence": "preliminary data M1"
+    },
+    "question": {
+      "text": "whether a 42 nm porous coating raises uptake rate three-fold",
+      "evidence": "M1"
+    },
+    "objectives": {
+      "text": "three measurable objectives",
+      "evidence": "Sec 2"
+    },
+    "content": {
+      "text": "coating synthesis and rate measurement",
+      "evidence": "M2"
+    },
+    "innovation": {
+      "text": "Unlike prior work that reports endpoint uptake, this proposal measures the rate at which the coating changes it, under paired controls.",
+      "evidence": "[doe2020]"
+    },
+    "technical_route": {
+      "text": "three steps with fallbacks",
+      "evidence": "Sec 4"
+    },
+    "foundation": {
+      "text": "platform and prior coating work",
+      "evidence": "M0"
+    }
+  },
+  "paragraphs": [
+    {
+      "text": "why this matters",
+      "element": "rationale",
+      "evidence": "M1"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "O1",
+      "measure": "rate ratio vs control",
+      "outcome": "three-fold rate",
+      "content_ref": "C1"
+    }
+  ],
+  "content": [
+    {
+      "id": "C1",
+      "text": "synthesise and measure"
+    }
+  ],
+  "route": [
+    {
+      "id": "R1",
+      "objective": "O1",
+      "input": "monomer solution",
+      "output": "coated sample",
+      "risk": "pore collapse",
+      "fallback": "template removal at lower temperature"
+    }
+  ],
+  "foundation_items": [
+    {
+      "name": "coating rig",
+      "capability": "deposit 40 nm films",
+      "evidence": "M0 run 2023-04",
+      "relation": "the same rig makes the proposed coatings",
+      "status": "done"
+    }
+  ],
+  "timeline": [
+    {
+      "period": "Y1",
+      "milestone": "coating built and characterised"
+    }
+  ],
+  "budget": [
+    {
+      "item": "consumables",
+      "justification": "monomer for 60 runs"
+    }
+  ],
+  "budget_justification": "each line is costed from current supplier quotes",
+  "section": "proposal"
+}

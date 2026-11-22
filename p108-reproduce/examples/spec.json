@@ -1,0 +1,57 @@
+{
+  "case_id": "case-reproduce-demo-01",
+  "output_contract": {
+    "status": "…",
+    "findings": "…",
+    "evidence_map": "…",
+    "boundary": "…"
+  },
+  "section": "reproduce",
+  "commit": "a1b2c3d4e5f6",
+  "data_version": "dataset@2024-05",
+  "commands": [
+    "python train.py --config cfg/a.yaml"
+  ],
+  "checklist": {
+    "materials": [
+      {
+        "name": "dataset",
+        "source": "repo",
+        "version": "v1.2",
+        "state": "present"
+      }
+    ],
+    "environment": {
+      "dependencies": "pinned in requirements.txt",
+      "hardware": "A100 40GB",
+      "seed": "0"
+    },
+    "parameters": [
+      {
+        "name": "lr",
+        "source": "paper",
+        "value": "3e-4",
+        "locator": "Table 1, p.4"
+      }
+    ],
+    "run": {
+      "logs": "logs/train.log",
+      "exit_status": "succeeded"
+    },
+    "results": {
+      "tolerance": "1e-3",
+      "comparison_basis": "Table 2 main metric",
+      "statistic": "mean of 5 seeds",
+      "metrics": [
+        {
+          "name": "accuracy",
+          "paper": 0.912,
+          "reproduced": 0.9108,
+          "within_tolerance": true
+        }
+      ]
+    },
+    "verdict": "reproducible",
+    "verdict_basis": "all metrics within tolerance"
+  }
+}

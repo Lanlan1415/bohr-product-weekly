@@ -1,0 +1,54 @@
+{
+  "schema_version": "sysrev-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "protocol_screening",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "retraction_subtraction",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "exclusion_evidence",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "quality_appraisal_query",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "prisma_counts_close",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "evidence_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "protocol_replay_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 9,
+    "of": 9
+  }
+}

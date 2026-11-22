@@ -1,0 +1,44 @@
+{
+  "schema_version": "contract-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "case_id_echo",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "bad_json",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "not_object",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_spec_file",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "no_rows",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "table_path_error",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "idempotent_rerun",
+      "problems": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 7,
+    "of": 7
+  }
+}

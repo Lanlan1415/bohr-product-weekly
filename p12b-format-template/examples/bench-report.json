@@ -1,0 +1,553 @@
+{
+  "schema_version": "format-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "spec_missing",
+      "expected": [
+        "fmt.spec_missing"
+      ],
+      "fired": [
+        "fmt.reference_style_missing",
+        "fmt.spec_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "spec_value_missing",
+      "expected": [
+        "fmt.spec_value_missing"
+      ],
+      "fired": [
+        "fmt.spec_value_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "section_missing",
+      "expected": [
+        "fmt.section_missing"
+      ],
+      "fired": [
+        "fmt.reference_never_cited",
+        "fmt.section_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "section_order",
+      "expected": [
+        "fmt.section_order"
+      ],
+      "fired": [
+        "fmt.section_order"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "heading_level_skip",
+      "expected": [
+        "fmt.heading_level_skip"
+      ],
+      "fired": [
+        "fmt.heading_level_skip"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "heading_style_unbound",
+      "expected": [
+        "fmt.heading_style_unbound"
+      ],
+      "fired": [
+        "fmt.heading_style_unbound"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "toc_not_generated",
+      "expected": [
+        "fmt.toc_not_generated"
+      ],
+      "fired": [
+        "fmt.toc_not_generated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "word_limit",
+      "expected": [
+        "fmt.word_limit_exceeded"
+      ],
+      "fired": [
+        "fmt.word_limit_exceeded"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "cite_ghost",
+      "expected": [
+        "fmt.citation_not_in_reference_list"
+      ],
+      "fired": [
+        "fmt.citation_not_in_reference_list",
+        "fmt.reference_never_cited"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "ref_uncited",
+      "expected": [
+        "fmt.reference_never_cited"
+      ],
+      "fired": [
+        "fmt.reference_never_cited"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "reference_style_missing",
+      "expected": [
+        "fmt.reference_style_missing"
+      ],
+      "fired": [
+        "fmt.reference_style_missing",
+        "fmt.spec_value_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "unit_lost",
+      "expected": [
+        "fmt.unit_lost"
+      ],
+      "fired": [
+        "fmt.unit_lost"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unit_added",
+      "expected": [
+        "fmt.unit_added"
+      ],
+      "fired": [
+        "fmt.unit_added"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "unit_counts_incomplete",
+      "expected": [
+        "fmt.unit_counts_incomplete"
+      ],
+      "fired": [
+        "fmt.unit_counts_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "conversion_undocumented",
+      "expected": [
+        "fmt.conversion_undocumented"
+      ],
+      "fired": [
+        "fmt.conversion_undocumented"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "export_unverified",
+      "expected": [
+        "fmt.export_unverified"
+      ],
+      "fired": [
+        "fmt.export_unverified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "font_not_embedded",
+      "expected": [
+        "fmt.font_not_embedded"
+      ],
+      "fired": [
+        "fmt.font_not_embedded"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "toc_not_refreshed",
+      "expected": [
+        "fmt.toc_not_refreshed"
+      ],
+      "fired": [
+        "fmt.toc_not_refreshed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "not_editable",
+      "expected": [
+        "fmt.not_editable"
+      ],
+      "fired": [
+        "fmt.not_editable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "export_field_missing",
+      "expected": [
+        "fmt.export_field_missing"
+      ],
+      "fired": [
+        "fmt.export_field_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "checklist_incomplete",
+      "expected": [
+        "fmt.checklist_incomplete"
+      ],
+      "fired": [
+        "fmt.checklist_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "crossref_dangling",
+      "expected": [
+        "fmt.crossref_dangling"
+      ],
+      "fired": [
+        "fmt.crossref_dangling",
+        "fmt.figure_never_referenced"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "figure_never_referenced",
+      "expected": [
+        "fmt.figure_never_referenced"
+      ],
+      "fired": [
+        "fmt.figure_never_referenced"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "content_rasterized",
+      "expected": [
+        "fmt.content_rasterized"
+      ],
+      "fired": [
+        "fmt.content_rasterized"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "fp_crossrefs_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "header_footer_unverified",
+      "expected": [
+        "fmt.header_footer_unverified"
+      ],
+      "fired": [
+        "fmt.header_footer_unverified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_header_footer_recorded",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_header_footer_notset",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "conflict_unresolved",
+      "expected": [
+        "fmt.conflict_unresolved"
+      ],
+      "fired": [
+        "fmt.conflict_unresolved"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_conflict_adopted",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "page_numbers_unverified",
+      "expected": [
+        "fmt.page_numbers_unverified"
+      ],
+      "fired": [
+        "fmt.page_numbers_unverified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "page_numbers_reported_false",
+      "expected": [
+        "fmt.page_numbers_unverified"
+      ],
+      "fired": [
+        "fmt.page_numbers_unverified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "page_numbers_spec_declared",
+      "expected": [
+        "fmt.page_numbers_unverified"
+      ],
+      "fired": [
+        "fmt.page_numbers_unverified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_page_numbers_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_page_numbers_undeclared",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "export_format_missing",
+      "expected": [
+        "fmt.export_format_missing"
+      ],
+      "fired": [
+        "fmt.export_format_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_export_formats_list",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "heading_level_beyond_declared",
+      "expected": [
+        "fmt.heading_level_beyond_declared"
+      ],
+      "fired": [
+        "fmt.heading_level_beyond_declared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "text_dropped",
+      "expected": [
+        "fmt.text_dropped"
+      ],
+      "fired": [
+        "fmt.text_dropped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "text_quantity_changed",
+      "expected": [
+        "fmt.text_quantity_changed"
+      ],
+      "fired": [
+        "fmt.text_quantity_changed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "text_citation_changed",
+      "expected": [
+        "fmt.text_citation_changed",
+        "fmt.reference_never_cited"
+      ],
+      "fired": [
+        "fmt.reference_never_cited",
+        "fmt.text_citation_changed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "text_claim_changed",
+      "expected": [
+        "fmt.text_claim_changed"
+      ],
+      "fired": [
+        "fmt.text_claim_changed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_text_preserved",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 44,
+    "of": 44
+  },
+  "note": "One scenario per rule, aligned to the format-adaptation scoring points. Clean baselines must report nothing."
+}

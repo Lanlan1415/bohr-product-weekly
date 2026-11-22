@@ -1,0 +1,55 @@
+{
+  "fields": [
+    {
+      "name": "effect_size",
+      "definition": "reported fold change in uptake rate"
+    },
+    {
+      "name": "sample_n",
+      "definition": "number of replicates per group"
+    },
+    {
+      "name": "thickness",
+      "definition": "coating thickness in nm"
+    }
+  ],
+  "source_text": "The porous coating improved uptake 3-fold (Fig. 3b, p.7). All measurements were made at 25 °C with n = 6 per group. We caution that only one coating thickness was tested.",
+  "sources_present": [
+    "body",
+    "figure"
+  ],
+  "conclusions": [
+    {
+      "claim": "涂层的吸收速率提高到原来的 3 倍",
+      "condition": "每组 n = 6，25 °C，单一厚度",
+      "locator": "Fig 3b, p.7",
+      "claim_kind": "conclusion",
+      "source_kind": "figure",
+      "hedged": true,
+      "effect_size": "3-fold",
+      "sample_n": 6,
+      "thickness": 42,
+      "values": [
+        {
+          "value": 3,
+          "unit": "fold",
+          "verbatim": "3-fold"
+        }
+      ]
+    },
+    {
+      "claim": "只测试了一种涂层厚度，结论不能外推到其他厚度",
+      "condition": "不适用（局限说明）",
+      "locator": "p.7",
+      "claim_kind": "limitation",
+      "source_kind": "body",
+      "hedged": true,
+      "effect_size": "",
+      "effect_size_status": "not_reported",
+      "sample_n": 6,
+      "thickness": 42,
+      "values": []
+    }
+  ],
+  "section": "conclusion_extract"
+}

@@ -1,0 +1,81 @@
+{
+  "_comment": "示例输出（SYNTHETIC EXAMPLE - 由 examples/spec.json 自拟数据生成，非正式案例结果）。展示 result.json 的结构：audit 判定 + case_id + output_contract 字段回填 + 比较矩阵。",
+  "schema_version": "secrun/v1",
+  "section": "compare_docs",
+  "status": "clean",
+  "findings": [],
+  "severity_counts": {},
+  "limits": [
+    "output_contract field 'comparison_table' was not derivable by this audit",
+    "output_contract field 'comparability_judgment' was not derivable by this audit",
+    "output_contract field 'run_status' was not derivable by this audit"
+  ],
+  "checked": {
+    "section": "compare_docs",
+    "items": 2,
+    "coverage": {
+      "reported": {
+        "bandgap": [
+          "A",
+          "B"
+        ],
+        "trend": [
+          "A",
+          "B"
+        ]
+      },
+      "not_reported": {
+        "bandgap": [],
+        "trend": []
+      },
+      "cells": [
+        {
+          "field": "bandgap",
+          "document": "A",
+          "value": "3.20 eV",
+          "unit": "eV",
+          "locator": "Table 1 row 2, p.4",
+          "direction": null,
+          "strength": null,
+          "noncomparable": false
+        },
+        {
+          "field": "bandgap",
+          "document": "B",
+          "value": "2.60 eV",
+          "unit": "eV",
+          "locator": "Table 2 row 1, p.3",
+          "direction": null,
+          "strength": null,
+          "noncomparable": true
+        },
+        {
+          "field": "trend",
+          "document": "A",
+          "value": "oxygen vacancies vs bandgap",
+          "unit": null,
+          "locator": "p.5",
+          "direction": "decreases",
+          "strength": "moderate",
+          "noncomparable": false
+        },
+        {
+          "field": "trend",
+          "document": "B",
+          "value": "oxygen vacancies vs bandgap",
+          "unit": null,
+          "locator": "p.4",
+          "direction": "decreases",
+          "strength": "moderate",
+          "noncomparable": false
+        }
+      ],
+      "documents": 2,
+      "fields": 2
+    }
+  },
+  "case_id": "example-compare-001",
+  "comparison_table": null,
+  "comparability_judgment": null,
+  "run_status": null
+}

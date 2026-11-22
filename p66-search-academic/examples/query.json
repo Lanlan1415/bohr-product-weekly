@@ -1,0 +1,9 @@
+{
+ "all": [
+  "protein"
+ ],
+ "any": [
+  "transformer",
+  "attention"
+ ]
+}

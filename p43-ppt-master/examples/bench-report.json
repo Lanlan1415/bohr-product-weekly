@@ -1,0 +1,11 @@
+{
+  "schema_version": "ppt-master-bench/v1",
+  "package": "p43-ppt-master",
+  "benches": [
+    {"bench": "scripts/bench_deck.py", "scenarios": 11, "passed": 11, "engine": "deckaudit.py（写出真实 .pptx 再读回审计）"},
+    {"bench": "scripts/bench_deck2.py", "scenarios": 16, "passed": 16, "engine": "deckbuild.py 端到端：修订记录、CJK 溢出、字体、确定性、母版链、嵌入"},
+    {"bench": "scripts/bench_extra.py", "scenarios": 27, "passed": 27, "engine": "extra_rules.py 四个 section，每个缺陷带假阳性守卫"}
+  ],
+  "totals": {"passed": 54, "of": 54},
+  "note": "One planted defect per scenario; each clean baseline must report no high or medium finding, so blanket flagging cannot pass. A missing typeface, a font without glyphs, a non-reproducible build, a broken master chain and a declared embedding that the package does not carry cannot be expressed in a spec, so bench_deck2 injects/patches them on a real written package. Reports are rewritten next to the benches on every run (scripts/report_deck*.json, scripts/report_extra.json); the shipped copies are from the verification run."
+}

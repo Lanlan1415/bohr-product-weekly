@@ -1,0 +1,29 @@
+{
+  "case_id": "challenge-de9f0708-case-01",
+  "output_contract": {
+    "audit_report": {},
+    "evidence_and_boundaries": {},
+    "result_status": {}
+  },
+  "section": "review_response",
+  "manuscript_version": "v2",
+  "manuscript_text": "2.1 Ethics statement\nThe study was approved by the institutional ethics committee (IRB-2024-118).\n3.2 Results\nWe added a vehicle control (n=6).\n",
+  "required_declarations": ["coi", "funding", "data_availability"],
+  "declarations": {
+    "coi": "The authors declare no competing interests.",
+    "funding": "NSFC 62076123"
+  },
+  "comments": [
+    {"id": "C1", "text": "Add a vehicle control.", "type": "method",
+     "severity": "major", "subrequirements": []},
+    {"id": "C2", "text": "Share the measurement data.", "type": "data",
+     "severity": "major", "subrequirements": []}
+  ],
+  "responses": [
+    {"comment_id": "C1", "decision": "accept", "tone": "accept",
+     "changes": [{"what": "added a vehicle control group",
+                  "location": "3.2 Results",
+                  "manuscript_version": "v2",
+                  "added_text": "We added a vehicle control"}]}
+  ]
+}

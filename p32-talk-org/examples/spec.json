@@ -1,0 +1,52 @@
+{
+  "case_id": "demo-case-320",
+  "section": "talk_org",
+  "min_font_pt": 14,
+  "max_bullets_per_slide": 5,
+  "require_notes": true,
+  "require_qa_prep": true,
+  "spacing": {"title": 32, "body": 20},
+  "font_ea": "Microsoft YaHei",
+  "font_latin": "Arial",
+  "goal": {
+    "objective": "让评审认可多孔涂层方法的新颖性",
+    "audience": "具备表面化学背景的评审",
+    "minutes": 6
+  },
+  "narrative": ["question", "method", "result", "limit"],
+  "available_evidence": ["Fig. 3b, p.7", "Fig. 4a, p.9", "Sec. 5.2, p.12"],
+  "qa_prep": [
+    {"question": "对照组的涂层厚度如何保证一致？", "answer_slide": 2},
+    {"question": "速率提高是热效应还是结构效应？", "answer": "Fig. 4a 的变温对照排除了热效应"}
+  ],
+  "slides": [
+    {
+      "title": "吸收速率是当前工艺的瓶颈",
+      "claim": "瓶颈在于可用表面积，而不是驱动力",
+      "strength": "moderate",
+      "role": "question",
+      "evidence": "Fig. 3b, p.7",
+      "notes": "先立瓶颈，再给方法。"
+    },
+    {
+      "title": "多孔涂层使速率提高 3 倍",
+      "claim": "涂层使吸收速率提高三倍",
+      "strength": "strong",
+      "role": "result",
+      "evidence": "Fig. 3b, p.7",
+      "bullets": ["对照组 12.4 a.u.", "涂层组 31.2 a.u.", "每组 n = 6"],
+      "notes": "核心结果；强调速率，不是终点。"
+    }
+  ],
+  "output_contract": {
+    "deck_file": "可编辑演示文件",
+    "evidence_map": "页级证据映射",
+    "presenter_notes": "讲稿/备注导出",
+    "qa_ledger": "问答准备台账"
+  },
+  "presenter_notes": "全场口径：强调速率而非终点；追问见 qa_prep。",
+  "qa_ledger": [
+    {"question": "对照组的涂层厚度如何保证一致？", "answer_slide": 2},
+    {"question": "速率提高是热效应还是结构效应？", "answer": "Fig. 4a 的变温对照排除了热效应"}
+  ]
+}

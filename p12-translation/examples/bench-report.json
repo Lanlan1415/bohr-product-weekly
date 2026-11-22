@@ -1,0 +1,433 @@
+{
+  "schema_version": "translation-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_plain",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "clean_bilingual",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "mode_missing",
+      "expected": [
+        "xlate.mode_missing"
+      ],
+      "fired": [
+        "xlate.mode_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "mode_unknown",
+      "expected": [
+        "xlate.mode_unknown"
+      ],
+      "fired": [
+        "xlate.mode_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "segments_missing",
+      "expected": [
+        "xlate.segments_missing"
+      ],
+      "fired": [
+        "xlate.segments_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "segment_unpaired",
+      "expected": [
+        "xlate.segment_unpaired"
+      ],
+      "fired": [
+        "xlate.invariant_broken",
+        "xlate.segment_unpaired"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "segment_id_duplicate",
+      "expected": [
+        "xlate.segment_id_duplicate"
+      ],
+      "fired": [
+        "xlate.segment_id_duplicate"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "quantity_dropped",
+      "expected": [
+        "xlate.invariant_broken"
+      ],
+      "fired": [
+        "xlate.invariant_broken"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "quantity_added",
+      "expected": [
+        "xlate.invariant_added"
+      ],
+      "fired": [
+        "xlate.invariant_added"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_dropped",
+      "expected": [
+        "xlate.invariant_broken"
+      ],
+      "fired": [
+        "xlate.invariant_broken"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "negation_changed",
+      "expected": [
+        "xlate.negation_changed"
+      ],
+      "fired": [
+        "xlate.negation_changed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "hedge_strength_changed",
+      "expected": [
+        "xlate.hedge_strength_changed"
+      ],
+      "fired": [
+        "xlate.hedge_strength_changed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "conversion_unexplained",
+      "expected": [
+        "xlate.number_conversion_unexplained"
+      ],
+      "fired": [
+        "xlate.invariant_added",
+        "xlate.invariant_broken",
+        "xlate.number_conversion_unexplained"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "conversion_declared_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "component_untranslated",
+      "expected": [
+        "xlate.component_untranslated"
+      ],
+      "fired": [
+        "xlate.component_untranslated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "untranslated_residue",
+      "expected": [
+        "xlate.untranslated_residue"
+      ],
+      "fired": [
+        "xlate.untranslated_residue"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "length_out_of_band",
+      "expected": [
+        "xlate.length_out_of_band"
+      ],
+      "fired": [
+        "xlate.invariant_broken",
+        "xlate.length_out_of_band"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "term_variant",
+      "expected": [
+        "xlate.term_variant"
+      ],
+      "fired": [
+        "xlate.term_variant"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "term_entry_no_basis",
+      "expected": [
+        "xlate.term_entry_no_basis"
+      ],
+      "fired": [
+        "xlate.term_entry_no_basis"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "term_missing_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "segment_coverage_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "backcheck_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "placeholder_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "ocr_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "comma_number_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "term_missing",
+      "expected": [
+        "xlate.term_missing"
+      ],
+      "fired": [
+        "xlate.term_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "segment_coverage_low",
+      "expected": [
+        "xlate.segment_coverage_low"
+      ],
+      "fired": [
+        "xlate.segment_coverage_low"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "backcheck_missing",
+      "expected": [
+        "xlate.backcheck_missing"
+      ],
+      "fired": [
+        "xlate.backcheck_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "backcheck_orphaned",
+      "expected": [
+        "xlate.backcheck_orphaned"
+      ],
+      "fired": [
+        "xlate.backcheck_orphaned"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "placeholder_unregistered",
+      "expected": [
+        "xlate.placeholder_unregistered"
+      ],
+      "fired": [
+        "xlate.placeholder_unregistered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "ocr_unrecorded",
+      "expected": [
+        "xlate.ocr_degradation_unrecorded"
+      ],
+      "fired": [
+        "xlate.ocr_degradation_unrecorded"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "glossary_conflict",
+      "expected": [
+        "xlate.glossary_conflict"
+      ],
+      "fired": [
+        "xlate.glossary_conflict"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "replacement_char",
+      "expected": [
+        "xlate.replacement_char_present"
+      ],
+      "fired": [
+        "xlate.replacement_char_present"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "same_lang_pair",
+      "expected": [
+        "xlate.language_pair_degenerate"
+      ],
+      "fired": [
+        "xlate.language_pair_degenerate"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "segment_id_absent",
+      "expected": [
+        "xlate.segment_id_absent"
+      ],
+      "fired": [
+        "xlate.segment_id_absent"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    }
+  ],
+  "totals": {
+    "passed": 35,
+    "of": 35
+  },
+  "note": "One scenario per rule, aligned to the translation scoring points. Clean baselines must report nothing."
+}

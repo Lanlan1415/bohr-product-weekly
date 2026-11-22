@@ -1,0 +1,49 @@
+{
+  "schema_version": "coverage-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "reference_probe_hit",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reference_miss_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_export_named",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "coverage_ledger_replay",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "probe_not_relaxed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "hit_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

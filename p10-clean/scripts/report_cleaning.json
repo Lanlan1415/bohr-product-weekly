@@ -1,0 +1,270 @@
+{
+  "schema_version": "cleaning-bench/v2",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "missing",
+      "expected": [
+        "clean.missing_values"
+      ],
+      "fired": [
+        "clean.missing_values"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "unparsed",
+      "expected": [
+        "clean.unparsed_values"
+      ],
+      "fired": [
+        "clean.unparsed_values"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_record",
+      "expected": [
+        "clean.duplicate_records"
+      ],
+      "fired": [
+        "clean.duplicate_records"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_experiment",
+      "expected": [
+        "clean.duplicate_experiments"
+      ],
+      "fired": [
+        "clean.duplicate_experiments"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "alias_mapped",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "alias_unmapped",
+      "expected": [
+        "clean.unmapped_columns"
+      ],
+      "fired": [
+        "clean.unmapped_columns"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "declared_absent",
+      "expected": [
+        "clean.declared_fields_absent"
+      ],
+      "fired": [
+        "clean.declared_fields_absent",
+        "clean.missing_values"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "synonym_merge",
+      "expected": [
+        "clean.duplicate_experiments"
+      ],
+      "fired": [
+        "clean.duplicate_experiments"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "synonym_unmapped",
+      "expected": [
+        "clean.synonym_unmapped"
+      ],
+      "fired": [
+        "clean.synonym_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "range_conversion",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "plusminus_conversion",
+      "expected": [],
+      "fired": [
+        "clean.unmapped_columns"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "provenance",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "pending_review",
+      "expected": [
+        "clean.unparsed_values",
+        "clean.duplicate_experiments"
+      ],
+      "fired": [
+        "clean.duplicate_experiments",
+        "clean.unparsed_values"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "cli_missing_spec",
+      "expected": [
+        "clean.spec_unreadable"
+      ],
+      "fired": [
+        "clean.spec_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": null,
+      "status": "undetermined",
+      "pass": true
+    },
+    {
+      "scenario": "cli_rows_not_list",
+      "expected": [
+        "clean.spec_unreadable"
+      ],
+      "fired": [
+        "clean.spec_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": null,
+      "status": "undetermined",
+      "pass": true
+    },
+    {
+      "scenario": "cli_empty_rows",
+      "expected": [
+        "clean.no_rows"
+      ],
+      "fired": [
+        "clean.no_rows"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": null,
+      "status": "undetermined",
+      "pass": true
+    },
+    {
+      "scenario": "cli_no_table",
+      "expected": [
+        "clean.no_table"
+      ],
+      "fired": [
+        "clean.no_table"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": null,
+      "status": "undetermined",
+      "pass": true
+    },
+    {
+      "scenario": "cli_table_unreadable",
+      "expected": [
+        "clean.table_unreadable"
+      ],
+      "fired": [
+        "clean.table_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": null,
+      "status": "undetermined",
+      "pass": true
+    },
+    {
+      "scenario": "cli_case_contract",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 20,
+    "of": 20
+  }
+}

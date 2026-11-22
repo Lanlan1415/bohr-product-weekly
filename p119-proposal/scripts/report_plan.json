@@ -1,0 +1,375 @@
+{
+  "schema_version": "plan-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "element_missing",
+      "expected": [
+        "rp.element_missing"
+      ],
+      "fired": [
+        "rp.element_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "element_no_text",
+      "expected": [
+        "rp.element_no_text"
+      ],
+      "fired": [
+        "rp.element_no_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "gap_incomplete",
+      "expected": [
+        "rp.background_gap_incomplete"
+      ],
+      "fired": [
+        "rp.background_gap_incomplete",
+        "rp.element_no_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "claim_no_citation",
+      "expected": [
+        "rp.claim_no_citation"
+      ],
+      "fired": [
+        "rp.claim_no_citation"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_unknown",
+      "expected": [
+        "rp.citation_unknown"
+      ],
+      "fired": [
+        "rp.citation_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "claim_no_version",
+      "expected": [
+        "rp.claim_no_version"
+      ],
+      "fired": [
+        "rp.claim_no_version"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "objective_no_criteria",
+      "expected": [
+        "rp.objective_no_criteria"
+      ],
+      "fired": [
+        "rp.objective_no_criteria",
+        "rp.outcome_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "threshold_no_basis",
+      "expected": [
+        "rp.threshold_no_basis"
+      ],
+      "fired": [
+        "rp.threshold_no_basis"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "objectives_missing",
+      "expected": [
+        "rp.objectives_missing"
+      ],
+      "fired": [
+        "rp.objectives_missing",
+        "rp.outcome_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "route_no_io",
+      "expected": [
+        "rp.route_no_io"
+      ],
+      "fired": [
+        "rp.route_no_io"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "route_no_dependency",
+      "expected": [
+        "rp.route_no_dependency"
+      ],
+      "fired": [
+        "rp.route_no_dependency"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "first_step_no_dependency_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "route_dependency_unknown",
+      "expected": [
+        "rp.route_dependency_unknown"
+      ],
+      "fired": [
+        "rp.route_dependency_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "period_no_schedule",
+      "expected": [
+        "rp.schedule_missing"
+      ],
+      "fired": [
+        "rp.schedule_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "schedule_exceeds_period",
+      "expected": [
+        "rp.schedule_exceeds_period"
+      ],
+      "fired": [
+        "rp.schedule_exceeds_period"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "schedule_not_monotonic",
+      "expected": [
+        "rp.schedule_not_monotonic"
+      ],
+      "fired": [
+        "rp.schedule_not_monotonic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "equal_end_months_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "milestone_no_deliverable",
+      "expected": [
+        "rp.milestone_no_deliverable"
+      ],
+      "fired": [
+        "rp.milestone_no_deliverable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "critical_path_unmarked",
+      "expected": [
+        "rp.critical_path_unmarked"
+      ],
+      "fired": [
+        "rp.critical_path_unmarked"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "risks_missing",
+      "expected": [
+        "rp.risks_missing"
+      ],
+      "fired": [
+        "rp.risks_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "risk_no_fallback",
+      "expected": [
+        "rp.risk_no_fallback"
+      ],
+      "fired": [
+        "rp.risk_no_fallback"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "risk_type_unknown",
+      "expected": [
+        "rp.risk_type_unknown"
+      ],
+      "fired": [
+        "rp.risk_type_uncovered",
+        "rp.risk_type_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "outcomes_missing",
+      "expected": [
+        "rp.outcomes_missing"
+      ],
+      "fired": [
+        "rp.outcomes_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "outcome_no_assessment",
+      "expected": [
+        "rp.outcome_no_assessment"
+      ],
+      "fired": [
+        "rp.outcome_no_assessment"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "outcome_unmapped",
+      "expected": [
+        "rp.outcome_unmapped"
+      ],
+      "fired": [
+        "rp.outcome_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "outcome_unknown_objective",
+      "expected": [
+        "rp.outcome_unmapped"
+      ],
+      "fired": [
+        "rp.outcome_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "outcome_mapped_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "resource_exceeds_budget",
+      "expected": [
+        "rp.resource_exceeds_budget"
+      ],
+      "fired": [
+        "rp.resource_exceeds_budget"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    }
+  ],
+  "totals": {
+    "passed": 29,
+    "of": 29
+  },
+  "note": "One scenario per opening-report scoring point, plus repaired-twin guards for the dependency / schedule-shape / outcome-mapping rules. Clean baselines must report nothing."
+}

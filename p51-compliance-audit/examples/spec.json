@@ -1,0 +1,52 @@
+{
+  "manuscript_version": "v2",
+  "manuscript_text": "3.2 Results\nWe added a vehicle control (n=6).\n",
+  "anchors": [
+    "3.2 Results",
+    "Appendix A"
+  ],
+  "comments": [
+    {
+      "id": "C1",
+      "text": "Add a vehicle control.",
+      "type": "method",
+      "severity": "major",
+      "subrequirements": []
+    },
+    {
+      "id": "C2",
+      "text": "Justify the kinetic model.",
+      "type": "method",
+      "severity": "major",
+      "subrequirements": []
+    }
+  ],
+  "responses": [
+    {
+      "comment_id": "C1",
+      "decision": "accept",
+      "tone": "accept",
+      "changes": [
+        {
+          "what": "added a vehicle control group",
+          "location": "3.2 Results",
+          "manuscript_version": "v2",
+          "added_text": "We added a vehicle control"
+        }
+      ]
+    },
+    {
+      "comment_id": "C2",
+      "decision": "accept",
+      "tone": "accept",
+      "changes": [
+        {
+          "what": "added a derivation appendix",
+          "location": "Appendix A",
+          "manuscript_version": "v2"
+        }
+      ]
+    }
+  ],
+  "section": "review_response"
+}

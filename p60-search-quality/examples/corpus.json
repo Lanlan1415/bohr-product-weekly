@@ -1,0 +1,16 @@
+{
+ "documents": [
+  {
+   "id": "study-rct-01",
+   "text": "id: study-rct-01\ndesign: rct\nTrial registration: pre-registered NCT04567890.\nMethods: participants were randomised 1:1 with allocation concealed in sequentially numbered opaque envelopes; outcome assessors were blinded.\nAnalysis: intention-to-treat, n=214."
+  },
+  {
+   "id": "study-rct-02",
+   "text": "id: study-rct-02\ndesign: rct\nTrial registration: pre-registered NCT07894561.\nMethods: participants were randomised 1:1; blinding of outcome assessors was not reported.\nAnalysis: per-protocol, n=88."
+  },
+  {
+   "id": "study-obs-01",
+   "text": "id: study-obs-01\ndesign: cohort\nDesign: retrospective cohort, not randomised.\nMethods: allocation concealment is not applicable; no blinding.\nAnalysis: propensity-score adjusted, n=1204."
+  }
+ ]
+}

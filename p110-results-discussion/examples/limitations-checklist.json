@@ -1,0 +1,20 @@
+{
+  "_readme": "局限性四层检查清单（可复用模板）。results_discussion 审计要求: 至少两条 limitation、覆盖 >=2 个 level、level 取以下四值之一、text 不得只写 'further work is needed' 类空话（rd.limitations_missing / rd.limitation_level_narrow / rd.limitation_vague）。按研究替换 text，保留 level 键名。",
+  "levels": {
+    "method": "方法层——设计/流程/对照组的边界",
+    "sample": "样本层——材料体系/受试者/样本量/代表性的边界",
+    "measurement": "测量层——仪器精度/指标代理/单次测量的边界",
+    "statistics": "统计层——检验效力/多重比较/模型假设的边界"
+  },
+  "examples": [
+    {"level": "sample", "text": "single material system tested; generality across chemistries is unverified"},
+    {"level": "measurement", "text": "one coating thickness measured, so the thickness-dependence claimed here is a single point"},
+    {"level": "statistics", "text": "the between-group test was underpowered for effect sizes below 20% (n = 10 per arm)"},
+    {"level": "method", "text": "the coating was applied by one operator with one protocol; batch-to-batch variation is not covered"}
+  ],
+  "anti_patterns": [
+    "further work is needed",
+    "more research is required to confirm these findings",
+    "limitations exist but do not affect the main conclusions"
+  ]
+}

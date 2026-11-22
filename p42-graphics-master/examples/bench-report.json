@@ -1,0 +1,51 @@
+{
+  "schema_version": "graphics-master-bench/v2",
+  "suites": [
+    {
+      "name": "chart",
+      "totals": {
+        "passed": 13,
+        "of": 13
+      }
+    },
+    {
+      "name": "schematic",
+      "totals": {
+        "passed": 8,
+        "of": 8
+      }
+    },
+    {
+      "name": "pathway",
+      "totals": {
+        "passed": 11,
+        "of": 11
+      }
+    },
+    {
+      "name": "pathway2",
+      "totals": {
+        "passed": 10,
+        "of": 10
+      }
+    },
+    {
+      "name": "apparatus",
+      "totals": {
+        "passed": 11,
+        "of": 11
+      }
+    },
+    {
+      "name": "apparatus2",
+      "totals": {
+        "passed": 9,
+        "of": 9
+      }
+    }
+  ],
+  "totals": {
+    "passed": 62,
+    "of": 62
+  }
+}

@@ -1,0 +1,272 @@
+{
+  "schema_version": "map-bench/v2",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_nodes",
+      "expected": [
+        "map.no_nodes"
+      ],
+      "fired": [
+        "map.no_nodes"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "root_count",
+      "expected": [
+        "map.root_count"
+      ],
+      "fired": [
+        "map.leaf_without_evidence",
+        "map.root_count"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "dangling_parent",
+      "expected": [
+        "map.dangling_parent"
+      ],
+      "fired": [
+        "map.dangling_parent"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "cycle",
+      "expected": [
+        "map.cycle"
+      ],
+      "fired": [
+        "map.cycle"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "too_deep",
+      "expected": [
+        "map.too_deep"
+      ],
+      "fired": [
+        "map.too_deep"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "duplicate_sibling",
+      "expected": [
+        "map.duplicate_sibling"
+      ],
+      "fired": [
+        "map.duplicate_sibling"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "leaf_without_evidence",
+      "expected": [
+        "map.leaf_without_evidence"
+      ],
+      "fired": [
+        "map.leaf_without_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "wide_node",
+      "expected": [
+        "map.wide_node"
+      ],
+      "fired": [
+        "map.wide_node"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "edge_incomplete",
+      "expected": [
+        "map.edge_incomplete"
+      ],
+      "fired": [
+        "map.edge_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "edge_dangling",
+      "expected": [
+        "map.edge_dangling"
+      ],
+      "fired": [
+        "map.edge_dangling"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "edge_self",
+      "expected": [
+        "map.edge_self"
+      ],
+      "fired": [
+        "map.edge_self"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "edge_type_missing",
+      "expected": [
+        "map.edge_type_missing"
+      ],
+      "fired": [
+        "map.edge_type_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "edge_type_unknown",
+      "expected": [
+        "map.edge_type_unknown"
+      ],
+      "fired": [
+        "map.edge_type_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "edge_no_basis",
+      "expected": [
+        "map.edge_no_basis"
+      ],
+      "fired": [
+        "map.edge_no_basis"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "kind_undeclared",
+      "expected": [
+        "map.kind_undeclared"
+      ],
+      "fired": [
+        "map.kind_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "kind_unknown",
+      "expected": [
+        "map.kind_unknown"
+      ],
+      "fired": [
+        "map.kind_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "decorative_label",
+      "expected": [
+        "map.decorative_label"
+      ],
+      "fired": [
+        "map.decorative_label"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "too_many_nodes",
+      "expected": [
+        "map.too_many_nodes"
+      ],
+      "fired": [
+        "map.too_many_nodes"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_real_labels",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_edge_variants",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 21,
+    "of": 21
+  },
+  "note": "One scenario per rule, aligned to the mind-map scoring points. Clean baselines and false-positive guards must report nothing."
+}

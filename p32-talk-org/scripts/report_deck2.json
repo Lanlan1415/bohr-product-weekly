@@ -1,0 +1,251 @@
+{
+  "schema_version": "talk-org-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "goal_missing",
+      "expected": [
+        "org.goal_missing"
+      ],
+      "fired": [
+        "org.goal_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "audience_missing",
+      "expected": [
+        "org.audience_missing"
+      ],
+      "fired": [
+        "org.audience_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "claim_is_topic",
+      "expected": [
+        "org.claim_is_topic"
+      ],
+      "fired": [
+        "org.claim_is_topic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "strength_missing",
+      "expected": [
+        "org.evidence_strength_missing"
+      ],
+      "fired": [
+        "org.evidence_strength_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "pace_too_fast",
+      "expected": [
+        "org.pace_too_fast"
+      ],
+      "fired": [
+        "org.pace_too_fast"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "pace_too_slow",
+      "expected": [
+        "org.pace_too_slow"
+      ],
+      "fired": [
+        "org.pace_too_slow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "overflow_cjk",
+      "expected": [
+        "text.overflow"
+      ],
+      "fired": [
+        "text.body_too_large",
+        "text.overflow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "strength_unknown",
+      "expected": [
+        "org.strength_unknown"
+      ],
+      "fired": [
+        "org.strength_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "strength_scale_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "narrative_incomplete",
+      "expected": [
+        "org.narrative_incomplete"
+      ],
+      "fired": [
+        "org.narrative_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "narrative_complete",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "role_undeclared",
+      "expected": [
+        "org.role_undeclared"
+      ],
+      "fired": [
+        "org.narrative_incomplete",
+        "org.role_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "qa_prep_missing",
+      "expected": [
+        "org.qa_prep_missing"
+      ],
+      "fired": [
+        "org.qa_prep_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "qa_prep_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "empty_deck",
+      "expected": [
+        "deck.no_slides"
+      ],
+      "fired": [
+        "deck.no_slides"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "image_missing",
+      "expected": [
+        "image.file_missing"
+      ],
+      "fired": [
+        "image.file_missing",
+        "org.pace_too_slow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "font_missing",
+      "expected": [
+        "font.declared_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "review"
+    },
+    {
+      "scenario": "missing_glyphs",
+      "expected": [
+        "export.missing_glyphs"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "nondeterministic",
+      "expected": [
+        "repro.nondeterministic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    }
+  ],
+  "totals": {
+    "passed": 20,
+    "of": 20
+  },
+  "note": "Organisation rules (goal, audience, claim shape, strength vocabulary, narrative coverage, QA preparation, pace, declared figures) plus CJK measurement, declared-font existence, glyph coverage and build determinism. Three scenarios inject a defect."
+}

@@ -1,0 +1,22 @@
+{
+  "species": "human",
+  "font_size": 9,
+  "canvas_mm": [150, 70],
+  "aliases": {"TP53": ["Tp53", "p53"]},
+  "materials": [
+    {"id": "m1", "name": "TP53"},
+    {"id": "m2", "name": "MDM2"},
+    {"id": "m3", "name": "CDKN1A"}
+  ],
+  "connections": [{"from": "g1", "to": "p1"}, {"from": "p1", "to": "g2"}],
+  "nodes": [
+    {"id": "g1", "label": "TP53", "kind": "gene", "evidence": "m1", "layer": 0,
+     "accession": "HGNC:11998", "accession_source": "hgnc", "color": "#56B4E9"},
+    {"id": "p1", "label": "MDM2", "kind": "protein", "evidence": "m2", "layer": 1,
+     "accession": "Q00987", "accession_source": "uniprot", "color": "#009E73"},
+    {"id": "g2", "label": "CDKN1A", "kind": "gene", "evidence": "m3", "layer": 2,
+     "accession": "HGNC:1784", "accession_source": "hgnc", "color": "#E69F00"}
+  ],
+  "edges": [{"from": "g1", "to": "p1", "type": "activate"},
+            {"from": "p1", "to": "g2", "type": "inhibit"}]
+}

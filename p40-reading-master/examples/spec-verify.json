@@ -1,0 +1,33 @@
+{
+  "case_id": "a028c71c-verify-demo",
+  "section": "claim_verify",
+  "references": [
+    {
+      "key": "doe2020",
+      "title": "Porous coatings raise uptake",
+      "year": 2020
+    }
+  ],
+  "source_text": "The porous coating increased the uptake rate three-fold.",
+  "claims": [
+    {
+      "claim": "多孔涂层使吸收速率提高到三倍 (porous coating increases uptake rate three-fold)",
+      "support": "supports",
+      "rationale": "引文直接陈述了速率提高三倍；the quoted sentence states the rate increase directly",
+      "evidence": [
+        {
+          "source": "doe2020",
+          "quote": "The porous coating increased the uptake rate three-fold.",
+          "locator": "Fig 3b, p.7"
+        }
+      ]
+    }
+  ],
+  "output_contract": [
+    "status",
+    "section",
+    "findings",
+    "severity_counts",
+    "case_id"
+  ]
+}

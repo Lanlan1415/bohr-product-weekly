@@ -1,0 +1,45 @@
+{
+  "_note": "示例输出，标注为示例，不冒充正式案例结果。第 6 步把引擎 findings 组装进 output_contract 点名的三段结构后的形状如下。",
+  "case_id": "challenge-de9f0708-case-01",
+  "schema_version": "writeaudit/v1",
+  "section": "review_response",
+  "status": "blocked",
+  "audit_report": [
+    {"rule": "resp.comment_unanswered", "severity": "high", "location": "答复信（意见 C2 无对应答复条目）",
+     "finding": "审稿意见 C2（Share the measurement data.）没有答复", "category": "学术规范",
+     "basis": "口径：审稿意见必须逐条答复", "kind": "norm_problem",
+     "suggestion": "为该意见补一条带 decision 与 tone 的答复；部分接受需写明理由"},
+    {"rule": "resp.declaration_missing", "severity": "medium", "location": "declarations（data_availability 缺席）",
+     "finding": "required_declarations 点名的 data_availability 声明未记录", "category": "学术规范",
+     "basis": "口径：required_declarations 点名的声明逐项留痕（利益冲突/基金/数据可用性/伦理批件）", "kind": "norm_problem",
+     "suggestion": "在 declarations 中补齐该声明及其实际内容"}
+  ],
+  "evidence_and_boundaries": {
+    "manuscript_quotes": ["3.2 Results / We added a vehicle control (n=6)."],
+    "material_evidence": ["答复信含 C1 的修改声明与定位（3.2 Results，版本 v2）"],
+    "pending_review": []
+  },
+  "result_status": {
+    "pass": ["C1 意见已答复且修改定位与新增文本均可在 v2 稿件中核对"],
+    "problems": ["resp.comment_unanswered（C2）", "resp.declaration_missing（data_availability）"],
+    "pending": [],
+    "not_checked": ["利益冲突声明的真实性（引擎只证明存在，不证内容为真）"],
+    "status": "blocked",
+    "status_reason": "1 条 high：C2 未答复；补齐答复与 data_availability 声明后重跑"
+  },
+  "findings": [
+    {"rule": "resp.declaration_missing", "severity": "medium", "message": "a required declaration (data_availability) is absent or empty, so the compliance item the submission must carry is not recorded",
+     "declaration": "data_availability", "kind": "norm_problem",
+     "basis": "口径：required_declarations 点名的声明逐项留痕（利益冲突/基金/数据可用性/伦理批件）",
+     "fix": "在 declarations 中补齐该声明及其实际内容"},
+    {"rule": "resp.comment_unanswered", "severity": "high", "message": "a reviewer comment has no response in the letter",
+     "comment_id": "C2", "comment": "Share the measurement data.", "kind": "norm_problem",
+     "basis": "口径：审稿意见必须逐条答复",
+     "fix": "为该意见补一条带 decision 与 tone 的答复；部分接受需写明理由"}
+  ],
+  "severity_counts": {"medium": 1, "high": 1},
+  "checked": {"comments": 2, "responses": 1, "declarations_required": 3},
+  "limits": ["output_contract field 'audit_report' was not derivable by this audit",
+             "output_contract field 'evidence_and_boundaries' was not derivable by this audit",
+             "output_contract field 'result_status' was not derivable by this audit"]
+}

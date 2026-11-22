@@ -1,0 +1,49 @@
+{
+  "schema_version": "systematic-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "protocol_include",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "exclusion_reason_probes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "audit_counts_close",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "criteria_not_relaxed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "protocol_replay_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "included_hit_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

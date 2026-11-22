@@ -1,0 +1,119 @@
+{
+  "manuscript_text": "1 Introduction\nUptake is limited by surface area. We ask whether a porous coating raises uptake.\n2 Methods\nWe coated samples and measured uptake.\n3 Results\nUptake rose three-fold.\n4 Discussion\nThe effect is consistent with a surface-area mechanism.\n",
+  "research_question": "whether a porous coating raises uptake",
+  "design": "experimental",
+  "conclusion": "The effect is consistent with a surface-area mechanism.",
+  "limitations": "single material, one coating thickness",
+  "contributions": [
+    {
+      "claim": "a porous coating raises uptake",
+      "anchor": "3 Results"
+    }
+  ],
+  "paragraphs": [
+    {
+      "id": "p1",
+      "section": "Introduction",
+      "text": "Uptake is limited by surface area",
+      "claims": [
+        {
+          "claim": "uptake is limited by surface area",
+          "support": "[doe2020]",
+          "strength": "moderate",
+          "support_strength": "moderate"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "section": "Methods",
+      "text": "We coated samples and measured uptake",
+      "claims": [
+        {
+          "claim": "the method is sound",
+          "support": "Sec 2",
+          "strength": "weak",
+          "support_strength": "moderate"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "section": "Results",
+      "text": "Uptake rose three-fold",
+      "claims": [
+        {
+          "claim": "uptake rose three-fold",
+          "support": "Fig 1",
+          "strength": "strong",
+          "support_strength": "strong"
+        }
+      ]
+    }
+  ],
+  "diagnosis": [
+    {
+      "id": "RES",
+      "dimension": "research_question",
+      "finding": "noted",
+      "evidence": "We ask whether a porous coating raises uptake",
+      "locator": "1 Introduction",
+      "severity": "minor"
+    },
+    {
+      "id": "SEC",
+      "dimension": "section_structure",
+      "finding": "noted",
+      "evidence": "2 Methods",
+      "locator": "1 Introduction",
+      "severity": "minor"
+    },
+    {
+      "id": "ARG",
+      "dimension": "argument_chain",
+      "finding": "noted",
+      "evidence": "The effect is consistent with a surface-area mechanism",
+      "locator": "1 Introduction",
+      "severity": "minor"
+    },
+    {
+      "id": "PAR",
+      "dimension": "paragraph_relation",
+      "finding": "noted",
+      "evidence": "3 Results",
+      "locator": "1 Introduction",
+      "severity": "minor"
+    },
+    {
+      "id": "DUP",
+      "dimension": "duplication",
+      "finding": "noted",
+      "evidence": "We coated samples and measured uptake",
+      "locator": "1 Introduction",
+      "severity": "minor"
+    },
+    {
+      "id": "CON",
+      "dimension": "conclusion_scope",
+      "finding": "noted",
+      "evidence": "Uptake rose three-fold",
+      "locator": "1 Introduction",
+      "severity": "minor"
+    }
+  ],
+  "suggestions": [
+    {
+      "for_finding": "ARG",
+      "action": "move the mechanism sentence to Results"
+    }
+  ],
+  "section": "structure_logic",
+  "case_id": "demo-structure-001",
+  "output_contract": [
+    "status",
+    "findings",
+    "severity_counts",
+    "checked",
+    "limits"
+  ]
+}

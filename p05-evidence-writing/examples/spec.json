@@ -1,0 +1,66 @@
+{
+  "section": "evidence_writing",
+  "case_id": "example-only",
+  "draft": "吸收速率提高到 3 倍 [C1]。预印本提示 [C2]。",
+  "claims": [
+    {
+      "id": "C1",
+      "claim": "涂层使吸收速率提高三倍",
+      "strength": "strong",
+      "strength_basis": "controlled experiment, n=6, replicated",
+      "uncertainty": "",
+      "sources": [
+        {
+          "key": "doe2020",
+          "quote": "The coating increased the uptake rate three-fold.",
+          "locator": "p.7"
+        }
+      ]
+    },
+    {
+      "id": "C2",
+      "claim": "低温下涂层效果可能减弱",
+      "strength": "weak",
+      "strength_basis": "preprint, single condition, not replicated",
+      "uncertainty": "仅预印本，全文未取得，低温外推未验证",
+      "sources": [
+        {
+          "key": "roe2021",
+          "quote": "Uptake gain vanished at 4 °C.",
+          "locator": "Fig 2, p.5",
+          "quote_variants": ["Uptake gain vanished at 4 °C."]
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "key": "doe2020",
+      "title": "Porous coatings for uptake",
+      "year": 2020,
+      "source_type": "primary",
+      "text_quality": "native",
+      "text": "The coating increased the uptake rate three-fold."
+    },
+    {
+      "key": "roe2021",
+      "title": "Uptake under cold conditions (preprint)",
+      "year": 2021,
+      "source_type": "preprint",
+      "text_quality": "ocr",
+      "ocr_note": "ocr-tool p.1-9, confidence 0.96, layout checked p.5",
+      "text": "Uptake gain vanished at 4 °C."
+    }
+  ],
+  "output_contract": ["deliverables", "fact_source_map", "pending_confirmation", "gaps"],
+  "deliverables": ["output/claims.md", "output/evidence_table.md", "output/draft.md"],
+  "fact_source_map": [
+    {"item": "三倍 (3 倍)", "source_or_change": "doe2020, verbatim", "locator": "p.7"},
+    {"item": "低温减弱", "source_or_change": "roe2021, verbatim (OCR variant registered)", "locator": "Fig 2, p.5"}
+  ],
+  "pending_confirmation": [
+    "roe2021 全文尚未取得，低温结论挂起（quote 经 OCR 变体核对）"
+  ],
+  "gaps": []
+}
+

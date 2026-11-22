@@ -1,0 +1,52 @@
+{
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "untraceable",
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "material_unused",
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "invented_edge",
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "connection_missing",
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_glyphs",
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true
+    },
+    {
+      "scenario": "nondeterministic",
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true
+    }
+  ],
+  "totals": {
+    "passed": 7,
+    "of": 7
+  }
+}

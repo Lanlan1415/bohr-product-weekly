@@ -1,0 +1,138 @@
+{
+  "schema_version": "schematic-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "overlap",
+      "expected": [
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "fired": [
+        "label.outside_canvas",
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "small_font",
+      "expected": [
+        "font.too_small"
+      ],
+      "fired": [
+        "font.too_small"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "unsafe_colour",
+      "expected": [
+        "colour.not_cb_safe"
+      ],
+      "fired": [
+        "colour.not_cb_safe"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "backward_flow",
+      "expected": [
+        "edge.backward_flow"
+      ],
+      "fired": [
+        "edge.backward_flow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_entity",
+      "expected": [
+        "entity.duplicate"
+      ],
+      "fired": [
+        "entity.duplicate"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "paths_not_text",
+      "expected": [
+        "export.no_live_text"
+      ],
+      "fired": [
+        "export.no_font_family",
+        "export.no_live_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "low_dpi",
+      "expected": [
+        "export.low_dpi"
+      ],
+      "fired": [
+        "export.low_dpi"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "legend_unmatched",
+      "expected": [
+        "legend.entry_unmatched"
+      ],
+      "fired": [
+        "legend.entry_unmatched"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "legend_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "legend_required",
+      "expected": [
+        "legend.entity_unlisted"
+      ],
+      "fired": [
+        "legend.entity_unlisted"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 11,
+    "of": 11
+  },
+  "note": "Each scenario plants one defect and names the rule that must fire. The clean baseline must report no high or medium finding, so flagging everything is not a way to pass."
+}

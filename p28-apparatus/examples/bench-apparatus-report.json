@@ -1,0 +1,112 @@
+{
+  "schema_version": "apparatus-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_apparatus",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "component_missing",
+      "expected": [
+        "apparatus.component_missing"
+      ],
+      "fired": [
+        "apparatus.component_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "indistinguishable",
+      "expected": [
+        "apparatus.indistinguishable_components"
+      ],
+      "fired": [
+        "apparatus.indistinguishable_components"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "orphan",
+      "expected": [
+        "apparatus.orphan_component"
+      ],
+      "fired": [
+        "apparatus.orphan_component"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean_route",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "stage_duplicate",
+      "expected": [
+        "route.stage_duplicate"
+      ],
+      "fired": [
+        "route.stage_duplicate"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "stage_gap",
+      "expected": [
+        "route.stage_gap"
+      ],
+      "fired": [
+        "route.stage_gap"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "decision_no_branches",
+      "expected": [
+        "route.decision_without_branches"
+      ],
+      "fired": [
+        "route.decision_without_branches"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "no_exit",
+      "expected": [
+        "route.no_exit",
+        "route.no_entry"
+      ],
+      "fired": [
+        "route.no_entry",
+        "route.no_exit"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 9,
+    "of": 9
+  },
+  "note": "One planted defect per scenario; clean baselines must stay silent."
+}

@@ -1,0 +1,149 @@
+{
+  "schema_version": "deck-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "too_many_bullets",
+      "expected": [
+        "deck.too_many_bullets"
+      ],
+      "fired": [
+        "deck.too_many_bullets"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "font_too_small",
+      "expected": [
+        "text.font_too_small"
+      ],
+      "fired": [
+        "text.font_too_small"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "overflow",
+      "expected": [
+        "text.overflow"
+      ],
+      "fired": [
+        "text.overflow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "no_title",
+      "expected": [
+        "deck.no_title"
+      ],
+      "fired": [
+        "deck.no_title"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "evidence_missing",
+      "expected": [
+        "deck.evidence_missing"
+      ],
+      "fired": [
+        "deck.evidence_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "evidence_unsupported",
+      "expected": [
+        "deck.evidence_unsupported"
+      ],
+      "fired": [
+        "deck.evidence_unsupported"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "notes_missing",
+      "expected": [
+        "deck.notes_missing"
+      ],
+      "fired": [
+        "deck.notes_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "aspect_distorted",
+      "expected": [
+        "image.aspect_distorted"
+      ],
+      "fired": [
+        "image.aspect_distorted"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "no_alt_text",
+      "expected": [
+        "image.no_alt_text"
+      ],
+      "fired": [
+        "image.no_alt_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "term_inconsistent",
+      "expected": [
+        "text.term_inconsistent"
+      ],
+      "fired": [
+        "text.term_inconsistent"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 11,
+    "of": 11
+  },
+  "note": "Real .pptx written and re-read for every scenario. The clean baseline must stay silent on high and medium findings."
+}

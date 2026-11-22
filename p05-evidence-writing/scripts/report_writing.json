@@ -1,0 +1,309 @@
+{
+  "schema_version": "writing-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "ev_clean",
+      "section": "evidence_writing",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "ev_uncited",
+      "section": "evidence_writing",
+      "expected": [
+        "ew.claim_no_support"
+      ],
+      "fired": [
+        "ew.claim_no_support",
+        "ew.source_unused"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "ev_unknown",
+      "section": "evidence_writing",
+      "expected": [
+        "ew.source_not_in_table"
+      ],
+      "fired": [
+        "ew.source_not_in_table",
+        "ew.source_unused"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "ev_no_set",
+      "section": "evidence_writing",
+      "expected": [
+        "ew.evidence_table_missing"
+      ],
+      "fired": [
+        "ew.evidence_table_missing",
+        "ew.source_not_in_table"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "ev_abstract_only",
+      "section": "evidence_writing",
+      "expected": [
+        "ew.support_abstract_only"
+      ],
+      "fired": [
+        "ew.support_abstract_only"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "ev_quote_unverifiable",
+      "section": "evidence_writing",
+      "expected": [
+        "ew.quote_unverifiable"
+      ],
+      "fired": [
+        "ew.quote_unverifiable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "tr_clean",
+      "section": "translation",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "tr_dropped_num",
+      "section": "translation",
+      "expected": [
+        "xlate.invariant_broken"
+      ],
+      "fired": [
+        "xlate.invariant_broken"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "tr_unit_changed",
+      "section": "translation",
+      "expected": [
+        "xlate.invariant_broken",
+        "xlate.invariant_added"
+      ],
+      "fired": [
+        "xlate.invariant_added",
+        "xlate.invariant_broken"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "tr_residue",
+      "section": "translation",
+      "expected": [
+        "xlate.untranslated_residue"
+      ],
+      "fired": [
+        "xlate.untranslated_residue"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "tr_missing_side",
+      "section": "translation",
+      "expected": [
+        "xlate.missing_side"
+      ],
+      "fired": [
+        "xlate.missing_side"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "rr_clean",
+      "section": "review_response",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "rr_unanswered",
+      "section": "review_response",
+      "expected": [
+        "resp.comment_unanswered"
+      ],
+      "fired": [
+        "resp.comment_unanswered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "rr_no_reason",
+      "section": "review_response",
+      "expected": [
+        "resp.rebuttal_without_reason"
+      ],
+      "fired": [
+        "resp.rebuttal_without_reason"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "rr_unlocated",
+      "section": "review_response",
+      "expected": [
+        "resp.change_unlocatable"
+      ],
+      "fired": [
+        "resp.change_unlocatable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "ft_clean",
+      "section": "format_template",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "ft_missing_sec",
+      "section": "format_template",
+      "expected": [
+        "fmt.section_missing"
+      ],
+      "fired": [
+        "fmt.reference_never_cited",
+        "fmt.section_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "ft_order",
+      "section": "format_template",
+      "expected": [
+        "fmt.section_order"
+      ],
+      "fired": [
+        "fmt.section_order"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "ft_heading_skip",
+      "section": "format_template",
+      "expected": [
+        "fmt.heading_level_skip"
+      ],
+      "fired": [
+        "fmt.heading_level_skip"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "ft_word_limit",
+      "section": "format_template",
+      "expected": [
+        "fmt.word_limit_exceeded"
+      ],
+      "fired": [
+        "fmt.word_limit_exceeded"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "ft_cite_ghost",
+      "section": "format_template",
+      "expected": [
+        "fmt.citation_not_in_reference_list"
+      ],
+      "fired": [
+        "fmt.citation_not_in_reference_list",
+        "fmt.reference_never_cited"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "ft_ref_uncited",
+      "section": "format_template",
+      "expected": [
+        "fmt.reference_never_cited"
+      ],
+      "fired": [
+        "fmt.reference_never_cited"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 22,
+    "of": 22
+  },
+  "note": "One planted defect per scenario; clean baselines must stay silent."
+}

@@ -1,0 +1,430 @@
+{
+  "schema_version": "draft-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "draft_missing",
+      "expected": [
+        "pd.draft_missing"
+      ],
+      "fired": [
+        "pd.draft_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "sections_missing",
+      "expected": [
+        "pd.sections_missing"
+      ],
+      "fired": [
+        "pd.figure_uncited",
+        "pd.material_unused",
+        "pd.sections_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "declaration_missing",
+      "expected": [
+        "pd.declaration_missing"
+      ],
+      "fired": [
+        "pd.declaration_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "materials_missing",
+      "expected": [
+        "pd.materials_missing"
+      ],
+      "fired": [
+        "pd.material_unknown",
+        "pd.materials_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "material_no_locator",
+      "expected": [
+        "pd.material_no_locator"
+      ],
+      "fired": [
+        "pd.material_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "material_unknown",
+      "expected": [
+        "pd.material_unknown"
+      ],
+      "fired": [
+        "pd.material_unknown",
+        "pd.material_unused"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "material_unused",
+      "expected": [
+        "pd.material_unused"
+      ],
+      "fired": [
+        "pd.material_unused"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "uncited_claim",
+      "expected": [
+        "pd.uncited_claim"
+      ],
+      "fired": [
+        "pd.uncited_claim"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unknown_source",
+      "expected": [
+        "pd.unknown_source"
+      ],
+      "fired": [
+        "pd.unknown_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_mismatch",
+      "expected": [
+        "pd.citation_mismatch"
+      ],
+      "fired": [
+        "pd.citation_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "citation_padding",
+      "expected": [
+        "pd.citation_padding"
+      ],
+      "fired": [
+        "pd.citation_padding"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "value_not_in_materials",
+      "expected": [
+        "pd.value_not_in_materials"
+      ],
+      "fired": [
+        "pd.value_not_in_materials"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "trend_as_causation",
+      "expected": [
+        "pd.trend_as_causation"
+      ],
+      "fired": [
+        "pd.trend_as_causation"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "caption_mismatch",
+      "expected": [
+        "pd.figure_caption_mismatch"
+      ],
+      "fired": [
+        "pd.figure_caption_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "caption_missing",
+      "expected": [
+        "pd.figure_caption_missing"
+      ],
+      "fired": [
+        "pd.figure_caption_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "figure_uncited",
+      "expected": [
+        "pd.figure_uncited"
+      ],
+      "fired": [
+        "pd.figure_uncited"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "abstract_conflict",
+      "expected": [
+        "pd.abstract_result_conflict"
+      ],
+      "fired": [
+        "pd.abstract_result_conflict"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "reference_metadata_incomplete",
+      "expected": [
+        "pd.reference_metadata_incomplete"
+      ],
+      "fired": [
+        "pd.reference_metadata_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "reference_no_doi",
+      "expected": [
+        "pd.reference_no_doi"
+      ],
+      "fired": [
+        "pd.reference_no_doi"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "change_log_missing",
+      "expected": [
+        "pd.change_log_missing"
+      ],
+      "fired": [
+        "pd.change_log_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "figure_numbering_gap",
+      "expected": [
+        "pd.figure_numbering_gap"
+      ],
+      "fired": [
+        "pd.figure_numbering_gap",
+        "pd.figure_uncited"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_figure_numbers_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_reference_year_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_reference_doi_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_reference_volume_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "fp_methods_not_declared",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "term_variant",
+      "expected": [
+        "pd.term_variant"
+      ],
+      "fired": [
+        "pd.term_variant"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_term_preferred",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "abbreviation_not_introduced",
+      "expected": [
+        "pd.abbreviation_not_introduced"
+      ],
+      "fired": [
+        "pd.abbreviation_not_introduced"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_abbreviation_introduced",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "sample_size_mismatch",
+      "expected": [
+        "pd.sample_size_mismatch"
+      ],
+      "fired": [
+        "pd.sample_size_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_sample_size_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "review_points_missing",
+      "expected": [
+        "pd.review_points_missing"
+      ],
+      "fired": [
+        "pd.review_points_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "fp_review_points_present",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 35,
+    "of": 35
+  },
+  "note": "One scenario per rule, aligned to the paper-draft scoring points. Clean baselines must report nothing."
+}

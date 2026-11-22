@@ -1,0 +1,59 @@
+{
+  "case_id": "case-rd-minimal-01",
+  "output_contract": {
+    "status": "clean-or-review",
+    "deliverable_text": "auto",
+    "trace_ledger": "auto"
+  },
+  "design": "experimental",
+  "results_text": "Uptake rose three-fold in the coated group (p < 0.01, t-test). Arm B showed no change.",
+  "discussion_text": "The coated samples showed higher uptake, consistent with earlier work [doe2020]. The mechanism may involve increased surface area [doe2020]. Arm B did not reach significance. Roe reports a conflicting result [roe2021].",
+  "figures": [
+    {
+      "id": "Fig 1",
+      "values": [
+        "3",
+        "three-fold",
+        "0.01"
+      ],
+      "has_errorbar": true,
+      "errorbar": "SD"
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "coated vs control",
+      "significant": true,
+      "strength": "strong"
+    },
+    {
+      "name": "Arm B",
+      "significant": false
+    }
+  ],
+  "literature": [
+    {
+      "key": "doe2020",
+      "agrees": true
+    },
+    {
+      "key": "roe2021",
+      "agrees": false,
+      "finding": "no effect at low dose"
+    }
+  ],
+  "limitations": [
+    {
+      "level": "sample",
+      "text": "single material system tested"
+    },
+    {
+      "level": "measurement",
+      "text": "one coating thickness measured"
+    }
+  ],
+  "section": "results_discussion",
+  "limits": [
+    "示例 spec：case_id 与 output_contract 字段应从 /input/case.json 原样携带"
+  ]
+}

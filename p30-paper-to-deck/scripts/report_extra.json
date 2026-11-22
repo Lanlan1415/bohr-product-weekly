@@ -1,0 +1,180 @@
+{
+  "schema_version": "extra-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "paper_ok",
+      "section": "paper_to_deck",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "paper_unattributed",
+      "section": "paper_to_deck",
+      "expected": [
+        "paper.figure_unattributed"
+      ],
+      "fired": [
+        "paper.caption_missing",
+        "paper.figure_unattributed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "paper_no_caption",
+      "section": "paper_to_deck",
+      "expected": [
+        "paper.caption_missing"
+      ],
+      "fired": [
+        "paper.caption_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "edit_ok",
+      "section": "deck_edit",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "edit_no_reason",
+      "section": "deck_edit",
+      "expected": [
+        "edit.change_without_reason"
+      ],
+      "fired": [
+        "edit.change_without_reason"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "edit_noop",
+      "section": "deck_edit",
+      "expected": [
+        "edit.change_is_noop"
+      ],
+      "fired": [
+        "edit.change_is_noop"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "talk_ok",
+      "section": "talk_org",
+      "expected": [],
+      "fired": [
+        "org.pace_too_slow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "talk_no_goal",
+      "section": "talk_org",
+      "expected": [
+        "org.goal_missing"
+      ],
+      "fired": [
+        "org.goal_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "talk_topic_claim",
+      "section": "talk_org",
+      "expected": [
+        "org.claim_is_topic"
+      ],
+      "fired": [
+        "org.claim_is_topic",
+        "org.pace_too_slow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "talk_no_strength",
+      "section": "talk_org",
+      "expected": [
+        "org.evidence_strength_missing"
+      ],
+      "fired": [
+        "org.evidence_strength_missing",
+        "org.pace_too_slow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "talk_too_fast",
+      "section": "talk_org",
+      "expected": [
+        "org.pace_too_fast"
+      ],
+      "fired": [
+        "org.pace_too_fast"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "tmpl_ok",
+      "section": "template_fit",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "tmpl_flat",
+      "section": "template_fit",
+      "expected": [
+        "format.size_ladder_flat"
+      ],
+      "fired": [
+        "format.size_ladder_flat"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "tmpl_undeclared",
+      "section": "template_fit",
+      "expected": [
+        "format.undeclared_layout"
+      ],
+      "fired": [
+        "format.undeclared_layout"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 14,
+    "of": 14
+  }
+}

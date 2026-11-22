@@ -1,0 +1,53 @@
+{
+  "case_id": "challenge-9e7302fd-case-02",
+  "section": "method_stats",
+  "output_contract": {
+    "case_id": "challenge-9e7302fd-case-02",
+    "audit_report": "rubric-shaped itemised findings",
+    "evidence_and_boundaries": "manuscript quotes and field locators",
+    "result_status": "pass/pending/unverified item states"
+  },
+  "design": "rct",
+  "controls": "",
+  "randomisation": "computer-generated block randomisation, 1:1",
+  "blinding": "double-blind",
+  "inferential": true,
+  "model": "linear_regression",
+  "sample_size": "n = 64 (32 per arm)",
+  "sample_size_basis": "",
+  "recruited_n": 80,
+  "analysed_n": 64,
+  "variables": [
+    {
+      "name": "dose",
+      "role": "exposure",
+      "type": "continuous",
+      "definition": "mg/kg/day administered",
+      "missing_handling": "complete-case",
+      "cutpoint": "",
+      "cutpoint_basis": ""
+    },
+    {
+      "name": "pain_score",
+      "role": "outcome",
+      "type": "binary",
+      "definition": "pain reduced by >= 50% at week 12 (cutpoint chosen post hoc)",
+      "missing_handling": "complete-case",
+      "cutpoint": "50% reduction",
+      "cutpoint_basis": ""
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "pain_score",
+      "primary": true,
+      "timepoint": "week 12"
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "low dose vs control",
+      "significant": true
+    }
+  ]
+}

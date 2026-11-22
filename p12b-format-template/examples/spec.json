@@ -1,0 +1,33 @@
+{
+  "case_id": "demo-case-001",
+  "section": "format_template",
+  "text": "1 Introduction\nWe study it [a1].\n2 Methods\nWe use 3 mM [a2].\n3 Results\nIt works [a3].\n",
+  "template": {
+    "sections": ["introduction", "methods", "results"],
+    "word_limit": 4000,
+    "spec": {"font": "Liberation Serif", "size_pt": 11, "line_spacing": 1.5,
+             "margin_mm": 25, "columns": 1, "caption_position": "below",
+             "reference_style": "APA", "heading_levels": 3, "export_format": "docx"},
+    "checks": ["margins", "caption_position", "reference_style"]
+  },
+  "headings": [
+    {"level": 1, "number": "1", "text": "Introduction", "style": "Heading 1"},
+    {"level": 1, "number": "2", "text": "Methods", "style": "Heading 1"},
+    {"level": 1, "number": "3", "text": "Results", "style": "Heading 1"}
+  ],
+  "input_units": {"figures": 2, "tables": 1, "equations": 3, "footnotes": 4},
+  "output_units": {"figures": 2, "tables": 1, "equations": 3, "footnotes": 4},
+  "conversion_steps": ["open in Word", "apply template styles", "export to docx"],
+  "export": {"format": "docx", "font_embedded": true, "page_size_measured": true,
+             "toc_refreshed": true, "page_numbers_ok": true, "editable": true},
+  "checks_done": ["margins", "caption_position", "reference_style"],
+  "references": [{"key": "a1"}, {"key": "a2"}, {"key": "a3"}],
+  "output_contract": {
+    "revised_manuscript": "the adapted manuscript, editable",
+    "export_record": "the export verification record",
+    "change_log": "what the adaptation changed"
+  },
+  "revised_manuscript": "1 Introduction\nWe study it [a1].\n2 Methods\nWe use 3 mM [a2].\n3 Results\nIt works [a3].\n",
+  "export_record": {"format": "docx", "font_embedded": true},
+  "change_log": "styles applied per template spec; content units unchanged"
+}

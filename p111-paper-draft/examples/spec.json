@@ -1,0 +1,54 @@
+{
+  "draft": "1 Introduction\nThe coating raises uptake [doe2020] {M1}.\n2 Methods\nWe measured 3 mM samples {M2}.\n3 Results\nUptake rose three-fold [doe2020] {M1} (Fig 1).\n",
+  "abstract": "The coating raised uptake three-fold.",
+  "design": "experimental",
+  "template": {
+    "sections": [
+      "introduction",
+      "methods",
+      "results"
+    ]
+  },
+  "materials": [
+    {
+      "id": "M1",
+      "locator": "run01.csv row 4",
+      "text": "uptake rose three-fold with the coating"
+    },
+    {
+      "id": "M2",
+      "locator": "notes.md 12:04",
+      "text": "samples were prepared at 3 mM"
+    }
+  ],
+  "references": [
+    {
+      "key": "doe2020",
+      "authors": "Doe J",
+      "year": 2020,
+      "journal": "J Uptake",
+      "topic": "coating raises uptake",
+      "doi": "10.1000/x"
+    }
+  ],
+  "figures": [
+    {
+      "id": "Fig 1",
+      "caption": "Uptake rose three-fold with the coating",
+      "values": [
+        "three-fold"
+      ]
+    }
+  ],
+  "declarations": {
+    "data_availability": "on request",
+    "author_contributions": "all authors",
+    "competing_interests": "none",
+    "funding": "grant 123"
+  },
+  "change_log": [
+    "v1 initial",
+    "v2 added methods"
+  ],
+  "section": "paper_draft"
+}

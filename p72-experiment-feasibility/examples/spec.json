@@ -1,0 +1,49 @@
+{
+  "section": "reproduce",
+  "commit": "protocol@v2.3",
+  "data_version": "inventory@2024-06",
+  "commands": [
+    "python feasibility_check.py --protocol SOP-A07 --inventory lab"
+  ],
+  "checklist": {
+    "materials": [
+      {
+        "name": "超低温冰箱位",
+        "source": "设备台账 2024-06",
+        "version": "MDF-86V58",
+        "state": "present"
+      }
+    ],
+    "environment": {
+      "dependencies": "审批与外部平台清单 v2",
+      "hardware": "低温冰箱 / 大容量离心机 / 二级生物安全柜",
+      "seed": "审查口径 rev2"
+    },
+    "parameters": [
+      {
+        "name": "保存温度",
+        "source": "paper",
+        "locator": "SOP-A07 §4.2"
+      }
+    ],
+    "run": {
+      "logs": "reviews/feas-2024-06-12.log",
+      "exit_status": "succeeded"
+    },
+    "results": {
+      "tolerance": "±2 C",
+      "comparison_basis": "方案声明值 vs 台账核查值",
+      "statistic": "逐项核查结果清单",
+      "metrics": [
+        {
+          "name": "保存温度达标",
+          "paper": -80,
+          "reproduced": -79,
+          "within_tolerance": true
+        }
+      ]
+    },
+    "verdict": "partially_reproducible",
+    "verdict_basis": "设备与试剂已具备；动物伦理批件在审，取得批件后方可开工"
+  }
+}

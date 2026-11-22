@@ -1,0 +1,27 @@
+{
+  "rows": [
+    {"sample": "S1", "batch": "B1", "hardness": "42.5", "cure_hours": "24"},
+    {"sample": "S2", "batch": "B1", "hardness": "43.1", "cure_hours": "24"},
+    {"sample": "S3", "batch": "B1", "hardness": "42.8", "cure_hours": "24"},
+    {"sample": "S4", "batch": "B2", "hardness": "43.0", "cure_hours": "24"},
+    {"sample": "S5", "batch": "B2", "hardness": "42.6", "cure_hours": "24"},
+    {"sample": "S6", "batch": "B2", "hardness": "43.2", "cure_hours": "24"},
+    {"sample": "S7", "batch": "B3", "hardness": "42.9", "cure_hours": "24"},
+    {"sample": "S8", "batch": "B3", "hardness": "43.3", "cure_hours": "24"}
+  ],
+  "columns": [
+    {"name": "sample", "semantic": "id"},
+    {"name": "batch", "semantic": "categorical"},
+    {"name": "hardness", "semantic": "numeric", "plausible": [0, 46]},
+    {"name": "cure_hours", "semantic": "numeric"}
+  ],
+  "observations": [
+    {
+      "observation": "S2 硬度 43.1，处于批次 B1 基线 42.5 附近的正常波动范围",
+      "value": 43.1,
+      "baseline": 42.5,
+      "explanation": "同批次平行样之间的正常波动，未触发剔除条件",
+      "review_steps": ["回查 B1 批次原始记录表的硬度字段"]
+    }
+  ]
+}

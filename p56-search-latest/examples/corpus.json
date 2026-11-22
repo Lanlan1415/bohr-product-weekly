@@ -1,0 +1,24 @@
+{
+ "documents": [
+  {
+   "id": "snap-a1",
+   "text": "[2026-03-02] Cryo-EM structures of the spike at 2.1 A resolution.\ndoi: doi-10-1038-s41586-026-08101-3\nstatus: published"
+  },
+  {
+   "id": "snap-a1",
+   "text": "[2026-03-02] Cryo-EM structures of the spike at 2.1 A resolution (feed mirror).\ndoi: doi-10-1038-s41586-026-08101-3\nstatus: preprint"
+  },
+  {
+   "id": "snap-b1",
+   "text": "[2026-02-14] Baseline cohort description from the previous window.\ndoi: doi-10-1234-baseline-2026\nstatus: published"
+  },
+  {
+   "id": "snap-c1",
+   "text": "[2026-03-18] Retraction notice: the 2025 nanopore baseline paper was retracted.\ndoi: doi-10-1234-nanopore-2025\nstatus: retracted"
+  },
+  {
+   "id": "snap-d1",
+   "text": "[2026-03-21] 新型低温电镜方法在病毒刺突解析中的应用。\ndoi: doi-10-12345-zh-em-2026\nstatus: published"
+  }
+ ]
+}

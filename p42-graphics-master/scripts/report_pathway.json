@@ -1,0 +1,141 @@
+{
+  "schema_version": "pathway-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "wrong_casing",
+      "expected": [
+        "nomenclature.gene_casing"
+      ],
+      "fired": [
+        "nomenclature.gene_casing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_accession",
+      "expected": [
+        "nomenclature.missing_accession"
+      ],
+      "fired": [
+        "nomenclature.missing_accession"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "alias_collision",
+      "expected": [
+        "nomenclature.alias_collision"
+      ],
+      "fired": [
+        "nomenclature.alias_collision",
+        "nomenclature.gene_casing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "vague_entity",
+      "expected": [
+        "nomenclature.vague_entity"
+      ],
+      "fired": [
+        "nomenclature.vague_entity"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "malformed_accession",
+      "expected": [
+        "nomenclature.accession_malformed"
+      ],
+      "fired": [
+        "nomenclature.accession_malformed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "species_ambiguous",
+      "expected": [
+        "nomenclature.species_ambiguous"
+      ],
+      "fired": [
+        "nomenclature.species_ambiguous"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "protein_italic",
+      "expected": [
+        "nomenclature.protein_italic"
+      ],
+      "fired": [
+        "nomenclature.protein_italic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "gene_not_italic",
+      "expected": [
+        "nomenclature.gene_not_italic"
+      ],
+      "fired": [
+        "nomenclature.gene_not_italic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "layout_overlap",
+      "expected": [
+        "label.overlap"
+      ],
+      "fired": [
+        "label.outside_canvas",
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "backward_arrow",
+      "expected": [
+        "edge.backward_flow"
+      ],
+      "fired": [
+        "edge.backward_flow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 11,
+    "of": 11
+  },
+  "note": "One planted defect per scenario. The clean baseline must stay silent, so blanket flagging cannot pass."
+}

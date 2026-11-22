@@ -1,0 +1,86 @@
+{
+  "case_id": "a2c6f23b-format-demo",
+  "section": "format_template",
+  "text": "1 Introduction\n本研究考察温度对催化反应速率的影响 [arrhenius1889]。\n2 Methods\n在温度范围内测量反应速率。\n3 Results\n反应速率随温度升高。\n4 Discussion\n结果支持 Arrhenius 模型 [arrhenius1889]。",
+  "template": {
+    "sections": [
+      "introduction",
+      "methods",
+      "results",
+      "discussion"
+    ],
+    "word_limit": 4000,
+    "spec": {
+      "font": "Times New Roman",
+      "size_pt": 11,
+      "line_spacing": 1.5,
+      "margin_mm": 25,
+      "columns": 1,
+      "caption_position": "below",
+      "reference_style": "numeric",
+      "heading_levels": 3,
+      "export_format": "docx"
+    }
+  },
+  "headings": [
+    {
+      "level": 1,
+      "number": "1",
+      "text": "Introduction",
+      "style": "Heading 1"
+    },
+    {
+      "level": 1,
+      "number": "2",
+      "text": "Methods",
+      "style": "Heading 1"
+    },
+    {
+      "level": 1,
+      "number": "3",
+      "text": "Results",
+      "style": "Heading 1"
+    },
+    {
+      "level": 1,
+      "number": "4",
+      "text": "Discussion",
+      "style": "Heading 1"
+    }
+  ],
+  "input_units": {
+    "figures": 2,
+    "tables": 1,
+    "equations": 3,
+    "footnotes": 4
+  },
+  "output_units": {
+    "figures": 2,
+    "tables": 1,
+    "equations": 3,
+    "footnotes": 4
+  },
+  "conversion_steps": [
+    "open in Word",
+    "apply template styles",
+    "export to PDF"
+  ],
+  "export": {
+    "format": "pdf",
+    "font_embedded": true,
+    "page_size_measured": true,
+    "toc_refreshed": true,
+    "page_numbers_ok": true,
+    "editable": true
+  },
+  "checks_done": [
+    "margins",
+    "caption_position",
+    "reference_style"
+  ],
+  "references": [
+    {
+      "key": "arrhenius1889"
+    }
+  ]
+}

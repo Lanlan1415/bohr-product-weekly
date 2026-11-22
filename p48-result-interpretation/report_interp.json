@@ -1,0 +1,350 @@
+{
+  "schema_version": "interp-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": "flagged=0 obs=1"
+    },
+    {
+      "scenario": "value_not_in_data",
+      "expected": [
+        "observation.value_not_in_data"
+      ],
+      "fired": [
+        "observation.value_not_in_data"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "baseline_not_in_data",
+      "expected": [
+        "observation.value_not_in_data"
+      ],
+      "fired": [
+        "observation.value_not_in_data"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "outlier_unexplained",
+      "expected": [
+        "anomaly.unexplained"
+      ],
+      "fired": [
+        "anomaly.unexplained"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": "flagged=2"
+    },
+    {
+      "scenario": "outlier_explained_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": "flagged=2 explained=2"
+    },
+    {
+      "scenario": "iqr_unexplained",
+      "expected": [
+        "anomaly.unexplained"
+      ],
+      "fired": [
+        "anomaly.unexplained"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cause_asserted",
+      "expected": [
+        "anomaly.cause_asserted"
+      ],
+      "fired": [
+        "anomaly.cause_asserted"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cause_recorded_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "malformed_observation",
+      "expected": [
+        "observation.malformed"
+      ],
+      "fired": [
+        "observation.malformed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "missing_named",
+      "expected": [
+        "clean.missing_values"
+      ],
+      "fired": [
+        "clean.missing_values"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "duplicate_records",
+      "expected": [
+        "clean.duplicate_records"
+      ],
+      "fired": [
+        "clean.duplicate_records"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "units_in_cell_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "trend_mismatch_high",
+      "expected": [
+        "trend.direction_mismatch"
+      ],
+      "fired": [
+        "trend.direction_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "trend_match_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "trend_word_no_order",
+      "expected": [
+        "trend.unverifiable"
+      ],
+      "fired": [
+        "trend.unverifiable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "trend_word_match_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "trend_mixed_words_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "review_not_executable",
+      "expected": [
+        "review.not_executable"
+      ],
+      "fired": [
+        "review.not_executable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "review_executable_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "review_missing_for_cause",
+      "expected": [
+        "review.missing_for_cause"
+      ],
+      "fired": [
+        "review.missing_for_cause"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "review_step_malformed",
+      "expected": [
+        "review.step_malformed"
+      ],
+      "fired": [
+        "review.step_malformed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "next_unbound_and_risk",
+      "expected": [
+        "next.unbound",
+        "next.risk_missing"
+      ],
+      "fired": [
+        "next.risk_missing",
+        "next.unbound"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "next_dangling",
+      "expected": [
+        "next.dangling"
+      ],
+      "fired": [
+        "next.dangling"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "next_bound_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "metric_scoped_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cli_unreadable_spec",
+      "expected": [
+        "clean.spec_unreadable"
+      ],
+      "fired": [
+        "clean.spec_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "undetermined",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cli_no_rows",
+      "expected": [
+        "clean.spec_unreadable"
+      ],
+      "fired": [
+        "clean.spec_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "undetermined",
+      "pass": true,
+      "extra": ""
+    }
+  ],
+  "totals": {
+    "passed": 27,
+    "of": 27
+  },
+  "note": "Each scenario plants one defect or proves one FP guard. The clean baseline must report no high or medium finding, and the anomaly summary counts are asserted against the planted data."
+}

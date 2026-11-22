@@ -1,0 +1,22 @@
+{
+  "case_id": "challenge-1bd90d8a-case-01",
+  "output_contract": {
+    "editable_source": {},
+    "export_checks": {},
+    "provenance": {}
+  },
+  "kind": "bar",
+  "x_label": "Treatment",
+  "x_unit": "dose",
+  "y_label": "Response",
+  "y_unit": "a.u.",
+  "caption_n": 6,
+  "legend": true,
+  "error_meaning": "SD",
+  "encoding": {
+    "x": "condition",
+    "y": "response",
+    "y_err": "response_sd",
+    "group": "group"
+  }
+}

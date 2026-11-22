@@ -1,0 +1,9 @@
+{
+  "kind": "bar",
+  "x_label": "Treatment",
+  "y_label": "Response",
+  "y_unit": "a.u.",
+  "caption_n": 6,
+  "legend": true,
+  "encoding": {"x": "condition", "y": "response", "y_err": "response_sd", "group": "group"}
+}

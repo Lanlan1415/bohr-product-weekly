@@ -1,0 +1,45 @@
+{
+  "case_id": "cbe96f01-claim-demo",
+  "section": "claim_verify",
+  "output_contract": ["audit_report", "evidence_bounds", "result_state", "sources"],
+  "audit_report": [
+    {"id": "F01", "category": "引用支持",
+     "location": "Fig 3b, p.7",
+     "excerpt": "The porous coating increased the uptake rate three-fold.",
+     "verdict": "证据充分", "severity": "high",
+     "fix": "无需修改：引文逐字存在且直接陈述速率提升"}
+  ],
+  "evidence_bounds": {
+    "excerpts": ["The porous coating increased the uptake rate three-fold."],
+    "citation_evidence": [{"key": "doe2020", "locator": "Fig 3b, p.7"}],
+    "pending_review": []
+  },
+  "result_state": {
+    "passed": ["claim 1"],
+    "problems": [],
+    "pending_review": [],
+    "not_checked": []
+  },
+  "references": [
+    {
+      "key": "doe2020",
+      "title": "Porous coatings for uptake",
+      "year": 2020
+    }
+  ],
+  "source_text": "The porous coating increased the uptake rate three-fold. Samples were held at 25 C.",
+  "claims": [
+    {
+      "claim": "porous coating increases uptake rate",
+      "support": "supports",
+      "rationale": "the quoted sentence states the rate increase directly",
+      "evidence": [
+        {
+          "source": "doe2020",
+          "quote": "The porous coating increased the uptake rate three-fold.",
+          "locator": "Fig 3b, p.7"
+        }
+      ]
+    }
+  ]
+}

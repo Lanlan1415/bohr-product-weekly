@@ -1,0 +1,56 @@
+{
+  "case_id": "a2c6f23b-draft-demo",
+  "section": "paper_draft",
+  "draft": "1 Introduction\n涂层将吸收速率提高到三倍 (uptake rose three-fold) [doe2020] {M1}。\n2 Methods\n我们测量了 3 mM 样品 {M2}。\n3 Results\n吸收速率提高到三倍 (uptake rose three-fold) [doe2020] {M1}（Fig 1）。\n",
+  "abstract": "涂层将吸收速率提高了三倍 (uptake rose three-fold)。",
+  "design": "experimental",
+  "template": {
+    "sections": [
+      "introduction",
+      "methods",
+      "results"
+    ]
+  },
+  "materials": [
+    {
+      "id": "M1",
+      "locator": "run01.csv row 4",
+      "text": "uptake rose three-fold 吸收速率随涂层提高到三倍"
+    },
+    {
+      "id": "M2",
+      "locator": "notes.md 12:04",
+      "text": "3 mM samples 样品制备浓度 3 mM"
+    }
+  ],
+  "references": [
+    {
+      "key": "doe2020",
+      "authors": "Doe J",
+      "year": 2020,
+      "journal": "J Uptake",
+      "topic": "coating raises uptake 涂层提高吸收速率",
+      "doi": "10.1000/x"
+    }
+  ],
+  "figures": [
+    {
+      "id": "Fig 1",
+      "caption": "吸收速率提高到三倍 uptake rose three-fold",
+      "values": [
+        "three-fold",
+        "三倍"
+      ]
+    }
+  ],
+  "declarations": {
+    "data_availability": "on request",
+    "author_contributions": "all authors",
+    "competing_interests": "none",
+    "funding": "grant 123"
+  },
+  "change_log": [
+    "v1 初稿",
+    "v2 补充方法"
+  ]
+}

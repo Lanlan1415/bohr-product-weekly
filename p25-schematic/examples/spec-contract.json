@@ -1,0 +1,32 @@
+{
+  "case_id": "demo-schematic-001",
+  "font_size": 9,
+  "canvas_mm": [130, 60],
+  "materials": [
+    {"id": "m1", "name": "基底", "source": "Methods ¶2"},
+    {"id": "m2", "name": "催化剂", "source": "Methods ¶2"},
+    {"id": "m3", "name": "产物", "source": "Results ¶1"}
+  ],
+  "connections": [
+    {"from": "a", "to": "b", "source": "Methods ¶2: catalyst deposited on substrate"},
+    {"from": "b", "to": "c", "source": "Results ¶1: product forms on the catalyst"}
+  ],
+  "categories": {"reactant": "#56B4E9", "agent": "#009E73", "output": "#E69F00"},
+  "nodes": [
+    {"id": "a", "label": "基底", "evidence": "m1", "layer": 0, "category": "reactant"},
+    {"id": "b", "label": "催化剂 20 min", "evidence": "m2", "layer": 1, "category": "agent"},
+    {"id": "c", "label": "产物 42 nm", "evidence": "m3", "layer": 2, "category": "output"}
+  ],
+  "edges": [
+    {"from": "a", "to": "b", "type": "bind"},
+    {"from": "b", "to": "c", "type": "activate"}
+  ],
+  "deliverable_svg": {"format": "svg", "live_text": true, "editable": true},
+  "output_contract": {
+    "case_id": "echo of the input identifier",
+    "status": "audited run status",
+    "findings": "audit findings",
+    "severity_counts": "finding counts by severity",
+    "deliverable_svg": "the editable deliverable descriptor, passed through from the spec"
+  }
+}

@@ -1,0 +1,468 @@
+{
+  "schema_version": "ew-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "claims_missing",
+      "expected": [
+        "ew.claims_missing"
+      ],
+      "fired": [
+        "ew.claims_missing",
+        "ew.source_unused"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "draft_missing",
+      "expected": [
+        "ew.draft_missing"
+      ],
+      "fired": [
+        "ew.draft_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "table_missing",
+      "expected": [
+        "ew.evidence_table_missing"
+      ],
+      "fired": [
+        "ew.evidence_table_missing",
+        "ew.source_not_in_table"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "claim_no_id",
+      "expected": [
+        "ew.claim_no_id"
+      ],
+      "fired": [
+        "ew.claim_no_id"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "claim_empty",
+      "expected": [
+        "ew.claim_empty"
+      ],
+      "fired": [
+        "ew.claim_empty"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "claim_not_in_draft",
+      "expected": [
+        "ew.claim_not_in_draft"
+      ],
+      "fired": [
+        "ew.claim_not_in_draft"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "strength_missing",
+      "expected": [
+        "ew.strength_missing"
+      ],
+      "fired": [
+        "ew.strength_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "strength_invalid",
+      "expected": [
+        "ew.strength_invalid"
+      ],
+      "fired": [
+        "ew.strength_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "strength_without_basis",
+      "expected": [
+        "ew.strength_without_basis"
+      ],
+      "fired": [
+        "ew.strength_without_basis"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "uncertainty_missing",
+      "expected": [
+        "ew.uncertainty_missing"
+      ],
+      "fired": [
+        "ew.uncertainty_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "claim_no_support",
+      "expected": [
+        "ew.claim_no_support"
+      ],
+      "fired": [
+        "ew.claim_no_support",
+        "ew.source_unused"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "source_not_in_table",
+      "expected": [
+        "ew.source_not_in_table"
+      ],
+      "fired": [
+        "ew.source_not_in_table",
+        "ew.source_unused"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "link_no_quote",
+      "expected": [
+        "ew.link_no_quote"
+      ],
+      "fired": [
+        "ew.link_no_quote"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "link_no_locator",
+      "expected": [
+        "ew.link_no_locator"
+      ],
+      "fired": [
+        "ew.link_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "quote_not_in_source",
+      "expected": [
+        "ew.quote_not_in_source"
+      ],
+      "fired": [
+        "ew.quote_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "retracted_source",
+      "expected": [
+        "ew.retracted_source_used"
+      ],
+      "fired": [
+        "ew.retracted_source_used"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "preprint_as_strong",
+      "expected": [
+        "ew.preprint_as_strong"
+      ],
+      "fired": [
+        "ew.preprint_as_strong"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "metadata_incomplete",
+      "expected": [
+        "ew.reference_metadata_incomplete"
+      ],
+      "fired": [
+        "ew.reference_metadata_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "source_type_missing",
+      "expected": [
+        "ew.source_type_missing"
+      ],
+      "fired": [
+        "ew.source_type_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "source_unused",
+      "expected": [
+        "ew.source_unused"
+      ],
+      "fired": [
+        "ew.source_unused",
+        "ew.text_quality_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "draft_overstates_strength",
+      "expected": [
+        "ew.draft_overstates_strength"
+      ],
+      "fired": [
+        "ew.draft_overstates_strength"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "text_quality_undeclared",
+      "expected": [
+        "ew.text_quality_undeclared"
+      ],
+      "fired": [
+        "ew.text_quality_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "text_quality_unknown",
+      "expected": [
+        "ew.text_quality_unknown"
+      ],
+      "fired": [
+        "ew.text_quality_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "ocr_provenance_missing",
+      "expected": [
+        "ew.ocr_provenance_missing"
+      ],
+      "fired": [
+        "ew.ocr_provenance_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "ocr_registered_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "extraction_disorder_unrecorded",
+      "expected": [
+        "ew.extraction_disorder_unrecorded"
+      ],
+      "fired": [
+        "ew.extraction_disorder_unrecorded"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "disorder_registered_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "abstract_only_strong",
+      "expected": [
+        "ew.support_abstract_only"
+      ],
+      "fired": [
+        "ew.support_abstract_only"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "abstract_only_weak_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "quote_unverifiable",
+      "expected": [
+        "ew.quote_unverifiable"
+      ],
+      "fired": [
+        "ew.quote_unverifiable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "quote_fails_on_ocr",
+      "expected": [
+        "ew.quote_not_in_source"
+      ],
+      "fired": [
+        "ew.quote_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "quote_variant_rescues_ocr",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "conflict_unregistered",
+      "expected": [
+        "ew.conflict_unregistered"
+      ],
+      "fired": [
+        "ew.conflict_unregistered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "conflict_registered_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "abstract_conflict_unregistered",
+      "expected": [
+        "ew.abstract_conflict_unregistered"
+      ],
+      "fired": [
+        "ew.abstract_conflict_unregistered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "abstract_conflict_registered_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 37,
+    "of": 37
+  },
+  "note": "One scenario per rule, aligned to the three-part deliverable and the four graded elements. Clean baselines must report nothing."
+}

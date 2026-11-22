@@ -1,0 +1,210 @@
+"""Benchmark for the review-response skill.
+
+One scenario per rule, aligned to the scoring points this task states:
+
+  every comment answered, sub-requirements covered  -> comment_unanswered,
+                                                        subrequirement_unanswered
+  a response letter and a manuscript delivered       -> no_letter, no_manuscript
+  "we have changed it" matching the file             -> change_not_verifiable
+  every location checkable in the stated version     -> locator_not_in_manuscript,
+                                                        version_mismatch
+  decision and tone carried explicitly               -> decision_*, tone_*
+  evidence promised, with its state and alternative  -> evidence_*
+  provided evidence names its data source            -> evidence_source_missing
+  the claimed edits land in the declared baseline    -> manuscript_unrevised
+
+Each defect scenario is paired with a false-positive guard: a correct package of
+the same shape must report nothing (split answers, sourced evidence, a revised
+manuscript, an all-rebuttal letter that touches nothing).
+
+    python bench_review.py
+"""
+
+from __future__ import annotations
+
+import copy
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import writing as W  # noqa: E402
+
+BASE = {
+    "manuscript_version": "v2",
+    "manuscript_text": "3.2 Results\nWe added a vehicle control (n=6).\n",
+    "anchors": ["3.2 Results", "Appendix A"],
+    "comments": [
+        {"id": "C1", "text": "Add a vehicle control.", "type": "method", "severity": "major",
+         "subrequirements": []},
+        {"id": "C2", "text": "Justify the kinetic model.", "type": "method", "severity": "major",
+         "subrequirements": []},
+    ],
+    "responses": [
+        {"comment_id": "C1", "decision": "accept", "tone": "accept",
+         "changes": [{"what": "added a vehicle control group", "location": "3.2 Results",
+                      "manuscript_version": "v2",
+                      "added_text": "We added a vehicle control"}]},
+        {"comment_id": "C2", "decision": "accept", "tone": "accept",
+         "changes": [{"what": "added a derivation appendix", "location": "Appendix A",
+                      "manuscript_version": "v2"}]},
+    ],
+}
+
+
+def d(**over):
+    s = copy.deepcopy(BASE)
+    s.update(over)
+    return s
+
+
+def resp(index, **over):
+    s = copy.deepcopy(BASE)
+    s["responses"] = copy.deepcopy(BASE["responses"])
+    s["responses"][index] = dict(BASE["responses"][index], **over)
+    return s
+
+
+def change(index, **over):
+    s = copy.deepcopy(BASE)
+    s["responses"] = copy.deepcopy(BASE["responses"])
+    s["responses"][index]["changes"] = [dict(BASE["responses"][index]["changes"][0], **over)]
+    return s
+
+
+def comment(index, **over):
+    s = copy.deepcopy(BASE)
+    s["comments"] = copy.deepcopy(BASE["comments"])
+    s["comments"][index] = dict(BASE["comments"][index], **over)
+    return s
+
+
+SCEN = [
+    ("clean", lambda: (d(), [])),
+
+    # the package
+    ("no_comments", lambda: (d(comments=[]), ["resp.no_comments"])),
+    ("no_letter", lambda: (d(responses=[]), ["resp.no_letter"])),
+    ("no_manuscript", lambda: (d(manuscript_text=""), ["resp.no_manuscript"])),
+
+    # decomposition
+    ("comment_type_missing", lambda: (comment(0, type=""), ["resp.comment_type_missing"])),
+    ("severity_missing", lambda: (comment(0, severity=""), ["resp.severity_missing"])),
+    ("subrequirement_unanswered",
+     lambda: (comment(0, subrequirements=["add a vehicle control",
+                                          "report the n for each arm"]),
+              ["resp.subrequirement_unanswered"])),
+    # FP guard: the same multi-part comment answered across two entries that
+    # share its id is complete coverage, not a dropped sub-request.
+    ("subrequirement_split_guard",
+     lambda: (d(comments=[{"id": "C1", "text": "Add a vehicle control and report n per arm.",
+                           "type": "method", "severity": "major",
+                           "subrequirements": ["add a vehicle control",
+                                               "report the n for each arm"]},
+                          BASE["comments"][1]],
+                responses=[BASE["responses"][0],
+                           {"comment_id": "C1", "decision": "accept", "tone": "accept",
+                            "reason": "the n for each arm is now reported",
+                            "changes": [{"what": "reports the n for each arm in the caption",
+                                         "location": "3.2 Results",
+                                         "manuscript_version": "v2"}]},
+                           BASE["responses"][1]]),
+              [])),
+
+    # coverage and decision
+    ("comment_unanswered", lambda: (d(responses=BASE["responses"][:1]),
+                                    ["resp.comment_unanswered"])),
+    ("response_orphaned",
+     lambda: (resp(1, comment_id="C9"), ["resp.response_orphaned"])),
+    ("decision_undeclared", lambda: (resp(0, decision=""), ["resp.decision_undeclared"])),
+    ("decision_invalid", lambda: (resp(0, decision="maybe"), ["resp.decision_invalid"])),
+    ("rebuttal_without_reason",
+     lambda: (resp(0, decision="reject", reason=""), ["resp.rebuttal_without_reason"])),
+    ("tone_missing", lambda: (resp(0, tone=""), ["resp.tone_missing"])),
+    ("tone_invalid", lambda: (resp(0, tone="angry"), ["resp.tone_invalid"])),
+
+    # the claim against the file
+    ("change_unspecified", lambda: (change(0, what=""), ["resp.change_unspecified"])),
+    ("change_unlocatable", lambda: (change(0, location=""), ["resp.change_unlocatable"])),
+    ("locator_not_in_manuscript",
+     lambda: (change(0, location="4.7 Conclusions"),
+              ["resp.locator_not_in_manuscript"])),
+    ("version_mismatch", lambda: (change(0, manuscript_version="v1"),
+                                  ["resp.version_mismatch"])),
+    ("change_not_verifiable",
+     lambda: (change(0, added_text="We added two blinded readers"),
+              ["resp.change_not_verifiable"])),
+
+    # promised evidence
+    ("evidence_status_missing",
+     lambda: (resp(0, evidence=[{"kind": "additional experiment"}]),
+              ["resp.evidence_status_missing"])),
+    # A malformed (bare-string) evidence entry degrades to a status finding
+    # instead of crashing the audit.
+    ("evidence_bare_string_degrades",
+     lambda: (resp(0, evidence=["additional experiment"]),
+              ["resp.evidence_status_missing"])),
+    ("evidence_without_alternative",
+     lambda: (resp(0, evidence=[{"kind": "additional experiment", "status": "unavailable"}]),
+              ["resp.evidence_without_alternative"])),
+    ("evidence_source_missing",
+     lambda: (resp(0, evidence=[{"kind": "additional data", "status": "provided"}]),
+              ["resp.evidence_source_missing"])),
+    # FP guard: the same entry carrying its data source stays silent.
+    ("evidence_source_guard",
+     lambda: (resp(0, evidence=[{"kind": "additional data", "status": "provided",
+                                 "source": "Table S2, n=6 per arm, raw values in the "
+                                 "supplement"}]),
+              [])),
+
+    # the claimed edits must land in the declared baseline
+    ("manuscript_unrevised",
+     lambda: (d(baseline_text=BASE["manuscript_text"]),
+              ["resp.manuscript_unrevised"])),
+    # FP guard 1: a manuscript that differs from the declared baseline.
+    ("manuscript_unrevised_guard_revised",
+     lambda: (d(baseline_text="3.2 Results\nBaseline summary without the control group.\n"),
+              [])),
+    # FP guard 2: an all-rebuttal letter that legitimately touches nothing —
+    # no accepted change, so an unchanged manuscript is correct here.
+    ("manuscript_unrevised_guard_rebuttal",
+     lambda: (d(baseline_text=BASE["manuscript_text"],
+                responses=[{"comment_id": "C1", "decision": "reject",
+                            "tone": "polite_rebuttal",
+                            "reason": "the control condition is confounded by the batch "
+                                      "effect reported in Table 1"},
+                           {"comment_id": "C2", "decision": "reject",
+                            "tone": "polite_rebuttal",
+                            "reason": "the kinetic model is justified by the derivation "
+                                      "already in Appendix B"}]),
+              [])),
+]
+
+
+def main() -> int:
+    rows = []
+    for name, builder in SCEN:
+        spec, expect = builder()
+        findings, status, counts = W.run(spec, "review_response")
+        fired = {f["rule"] for f in findings}
+        missing = [r for r in expect if r not in fired]
+        spurious = [] if expect else [f["rule"] for f in findings]
+        ok = not missing and not spurious
+        rows.append({"scenario": name, "expected": expect, "fired": sorted(fired),
+                     "missing": missing, "spurious": spurious, "pass": ok,
+                     "status": status})
+        print(f"{'PASS' if ok else 'FAIL'}  {name:<28} missing={missing} spurious={spurious}")
+
+    passed = sum(1 for r in rows if r["pass"])
+    report = {"schema_version": "review-bench/v1", "scenarios": rows,
+              "totals": {"passed": passed, "of": len(rows)},
+              "note": ("One scenario per rule, aligned to the review-response scoring points. "
+                       "Clean baselines must report nothing.")}
+    (Path(__file__).resolve().parent / "report_review.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\n{passed}/{len(rows)} pass")
+    return 0 if passed == len(rows) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

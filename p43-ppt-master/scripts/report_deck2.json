@@ -1,0 +1,207 @@
+{
+  "schema_version": "deck-edit-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_reason",
+      "expected": [
+        "edit.change_without_reason"
+      ],
+      "fired": [
+        "edit.change_without_reason"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_slide",
+      "expected": [
+        "edit.change_without_slide"
+      ],
+      "fired": [
+        "edit.change_without_slide"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "noop_change",
+      "expected": [
+        "edit.change_is_noop"
+      ],
+      "fired": [
+        "edit.change_is_noop",
+        "edit.change_not_in_deck"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "revision_empty",
+      "expected": [
+        "edit.revision_without_changes"
+      ],
+      "fired": [
+        "edit.revision_without_changes"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "record_not_applied",
+      "expected": [
+        "edit.change_not_in_deck"
+      ],
+      "fired": [
+        "edit.change_not_in_deck"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "overflow_cjk",
+      "expected": [
+        "text.overflow"
+      ],
+      "fired": [
+        "text.body_too_large",
+        "text.overflow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "term_drift",
+      "expected": [
+        "text.term_inconsistent"
+      ],
+      "fired": [
+        "text.term_inconsistent"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "font_missing",
+      "expected": [
+        "font.declared_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "review"
+    },
+    {
+      "scenario": "missing_glyphs",
+      "expected": [
+        "export.missing_glyphs"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "nondeterministic",
+      "expected": [
+        "repro.nondeterministic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "master_broken",
+      "expected": [
+        "master.layout_missing"
+      ],
+      "fired": [
+        "master.layout_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "patched": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "master_shared_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "patched": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "master_inconsistent",
+      "expected": [
+        "master.inconsistent"
+      ],
+      "fired": [
+        "master.inconsistent"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "patched": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "embed_missing",
+      "expected": [
+        "embed.missing"
+      ],
+      "fired": [
+        "embed.missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "patched": true,
+      "status": "review"
+    },
+    {
+      "scenario": "embed_fp_embedded",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "patched": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 16,
+    "of": 16
+  },
+  "note": "Revision rules plus CJK measurement, declared-font existence, glyph coverage, build determinism, the master chain behind every slide and declared font embedding. Three scenarios inject a defect and five patch the written package."
+}

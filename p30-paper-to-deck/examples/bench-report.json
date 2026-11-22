@@ -1,0 +1,121 @@
+{
+  "schema_version": "deck-p2d-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "unattributed",
+      "expected": [
+        "paper.figure_unattributed"
+      ],
+      "fired": [
+        "deck.evidence_missing",
+        "deck.notes_missing",
+        "paper.caption_missing",
+        "paper.figure_unattributed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "caption_missing",
+      "expected": [
+        "paper.caption_missing"
+      ],
+      "fired": [
+        "paper.caption_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "evidence_unsupported",
+      "expected": [
+        "deck.evidence_unsupported"
+      ],
+      "fired": [
+        "deck.evidence_unsupported"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "overflow_cjk",
+      "expected": [
+        "text.overflow"
+      ],
+      "fired": [
+        "text.body_too_large",
+        "text.overflow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "notes_repeat",
+      "expected": [
+        "deck.notes_repeat_title"
+      ],
+      "fired": [
+        "deck.notes_repeat_title"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "font_missing",
+      "expected": [
+        "font.declared_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "review"
+    },
+    {
+      "scenario": "missing_glyphs",
+      "expected": [
+        "export.missing_glyphs"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "nondeterministic",
+      "expected": [
+        "repro.nondeterministic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    }
+  ],
+  "totals": {
+    "passed": 9,
+    "of": 9
+  },
+  "note": "Paper-mapping rules plus CJK measurement, declared-font existence, glyph coverage and build determinism. Three scenarios inject a defect."
+}

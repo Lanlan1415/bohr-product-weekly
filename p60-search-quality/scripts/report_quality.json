@@ -1,0 +1,49 @@
+{
+  "schema_version": "quality-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "rubric_domain_hit",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "not_reported_stays_unmatched",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "design_tag_query",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "risk_low_threshold",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "rubric_battery_replay",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "evidence_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

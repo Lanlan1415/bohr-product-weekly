@@ -1,0 +1,101 @@
+{
+  "manuscript_version": "v2",
+  "baseline_text": "3.2 Results\nBaseline summary without the control group.\n",
+  "manuscript_text": "3.2 Results\nWe added a vehicle control (n=6).\n",
+  "anchors": [
+    "3.2 Results",
+    "Appendix A"
+  ],
+  "comments": [
+    {
+      "id": "C1",
+      "text": "Add a vehicle control.",
+      "type": "method",
+      "severity": "major",
+      "subrequirements": []
+    },
+    {
+      "id": "C2",
+      "text": "Justify the kinetic model.",
+      "type": "method",
+      "severity": "major",
+      "subrequirements": []
+    }
+  ],
+  "responses": [
+    {
+      "comment_id": "C1",
+      "decision": "accept",
+      "tone": "accept",
+      "changes": [
+        {
+          "what": "added a vehicle control group",
+          "location": "3.2 Results",
+          "manuscript_version": "v2",
+          "added_text": "We added a vehicle control"
+        }
+      ]
+    },
+    {
+      "comment_id": "C2",
+      "decision": "accept",
+      "tone": "accept",
+      "changes": [
+        {
+          "what": "added a derivation appendix",
+          "location": "Appendix A",
+          "manuscript_version": "v2"
+        }
+      ]
+    }
+  ],
+  "section": "review_response",
+  "case_id": "demo-case-201",
+  "output_contract": {
+    "revised_manuscript": "the editable revised manuscript",
+    "response_letter": "the point-by-point response draft",
+    "change_locations": "locator per claimed change",
+    "pending_evidence": "evidence entries not yet provided"
+  },
+  "revised_manuscript": "3.2 Results\nWe added a vehicle control (n=6).\n",
+  "response_letter": {
+    "responses": [
+      {
+        "comment_id": "C1",
+        "decision": "accept",
+        "tone": "accept",
+        "changes": [
+          {
+            "what": "added a vehicle control group",
+            "location": "3.2 Results",
+            "manuscript_version": "v2",
+            "added_text": "We added a vehicle control"
+          }
+        ]
+      },
+      {
+        "comment_id": "C2",
+        "decision": "accept",
+        "tone": "accept",
+        "changes": [
+          {
+            "what": "added a derivation appendix",
+            "location": "Appendix A",
+            "manuscript_version": "v2"
+          }
+        ]
+      }
+    ]
+  },
+  "change_locations": [
+    {
+      "comment_id": "C1",
+      "location": "3.2 Results"
+    },
+    {
+      "comment_id": "C2",
+      "location": "Appendix A"
+    }
+  ],
+  "pending_evidence": []
+}

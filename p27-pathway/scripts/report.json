@@ -1,0 +1,247 @@
+{
+  "schema_version": "schematic-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "label_overlap",
+      "expected": [
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "fired": [
+        "label.outside_canvas",
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "font_too_small",
+      "expected": [
+        "font.too_small"
+      ],
+      "fired": [
+        "font.too_small"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "unsafe_colour",
+      "expected": [
+        "colour.not_cb_safe"
+      ],
+      "fired": [
+        "colour.not_cb_safe"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "backward_flow",
+      "expected": [
+        "edge.backward_flow"
+      ],
+      "fired": [
+        "edge.backward_flow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_entity",
+      "expected": [
+        "entity.duplicate"
+      ],
+      "fired": [
+        "entity.duplicate"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "paths_not_text",
+      "expected": [
+        "export.no_live_text"
+      ],
+      "fired": [
+        "export.no_font_family",
+        "export.no_live_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "low_dpi",
+      "expected": [
+        "export.low_dpi"
+      ],
+      "fired": [
+        "export.low_dpi"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "dangling_edge",
+      "expected": [
+        "edge.dangling"
+      ],
+      "fired": [
+        "edge.dangling"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "malformed_entries",
+      "expected": [
+        "node.malformed",
+        "edge.malformed"
+      ],
+      "fired": [
+        "edge.malformed",
+        "node.malformed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "recycle_suppressed",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "compartment_mismatch",
+      "expected": [
+        "compartment.mismatch"
+      ],
+      "fired": [
+        "compartment.mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "compartment_undeclared",
+      "expected": [
+        "compartment.undeclared"
+      ],
+      "fired": [
+        "compartment.undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "compartment_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "feedback_unlabeled",
+      "expected": [
+        "edge.feedback_unlabeled"
+      ],
+      "fired": [
+        "edge.feedback_unlabeled"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "feedback_marked",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "confidence_missing",
+      "expected": [
+        "edge.confidence_missing"
+      ],
+      "fired": [
+        "edge.confidence_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "confidence_unknown",
+      "expected": [
+        "edge.confidence_unknown"
+      ],
+      "fired": [
+        "edge.confidence_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "size_not_positive",
+      "expected": [
+        "size.not_positive"
+      ],
+      "fired": [
+        "size.not_positive"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 19,
+    "of": 19
+  },
+  "note": "Each scenario plants one defect and names the rule that must fire. The clean baseline must report no high or medium finding, so flagging everything is not a way to pass."
+}

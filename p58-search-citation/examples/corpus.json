@@ -1,0 +1,28 @@
+{
+ "documents": [
+  {
+   "id": "seed-2019",
+   "text": "id: seed-2019\nSeed paper: message-passing neural potentials for molecular dynamics (2019).\nrefs: meth-2014\nIntroduced the descriptor-free potential that later work built on."
+  },
+  {
+   "id": "follow-2021",
+   "text": "id: follow-2021\nFollow-up: equivariant message-passing potential (2021).\ncites: seed-2019\ncites: meth-2014\nImproves the angular resolution of the seed."
+  },
+  {
+   "id": "follow-2023",
+   "text": "id: follow-2023\nCritique: benchmark caveats of the seed potential (2023).\ncites: seed-2019\nReports failures under periodic boundary conditions."
+  },
+  {
+   "id": "parallel-2022",
+   "text": "id: parallel-2022\nParallel work: kernel-based potentials without message passing (2022).\ncites: meth-2014\ncites: data-2016\nRelated by method lineage; does not cite the seed."
+  },
+  {
+   "id": "meth-2014",
+   "text": "id: meth-2014\nMethod origin: descriptor-based local energy decomposition (2014).\nrefs: none\nThe method both the seed and the parallel work build on."
+  },
+  {
+   "id": "follow-2021",
+   "text": "id: follow-2021\nFollow-up: equivariant message-passing potential (2021).\ncites: seed-2019\ncites: meth-2014\nImproves the angular resolution of the seed."
+  }
+ ]
+}

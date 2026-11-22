@@ -1,0 +1,23 @@
+{
+  "_note": "示例输出（非正式案例结果）：由 examples/spec.json 实跑生成（secrun --section structure_logic）。",
+  "schema_version": "secrun/v1",
+  "section": "structure_logic",
+  "status": "clean",
+  "case_id": "demo-structure-001",
+  "findings": [],
+  "severity_counts": {},
+  "checked": {
+    "section": "structure_logic",
+    "items": 3,
+    "dimensions_covered": [
+      "argument_chain",
+      "conclusion_scope",
+      "duplication",
+      "paragraph_relation",
+      "research_question",
+      "section_structure"
+    ],
+    "promises_declared": 0
+  },
+  "limits": []
+}

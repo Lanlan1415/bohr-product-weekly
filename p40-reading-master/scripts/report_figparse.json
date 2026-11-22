@@ -1,0 +1,104 @@
+{
+  "schema_version": "figparse-bench/v1",
+  "scenarios": [
+    {
+      "case": "01-linear-two-series",
+      "status": "success",
+      "worst_max_error": 1.855,
+      "error_kind": "absolute",
+      "tolerance": 2.0,
+      "pass": true
+    },
+    {
+      "case": "02-log-x",
+      "status": "success",
+      "worst_max_error": 0.588,
+      "error_kind": "absolute",
+      "tolerance": 2.0,
+      "pass": true
+    },
+    {
+      "case": "03-log-y",
+      "status": "success",
+      "worst_max_error": 0.0781,
+      "error_kind": "relative",
+      "tolerance": 0.1,
+      "pass": true
+    },
+    {
+      "case": "04-three-series",
+      "status": "success",
+      "worst_max_error": 1.593,
+      "error_kind": "absolute",
+      "tolerance": 2.0,
+      "pass": true
+    },
+    {
+      "case": "05-markers-errorbars",
+      "status": "success",
+      "worst_max_error": 0.588,
+      "error_kind": "absolute",
+      "tolerance": 2.0,
+      "pass": true
+    },
+    {
+      "case": "06-inverted-y",
+      "status": "success",
+      "worst_max_error": 0.392,
+      "error_kind": "absolute",
+      "tolerance": 2.0,
+      "pass": true
+    },
+    {
+      "case": "07-no-frame",
+      "kind": "no-frame",
+      "status": "undetermined",
+      "pass": true,
+      "note": "frame refused"
+    },
+    {
+      "case": "08-bar-chart",
+      "kind": "bar",
+      "status": "success",
+      "worst_max_error": 0.294,
+      "tolerance": 2.0,
+      "n_bars_read": 4,
+      "n_bars_truth": 4,
+      "pass": true
+    },
+    {
+      "case": "09-bars-annotations",
+      "kind": "bar",
+      "status": "success",
+      "worst_max_error": 0.0,
+      "tolerance": 2.0,
+      "n_bars_read": 4,
+      "n_bars_truth": 4,
+      "pass": true
+    },
+    {
+      "scenario": "tables_csv_typed_percent",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "scenario": "tables_markdown_text_column",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "scenario": "tables_refusal_by_name",
+      "pass": true,
+      "note": ""
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  },
+  "ablation_forced_linear": {
+    "passed": 7,
+    "of": 9,
+    "note": "same pipeline with log-axis detection disabled; an ablation of this tool, not a measurement of any other agent or product"
+  }
+}

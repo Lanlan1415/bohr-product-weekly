@@ -1,0 +1,49 @@
+{
+  "section": "reproduce",
+  "commit": "opt-round-2024-05-17",
+  "data_version": "exp-history@2024-05",
+  "commands": [
+    "python optimise.py --strategy sequential --budget 60"
+  ],
+  "checklist": {
+    "materials": [
+      {
+        "name": "管式炉温控模块",
+        "source": "设备手册 TC-220 rev C",
+        "version": "rev C",
+        "state": "present"
+      }
+    ],
+    "environment": {
+      "dependencies": "约束清单 constraints.csv v3",
+      "hardware": "管式炉 TC-220 / K 型热电偶",
+      "seed": "0"
+    },
+    "parameters": [
+      {
+        "name": "退火温度",
+        "source": "paper",
+        "locator": "SOP-A07 §4.2"
+      }
+    ],
+    "run": {
+      "logs": "runs/opt-round3.log",
+      "exit_status": "succeeded"
+    },
+    "results": {
+      "tolerance": "±2 C",
+      "comparison_basis": "转化率主指标",
+      "statistic": "3 次重复的均值",
+      "metrics": [
+        {
+          "name": "转化率",
+          "paper": 0.82,
+          "reproduced": 0.815,
+          "within_tolerance": true
+        }
+      ]
+    },
+    "verdict": "reproducible",
+    "verdict_basis": "所有响应指标在容差内，建议值均落在设备量程与安全阈值之内"
+  }
+}

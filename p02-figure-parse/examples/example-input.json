@@ -1,0 +1,26 @@
+{
+  "case_id": "EXAMPLE-NOT-A-CASE",
+  "images": [
+    {
+      "path": "fig.png",
+      "x_tick_values": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "x_unit": "time (s)",
+      "y_tick_values": [
+        100,
+        80,
+        60,
+        40,
+        20,
+        0
+      ],
+      "y_unit": "potential (mV)"
+    }
+  ]
+}

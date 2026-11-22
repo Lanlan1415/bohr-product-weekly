@@ -1,0 +1,98 @@
+{
+  "scenario": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "untraceable",
+      "expected": [
+        "trace.entity_untraceable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "bad_evidence",
+      "expected": [
+        "trace.evidence_not_in_materials"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "material_unused",
+      "expected": [
+        "trace.material_not_drawn"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "invented_edge",
+      "expected": [
+        "trace.edge_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "connection_missing",
+      "expected": [
+        "trace.connection_not_drawn"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "gene_casing",
+      "expected": [
+        "nomenclature.gene_casing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "alias_collision",
+      "expected": [
+        "nomenclature.alias_collision"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_glyphs",
+      "expected": [
+        "export.missing_glyphs"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true
+    },
+    {
+      "scenario": "nondeterministic",
+      "expected": [
+        "repro.nondeterministic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true
+    }
+  ],
+  "totals": {
+    "passed": 10,
+    "of": 10
+  }
+}

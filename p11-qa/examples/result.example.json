@@ -1,0 +1,161 @@
+{
+  "_comment": "示例输出（SYNTHETIC EXAMPLE - 由 examples/spec.json 自拟数据生成，非正式案例结果）。展示 result.json 的结构：audit 判定 + case_id/paper_id/material_version + answers 原样回传 + output_contract 字段回填 + coverage 摘要。",
+  "schema_version": "secrun/v1",
+  "section": "qa",
+  "status": "clean",
+  "findings": [],
+  "severity_counts": {},
+  "limits": [],
+  "checked": {
+    "section": "qa",
+    "items": 3,
+    "coverage": {
+      "questions": [
+        {
+          "question_id": "Q1",
+          "state": "answered"
+        },
+        {
+          "question_id": "Q2",
+          "state": "answered"
+        },
+        {
+          "question_id": "Q3",
+          "state": "partial"
+        }
+      ],
+      "counts": {
+        "answered": 2,
+        "partial": 1,
+        "refused": 0,
+        "unanswered": 0
+      },
+      "answers_supplied": 3
+    }
+  },
+  "case_id": "example-qa-001",
+  "paper_id": "paper-ex-001",
+  "material_version": "v2",
+  "answers": [
+    {
+      "question_id": "Q1",
+      "question": "多孔涂层对亚甲基蓝吸收速率的影响有多大？",
+      "answer": "多孔涂层使亚甲基蓝的吸收速率提高为平板对照组的 3 倍。",
+      "conditions": [
+        "多孔 TiO2 涂层",
+        "25 C",
+        "亚甲基蓝"
+      ],
+      "status": "answered",
+      "unanswered_parts": [],
+      "cites": [
+        "e1"
+      ],
+      "claims": [
+        {
+          "claim_id": "C1",
+          "text": "多孔涂层使吸收速率提高为对照组的 3 倍",
+          "kind": "reported",
+          "evidence": [
+            {
+              "paragraph_id": "P2",
+              "paper_id": "paper-ex-001",
+              "quote": "the increase was three-fold over the flat control"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question_id": "Q2",
+      "question": "吸收实验在什么温度下进行？",
+      "answer": "吸附实验全程在 25 C 下进行。",
+      "conditions": [
+        "吸附实验期间"
+      ],
+      "status": "answered",
+      "unanswered_parts": [],
+      "cites": [
+        "e2"
+      ],
+      "claims": [
+        {
+          "claim_id": "C2",
+          "text": "实验温度为 25 C",
+          "kind": "reported",
+          "evidence": [
+            {
+              "paragraph_id": "P3",
+              "paper_id": "paper-ex-001",
+              "quote": "Samples were held at 25 C throughout the adsorption experiments."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question_id": "Q3",
+      "question": "该研究的局限是什么？作者是否讨论了不同膜厚的影响？",
+      "answer": "作者明确说明只测试了一种涂层厚度，这是研究局限；论文未报告不同膜厚的影响，无法确定膜厚是否改变结论。",
+      "conditions": [
+        "仅依据本文报道内容"
+      ],
+      "status": "partial",
+      "unanswered_parts": [
+        "不同膜厚对吸收速率的定量影响：材料未报道"
+      ],
+      "cites": [
+        "e3"
+      ],
+      "claims": [
+        {
+          "claim_id": "C3",
+          "text": "只测试了一种涂层厚度，为作者自述局限",
+          "kind": "reported",
+          "evidence": [
+            {
+              "paragraph_id": "P4",
+              "paper_id": "paper-ex-001",
+              "quote": "Only one coating thickness was tested, which the authors name as a limitation."
+            }
+          ]
+        },
+        {
+          "claim_id": "C4",
+          "text": "膜厚对结论的影响无法判断（推断：材料未报告）",
+          "kind": "inferred",
+          "evidence": [
+            {
+              "paragraph_id": "P4",
+              "paper_id": "paper-ex-001",
+              "quote": "Only one coating thickness was tested"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "questions": [
+      {
+        "question_id": "Q1",
+        "state": "answered"
+      },
+      {
+        "question_id": "Q2",
+        "state": "answered"
+      },
+      {
+        "question_id": "Q3",
+        "state": "partial"
+      }
+    ],
+    "counts": {
+      "answered": 2,
+      "partial": 1,
+      "refused": 0,
+      "unanswered": 0
+    },
+    "answers_supplied": 3
+  }
+}

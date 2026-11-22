@@ -1,0 +1,89 @@
+{
+  "schema_version": "web-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "body_extraction",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "locator_roundtrip",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "full_page_noise",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "citation_list_cut",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "footnote_cut",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "footnote_fp_guard",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "clean_baseline",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "number_preserved",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "number_dropped",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "glossary_enforced",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "glossary_match_clean",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "target_not_zh",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "translated_record_invalid",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "contract_passthrough",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_exit_undetermined",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_orphan_trace",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 16,
+    "of": 16
+  }
+}

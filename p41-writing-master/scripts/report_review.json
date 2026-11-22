@@ -1,0 +1,356 @@
+{
+  "schema_version": "review-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_comments",
+      "expected": [
+        "resp.no_comments"
+      ],
+      "fired": [
+        "resp.no_comments"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_letter",
+      "expected": [
+        "resp.no_letter"
+      ],
+      "fired": [
+        "resp.comment_unanswered",
+        "resp.no_letter"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "no_manuscript",
+      "expected": [
+        "resp.no_manuscript"
+      ],
+      "fired": [
+        "resp.no_manuscript"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "comment_type_missing",
+      "expected": [
+        "resp.comment_type_missing"
+      ],
+      "fired": [
+        "resp.comment_type_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "severity_missing",
+      "expected": [
+        "resp.severity_missing"
+      ],
+      "fired": [
+        "resp.severity_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "subrequirement_unanswered",
+      "expected": [
+        "resp.subrequirement_unanswered"
+      ],
+      "fired": [
+        "resp.subrequirement_unanswered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "subrequirement_split_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "comment_unanswered",
+      "expected": [
+        "resp.comment_unanswered"
+      ],
+      "fired": [
+        "resp.comment_unanswered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "response_orphaned",
+      "expected": [
+        "resp.response_orphaned"
+      ],
+      "fired": [
+        "resp.comment_unanswered",
+        "resp.response_orphaned"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "decision_undeclared",
+      "expected": [
+        "resp.decision_undeclared"
+      ],
+      "fired": [
+        "resp.decision_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "decision_invalid",
+      "expected": [
+        "resp.decision_invalid"
+      ],
+      "fired": [
+        "resp.decision_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "rebuttal_without_reason",
+      "expected": [
+        "resp.rebuttal_without_reason"
+      ],
+      "fired": [
+        "resp.rebuttal_without_reason"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "tone_missing",
+      "expected": [
+        "resp.tone_missing"
+      ],
+      "fired": [
+        "resp.tone_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "tone_invalid",
+      "expected": [
+        "resp.tone_invalid"
+      ],
+      "fired": [
+        "resp.tone_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "change_unspecified",
+      "expected": [
+        "resp.change_unspecified"
+      ],
+      "fired": [
+        "resp.change_unspecified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "change_unlocatable",
+      "expected": [
+        "resp.change_unlocatable"
+      ],
+      "fired": [
+        "resp.change_unlocatable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "locator_not_in_manuscript",
+      "expected": [
+        "resp.locator_not_in_manuscript"
+      ],
+      "fired": [
+        "resp.locator_not_in_manuscript"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "version_mismatch",
+      "expected": [
+        "resp.version_mismatch"
+      ],
+      "fired": [
+        "resp.version_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "change_not_verifiable",
+      "expected": [
+        "resp.change_not_verifiable"
+      ],
+      "fired": [
+        "resp.change_not_verifiable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "evidence_status_missing",
+      "expected": [
+        "resp.evidence_status_missing"
+      ],
+      "fired": [
+        "resp.evidence_status_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "evidence_bare_string_degrades",
+      "expected": [
+        "resp.evidence_status_missing"
+      ],
+      "fired": [
+        "resp.evidence_status_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "evidence_without_alternative",
+      "expected": [
+        "resp.evidence_without_alternative"
+      ],
+      "fired": [
+        "resp.evidence_without_alternative"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "evidence_source_missing",
+      "expected": [
+        "resp.evidence_source_missing"
+      ],
+      "fired": [
+        "resp.evidence_source_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "evidence_source_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "manuscript_unrevised",
+      "expected": [
+        "resp.manuscript_unrevised"
+      ],
+      "fired": [
+        "resp.manuscript_unrevised"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "manuscript_unrevised_guard_revised",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "manuscript_unrevised_guard_rebuttal",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 28,
+    "of": 28
+  },
+  "note": "One scenario per rule, aligned to the review-response scoring points. Clean baselines must report nothing."
+}

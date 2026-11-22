@@ -1,0 +1,36 @@
+{
+ "documents": [
+  {
+   "id": "sr-001",
+   "text": "id: sr-001\ndesign: randomised\nadults with chronic low back pain\nexercise therapy reduced pain at 12 months\nrisk: low"
+  },
+  {
+   "id": "sr-002",
+   "text": "id: sr-002\ndesign: randomised\nadults with chronic low back pain\nexercise therapy did not differ from usual care\nrisk: low"
+  },
+  {
+   "id": "sr-003",
+   "text": "id: sr-003\ndesign: randomised\nadolescents with scoliosis\nexercise therapy outcomes reported\nrisk: some"
+  },
+  {
+   "id": "sr-004",
+   "text": "id: sr-004\ndesign: cohort\nadults with chronic low back pain\nobservational exercise cohort\nrisk: high"
+  },
+  {
+   "id": "sr-005",
+   "text": "id: sr-005\ndesign: randomised\nadults with chronic low back pain\nyoga-based exercise improved function\nrisk: some"
+  },
+  {
+   "id": "sr-006",
+   "text": "id: sr-006\ndesign: protocol\nadults with chronic low back pain\nstudy protocol only, no outcome data\nrisk: n/a"
+  },
+  {
+   "id": "sr-002",
+   "text": "id: sr-002\ndesign: randomised\nadults with chronic low back pain\nexercise therapy did not differ from usual care\nrisk: low"
+  },
+  {
+   "id": "sr-007",
+   "text": "id: sr-007\ndesign: randomised\nadults with chronic low back pain\nretracted: this randomised exercise trial was retracted in 2026\nrisk: high"
+  }
+ ]
+}

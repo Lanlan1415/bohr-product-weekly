@@ -1,0 +1,166 @@
+{
+  "schema_version": "qa-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_answers",
+      "expected": [
+        "qa.no_answers"
+      ],
+      "fired": [
+        "qa.no_answers"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "empty_answer",
+      "expected": [
+        "qa.empty_answer"
+      ],
+      "fired": [
+        "qa.citation_unsupportive",
+        "qa.empty_answer",
+        "qa.question_uncovered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "refusal_without_reason",
+      "expected": [
+        "qa.refusal_without_reason"
+      ],
+      "fired": [
+        "qa.refusal_without_reason"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "uncited_answer",
+      "expected": [
+        "qa.uncited_answer"
+      ],
+      "fired": [
+        "qa.uncited_answer"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unknown_evidence",
+      "expected": [
+        "qa.unknown_evidence"
+      ],
+      "fired": [
+        "qa.unknown_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_no_locator",
+      "expected": [
+        "qa.citation_no_locator"
+      ],
+      "fired": [
+        "qa.citation_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_unsupportive",
+      "expected": [
+        "qa.citation_unsupportive"
+      ],
+      "fired": [
+        "qa.answer_value_not_in_source",
+        "qa.citation_unsupportive",
+        "qa.question_uncovered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "answer_value_not_in_source",
+      "expected": [
+        "qa.answer_value_not_in_source"
+      ],
+      "fired": [
+        "qa.answer_value_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "subquestion_unanswered",
+      "expected": [
+        "qa.subquestion_unanswered"
+      ],
+      "fired": [
+        "qa.subquestion_unanswered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "material_insufficient_unflagged",
+      "expected": [
+        "qa.material_insufficient_unflagged"
+      ],
+      "fired": [
+        "qa.material_insufficient_unflagged"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "conflict_unhandled",
+      "expected": [
+        "qa.conflict_unhandled"
+      ],
+      "fired": [
+        "qa.conflict_unhandled"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  },
+  "note": "One scenario per rule, aligned to the QA scoring points. Clean baselines must report nothing."
+}

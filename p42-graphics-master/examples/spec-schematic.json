@@ -1,0 +1,12 @@
+{
+  "font_size": 9,
+  "nodes": [
+    {"id": "A", "label": "Substrate", "layer": 0, "color": "#56B4E9"},
+    {"id": "B", "label": "Complex", "layer": 1, "color": "#009E73"},
+    {"id": "C", "label": "Product", "layer": 2, "color": "#E69F00"}
+  ],
+  "edges": [
+    {"from": "A", "to": "B", "type": "bind"},
+    {"from": "B", "to": "C", "type": "activate"}
+  ]
+}

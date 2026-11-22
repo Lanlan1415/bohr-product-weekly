@@ -1,0 +1,121 @@
+{
+  "period_months": 24,
+  "resource_budget": 100.0,
+  "resource_needed": 80.0,
+  "elements": {
+    "background": {
+      "text": "surface-area limitation",
+      "known": "uptake is surface limited",
+      "unknown": "whether a 42 nm coating changes the rate",
+      "to_test": "rate under paired controls"
+    },
+    "problem": {
+      "text": "the rate is the bottleneck"
+    },
+    "objectives": {
+      "text": "two measurable objectives"
+    },
+    "technical_route": {
+      "text": "three steps"
+    },
+    "schedule": {
+      "text": "four quarters"
+    },
+    "risks": {
+      "text": "four classified risks"
+    },
+    "outcomes": {
+      "text": "two assessable outcomes"
+    }
+  },
+  "materials": [
+    {
+      "id": "M1",
+      "locator": "run01.csv"
+    }
+  ],
+  "references": [
+    {
+      "key": "doe2020",
+      "title": "Porous coatings",
+      "year": 2020
+    }
+  ],
+  "claims": [
+    {
+      "text": "uptake is surface limited",
+      "material": "M1",
+      "version": "2024-05"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "O1",
+      "metric": "rate ratio",
+      "sample": "n=6 per arm",
+      "control": "uncoated",
+      "timepoint": "week 8",
+      "threshold": 3.0,
+      "threshold_basis": "pilot run M1 showed 2.8"
+    }
+  ],
+  "route": [
+    {
+      "id": "R1",
+      "input": "monomer solution",
+      "output": "coated sample"
+    },
+    {
+      "id": "R2",
+      "input": "coated sample",
+      "output": "rate curve",
+      "depends_on": [
+        "R1"
+      ]
+    }
+  ],
+  "schedule": [
+    {
+      "period": "Q1",
+      "end_month": 6,
+      "deliverable": "coating built",
+      "on_critical_path": true
+    },
+    {
+      "period": "Q2",
+      "end_month": 12,
+      "deliverable": "rate curve measured"
+    }
+  ],
+  "risks": [
+    {
+      "id": "K1",
+      "type": "data_access",
+      "trigger": "vendor delay over 2 weeks",
+      "impact": "Q1 slips",
+      "fallback": "use in-house monomer",
+      "decision_point": "week 3 of Q1"
+    },
+    {
+      "id": "K2",
+      "type": "method_feasibility",
+      "trigger": "pore collapse in 50% of runs",
+      "impact": "rate curve unusable",
+      "fallback": "lower template temperature",
+      "decision_point": "end of Q1"
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "P1",
+      "kind": "paper",
+      "assessment": "submitted to a peer-reviewed journal"
+    },
+    {
+      "id": "P2",
+      "kind": "dataset",
+      "assessment": "deposited with a DOI"
+    }
+  ],
+  "section": "research_plan"
+}

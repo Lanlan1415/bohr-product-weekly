@@ -1,0 +1,57 @@
+{
+  "case_id": "demo-longdoc-001",
+  "section": "longdoc",
+  "outline": [
+    {"id": "O1", "title": "intro", "argument_element": "question", "word_budget": 3000},
+    {"id": "O2", "title": "methods", "argument_element": "method", "word_budget": 4000},
+    {"id": "O3", "title": "results", "argument_element": "result", "word_budget": 5000},
+    {"id": "O4", "title": "discussion", "argument_element": "discussion", "word_budget": 4000},
+    {"id": "O5", "title": "limits", "argument_element": "limitation", "word_budget": 1500}
+  ],
+  "front_matter": {"toc": ["intro", "methods", "results", "discussion", "limits"],
+                   "figure_list": ["Fig 1"], "reference_section": "yes", "appendix": "yes"},
+  "terminology": [{"preferred": "uptake rate", "chapter": "1", "variants": []}],
+  "symbols": [{"symbol": "r", "meaning": "uptake rate"}],
+  "references": [{"key": "doe2020", "title": "coating raises uptake", "year": 2020,
+                  "topic": "coating raises uptake"}],
+  "figures": [{"number": 1, "caption": "uptake curves"}],
+  "tables": [{"number": 1, "caption": "measured uptake rates"}],
+  "chapters": [
+    {"number": 1, "title": "intro", "outline_id": "O1", "argument_element": "question",
+     "word_count": 2800,
+     "definitions": [{"term": "uptake rate", "text": "rate of uptake per unit area"}],
+     "answers": "whether a porous coating raises the uptake rate",
+     "claims": [{"text": "coating raises uptake", "reference": "doe2020"}],
+     "conclusions": [{"statement": "coating raises uptake rate", "direction": "increases"}],
+     "changelog": [{"what": "v1 drafted", "why": "outline O1"}]},
+    {"number": 2, "title": "methods", "outline_id": "O2", "argument_element": "method",
+     "word_count": 3900,
+     "answers": "how the coated samples were prepared and measured",
+     "changelog": [{"what": "v1 drafted", "why": "outline O2"}]},
+    {"number": 3, "title": "results", "outline_id": "O3", "argument_element": "result",
+     "word_count": 5200, "figure_refs": [1], "table_refs": [1],
+     "answers": "what the measurements show",
+     "changelog": [{"what": "v1 drafted", "why": "outline O3"}]},
+    {"number": 4, "title": "discussion", "outline_id": "O4", "argument_element": "discussion",
+     "word_count": 4100,
+     "answers": "what the result means against the literature",
+     "conclusions": [{"statement": "coating raises uptake rate", "direction": "increases"}],
+     "changelog": [{"what": "v1 drafted", "why": "outline O4"}]},
+    {"number": 5, "title": "limits", "outline_id": "O5", "argument_element": "limitation",
+     "word_count": 1400,
+     "answers": "what the conclusion does not cover",
+     "changelog": [{"what": "v1 drafted", "why": "outline O5"}]}
+  ],
+  "working_chapters": {
+    "format": "per-chapter editable working chapters with change records",
+    "carries": ["outline mapping", "terminology table", "changelog per chapter"]
+  },
+  "output_contract": {
+    "case_id": "echo of the input identifier",
+    "status": "audited run status",
+    "section": "audited section",
+    "working_chapters": "the deliverable, passed through from the spec",
+    "findings": "audit findings",
+    "severity_counts": "finding counts by severity"
+  }
+}

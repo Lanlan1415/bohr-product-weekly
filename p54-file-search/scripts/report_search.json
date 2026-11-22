@@ -1,0 +1,139 @@
+{
+  "schema_version": "file-search-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "single_term",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "boolean_and",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "boolean_or",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "boolean_all_any",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_hit_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "empty_corpus_refusal",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cjk_query",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "bare_string_doc",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "malformed_index",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "empty_query_refusal",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reproducible_record",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "doc_skipped_named",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_ok_writes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "section_locator",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "numbered_sentence_not_heading",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "meta_filter_hard",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "filter_invalid_refusal",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_content_named",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "doc_sha_in_hits",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "meta_invalid_warning",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_skipped_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_contract_passthrough",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "spec_carried_case_id",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "index_replay_with_filters",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 26,
+    "of": 26
+  }
+}

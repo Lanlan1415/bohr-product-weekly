@@ -1,0 +1,24 @@
+{
+ "documents": [
+  {
+   "id": "cand-001",
+   "text": "Irreversible electroporation for locally advanced pancreatic cancer: a prospective cohort.\nNinety patients received electroporation ablation with a median survival of 18 months."
+  },
+  {
+   "id": "cand-002",
+   "text": "Nanoknife ablation of the pancreas: a multicentre registry.\nThe nanoknife device delivered 90 pulses across three electrodes."
+  },
+  {
+   "id": "cand-003",
+   "text": "Thermal radiofrequency ablation of liver tumours.\nRadiofrequency electrodes were placed percutaneously; no pancreas involvement in this series."
+  },
+  {
+   "id": "cand-004",
+   "text": "EUS-guided fiducial placement before stereotactic radiotherapy.\nNo ablation device was used in this cohort."
+  },
+  {
+   "id": "cand-002",
+   "text": "Nanoknife ablation of the pancreas: a multicentre registry.\nThe nanoknife device delivered 90 pulses across three electrodes."
+  }
+ ]
+}

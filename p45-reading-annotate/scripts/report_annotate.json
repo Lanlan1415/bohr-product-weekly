@@ -1,0 +1,154 @@
+{
+  "schema_version": "annotate-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "anchor_ok",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "anchor_mismatch_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "types_preserved",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "note_kinds",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "versions_separate",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "linking_same_kind",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "retrieve",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "retrieve_miss_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "export",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "positive_link",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "single_term_no_link",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ambiguous_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "page_mismatch_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reingest_idempotent",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "pageless_verifies",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "verify_anchors",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ocr_drift_suggested",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ocr_drift_no_suggestion",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "declared_kind_unknown",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "type_unknown_preserved",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "doubt_kind",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_document",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "version_siblings_linked",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tag_preserved_and_filtered",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "offset_disambiguation",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "retrieve_filters",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "result_contract_passthrough",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "result_failed_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "store_corrupt_refused",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 29,
+    "of": 29
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": "review-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "theme_partition",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "claim_support_backlink",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "conflict_preserved",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "screened_out_audit",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "evidence_locator_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "battery_replay_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_examples_run",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_exit5",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  }
+}

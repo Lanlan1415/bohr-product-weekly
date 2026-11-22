@@ -1,0 +1,28 @@
+[
+  {
+    "id": "R1",
+    "task": "State the measured effect of the coating on uptake.",
+    "input": "Uptake rose three-fold under the coating. Only one thickness was tested, so the result does not generalise.",
+    "reference": "uptake rose three-fold under the coating",
+    "rubric": [
+      {"criterion": "effect stated with magnitude", "predicate": "any_of", "weight": 40,
+       "values": ["three-fold", "3-fold", "tripled"]},
+      {"criterion": "quote located in the input", "predicate": "anchor", "weight": 40,
+       "field": "quote"},
+      {"criterion": "no invented significance", "predicate": "not_contains", "weight": 20,
+       "values": ["p < 0.05", "significant (p"]}
+    ]
+  },
+  {
+    "id": "R2",
+    "task": "State the study's stated limitation.",
+    "input": "Uptake rose three-fold under the coating. Only one thickness was tested, so the result does not generalise.",
+    "reference": "only one coating thickness was tested, so the result does not generalise",
+    "rubric": [
+      {"criterion": "limitation named", "predicate": "contains", "weight": 60,
+       "values": ["thickness"]},
+      {"criterion": "scope of conclusion", "predicate": "any_of", "weight": 40,
+       "values": ["does not generalise", "cannot be generalised", "not generalisable"]}
+    ]
+  }
+]

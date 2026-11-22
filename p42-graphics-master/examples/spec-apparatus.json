@@ -1,0 +1,18 @@
+{
+  "figure_kind": "apparatus",
+  "font_size": 9,
+  "canvas_mm": [140, 70],
+  "materials": [
+    {"id": "m1", "name": "激光器"},
+    {"id": "m2", "name": "分束器"},
+    {"id": "m3", "name": "探测器"}
+  ],
+  "connections": [{"from": "n1", "to": "n2"}, {"from": "n2", "to": "n3"}],
+  "nodes": [
+    {"id": "n1", "label": "激光器", "evidence": "m1", "layer": 0, "color": "#56B4E9"},
+    {"id": "n2", "label": "分束器", "evidence": "m2", "layer": 1, "color": "#009E73"},
+    {"id": "n3", "label": "探测器", "evidence": "m3", "layer": 2, "color": "#E69F00"}
+  ],
+  "edges": [{"from": "n1", "to": "n2", "type": "flow"},
+            {"from": "n2", "to": "n3", "type": "flow"}]
+}

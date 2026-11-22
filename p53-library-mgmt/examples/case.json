@@ -1,0 +1,7 @@
+{
+  "case_id": "case-demo-53",
+  "output_contract": {
+    "deliverable": "library handover inventory",
+    "library_schema": "library/v1"
+  }
+}

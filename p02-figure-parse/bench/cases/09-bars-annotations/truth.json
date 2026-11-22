@@ -1,0 +1,38 @@
+{
+  "xlim": [
+    0.0,
+    4.0
+  ],
+  "ylim": [
+    0.0,
+    100.0
+  ],
+  "x_log": false,
+  "y_log": false,
+  "series": [],
+  "bars": [
+    {
+      "x": 0.5,
+      "value": 40
+    },
+    {
+      "x": 1.5,
+      "value": 60
+    },
+    {
+      "x": 2.5,
+      "value": 75
+    },
+    {
+      "x": 3.5,
+      "value": 50
+    }
+  ],
+  "bar_errors": [
+    5,
+    8,
+    6,
+    7
+  ],
+  "has_significance_mark": true
+}

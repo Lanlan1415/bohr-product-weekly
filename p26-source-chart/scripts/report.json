@@ -1,0 +1,244 @@
+{
+  "schema_version": "chart-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "empty_table",
+      "expected": [
+        "data.no_rows"
+      ],
+      "fired": [
+        "data.no_rows"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "partial_blank_err",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "scatter_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "missing_unit",
+      "expected": [
+        "axis.y_unit_missing"
+      ],
+      "fired": [
+        "axis.y_unit_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "unknown_column",
+      "expected": [
+        "encoding.column_missing"
+      ],
+      "fired": [
+        "encoding.column_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "text_in_numeric",
+      "expected": [
+        "encoding.not_numeric"
+      ],
+      "fired": [
+        "encoding.column_missing",
+        "encoding.not_numeric"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "no_error_meaning",
+      "expected": [
+        "error.meaning_undeclared"
+      ],
+      "fired": [
+        "error.meaning_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "n_mismatch",
+      "expected": [
+        "caption.n_mismatch"
+      ],
+      "fired": [
+        "caption.n_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "missing_required_channel",
+      "expected": [
+        "encoding.required_channel_unmapped"
+      ],
+      "fired": [
+        "encoding.required_channel_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "unknown_chart_kind",
+      "expected": [
+        "encoding.unknown_chart_kind"
+      ],
+      "fired": [
+        "encoding.unknown_chart_kind"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "unknown_comparison",
+      "expected": [
+        "annotation.unknown_comparison"
+      ],
+      "fired": [
+        "annotation.unknown_comparison"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "paths_not_text",
+      "expected": [
+        "export.no_live_text"
+      ],
+      "fired": [
+        "export.no_live_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "low_dpi",
+      "expected": [
+        "export.low_dpi",
+        "export.png_dpi_mismatch"
+      ],
+      "fired": [
+        "export.low_dpi",
+        "export.png_dpi_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "export_width",
+      "expected": [
+        "export.width_out_of_band"
+      ],
+      "fired": [
+        "export.width_out_of_band"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "cjk_label",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "unreadable_spec",
+      "expected": [
+        "spec.unreadable"
+      ],
+      "fired": [
+        "spec.unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "not_object",
+      "expected": [
+        "spec.not_object"
+      ],
+      "fired": [
+        "spec.not_object"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "missing_data",
+      "expected": [
+        "data.unreadable"
+      ],
+      "fired": [
+        "data.unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 19,
+    "of": 19
+  },
+  "note": "One planted defect per scenario. The clean baseline must stay silent on high and medium findings, so blanket flagging cannot pass."
+}

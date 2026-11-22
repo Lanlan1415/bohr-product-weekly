@@ -1,0 +1,50 @@
+{
+  "rows": [
+    {
+      "sample_id": "S1",
+      "absorbance": "0.32 AU",
+      "n_replicates": "6",
+      "measured": "2023-05-14"
+    },
+    {
+      "sample_id": "S2",
+      "absorbance": "not reported",
+      "n_replicates": "6",
+      "measured": "2023年6月1日"
+    }
+  ],
+  "columns": [
+    {
+      "name": "sample_id",
+      "semantic": "id"
+    },
+    {
+      "name": "absorbance",
+      "target_unit": "AU",
+      "plausible": [
+        0,
+        2
+      ],
+      "semantic": "numeric"
+    },
+    {
+      "name": "n_replicates",
+      "semantic": "numeric"
+    },
+    {
+      "name": "measured",
+      "semantic": "date"
+    }
+  ],
+  "key_columns": [
+    "sample_id"
+  ],
+  "value_columns": [
+    "absorbance"
+  ],
+  "missing_tokens": [
+    "NULL",
+    "-999",
+    "n.d."
+  ]
+}

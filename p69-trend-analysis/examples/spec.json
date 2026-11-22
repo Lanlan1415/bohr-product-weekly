@@ -1,0 +1,64 @@
+{
+  "section": "results_discussion",
+  "design": "observational",
+  "results_text": "该主题的年发文量自 2018 年的 12 篇升至 2024 年的 48 篇，四年间增至 4 倍。2021 年出现第一个峰值（占比 34%），2024 年占比达 45%。Transformer 子主题自 2023 年起占比过半（52%）。2025 年回落段未达到显著（P = 0.21，卡方检验）。",
+  "discussion_text": "时间趋势显示该主题处于扩张期 [doe2020]。2021 年前后的主题合并与图方法引入在时间上重合，可能与图神经网络的可用性有关 [doe2020]。阶段划分与上述结果一致：2018-2020 起步段、2021-2024 扩张段。2025 年回落段未达到显著，不宜解读为拐点。Roe 报告了不一致的结果 [roe2021]，其检索窗口仅覆盖 2020 年之前。",
+  "figures": [
+    {
+      "id": "表1 时间切片统计",
+      "values": [
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "12",
+        "18",
+        "30",
+        "48",
+        "87",
+        "34",
+        "45",
+        "52",
+        "4"
+      ],
+      "has_errorbar": true,
+      "errorbar": "95% CI"
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "2021-2024 扩张段 vs 2018-2020 起步段",
+      "significant": true,
+      "strength": "moderate"
+    },
+    {
+      "name": "2025 年回落段",
+      "significant": false
+    }
+  ],
+  "literature": [
+    {
+      "key": "doe2020",
+      "agrees": true
+    },
+    {
+      "key": "roe2021",
+      "agrees": false,
+      "finding": "the rise starts before 2020 in their window"
+    }
+  ],
+  "limitations": [
+    {
+      "level": "method",
+      "text": "仅检索两个数据库，预印本与会议论文未系统纳入"
+    },
+    {
+      "level": "measurement",
+      "text": "主题归属按关键词自动标注，未做人工复核"
+    }
+  ]
+}

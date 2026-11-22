@@ -1,0 +1,39 @@
+{
+  "case_id": "demo-stats-001",
+  "rows": [
+    {"subject": "S1", "group": "control", "response": "12.4 mg/L"},
+    {"subject": "S2", "group": "control", "response": "11.8 mg/L"},
+    {"subject": "S3", "group": "control", "response": "12.9 mg/L"},
+    {"subject": "S4", "group": "drug", "response": "31.2 mg/L"},
+    {"subject": "S5", "group": "drug", "response": "30.6 mg/L"},
+    {"subject": "S6", "group": "drug", "response": "31.9 mg/L"}
+  ],
+  "columns": [
+    {"name": "group", "semantic": "categorical"},
+    {"name": "response", "semantic": "numeric", "plausible": [0, 100]}
+  ],
+  "key_columns": ["subject"],
+  "missing_tokens": ["<LOQ"],
+  "group_col": "group",
+  "stats": [
+    {
+      "metric": "response",
+      "test": "two-sample t-test",
+      "group_col": "group",
+      "group_a": "control",
+      "group_b": "drug",
+      "p": 0.01,
+      "interpretation": "给药组均值为31.23，高于对照组的12.37，差异有统计学意义"
+    }
+  ],
+  "summary": "contract echo demo: two-group comparison with recomputed inference",
+  "output_contract": {
+    "case_id": "echo of the input identifier",
+    "status": "audited run status",
+    "stats_audit": "recomputed claim records (t, df, p, effect size, CI)",
+    "descriptives": "per-column n / centre / spread / quantiles",
+    "cleaned_table": "the cleaned table, also written as cleaned.csv",
+    "summary": "pass-through from the spec",
+    "figures": "not derivable by this audit"
+  }
+}

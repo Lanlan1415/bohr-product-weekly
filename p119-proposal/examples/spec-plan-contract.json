@@ -1,0 +1,73 @@
+{
+  "case_id": "demo-plan-001",
+  "section": "research_plan",
+  "period_months": 18,
+  "resource_budget": 40,
+  "resource_needed": 32,
+  "materials": [{"id": "M1", "name": "2025-03 coating runs", "source": "lab notebook"}],
+  "references": [{"key": "doe2020", "title": "Porous coatings raise uptake", "year": 2020}],
+  "elements": {
+    "background": {
+      "known": "coated substrates raise uptake in three published systems",
+      "unknown": "whether the rate change appears at the 42 nm thickness the platform can make",
+      "to_test": "rate ratio of coated vs uncoated substrate at one thickness",
+      "text": "Uptake is limited by surface area; prior coatings raise it, but no published system tested the thickness this platform can produce."
+    },
+    "problem": {"text": "whether a 42 nm porous coating raises uptake rate three-fold at 24 h"},
+    "objectives": {"text": "two objectives, each with metric, sample, control and timepoint"},
+    "technical_route": {"text": "two steps with input, output and a declared dependency"},
+    "schedule": {"text": "two phases inside the 18-month period, both on the critical path"},
+    "risks": {"text": "method and data-access risks, each with trigger, impact, fallback and decision point"},
+    "outcomes": {"text": "one paper and one dataset, each with an assessment and a mapped objective"}
+  },
+  "objectives": [
+    {"id": "O1", "metric": "uptake rate ratio", "sample": "n = 6 per arm",
+     "control": "uncoated substrate, same temperature", "timepoint": "24 h",
+     "threshold": 3.0, "threshold_basis": "rate change reported by [doe2020] at 40 nm"},
+    {"id": "O2", "metric": "coating thickness uniformity", "sample": "n = 6 wafers",
+     "control": "within-wafer variance", "timepoint": "at deposition"}
+  ],
+  "route": [
+    {"id": "R1", "objective": "O1", "input": "monomer solution", "output": "coated substrate",
+     "risk": "pore collapse", "fallback": "template removal at lower temperature",
+     "depends_on": []},
+    {"id": "R2", "objective": "O2", "input": "coated substrate", "output": "thickness map",
+     "risk": "roughness confounds the profile", "fallback": "AFM on a witness wafer",
+     "depends_on": ["R1"]}
+  ],
+  "schedule": [
+    {"period": "2025-03 to 2025-08", "end_month": 6,
+     "deliverable": "coating protocol and first rate dataset", "on_critical_path": true},
+    {"period": "2025-09 to 2026-02", "end_month": 12,
+     "deliverable": "rate ratio at three arm sizes, draft chapter", "on_critical_path": true}
+  ],
+  "claims": [
+    {"text": "40 nm coatings raised uptake rates in prior work",
+     "reference": "doe2020", "version": "v2.1"},
+    {"text": "the platform produced 38 nm coatings in the 2025-03 run",
+     "material": "M1", "version": "run 2025-03-14"}
+  ],
+  "risks": [
+    {"id": "K1", "type": "method_feasibility", "trigger": "two collapses in one week",
+     "impact": "route step R1 stalls", "fallback": "lower-temperature template removal",
+     "decision_point": "end of month 2"},
+    {"id": "K2", "type": "data_access", "trigger": "instrument booking denied twice",
+     "impact": "schedule slips one quarter", "fallback": "share time on the partner rig",
+     "decision_point": "end of month 4"}
+  ],
+  "outcomes": [
+    {"id": "W1", "objectives": ["O1"], "kind": "paper",
+     "assessment": "rate ratio confirmed by a second operator on the same rig"},
+    {"id": "W2", "objectives": ["O2"], "kind": "dataset",
+     "assessment": "thickness map accepted by the co-supervisor"}
+  ],
+  "deliverable_docx": {"format": "docx", "heading_numbering": "1 / 1.1", "editable": true},
+  "output_contract": {
+    "case_id": "echo of the input identifier",
+    "status": "audited run status",
+    "section": "audited section",
+    "findings": "audit findings",
+    "severity_counts": "finding counts by severity",
+    "deliverable_docx": "the editable deliverable descriptor, passed through from the spec"
+  }
+}

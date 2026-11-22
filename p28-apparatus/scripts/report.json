@@ -1,0 +1,114 @@
+{
+  "schema_version": "schematic-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "label_overlap",
+      "expected": [
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "fired": [
+        "label.outside_canvas",
+        "label.overlap",
+        "label.wider_than_box"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "font_too_small",
+      "expected": [
+        "font.too_small"
+      ],
+      "fired": [
+        "font.too_small"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "unsafe_colour",
+      "expected": [
+        "colour.not_cb_safe"
+      ],
+      "fired": [
+        "colour.not_cb_safe"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "backward_flow",
+      "expected": [
+        "edge.backward_flow"
+      ],
+      "fired": [
+        "edge.backward_flow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_entity",
+      "expected": [
+        "entity.duplicate"
+      ],
+      "fired": [
+        "entity.duplicate"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "paths_not_text",
+      "expected": [
+        "export.no_live_text"
+      ],
+      "fired": [
+        "export.no_font_family",
+        "export.no_live_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "low_dpi",
+      "expected": [
+        "export.low_dpi"
+      ],
+      "fired": [
+        "export.low_dpi"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 8,
+    "of": 8
+  },
+  "note": "Each scenario plants one defect and names the rule that must fire. The clean baseline must report no high or medium finding, so flagging everything is not a way to pass."
+}

@@ -1,0 +1,18 @@
+{
+  "structure": [
+    {"folder": "papers/涂层", "cues": ["涂层", "coating"]},
+    {"folder": "protocols/缓冲液", "cues": ["缓冲液", "buffer"]}
+  ],
+  "meta_fields": ["author", "year", "doi"],
+  "records": [
+    {"id": "paper-A", "title": "多孔涂层吸收速率研究",
+     "meta": {"author": "王某某", "year": 2023},
+     "text": "多孔涂层使吸收速率提高三倍。"},
+    {"id": "paper-B", "title": "多孔涂层吸收速率研究",
+     "meta": {"author": "王某某", "year": 2024, "doi": "10.0/xyz"},
+     "text": "多孔涂层在高温下的稳定性仍待验证，补充八组重复。"},
+    {"id": "protocol-C", "title": "Tris 缓冲液配制",
+     "text": "缓冲液配方：Tris 50 mM，pH 7.4，过滤后 4 C 保存。"}
+  ],
+  "query": "涂层 吸收速率"
+}

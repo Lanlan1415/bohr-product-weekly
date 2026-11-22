@@ -1,0 +1,57 @@
+{
+  "schema_version": "merge-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_two_routes",
+      "pass": true
+    },
+    {
+      "scenario": "status_strictest",
+      "pass": true
+    },
+    {
+      "scenario": "undetermined_dominates",
+      "pass": true
+    },
+    {
+      "scenario": "findings_attributed",
+      "pass": true
+    },
+    {
+      "scenario": "case_id_mismatch",
+      "pass": true
+    },
+    {
+      "scenario": "contract_union_nonnull_wins",
+      "pass": true
+    },
+    {
+      "scenario": "contract_conflict_flagged",
+      "pass": true
+    },
+    {
+      "scenario": "deliverables_union",
+      "pass": true
+    },
+    {
+      "scenario": "checked_per_route",
+      "pass": true
+    },
+    {
+      "scenario": "unreadable_input_refused",
+      "pass": true
+    },
+    {
+      "scenario": "no_inputs_refused",
+      "pass": true
+    },
+    {
+      "scenario": "single_route_identity",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  }
+}

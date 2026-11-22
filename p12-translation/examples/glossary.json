@@ -1,0 +1,24 @@
+{
+  "_readme": "可复用术语表模板（示例条目，按学科替换）。每个条目: preferred=锁定译法, variants=违规变体, source_form=锁定绑定的原文词(缺省用 concept key), abbreviation=目标语可用的缩写, basis=译法依据(标准/教科书/领域惯例), 供 xlate.term_variant / xlate.term_missing / xlate.term_entry_no_basis / xlate.glossary_conflict 四条规则使用。",
+  "吸附": {
+    "preferred": "sorption",
+    "variants": ["adsorption and absorption"],
+    "source_form": "吸附",
+    "abbreviation": "",
+    "basis": "IUPAC Compendium of Chemical Terminology, sorption covers both adsorption and absorption"
+  },
+  "机器学习": {
+    "preferred": "machine learning",
+    "variants": [],
+    "source_form": "机器学习",
+    "abbreviation": "ML",
+    "basis": "textbook convention; ML allowed after first mention"
+  },
+  "吸收率": {
+    "preferred": "uptake",
+    "variants": ["sorption rate"],
+    "source_form": "吸收率",
+    "abbreviation": "",
+    "basis": "field convention in coating/permeation studies; distinct from 吸附 above"
+  }
+}

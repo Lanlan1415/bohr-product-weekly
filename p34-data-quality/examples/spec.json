@@ -1,0 +1,21 @@
+{
+  "case_id": "demo-case-340",
+  "rows": [
+    {"sample_id": "S1", "bandgap": "3.20 eV", "measured_on": "2023/05/14"},
+    {"sample_id": "s1", "bandgap": "3200 meV", "measured_on": "2023年5月14日"},
+    {"sample_id": "S2", "bandgap": "not reported", "measured_on": "14.06.2023"}
+  ],
+  "columns": [
+    {"name": "sample_id", "semantic": "id"},
+    {"name": "bandgap", "target_unit": "eV", "plausible": [0, 6], "semantic": "numeric"},
+    {"name": "measured_on", "semantic": "date"}
+  ],
+  "key_columns": ["sample_id"],
+  "output_contract": {
+    "cleaned_table": "清洗后的表",
+    "quality_report": "逐列质量报告",
+    "change_ledger": "逐条变更台账",
+    "anomaly_notes": "异常与缺口说明"
+  },
+  "anomaly_notes": "S2 bandgap 未检出：missing，不是 0；14.06.2023 为 dot 格式日期，转 ISO。"
+}

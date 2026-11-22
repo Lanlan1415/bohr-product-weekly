@@ -1,0 +1,154 @@
+{
+  "_note": "示例输出——说明最终 result.json 的形状与字段，不是正式案例结果。对应 examples/spec-contract.json 的实跑引擎输出（见 audit_record.findings，5 条：2 high 3 medium），audit_report / evidence_and_boundaries / result_status 由 findings 组装填充。",
+  "case_id": "challenge-9e7302fd-case-02",
+  "section": "method_stats",
+  "status": "blocked",
+  "status_reason": "2 条 high：对照缺失、结局变量类型与模型不匹配；3 条 medium 为报告不全类，待补声明",
+  "audit_report": [
+    {
+      "rule": "msa.control_missing",
+      "severity": "high",
+      "location": "design 字段（研究设计节）",
+      "finding": "对照缺失：设计为 RCT 但没有声明对照或 comparison group",
+      "basis": "controls 字段为空——效应没有可比较的基线",
+      "suggestion": "在方法节写明对照组（安慰剂/标准治疗）与分组方式；这不是报告缺口，是设计要件",
+      "defect_class": "方法缺陷"
+    },
+    {
+      "rule": "msa.model_type_mismatch",
+      "severity": "high",
+      "location": "model 与 variables[pain_score]",
+      "finding": "模型不匹配：linear_regression 无法承载 binary 结局",
+      "basis": "pain_score 声明为 binary，线性回归要求数值/连续结局",
+      "suggestion": "改用 logistic 回归，或把结局改回连续评分并说明分析方式",
+      "defect_class": "方法缺陷"
+    },
+    {
+      "rule": "msa.cutpoint_unjustified",
+      "severity": "medium",
+      "location": "variables[pain_score].cutpoint",
+      "finding": "50% 减痛切点没有依据来源",
+      "basis": "cutpoint 非空而 cutpoint_basis 为空——切点疑似事后选择",
+      "suggestion": "给出文献/标准依据或改用预先设定的切点",
+      "defect_class": "报告不全"
+    },
+    {
+      "rule": "msa.sample_size_basis_missing",
+      "severity": "medium",
+      "location": "sample_size 字段",
+      "finding": "样本量 n=64 无估算依据",
+      "basis": "sample_size_basis 为空——没有把握度/效应量来源",
+      "suggestion": "补 power analysis（α、把握度、效应量来源）",
+      "defect_class": "报告不全"
+    },
+    {
+      "rule": "msa.attrition_unaccounted",
+      "severity": "medium",
+      "location": "recruited_n=80 vs analysed_n=64",
+      "finding": "入组 80 分析 64，16 例脱落未说明处理",
+      "basis": "attrition_handling 为空——分析集可能是有偏子集",
+      "suggestion": "说明脱落原因与处理（ITT/PP），并报告两组脱落率",
+      "defect_class": "报告不全"
+    }
+  ],
+  "evidence_and_boundaries": {
+    "manuscript_quotes": [
+      {
+        "locator": "方法节·样本量段",
+        "quote": "n = 64 (32 per arm)"
+      },
+      {
+        "locator": "方法节·变量定义",
+        "quote": "pain reduced by >= 50% at week 12"
+      }
+    ],
+    "field_evidence": [
+      {
+        "field": "design",
+        "value": "rct"
+      },
+      {
+        "field": "model",
+        "value": "linear_regression"
+      },
+      {
+        "field": "variables[pain_score].type",
+        "value": "binary"
+      }
+    ],
+    "pending_review": [
+      {
+        "item": "50% 切点是否确有文献依据",
+        "reason": "引擎只验证依据字段是否声明，不验证依据本身成立"
+      }
+    ]
+  },
+  "result_status": {
+    "pass": [
+      "随机化方式已声明",
+      "盲法已声明",
+      "主要终点已标记",
+      "缺失值处理已声明"
+    ],
+    "problems": [
+      "msa.control_missing",
+      "msa.model_type_mismatch",
+      "msa.cutpoint_unjustified",
+      "msa.sample_size_basis_missing",
+      "msa.attrition_unaccounted"
+    ],
+    "pending": [
+      "切点依据的真实性（见 pending_review）"
+    ],
+    "not_checked": []
+  },
+  "findings": [
+    {
+      "rule": "msa.control_missing",
+      "severity": "high",
+      "message": "a comparative design declares no control or comparison group, so the effect has nothing to be measured against"
+    },
+    {
+      "rule": "msa.cutpoint_unjustified",
+      "severity": "medium",
+      "message": "a variable is dichotomised at a cut point with no stated basis (literature, standard, prespecified) — the cut looks chosen after looking",
+      "variable": "pain_score",
+      "reporting_gap": true
+    },
+    {
+      "rule": "msa.model_type_mismatch",
+      "severity": "high",
+      "message": "the declared model cannot carry an outcome of the declared type, so the analysis as reported is not the analysis that fits the data",
+      "model": "linear_regression",
+      "outcome_type": "binary"
+    },
+    {
+      "rule": "msa.sample_size_basis_missing",
+      "severity": "medium",
+      "message": "a sample size is given with no basis (power analysis, effect size source, alpha and power), so it reads as whatever the sample turned out to be",
+      "reporting_gap": true
+    },
+    {
+      "rule": "msa.attrition_unaccounted",
+      "severity": "medium",
+      "message": "fewer participants were analysed than recruited and no attrition handling is stated, so the analysed set may be a selected subset",
+      "recruited": 80,
+      "analysed": 64,
+      "reporting_gap": true
+    }
+  ],
+  "severity_counts": {
+    "high": 2,
+    "medium": 3
+  },
+  "checked": {
+    "section": "method_stats",
+    "items": 2
+  },
+  "limits": [
+    "报告不全类 finding 只断言声明缺失，不断言做法错误",
+    "模型-结局匹配按声明值判定，不重跑分析"
+  ],
+  "sources": "spec 声明的 design/variables/endpoints/sample_size 字段；抽取自稿件方法节",
+  "uncertainty": "cutpoint 依据是否成立需人工复核；建议作者在 response 中附文献"
+}

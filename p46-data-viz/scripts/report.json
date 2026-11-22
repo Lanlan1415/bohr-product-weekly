@@ -1,0 +1,309 @@
+{
+  "schema_version": "chart-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "empty_table",
+      "expected": [
+        "data.no_rows"
+      ],
+      "fired": [
+        "data.no_rows"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "partial_blank_err",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "missing_unit",
+      "expected": [
+        "axis.y_unit_missing"
+      ],
+      "fired": [
+        "axis.y_unit_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "unknown_column",
+      "expected": [
+        "encoding.column_missing"
+      ],
+      "fired": [
+        "encoding.column_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "text_in_numeric",
+      "expected": [
+        "encoding.not_numeric"
+      ],
+      "fired": [
+        "encoding.column_missing",
+        "encoding.not_numeric"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "n_mismatch",
+      "expected": [
+        "caption.n_mismatch"
+      ],
+      "fired": [
+        "caption.n_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "missing_required_channel",
+      "expected": [
+        "encoding.required_channel_unmapped"
+      ],
+      "fired": [
+        "encoding.required_channel_unmapped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "unknown_chart_kind",
+      "expected": [
+        "encoding.unknown_chart_kind"
+      ],
+      "fired": [
+        "encoding.unknown_chart_kind"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "unknown_comparison",
+      "expected": [
+        "annotation.unknown_comparison"
+      ],
+      "fired": [
+        "annotation.unknown_comparison"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "paths_not_text",
+      "expected": [
+        "export.no_live_text"
+      ],
+      "fired": [
+        "export.no_live_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "low_dpi",
+      "expected": [
+        "export.low_dpi"
+      ],
+      "fired": [
+        "export.low_dpi"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "cjk_labels",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "glyph_missing",
+      "expected": [
+        "font.glyph_missing"
+      ],
+      "fired": [
+        "font.glyph_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "time_as_bars",
+      "expected": [
+        "encoding.time_as_bars"
+      ],
+      "fired": [
+        "encoding.time_as_bars"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "truncated_baseline",
+      "expected": [
+        "axis.truncated_baseline"
+      ],
+      "fired": [
+        "axis.truncated_baseline"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "log_nonpositive",
+      "expected": [
+        "axis.log_nonpositive"
+      ],
+      "fired": [
+        "axis.log_nonpositive",
+        "axis.value_clipped",
+        "caption.n_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "too_many_categories",
+      "expected": [
+        "read.too_many_categories"
+      ],
+      "fired": [
+        "read.too_many_categories"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "errorbar_meaning_missing",
+      "expected": [
+        "annotation.errorbar_meaning_missing"
+      ],
+      "fired": [
+        "annotation.errorbar_meaning_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "heatmap_clipped",
+      "expected": [
+        "color.range_clipped"
+      ],
+      "fired": [
+        "color.range_clipped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "heatmap_undeclared",
+      "expected": [
+        "color.range_undeclared"
+      ],
+      "fired": [
+        "color.range_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "heatmap_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "panel_missing",
+      "expected": [
+        "layout.panel_missing"
+      ],
+      "fired": [
+        "layout.panel_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "label_truncated",
+      "expected": [
+        "input.label_truncated"
+      ],
+      "fired": [
+        "input.label_truncated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 24,
+    "of": 24
+  },
+  "note": "One planted defect per scenario. The clean baseline must stay silent on high and medium findings, so blanket flagging cannot pass."
+}

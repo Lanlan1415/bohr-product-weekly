@@ -1,0 +1,58 @@
+{
+  "case_id": "demo-diss-001",
+  "section": "dissemination",
+  "audience": "public",
+  "evidence": [
+    "doe2020"
+  ],
+  "jargon_terms": [
+    "adsorption isotherm"
+  ],
+  "abbreviations": {
+    "XRD": "X-ray diffraction"
+  },
+  "term_locks": {
+    "uptake rate": {
+      "preferred": "uptake rate",
+      "variants": [
+        "absorption speed"
+      ]
+    }
+  },
+  "source_text": "The porous coating raised the uptake rate 3-fold (Fig 3b, p.7). The measurement was made at room temperature with six replicates. We note that only one coating thickness was tested, so the effect size may differ for other thicknesses.",
+  "key_conclusions": [
+    "A porous coating raises uptake 3-fold"
+  ],
+  "limitations": "only one coating thickness was tested",
+  "open_questions": [
+    "whether the 3-fold effect holds at other coating thicknesses"
+  ],
+  "text": "A porous coating raises uptake 3-fold (Fig. 3b) [doe2020]. The result comes from one coating thickness, so other thicknesses may behave differently. It remains open whether the effect holds at other thicknesses.",
+  "changes": [
+    {
+      "action": "replaced the jargon 'adsorption isotherm' with plain wording",
+      "reason": "the audience is the general public"
+    },
+    {
+      "action": "kept the measured value 3-fold and the pointer to Fig. 3b",
+      "reason": "measured values and figure references must survive the rewrite"
+    },
+    {
+      "action": "restated the single-thickness limitation in plain words",
+      "reason": "results without limits read as certainty"
+    }
+  ],
+  "rewrite": {
+    "genre": "plain-language science note",
+    "audience": "public",
+    "body": "A porous coating raises uptake 3-fold (Fig. 3b) [doe2020]. ..."
+  },
+  "output_contract": {
+    "case_id": "echo of the input identifier",
+    "status": "audited run status",
+    "section": "audited section",
+    "rewrite": "the deliverable, passed through from the spec",
+    "findings": "audit findings",
+    "severity_counts": "finding counts by severity"
+  }
+}

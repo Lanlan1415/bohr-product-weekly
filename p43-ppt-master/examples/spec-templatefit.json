@@ -1,0 +1,33 @@
+{
+ "section": "template_fit",
+ "template": {
+  "name": "校级开题模板 v2",
+  "layouts": [
+   "title",
+   "content"
+  ],
+  "fonts": {
+   "ea": "Microsoft YaHei"
+  }
+ },
+ "slides": [
+  {
+   "layout": "title",
+   "title": "开题：涂层研究",
+   "claim": "涂层可将吸收速率提高三倍",
+   "evidence": "绪论",
+   "strength": "suggested"
+  },
+  {
+   "layout": "content",
+   "title": "方法",
+   "claim": "6 次重复下 25 C 恒温测得三倍提升",
+   "evidence": "方法章节",
+   "strength": "measured",
+   "bullets": [
+    "样本 6 重复",
+    "25 C 恒温"
+   ]
+  }
+ ]
+}

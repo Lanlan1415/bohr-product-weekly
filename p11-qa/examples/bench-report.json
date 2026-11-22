@@ -1,0 +1,510 @@
+{
+  "_comment": "示例：bench_qa.py 的回归报告样式（本次为 2026-11-22 实跑结果快照，可复跑验证）。",
+  "schema_version": "qa-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "no_answers",
+      "expected": [
+        "qa.no_answers"
+      ],
+      "fired": [
+        "qa.no_answers",
+        "qa.question_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "empty_answer",
+      "expected": [
+        "qa.empty_answer"
+      ],
+      "fired": [
+        "qa.empty_answer",
+        "qa.question_uncovered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "question_missing",
+      "expected": [
+        "qa.question_missing"
+      ],
+      "fired": [
+        "qa.question_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "questions_all_covered_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "malformed_answer",
+      "expected": [
+        "qa.malformed_answer"
+      ],
+      "fired": [
+        "qa.malformed_answer"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "malformed_evidence",
+      "expected": [
+        "qa.malformed_evidence"
+      ],
+      "fired": [
+        "qa.malformed_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "evidence_absent_with_cites",
+      "expected": [
+        "qa.malformed_evidence"
+      ],
+      "fired": [
+        "qa.malformed_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "evidence_absent_claims_only_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "subquestion_unanswered",
+      "expected": [
+        "qa.subquestion_unanswered"
+      ],
+      "fired": [
+        "qa.subquestion_unanswered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "uncited_answer",
+      "expected": [
+        "qa.uncited_answer"
+      ],
+      "fired": [
+        "qa.uncited_answer"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unknown_evidence",
+      "expected": [
+        "qa.unknown_evidence"
+      ],
+      "fired": [
+        "qa.unknown_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_no_locator",
+      "expected": [
+        "qa.citation_no_locator"
+      ],
+      "fired": [
+        "qa.citation_no_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "paragraph_id_is_locator_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "citation_unsupportive",
+      "expected": [
+        "qa.citation_unsupportive"
+      ],
+      "fired": [
+        "qa.answer_value_not_in_source",
+        "qa.citation_unsupportive",
+        "qa.question_uncovered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "answer_value_not_in_source",
+      "expected": [
+        "qa.answer_value_not_in_source"
+      ],
+      "fired": [
+        "qa.answer_value_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "crosslang_value_bridge",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "crosslang_value_wrong",
+      "expected": [
+        "qa.answer_value_not_in_source"
+      ],
+      "fired": [
+        "qa.answer_value_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "crosslang_quotes_cjk",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "status_invalid",
+      "expected": [
+        "qa.status_invalid"
+      ],
+      "fired": [
+        "qa.status_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "conditions_missing",
+      "expected": [
+        "qa.conditions_missing"
+      ],
+      "fired": [
+        "qa.conditions_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "conditions_empty_ok_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "partial_without_gaps",
+      "expected": [
+        "qa.partial_without_gaps"
+      ],
+      "fired": [
+        "qa.partial_without_gaps"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "partial_with_gaps_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "claim_clean_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "claim_no_evidence",
+      "expected": [
+        "qa.claim_no_evidence"
+      ],
+      "fired": [
+        "qa.claim_no_evidence"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "claim_evidence_incomplete",
+      "expected": [
+        "qa.claim_evidence_incomplete"
+      ],
+      "fired": [
+        "qa.claim_evidence_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "claim_evidence_locator_ok_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "claim_kind_invalid",
+      "expected": [
+        "qa.claim_kind_invalid"
+      ],
+      "fired": [
+        "qa.claim_kind_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "claim_inferred_ok_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "claim_field_missing",
+      "expected": [
+        "qa.claim_field_missing"
+      ],
+      "fired": [
+        "qa.claim_field_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "paper_quote_ok_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "quote_not_in_paper",
+      "expected": [
+        "qa.quote_not_in_paper"
+      ],
+      "fired": [
+        "qa.quote_not_in_paper"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unknown_paper",
+      "expected": [
+        "qa.unknown_paper"
+      ],
+      "fired": [
+        "qa.unknown_paper"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "citation_no_paper",
+      "expected": [
+        "qa.citation_no_paper"
+      ],
+      "fired": [
+        "qa.citation_no_paper"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "material_insufficient_unflagged",
+      "expected": [
+        "qa.material_insufficient_unflagged"
+      ],
+      "fired": [
+        "qa.material_insufficient_unflagged"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "material_refused_ok_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "refusal_without_reason",
+      "expected": [
+        "qa.refusal_without_reason"
+      ],
+      "fired": [
+        "qa.refusal_without_reason"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "refusal_status_bridge",
+      "expected": [
+        "qa.refusal_without_reason"
+      ],
+      "fired": [
+        "qa.refusal_without_reason"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "input_error_status_refusal_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "conflict_unhandled",
+      "expected": [
+        "qa.conflict_unhandled"
+      ],
+      "fired": [
+        "qa.conflict_unhandled"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "conflict_acknowledged_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "coverage_summary_shape",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    }
+  ],
+  "totals": {
+    "passed": 43,
+    "of": 43
+  },
+  "note": "One scenario per rule plus false-positive guards, aligned to the QA scoring points. Clean baselines must report nothing."
+}

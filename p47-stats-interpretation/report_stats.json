@@ -1,0 +1,418 @@
+{
+  "schema_version": "stats-bench/v2",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": "diff=18.8667 means=(12.3667,31.2333)"
+    },
+    {
+      "scenario": "direction_mismatch",
+      "expected": [
+        "stats.direction_mismatch"
+      ],
+      "fired": [
+        "stats.direction_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "direction_field",
+      "expected": [
+        "stats.direction_mismatch"
+      ],
+      "fired": [
+        "stats.direction_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "significance_overclaim",
+      "expected": [
+        "stats.significance_mismatch"
+      ],
+      "fired": [
+        "stats.p_mismatch",
+        "stats.significance_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "p_mismatch_claimed",
+      "expected": [
+        "stats.p_mismatch"
+      ],
+      "fired": [
+        "stats.p_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": "p_computed=4e-06"
+    },
+    {
+      "scenario": "p_mismatch_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": "p_computed=0.343096"
+    },
+    {
+      "scenario": "significance_underclaim",
+      "expected": [
+        "stats.significance_mismatch"
+      ],
+      "fired": [
+        "stats.significance_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "number_not_in_table",
+      "expected": [
+        "stats.number_not_in_table"
+      ],
+      "fired": [
+        "stats.number_not_in_table"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "value_field_mismatch",
+      "expected": [
+        "stats.number_not_in_table"
+      ],
+      "fired": [
+        "stats.number_not_in_table"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "metric_unknown",
+      "expected": [
+        "stats.metric_unknown"
+      ],
+      "fired": [
+        "stats.metric_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "group_unknown",
+      "expected": [
+        "stats.group_unknown"
+      ],
+      "fired": [
+        "stats.group_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "claim_malformed",
+      "expected": [
+        "stats.claim_malformed"
+      ],
+      "fired": [
+        "stats.claim_malformed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "missing_named",
+      "expected": [
+        "clean.missing_values"
+      ],
+      "fired": [
+        "clean.missing_values"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "duplicate_experiments",
+      "expected": [
+        "clean.duplicate_experiments"
+      ],
+      "fired": [
+        "clean.duplicate_experiments"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "rounded_citation_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "sample_too_small",
+      "expected": [
+        "stats.sample_too_small"
+      ],
+      "fired": [
+        "stats.sample_too_small"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "zero_variance",
+      "expected": [
+        "stats.zero_variance"
+      ],
+      "fired": [
+        "stats.zero_variance"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "missing_ratio_high",
+      "expected": [
+        "stats.missing_ratio_high"
+      ],
+      "fired": [
+        "clean.missing_values",
+        "stats.missing_ratio_high",
+        "stats.sample_too_small"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "groups_omitted",
+      "expected": [
+        "stats.groups_omitted"
+      ],
+      "fired": [
+        "stats.groups_omitted"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": "anova={'F': 769.469841, 'df1': 2, 'df2': 6, 'p': 0.0, 'eta_squared': 0.9961, 'k_groups': 3, 'n': 9}"
+    },
+    {
+      "scenario": "groups_omitted_declared_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "multiple_comparison",
+      "expected": [
+        "stats.multiple_comparison"
+      ],
+      "fired": [
+        "stats.groups_omitted",
+        "stats.multiple_comparison"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "multiple_comparison_declared_fp",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "outliers_iqr",
+      "expected": [
+        "stats.outliers_iqr"
+      ],
+      "fired": [
+        "stats.outliers_iqr"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "assumption_normality",
+      "expected": [
+        "stats.outliers_iqr",
+        "stats.assumption_normality"
+      ],
+      "fired": [
+        "stats.assumption_normality",
+        "stats.outliers_iqr"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "descriptives_layer",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": "d=31.2999 g=25.0399 t=38.3344 ci=(17.4854,20.2479)"
+    },
+    {
+      "scenario": "math_anchors",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cli_unreadable_spec",
+      "expected": [
+        "clean.spec_unreadable"
+      ],
+      "fired": [
+        "clean.spec_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "undetermined",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cli_no_rows",
+      "expected": [
+        "clean.spec_unreadable"
+      ],
+      "fired": [
+        "clean.spec_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "undetermined",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cli_missing_spec",
+      "expected": [
+        "clean.spec_unreadable"
+      ],
+      "fired": [
+        "clean.spec_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "undetermined",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cli_rows_not_list",
+      "expected": [
+        "clean.spec_unreadable"
+      ],
+      "fired": [
+        "clean.spec_unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "undetermined",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "scenario": "cli_case_contract",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true,
+      "extra": ""
+    }
+  ],
+  "totals": {
+    "passed": 31,
+    "of": 31
+  },
+  "note": "Each scenario plants one defect or proves one FP guard. The clean baseline must report no high or medium finding, the computed claim record is asserted against hand-checked group means, and the distribution math is asserted against table anchors."
+}

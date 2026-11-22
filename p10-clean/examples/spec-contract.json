@@ -1,0 +1,28 @@
+{
+  "case_id": "demo-clean-001",
+  "columns": [
+    {"name": "bandgap", "target_unit": "eV", "plausible": [0, 6]},
+    {"name": "conc", "target_unit": "mol/L", "plausible": [0, 100]}
+  ],
+  "key_columns": ["material"],
+  "value_columns": ["bandgap", "conc"],
+  "field_aliases": {"bg": "bandgap"},
+  "missing_tokens": ["<LOD"],
+  "source_column": "study",
+  "rows": [
+    {"material": "TiO2", "bg": " 3.20 eV ", "conc": "5 mM", "study": "S1"},
+    {"material": "titanium dioxide", "bandgap": "3.05 eV", "conc": "0.005 mol/L", "study": "S2"},
+    {"material": "ZnO", "bandgap": "not reported", "conc": "1 mM", "study": "S1"},
+    {"material": "GaN", "bandgap": "3.0-3.4 eV", "conc": "<LOD", "study": "S3"}
+  ],
+  "summary": "contract echo demo: pooled bandgap records across three studies",
+  "output_contract": {
+    "case_id": "echo of the input identifier",
+    "status": "audited run status",
+    "changes": "row-level change ledger (rule, row, column, original, new, why)",
+    "cleaned_table": "the analysable table, also written as cleaned.csv",
+    "pending_review": "the to-confirm list",
+    "summary": "pass-through from the spec",
+    "figures": "not derivable by a cleaning pass"
+  }
+}

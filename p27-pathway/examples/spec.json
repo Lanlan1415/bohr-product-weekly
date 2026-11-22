@@ -1,0 +1,38 @@
+{
+  "species": "human",
+  "canvas_mm": [150, 70],
+  "font_size": 9,
+  "aliases": {"TP53": ["Tp53", "p53"]},
+  "materials": [
+    {"id": "m1", "name": "TP53", "source": "Results ¶2"},
+    {"id": "m2", "name": "MDM2", "source": "Results ¶2"},
+    {"id": "m3", "name": "CDKN1A", "source": "Fig 4b"}
+  ],
+  "connections": [
+    {"from": "g1", "to": "p1", "source": "Results ¶2: p53 induces MDM2"},
+    {"from": "p1", "to": "g2", "source": "Fig 4b: MDM2 represses CDKN1A"}
+  ],
+  "compartments": [
+    {"id": "cytosol", "label": "细胞质", "layers": [0, 1], "color": "#EDEDED"},
+    {"id": "nucleus", "label": "细胞核", "layers": [2], "color": "#F7F7F7"}
+  ],
+  "nodes": [
+    {"id": "g1", "label": "TP53", "kind": "gene", "evidence": "m1", "layer": 0,
+     "compartment": "cytosol",
+     "accession": "HGNC:11998", "accession_source": "hgnc", "color": "#56B4E9"},
+    {"id": "p1", "label": "MDM2", "kind": "protein", "evidence": "m2", "layer": 1,
+     "compartment": "cytosol",
+     "accession": "Q00987", "accession_source": "uniprot", "color": "#009E73"},
+    {"id": "g2", "label": "CDKN1A", "kind": "gene", "evidence": "m3", "layer": 2,
+     "compartment": "nucleus",
+     "accession": "HGNC:1784", "accession_source": "hgnc", "color": "#E69F00"}
+  ],
+  "edges": [
+    {"from": "g1", "to": "p1", "type": "activate", "confidence": "confirmed"},
+    {"from": "p1", "to": "g2", "type": "inhibit", "confidence": "confirmed"}
+  ],
+  "confidence_required": true,
+  "legend": ["TP53 (gene)", "MDM2 (protein)", "CDKN1A (gene)"],
+  "legend_required": true,
+  "legend_notes": ["节点颜色 = Okabe-Ito 分组编码；实线 = 确认的调控关系"]
+}

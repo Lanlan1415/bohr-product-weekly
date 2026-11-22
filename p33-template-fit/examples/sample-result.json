@@ -1,0 +1,75 @@
+{
+  "schema_version": "deckbuild/v1",
+  "status": "clean",
+  "findings": [],
+  "severity_counts": {},
+  "deck": {
+    "slides": 2,
+    "size_emu": [
+      12192000,
+      6858000
+    ],
+    "spacing": {
+      "title": 32,
+      "body": 20
+    },
+    "fonts": {
+      "latin": "Arial",
+      "ea": "Microsoft YaHei"
+    }
+  },
+  "preview": {
+    "rendered": false,
+    "reason": "no office renderer on PATH (soffice / office-renderer)"
+  },
+  "reproducibility": {
+    "deterministic": true,
+    "note": "two builds compared on slide text and geometry",
+    "detail": {}
+  },
+  "checked": {
+    "slides": 2,
+    "text_measured": true,
+    "font_file": "C:\\Windows\\Fonts\\msyh.ttc",
+    "minimum_font_pt": 14.0,
+    "glyph_coverage": "measured",
+    "note": "overflow measured against glyph metrics"
+  },
+  "limits": [
+    "preview not rendered: no office renderer on PATH (soffice / office-renderer)"
+  ],
+  "template_measured": {
+    "file": "examples/template.potx",
+    "read": true,
+    "slide_size_emu": [
+      12192000,
+      6858000
+    ],
+    "layouts": [
+      "Title Slide",
+      "Title and Content"
+    ],
+    "theme_fonts": {
+      "major_latin": "Arial",
+      "major_ea": "Microsoft YaHei",
+      "minor_latin": "Arial",
+      "minor_ea": "Microsoft YaHei"
+    },
+    "masters": [
+      "ppt/slideMasters/slideMaster1.xml"
+    ]
+  },
+  "case_id": "ppt-710fbc72-demo",
+  "slide_evidence_map": [
+    {
+      "slide": 1,
+      "source": "paper",
+      "locator": "Section 1, p.1"
+    },
+    {
+      "slide": 2,
+      "source": "figure",
+      "locator": "Fig. 3b, p.7"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": "contract-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_exit_0",
+      "pass": true,
+      "detail": "exit=0"
+    },
+    {
+      "scenario": "case_id_recorded",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "contract_all_fields",
+      "pass": true,
+      "detail": "echoed=['case_id', 'findings', 'section', 'severity_counts', 'status', 'working_chapters']"
+    },
+    {
+      "scenario": "passthrough_untouched",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "derived_filled_by_audit",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "no_null_contract_fields",
+      "pass": true,
+      "detail": "no field left null on the happy path"
+    },
+    {
+      "scenario": "rerun_byte_identical",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "unknown_section_exit_5",
+      "pass": true,
+      "detail": "exit=5"
+    },
+    {
+      "scenario": "case_id_cli_wins",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "refusal_keeps_contract_nulls",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "hostile_bad_json",
+      "pass": true,
+      "detail": "exit=5 wrote=True"
+    },
+    {
+      "scenario": "hostile_non_object",
+      "pass": true,
+      "detail": "exit=5 wrote=True"
+    },
+    {
+      "scenario": "hostile_no_section",
+      "pass": true,
+      "detail": "exit=5 wrote=True"
+    },
+    {
+      "scenario": "hostile_section_is_list",
+      "pass": true,
+      "detail": "exit=5 wrote=True"
+    },
+    {
+      "scenario": "hostile_empty_object",
+      "pass": true,
+      "detail": "exit=5 wrote=True"
+    },
+    {
+      "scenario": "hostile_missing_file",
+      "pass": true,
+      "detail": "exit=5"
+    },
+    {
+      "scenario": "contract_not_object_reported",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "totals": {
+    "passed": 17,
+    "of": 17
+  }
+}

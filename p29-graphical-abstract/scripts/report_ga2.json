@@ -1,0 +1,122 @@
+{
+  "schema_version": "ga2-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "takeaway_missing",
+      "expected": [
+        "ga.missing_takeaway"
+      ],
+      "fired": [
+        "ga.missing_takeaway"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "value_not_in_source",
+      "expected": [
+        "ga.value_not_in_source"
+      ],
+      "fired": [
+        "ga.value_not_in_source",
+        "legend.entry_unmatched"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "size_out_of_spec",
+      "expected": [
+        "ga.size_out_of_spec"
+      ],
+      "fired": [
+        "ga.size_out_of_spec"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "untraceable",
+      "expected": [
+        "trace.entity_untraceable"
+      ],
+      "fired": [
+        "trace.entity_untraceable",
+        "trace.material_not_drawn"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "bad_evidence",
+      "expected": [
+        "trace.evidence_not_in_materials"
+      ],
+      "fired": [
+        "trace.evidence_not_in_materials",
+        "trace.material_not_drawn"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "material_unused",
+      "expected": [
+        "trace.material_not_drawn"
+      ],
+      "fired": [
+        "trace.material_not_drawn"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "missing_glyphs",
+      "expected": [
+        "export.missing_glyphs"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "nondeterministic",
+      "expected": [
+        "repro.nondeterministic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true,
+      "status": "blocked"
+    }
+  ],
+  "totals": {
+    "passed": 9,
+    "of": 9
+  },
+  "note": "Claim rules plus provenance, glyph coverage and determinism. Two scenarios inject a defect by patching a font resolver and the determinism check, because those cannot be expressed in a spec."
+}

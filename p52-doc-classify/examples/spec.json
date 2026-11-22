@@ -1,0 +1,18 @@
+{
+  "taxonomy": [
+    {"category": "实验方法", "cues": ["方法", "protocol", "we measured", "步骤", "实验"],
+     "examples": ["We measured uptake at 25 C with six replicates."]},
+    {"category": "研究结果", "cues": ["结果", "increased", "three-fold", "表明", "提高了"],
+     "examples": []},
+    {"category": "数据集", "cues": ["dataset", "csv", "supplementary", "附表"],
+     "examples": []}
+  ],
+  "records": [
+    {"id": "doc-001", "title": "涂层论文笔记",
+     "text": "结果：多孔涂层使吸收速率提高三倍（three-fold）。"},
+    {"id": "doc-002", "title": "实验记录",
+     "text": "方法：we measured uptake at 25 C，每组六个重复。结果：重复性良好。"},
+    {"id": "doc-003", "title": "购物清单",
+     "text": "牛奶、鸡蛋、咖啡豆。"}
+  ]
+}
