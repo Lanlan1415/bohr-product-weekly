@@ -156,8 +156,82 @@ def s_docfile_formfeed(d: Path, name: str) -> dict:
         return {"name": name, "pass": False, "why": f"page={page} (expected 2)"}
     return {"name": name, "pass": True, "why": f"pages={info.get('pages')} page=2"}
 
+def s_result_contract(d: Path, name: str) -> dict:
+    """result echoes case_id + output_contract fields; missing ones land null + limits."""
+    store = d / "ws.json"
+    (d / "doc.txt").write_text(DOC, encoding="utf-8")
+    case = d / "case.json"
+    case.write_text(json.dumps({
+        "case_id": "case-rc-1",
+        "output_contract": ["status", "case_id", "reading_result", "anchors",
+                            "reading_notes", "not_derivable_field"],
+        "reading_notes": "carried-value"}), encoding="utf-8")
+    run(store, "open", "--doc-id", "paper", "--text", str(d / "doc.txt"), "--page-starts", "0,2")
+    run(store, "note", "--doc-id", "paper",
+        "--quote", "Uptake rose three-fold", "--text", "key effect")
+    code, _ = run(store, "result", "--case", str(case), "--out", str(d / "out"))
+    res_file = d / "out" / "result.json"
+    if code or not res_file.exists():
+        return {"name": name, "pass": False, "why": f"result exit {code}"}
+    res = json.loads(res_file.read_text(encoding="utf-8"))
+    if res.get("case_id") != "case-rc-1" or res.get("reading_notes") != "carried-value":
+        return {"name": name, "pass": False, "why": "contract echo wrong"}
+    if not res.get("anchors"):
+        return {"name": name, "pass": False, "why": "engine-carried anchors missing"}
+    if res.get("not_derivable_field") is not None or not res.get("limits"):
+        return {"name": name, "pass": False, "why": "undeducible field must be null + limits"}
+    return {"name": name, "pass": True, "why": "case_id + contract fields echoed, null+limits for the rest"}
+
+
+def s_result_refusals(d: Path, name: str) -> dict:
+    """Bad case / bad store refuse with exit 5 + result.json, never a traceback."""
+    case = d / "case.json"
+    case.write_text("{not json", encoding="utf-8")
+    code, _ = run(d / "ws.json", "result", "--case", str(case), "--out", str(d / "out1"))
+    if code != 5 or not (d / "out1" / "result.json").exists():
+        return {"name": name, "pass": False, "why": f"bad case: exit {code}"}
+    (d / "broken_ws.json").write_text("{oops", encoding="utf-8")
+    case2 = d / "case2.json"
+    case2.write_text(json.dumps({"case_id": "c2", "output_contract": ["status"]}), encoding="utf-8")
+    code, _ = run(d / "broken_ws.json", "result", "--case", str(case2), "--out", str(d / "out2"))
+    if code != 5 or not (d / "out2" / "result.json").exists():
+        return {"name": name, "pass": False, "why": f"bad store: exit {code}"}
+    return {"name": name, "pass": True, "why": "both refusals recorded exit 5 + result.json"}
+
+
+def s_open_missing_doc(d: Path, name: str) -> dict:
+    """open with a missing file refuses exit 5, prints one JSON line."""
+    code, info = run(d / "ws.json", "open", "--doc-id", "x", "--text", str(d / "nope.txt"))
+    if code != 5 or info.get("ok") is not False:
+        return {"name": name, "pass": False, "why": f"exit {code} {str(info)[:60]}"}
+    return {"name": name, "pass": True, "why": "missing document refused exit 5 with a reason"}
+
+
+def s_ask_evidence_quote(d: Path, name: str) -> dict:
+    """ask --evidence-quote: a wrong evidence quote refuses exit 4; a right one is stored."""
+    store = d / "ws.json"
+    (d / "doc.txt").write_text(DOC, encoding="utf-8")
+    run(store, "open", "--doc-id", "paper", "--text", str(d / "doc.txt"), "--page-starts", "0,2")
+    code, _ = run(store, "ask", "--doc-id", "paper",
+                  "--quote", "Uptake rose three-fold",
+                  "--question", "effect?", "--answer", "3x",
+                  "--evidence-quote", "no such sentence here")
+    if code != 4:
+        return {"name": name, "pass": False, "why": f"absent evidence exit {code}"}
+    code, _ = run(store, "ask", "--doc-id", "paper",
+                  "--quote", "Uptake rose three-fold",
+                  "--question", "effect?", "--answer", "3x",
+                  "--evidence-quote", "Only one coating thickness was tested")
+    ws = json.loads(store.read_text(encoding="utf-8"))
+    q = ws.get("questions", [{}])[-1]
+    if code or "evidence" not in q:
+        return {"name": name, "pass": False, "why": f"evidence not stored (exit {code})"}
+    return {"name": name, "pass": True, "why": "evidence quote located and bound to the answer"}
+
+
 SCEN = [s_golden_path, s_quote_absent, s_anchor_goes_stale, s_persistence,
-        s_page_attribution, s_docfile_formfeed]
+        s_page_attribution, s_docfile_formfeed, s_result_contract, s_result_refusals,
+        s_open_missing_doc, s_ask_evidence_quote]
 
 
 def main() -> int:

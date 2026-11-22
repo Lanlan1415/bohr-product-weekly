@@ -20,6 +20,21 @@ The task names four properties, and each one is enforced rather than described:
 | 留得下来 — nothing lost with the conversation | the workspace is a file, re-read by the next process |
 | 讲得清楚 — the path can be replayed | export refuses while any anchor fails verification |
 
+## 运行时入口（每案例六步）
+
+1. **读输入**：`/input/case.json` 与 `task.md`。从 case.json 取 `case_id` 与 `output_contract`
+   字段清单——两者必须出现在最终 result.json 里。
+2. **取文本**：PDF 先用 `pdftotext`（保留换页符 U+000C）抽成带分页结构的文本；纯文本直接用。
+   抽不出文本层（扫描件）→ 如实走拒绝路径，不猜。
+3. **打开文档**：`open --doc-file`（分页符自动变页码）或 `open --text --page-starts`。
+4. **定位与提问/批注**：`find` → `ask`（可带 `--evidence-quote` 让答案自带证据）→ `note`。
+5. **复核**：`verify` → `export`（锚点失效即拒写）。
+6. **落盘契约**：`result --case /input/case.json --out /app/output`——写 result.json，
+   case_id + output_contract 全字段回填（引擎已有值保留、spec 携带值直通、推导不出 null+limits）。
+
+任务措辞 → 动作：找段落→find；选中文本问答→ask；划线批注→note；生成阅读记录→export；
+只问不读/网络检索→越界，如实说明本客户端不做检索。
+
 ## What an anchor is
 
 ```json
@@ -34,133 +49,116 @@ combination is what makes the anchor both **re-verifiable** (anyone with the doc
 Page numbers come from declared page breaks, not from an estimate. A guessed page is an anchor a
 reader cannot verify, which defeats the purpose.
 
-## Workflow
-
-### 1. Open a document
+## Quick start
 
 ```bash
-python scripts/cli.py --store ws.json open --doc-id paper --text doc.txt --page-starts 2
-```
-
-`--page-starts` gives the first paragraph index of each page after the first. Paragraphs 0–1 are
-page 1, paragraphs 2+ are page 2.
-
-**A PDF enters through extraction, not through guessing.** Extract the text per page with a tool
-that keeps form feeds (U+000C — `pdftotext` writes one between pages), then let the client turn
-those declared breaks into page numbers:
-
-```bash
-pdftotext paper.pdf extracted.txt
 python scripts/cli.py --store ws.json open --doc-id paper --doc-file extracted.txt
-```
-
-`--doc-file` reports the page starts it derived (`derived_page_starts`) so the mapping stays
-auditable. A page number from declared structure — explicit breaks or form feeds — is
-verifiable; an inferred one is not.
-
-### 2. Locate, then ask or annotate
-
-```bash
 python scripts/cli.py --store ws.json find --doc-id paper --quote "Uptake rose three-fold"
 python scripts/cli.py --store ws.json ask  --doc-id paper --quote "Uptake rose three-fold" \
-  --question "what was the measured effect?" --answer "uptake rose three-fold under the coating"
+  --question "what was the measured effect?" --answer "uptake rose three-fold" \
+  --evidence-quote "Only one coating thickness was tested"
 python scripts/cli.py --store ws.json note --doc-id paper --quote "Only one coating thickness" \
   --text "the report itself flags this limitation"
-```
-
-`find` prints the anchors it built. `ask` re-locates the quote itself; if the quote is not in the
-document it exits `4` and records nothing — that refusal is the product, not an edge case.
-
-### 3. Verify, then export
-
-```bash
 python scripts/cli.py --store ws.json verify
 python scripts/cli.py --store ws.json export --out session.md
+python scripts/cli.py --store ws.json result --case /input/case.json --out /app/output
 ```
 
-`export` runs `verify` first and refuses to write if any anchor is stale. Example output:
-
-```markdown
-### Q: what was the measured effect?
-*anchor*: `paper` p.2, ¶3, chars 0–22
-
-> Uptake rose three-fold
-
-**A**: uptake rose three-fold under the coating
-```
-
-### Exit codes
-
-| code | meaning |
-|-|-|
-| 0 | ok |
-| 3 | `find` matched nothing |
-| 4 | refused: quote absent, anchor invalid, or export blocked by a stale anchor |
+`export` runs `verify` first and refuses to write if any anchor is stale. `ask` refuses an answer
+whose `--evidence-quote` is not in the document — an answer carrying no evidence is a refusal,
+not an edge case.
 
 ## Output contract
 
-`/app/output/result.json` should carry, per case, the workspace summary: documents with their
-sha256, the anchors with their page/paragraph/range, the questions and notes, and
-`verify`'s result. The persisted workspace is the audit trail; `session.md` is the human view.
+每个案例 result.json 三段对齐题目要求：
 
-Anything the material did not support — a quote that is not in the document, a page that the
-declared breaks do not give — is refused with a reason and an exit code, never filled in.
+| 题目三段 | result.json 落点 | 完成标准 |
+|-|-|-|
+| 阅读/解析结果 | `reading_result`（documents+sha256、anchors、verify 结果） | 覆盖任务要求且能回到材料定位 |
+| 证据与边界 | `evidence_and_boundaries`（逐锚点 + unreported 清单） | 关键结论可复核，无法判断不写成事实 |
+| 运行状态 | `status`（done/review/undetermined）+ `run_state`（退出码语义与人工接管位置） | 异常原因与接管位置清楚 |
+
+`case_id` 顶层回填；`output_contract` 字段——引擎已有的保留、spec 携带的直通、推导不出的
+null + limits 注记。拒绝路径（store/case 不可读）写 undetermined result.json，exit 5，永不
+traceback。
+
+## Exit codes
+
+| code | meaning |
+|-|-|
+| 0 | ok / result written |
+| 2 | usage error |
+| 3 | `find` matched nothing |
+| 4 | refused: quote absent, evidence absent, anchor invalid, or export blocked |
+| 5 | undetermined: unreadable store/case/document, unwritable output |
 
 ## Limits
 
 - **Plain text only.** A PDF enters as extracted text (`pdftotext` keeps form feeds, which
   `--doc-file` turns into page numbers); PDF layout, figures and tables are outside this client.
-  A document with no paragraph structure cannot produce verifiable anchors.
+  A scanned page with no text layer cannot produce verifiable anchors — declared, not guessed.
 - **Page breaks are declared, not inferred.** Inferring them would make every page number an
   unverifiable estimate.
+- **Anchors are exact substrings.** A paraphrase cannot anchor; a selection spanning a page
+  break lands on the paragraph that holds the quote, and the export shows that page only.
 - **Anchors do not survive a document edit.** That is intentional: `verify` reports the break
-  rather than silently re-pointing the anchor, because a silently moved anchor is worse than a
-  visible failure.
+  rather than silently re-pointing the anchor.
 - **One workspace, one reader.** Concurrent writers will overwrite each other; there is no lock.
 - **No retrieval.** The client stores what you ask and where it came from; choosing the question
   is the reader's job.
 
-## Failure handling
+## 异常处置
 
-| symptom | what to do |
+| 情形 | 处置 |
 |-|-|
-| `quote not found` (exit 4) | the passage is not in this document — check the doc id and the text |
-| `anchor rejected` | the range or page no longer matches; re-run `find` |
-| `export` refused with `invalid` | a quoted paragraph was edited; re-anchor the affected records |
-| `document … is not in the workspace` | the workspace is from another document; open it or use a new store |
-| nothing found by `find` | the quote is a paraphrase; anchors are exact substrings |
+| 扫描件无文本层 | 抽取为空 → 如实拒绝（exit 5），建议先 OCR；不猜测内容 |
+| 加密 / 超大文件 | 读取失败 exit 5 + 原因；超大文件建议先切分再打开 |
+| 选区跨页 | 锚点落在引文所在段落，页码取该段所属页；导出如实标注 |
+| 引文是转述不在原文 | find 无命中 exit 3 / ask exit 4 —— 锚点只收逐字串 |
+| 问答缺少依据 | `--evidence-quote` 不在原文 → exit 4 拒绝记录该答案 |
+| 批注写入失败 | store 不可写 exit 5 + 原因，数据不丢（内存态不假装已保存） |
+| 导出被失效锚点拦截 | exit 4 + invalid 清单，重新 find 后再导出 |
+| workspace 损坏 / 不是 JSON | result 命令写 undetermined result.json`rc.refused`，其余命令一行 JSON 原因，exit 5 |
+| 文档重开内容已变 | verify 点名失效锚点，不静默改址 |
+| case.json 不可读 | result 命令写 undetermined result.json，exit 5 |
 
 ## Verification
 
 ```bash
-python scripts/bench_reader.py   # 6 behavioural scenarios
+python scripts/bench_reader.py   # 10 behavioural scenarios
 ```
 
 Each scenario drives the CLI and asserts a property: the golden path keeps its anchors, a quote
 that is absent is refused, a stale anchor blocks export, the session survives process exit, a
-page number follows the declared breaks, and a form-feed file gets real page numbers. All 6 pass
-on this machine.
+page number follows the declared breaks, a form-feed file gets real page numbers, the result
+echoes case_id + output_contract (carried value直通, undeducible null+limits), bad case/store
+refuse exit 5 with result.json, a missing document refuses exit 5, and an answer whose
+evidence quote is absent is refused while a real one is bound. All 10 pass on this machine.
 
-This benchmark is behavioural rather than defect-injection: the interesting baseline is a client
-that *refuses*, so a run that merely succeeds proves nothing.
 ## Requirements
 
 Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
 
 ## 创新增益
 
-本 Skill 相比通用 Agent 的核心新增能力：
-
-1. **规则优先级库**：每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时由优先级决定胜者且双方都留痕——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改动——如果仍有改动说明规则间存在冲突，这是一个可计算的 self-check。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，审计者可以逐条复核或撤销任何单条修改。
-
-bench 目录下的 reader 是上述能力的回归证据（见 Verification 节 场景，clean 基线必须零发现）。
+1. **可复验证锚点**：page+paragraph+char range+quote 四元组，任何人可复算
+   `paragraph[start:end] == quote`——通用 Agent 的引用通常是页码级，无法机械复核。
+   边界：不适用扫描件（无文本层），已声明。
+2. **声明式页码**：页码来自显式分页结构（分页符），不是推断——页码可审计
+   （`derived_page_starts` 留痕）。证据：bench page_attribution + docfile_formfeed。
+3. **答案自带证据**：`--evidence-quote` 强制答案引用原文并先定位后入库——"答案没有依据"
+   被机械拒绝（rubric 点名失败模式）。证据：bench ask_evidence_quote。
+4. **会话文件化**：workspace 是磁盘文件，进程退出后重读——阅读状态跨会话保持且可复放。
+5. **拒绝即产品**：引文缺失/锚点失效/证据缺失全部结构化拒绝，不静默填空。
+   证据：bench quote_absent + anchor_goes_stale + result_refusals。
 
 ## 生态贡献
 
-- **SKILL.md** 包含用途、适用条件、调用方式、输入输出、异常处理、限制和自查方法
-- **scripts/** 纯标准库可独立导入，规则库可通过 spec 配置扩展
-- **examples/** 提供最小调用示例和示意输出
-- **bench/** 回归套件可独立复跑验证
-
+- **SKILL.md**：用途、触发条件、六步运行时入口、任务措辞路由、输出契约、异常处置 10 行、限制
+- **scripts/**：`reader.py`（工作区/锚点/导出库）与 `cli.py`（命令入口）纯标准库可独立导入
+- **examples/**：最小调用示例与示意输出（标注"示例"）
+- **scripts/bench_reader.py**：10 场景行为回归可独立复跑，report_reader.json 留痕
+- **数据格式**：workspace JSON 与 session.md 导出格式有文档，第三方可复用
+- **适用范围**：文本层 PDF 与纯文本；扫描件边界已声明
+- **限制**：Limits 节逐条列出
+- **维护**：退出码语义与运行契约固定，版本随包提交

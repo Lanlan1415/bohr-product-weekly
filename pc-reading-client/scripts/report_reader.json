@@ -30,11 +30,31 @@
       "name": "docfile_formfeed",
       "pass": true,
       "why": "pages=2 page=2"
+    },
+    {
+      "name": "result_contract",
+      "pass": true,
+      "why": "case_id + contract fields echoed, null+limits for the rest"
+    },
+    {
+      "name": "result_refusals",
+      "pass": true,
+      "why": "both refusals recorded exit 5 + result.json"
+    },
+    {
+      "name": "open_missing_doc",
+      "pass": true,
+      "why": "missing document refused exit 5 with a reason"
+    },
+    {
+      "name": "ask_evidence_quote",
+      "pass": true,
+      "why": "evidence quote located and bound to the answer"
     }
   ],
   "totals": {
-    "passed": 6,
-    "of": 6
+    "passed": 10,
+    "of": 10
   },
   "note": "Behavioural: each scenario runs the CLI and asserts the four properties the task names. A clean run is not the baseline here, a missing refusal is."
 }
