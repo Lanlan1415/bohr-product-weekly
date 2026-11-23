@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p73-db-query
+https://github.com/Lanlan1415/bohr-product-weekly
+p73-db-query/

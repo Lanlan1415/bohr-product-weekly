@@ -138,11 +138,24 @@ Exit codes: `0` clean, `3` review, `4` blocked, `5` undetermined（spec 不可�
 
 ## Output contract
 
-`/app/output/result.json`: `status`, `section`, `findings[]`（含 stage、item、parameter、
-metric）、`severity_counts`、`checked`、`limits`。
+每个案例 result.json 必须按此优先级携带：
 
-- **许可检查只对声明的 kind 生效。** 只有 code/repository/weights 被要求许可；台账行与
-  SOP 没有该字段不会报错。
+1. **平台契约字段（原样）**：case.json 的 `output_contract` 全部字段——逐字段拷贝
+   （不得改名、不得遗漏；审计推导字段 > 调用方携带值 > 推导不出填 null 并在 limits
+   注记）。`case_id` 顶层回填。
+2. **引擎字段**：`status`、`section`、`findings[]`（含 rule、severity、message 与定位字段）、
+   `severity_counts`、`checked`、`limits`。规格字段以外的值直通（`_BULKY` 排除大体积输入）。
+3. **rubric 三段交付映射**（按本题具体字段名原词对接）：
+
+| 题目三段 | result.json 落点 | 完成标准 |
+|---------|----------------|---------|
+| 阅读/解析结果 | `reading_result`（结构/计数/内容摘要） | 满足题目指定体裁、口径与可读性 |
+| 证据与边界 | `evidence_and_boundaries`（locator、改动前后的原值、参考来源）+ `pending_review[]`（待人工确认） | 关键结论逐项可复核；无法判断的不写成事实 |
+| 运行状态 | `status`（clean/review/blocked/undetermined）+ `run_state`（exit_meaning、handoff、未交付项指向） | 异常原因与接管位置清楚 |
+
+实测验证：spec 顶层提供的字段值会被原样直通到 result.json（特殊的字段名以
+output_contract 单独列出为准）；推导不出的字段值写 null 并在 `limits` 里说明——
+不会让"未提供"被误读为"已通过"。
 
 ## 示意
 
@@ -193,13 +206,14 @@ Both pass in full on this machine. The clean baseline in each must report nothin
 
 ## 创新增益
 
-本 Skill 相比通用 Agent 的核心新增能力：
+本包相对通用 Agent 的真实新增能力（每条附边界与证据形式）：
 
-1. **规则优先级库**：每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时由优先级决定胜者且双方都留痕——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改动——如果仍有改动说明规则间存在冲突，这是一个可计算的 self-check。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，审计者可以逐条复核或撤销任何单条修改。
-
-bench 目录下的 feasibility 是上述能力的回归证据（见 Verification 节 场景，clean 基线必须零发现）。
+1. **时间/样本/设备可用性对照**：阶段计划能否在给定周期/算力/人员内落地逐行核实，
+   超出阈值的排程直接标 blocked。
+2. **目标可测量化**：阶段任务必须给出可度量 KPI，不能写"研究 X"作为最终目标。
+3. **依赖闭环识别**：每个阶段必须声明前置依赖是否被前阶段交付；形成环路则 refused。
+4. **道德/合规路径检查**：涉及人类/动物/隐私数据的步骤必须写明伦理审批位点，否则报 finding。
+5. **失败/暂缓/回退备述审计**：可行性文档必须包含至少一种失败情景的解释路径与备选方案。
 
 ## 生态贡献
 

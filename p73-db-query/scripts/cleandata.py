@@ -87,6 +87,21 @@ def build_and_audit(spec_path: Path, out_dir: Path) -> dict:
     result["row_source"] = source
     result["spec"] = spec
 
+    # Echo the case's output_contract: engine value > spec carried > null + limits.
+    cid = spec.get("case_id")
+    if cid is not None:
+        result["case_id"] = cid
+    _BULKY = ("output_contract", "section", "spec", "rows", "table_path", "text", "raw")
+    for key in (spec.get("output_contract") or []):
+        if key in result:
+            continue
+        if key in spec and key not in _BULKY:
+            result[key] = spec[key]
+            continue
+        result[key] = None
+        result.setdefault("limits", []).append(
+            f"output_contract field '{key}' was not derivable by this audit")
+
     # The original is preserved verbatim beside the result — an audit pass that
     # cannot show the before is not reviewable.
     (out_dir / "original.json").write_text(

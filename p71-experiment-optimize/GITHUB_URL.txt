@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p71-experiment-optimize
+https://github.com/Lanlan1415/bohr-product-weekly
+p71-experiment-optimize/
