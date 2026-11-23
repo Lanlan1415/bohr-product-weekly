@@ -3,7 +3,7 @@
     {
       "name": "clean_basic",
       "pass": true,
-      "why": "outline=1, backend=pymupdf"
+      "why": "outline=2, backend=pymupdf"
     },
     {
       "name": "case_unreadable",
@@ -38,22 +38,22 @@
     {
       "name": "encrypted_pdf",
       "pass": true,
-      "why": "exit 5, reason=all_backends_failed"
+      "why": "exit 5, reason=encrypted"
     },
     {
       "name": "chinese_pdf",
       "pass": true,
-      "why": "status=review, backend=pdftotext"
+      "why": "status=clean, backend=pymupdf"
     },
     {
       "name": "bom_case_spec",
       "pass": true,
-      "why": "exit 3, status=review"
+      "why": "exit 0, status=clean"
     },
     {
       "name": "dict_output_contract",
       "pass": true,
-      "why": "status=review"
+      "why": "status=clean"
     },
     {
       "name": "long_form_pdf",

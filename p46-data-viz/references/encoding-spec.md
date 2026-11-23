@@ -1,107 +1,81 @@
-# Encoding spec and how channels are validated
+# Encoding spec and validation
 
-## Why channels map to column *names*
+## Channel-to-column model
 
-A spec that says `"y": [12.4, 31.2, 10.1, 14.8]` has already thrown away the link
-to the source. A spec that says `"y": "response"` keeps it: the value at any mark
-can be found again in the table, and a reviewer can check the mapping instead of
-trusting it.
+Values belong in the data table, not hand-copied into the spec. `encoding.y = "response"`
+retains the source relationship; `encoding.y = [12.4, 31.2]` does not. `field_types` records
+nominal/ordinal/quantitative/temporal inference evidence. Automatic mode writes a resolved spec and
+then follows the same validation path as explicit mode.
 
-This indirection is the whole reason traceability is possible. Values live in the
-data file and nowhere else.
+Supported kinds are `bar`, `line`, `scatter`, `box`, `heatmap`, and `histogram`. Channels are
+`x`, `y`, `value`, `group`, `x_err`, and `y_err`, but only where meaningful:
+
+| kind | required | numeric requirements and layout |
+|-|-|-|
+| bar | x,y | y (and optional y_err) numeric; stable x category order and dodged groups |
+| line | x,y | x,y numeric; rows sorted by numeric x within each series |
+| scatter | x,y | x,y numeric; missing coordinates stay undrawn, never become row numbers |
+| box | x,y | y numeric; x×group boxes with visible raw observations |
+| heatmap | x,y,value | value numeric; x/y can be categories; no group channel |
+| histogram | x | x numeric; optional group; y is derived Count and must not be mapped |
+
+`x_err` is supported for line/scatter; `y_err` for bar/line/scatter. Unknown channels or channels
+that do not fit the kind are refused. `y2`, `secondary_y`, `right_y`, and `twinx` are refused as
+`encoding.dual_axis_unsupported` rather than silently ignored.
 
 ## Validation order
 
-1. **Chart kind** — must be one of `bar`, `line`, `scatter`, `box`, `heatmap`.
-   An unknown kind is refused, never mapped to "the closest thing".
-2. **Required channels** — each kind declares what it cannot be drawn without
-   (`heatmap` additionally needs `value`). A missing channel is a refusal.
-3. **Empty table** — a header-only table is refused with `data.no_rows`, never
-   rendered as an empty panel and never crashed on.
-4. **Column existence** — every mapped column must be a real column. The finding
-   lists the available columns so the fix is a one-line edit.
-5. **Type fit** — which channels must be numeric depends on the kind:
-   `value`, `y_err` and `x_err` always; `y` for every kind except heatmap (its y
-   is a grid coordinate); `x` only for line and scatter, whose x sits on a
-   continuous scale. "Fully" means every non-blank cell parses; a column that is
-   90% numeric is not numeric, because the remaining 10% would silently become
-   gaps or zeros.
-6. **Unreadable inputs** — a spec that is not JSON, not an object, or a data file
-   that cannot be parsed produces status "undetermined" (exit 5) with a named
-   finding, never a traceback.
+1. Chart kind and empty table (`data.no_rows`).
+2. Encoding object, required channels, unsupported dual axes/channels.
+3. Every mapped column exists. CSV duplicate headers and rows wider than the header are rejected.
+4. Required numeric channels must parse all non-missing values. Blank/NULL tokens remain missing;
+   other text is not converted to zero.
+5. Bar and heatmap category/series keys must be unique. Duplicate keys would overlap and therefore
+   produce `data.duplicate_marks`; aggregate explicitly or choose box/scatter.
+6. Only then are dependencies and rendering attempted.
 
-## What refusal looks like
+Unknown kinds and invalid plans return `refused` with exit 5. Unreadable spec/data, missing
+matplotlib/numpy, or a render failure return `undetermined` with exit 5. Both produce result.json;
+readable specs retain case_id and all output_contract keys, including null+limits for unknown values.
 
-```json
-{
-  "status": "refused",
-  "findings": [
-    {"rule": "encoding.not_numeric", "severity": "high", "channel": "y",
-     "column": "response",
-     "message": "'response' is not fully numeric, so it cannot drive a numeric channel"}
-  ],
-  "note": "the spec was refused rather than approximated"
-}
-```
+## Rendering and derived transformations
 
-Refusing costs one round trip. Approximating costs a wrong figure that looks
-finished, which is worse in every case that matters.
+- **bar**: each bar records source row and actual centre/height. It is not valid to infer aggregate
+  means from repeated rows implicitly.
+- **box**: the statistical box is derived by matplotlib, while every source observation is overlaid
+  and mapped to its real display coordinate and value.
+- **line/scatter**: source rows retain x_err/y_err and actual x/y artist values. Log scales and
+  declared limits are applied before the clipping checks.
+- **heatmap**: absent cells are NaN gaps. Duplicate cells are refused. A declared colour range and
+  value unit are checked; out-of-range values cannot be silently pinned to the palette ends.
+- **histogram**: `bins` defaults to 10, or strictly increasing `bin_edges` can be supplied. Shared
+  edges across groups, member rows, counts, and bin assignments are returned in `aggregates` and
+  `mark_to_row`. Histogram observations do not pretend to have one artist per source row.
+- **labels**: title, wrapped caption, axis/colorbar labels and units are really rendered. Caption
+  contains declared n or the more cautious source-row count, plus uncertainty semantics where used.
 
-## Chart-kind notes
+## Presentation and accessibility
 
-- **bar** — a non-numeric `x` becomes the category axis, and the category strings
-  are recorded per mark, so a bar can be traced by label as well as by row. A
-  *numeric* x that is time-like (year-like values, or a date/time column name) is
-  reported as a kind mismatch: draw a line or scatter instead.
-- **box** — one box per `group` value. Individual rows are still recorded in
-  `mark_to_row`, so the distribution is traceable to the observations.
-- **heatmap** — `x` and `y` define the grid, `value` fills cells; both
-  coordinates may be categorical. Cells present in the grid but absent from the
-  data render as `NaN` (visible gaps), not zero. The colour range matters: an
-  undeclared range is reported, and a declared range that clips data values is a
-  high finding.
-- **line / scatter** — `y_err` draws error bars; a non-numeric `x` falls back to
-  row order and the fallback is recorded in the mark, not hidden.
-- **missing values** — a blank y cell draws nothing (NaN), never a silent
-  zero-height bar; the mark row keeps the honest `null`.
+Okabe-Ito colour is paired with hatches (bar/box), dashes (line/histogram), and markers
+(scatter/box/line), plus text legends. SVG embeds role=img, title and description. These are
+machine-checkable accessibility mechanisms, not a claim that a person visually inspected every plot.
 
-## Axis and annotation options the audit reads back
+`figsize`, `dpi`, and `export.width_mm` affect the real canvas. Caption wrapping uses actual figure
+width, followed by a renderer bounding-box check for title, x/y labels, and caption. Any text outside
+the canvas is `layout.text_overflow` (high). Exports retain live SVG text and are checked for file
+size, PNG pHYs resolution, PDF signature, and actual width.
 
-| spec field | effect | audit rule it feeds |
+## Status and exit codes
+
+| status | exit | meaning |
 |-|-|-|
-| `ylim` | applied to the drawn axis | `axis.truncated_baseline` (bar baseline above zero), `axis.value_clipped` |
-| `y_scale` | log / symlog / logit | `axis.log_nonpositive` when data contain non-positive values |
-| `color_range` | heatmap palette floor/ceiling | `color.range_undeclared`, `color.range_clipped` |
-| `errorbar_meaning` | SD / SEM / CI declared with the error channel | `annotation.errorbar_meaning_missing` |
-| `panel` | panel letter recorded for composites | `layout.panel_missing` (low) |
+| clean | 0 | no findings |
+| review | 3 | only low/medium findings |
+| blocked | 4 | rendered, but a high finding prevents unqualified delivery |
+| refused | 5 | rejected before rendering |
+| undetermined | 5 | execution capability/input could not be determined |
 
-## Unreadable and hostile input
-
-The CLI never answers a bad input with a traceback. Four statuses cover every
-case, each with its own exit code:
-
-| status | when | exit |
-|-|-|-|
-| `clean` | audit found nothing to report | 0 |
-| `review` | only low/medium findings | 3 |
-| `blocked` | any high finding on a rendered figure | 4 |
-| `refused` | the encoding plan was rejected before rendering | 5 |
-| `undetermined` | spec/data unreadable, not an object, or rendering itself failed | 5 |
-
-`refused` and the rendered statuses carry the case contract (case_id plus every
-output_contract field, null-filled with a note in limits where the engine cannot
-derive one). `undetermined` does not echo the contract: the spec may be
-unreadable, so there is nothing trustworthy to echo.
-
-## Export defaults
-
-| artifact | how it is written | why |
-|-|-|-|
-| `figure.svg` | live text (`svg.fonttype=none`) | labels stay editable in Illustrator/Inkscape |
-| `figure.png` | 300 dpi raster | reviewer preview and print |
-| `figure.pdf` | vector | submission-ready scalable copy |
-
-The font is resolved against the characters the figure actually draws (spec label
-fields plus category values from the data), preferring a CJK-capable face when the
-labels are Chinese. Coverage is proven per character; a character no candidate font
-covers is named in the audit instead of silently becoming a box.
+The engine writes structured failures, not tracebacks. Missing CLI arguments themselves remain an
+argparse usage error (2). Significance group declarations are validated but no brackets are drawn;
+that limitation is explicit. No SD/SEM/CI, statistical test, correlation matrix, or scientific
+conclusion is invented from a table merely to make the result look complete.

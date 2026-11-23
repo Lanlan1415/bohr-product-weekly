@@ -1,5 +1,6 @@
 {
-  "case_id": "demo-drfigure-1",
+  "case_id": "demo-pdf-parse-1",
+  "section": "pdf_parse",
   "pdf_path": "paper.pdf",
   "output_contract": ["status", "case_id", "reading_result", "evidence_and_boundaries"]
 }

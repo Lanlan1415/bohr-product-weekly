@@ -1,0 +1,235 @@
+{
+  "schema_version": "quality-hostile/v2",
+  "fixture_notice": "synthetic hostile probes only",
+  "probes": [
+    {
+      "probe": "clean_contract",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "case_missing",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "case_bad_json",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "case_not_object_exit4",
+      "expected_exit": 4,
+      "actual_exit": 4,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "unknown_section_exit5_contract_echo",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "missing_material_exit5_contract_echo",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "malformed_material_json",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "material_wrong_shape",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "documents_wrong_type",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "documents_empty",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "unsupported_pdf_not_fake_appraised",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "all_restricted_blocked_no_secret",
+      "expected_exit": 4,
+      "actual_exit": 4,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "mixed_restricted_partial_no_secret",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "exact_duplicate_named",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "conflicting_duplicate_retained_separately",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_malformed_shape_no_crash",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_dict_preserved",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "engine_status_beats_case_forgery",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "review_decisions_wrong_container",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "review_decision_wrong_entries_ignored",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "jsonl_real_material",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "bom_case",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "nested_spec_case_identity_authoritative",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "url_only_does_not_claim_remote_coverage",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "deterministic_byte_replay",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 25,
+    "of": 25
+  }
+}

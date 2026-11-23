@@ -1,0 +1,12 @@
+{
+  "case_id": "quality-example-v2",
+  "section": "quality_appraisal",
+  "research_question": "Does structured exercise improve chronic pain in adults?",
+  "documents_path": "studies.json",
+  "queries": [
+    {"version": "q1", "source": "organizer-local synthetic snapshot", "all": ["exercise", "chronic pain"]}
+  ],
+  "reference_graph": {"retained_edges": [{"from": "quality-rct-clean", "to": "quality-cohort-abstract", "kind": "synthetic_example_only"}]},
+  "import_state": {"scope": "local example only", "imported": 2},
+  "output_contract": ["case_id", "检索结果", "证据记录", "状态说明", "uncertainty", "change_records"]
+}

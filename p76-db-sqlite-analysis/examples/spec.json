@@ -1,0 +1,34 @@
+{
+  "case_id": "demo-db-001",
+  "output_contract": [
+    "status",
+    "rows",
+    "analysis_rows",
+    "query_plan",
+    "execution",
+    "quality_report",
+    "conclusions",
+    "limits"
+  ],
+  "sql": "SELECT e.name AS name, COUNT(m.id) AS n, AVG(m.value) AS mean_value FROM experiments AS e JOIN measurements AS m ON e.id = m.experiment_id GROUP BY e.name ORDER BY e.name",
+  "grain": ["name"],
+  "expected_row_count": 2,
+  "expected_rows": [
+    {"name": "Control", "n": 2, "mean_value": 2.0},
+    {"name": "Treated", "n": 2, "mean_value": 3.5}
+  ],
+  "expected_summary": {
+    "row_count": 2,
+    "sums": {"n": 4}
+  },
+  "independent_check": "SELECT CASE WHEN (SELECT AVG(value) FROM measurements WHERE experiment_id=1)=2.0 THEN 1 ELSE 0 END",
+  "data_dictionary": {
+    "experiments.name": {"description": "experimental arm", "semantic": "categorical"},
+    "measurements.value": {"description": "response", "unit": "AU", "semantic": "numeric"},
+    "n": {"description": "measurement count", "semantic": "count"},
+    "mean_value": {"description": "mean response in AU", "unit": "AU", "semantic": "numeric"}
+  },
+  "max_rows": 100,
+  "timeout_seconds": 20,
+  "interpretation": "The snapshot has two measurements per arm; this is an execution fact, not a causal claim."
+}

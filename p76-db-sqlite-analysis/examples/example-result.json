@@ -1,0 +1,450 @@
+{
+  "schema_version": "db-query-analysis/v1",
+  "status": "clean",
+  "findings": [],
+  "severity_counts": {
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "analysis_result": {
+    "rows": [
+      {
+        "name": "Control",
+        "n": 2,
+        "mean_value": 2.0
+      },
+      {
+        "name": "Treated",
+        "n": 2,
+        "mean_value": 3.5
+      }
+    ],
+    "analysis_rows": [
+      {
+        "name": "Control",
+        "n": 2,
+        "mean_value": 2.0
+      },
+      {
+        "name": "Treated",
+        "n": 2,
+        "mean_value": 3.5
+      }
+    ],
+    "column_name_map": [
+      {
+        "source_name": "name",
+        "result_name": "name"
+      },
+      {
+        "source_name": "n",
+        "result_name": "n"
+      },
+      {
+        "source_name": "mean_value",
+        "result_name": "mean_value"
+      }
+    ],
+    "summary": {
+      "row_count": 2,
+      "sums": {
+        "n": 4,
+        "mean_value": 5.5
+      },
+      "means": {
+        "n": 2.0,
+        "mean_value": 2.75
+      },
+      "mins": {
+        "n": 2,
+        "mean_value": 2.0
+      },
+      "maxs": {
+        "n": 2,
+        "mean_value": 3.5
+      },
+      "nulls": {
+        "name": 0,
+        "n": 0,
+        "mean_value": 0
+      },
+      "distinct": {
+        "name": 2,
+        "n": 1,
+        "mean_value": 2
+      }
+    }
+  },
+  "rows": [
+    {
+      "name": "Control",
+      "n": 2,
+      "mean_value": 2.0
+    },
+    {
+      "name": "Treated",
+      "n": 2,
+      "mean_value": 3.5
+    }
+  ],
+  "analysis_rows": [
+    {
+      "name": "Control",
+      "n": 2,
+      "mean_value": 2.0
+    },
+    {
+      "name": "Treated",
+      "n": 2,
+      "mean_value": 3.5
+    }
+  ],
+  "quality_report": {
+    "row_count": 2,
+    "per_column": {
+      "name": {
+        "null_count": 0,
+        "non_null": 2,
+        "missing_fraction": 0.0,
+        "distinct_count": 2,
+        "storage_types": [
+          "str"
+        ],
+        "mixed_storage_types": false
+      },
+      "n": {
+        "null_count": 0,
+        "non_null": 2,
+        "missing_fraction": 0.0,
+        "distinct_count": 1,
+        "storage_types": [
+          "int"
+        ],
+        "mixed_storage_types": false
+      },
+      "mean_value": {
+        "null_count": 0,
+        "non_null": 2,
+        "missing_fraction": 0.0,
+        "distinct_count": 2,
+        "storage_types": [
+          "float"
+        ],
+        "mixed_storage_types": false
+      }
+    },
+    "exact_duplicate_rows": 0
+  },
+  "unit_changes": [],
+  "schema": {
+    "objects": {
+      "experiments": {
+        "name": "experiments",
+        "type": "table",
+        "sql": "CREATE TABLE experiments (id INTEGER PRIMARY KEY, name TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1
+          },
+          {
+            "cid": 1,
+            "name": "name",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0
+          }
+        ],
+        "foreign_keys": [],
+        "indexes": [],
+        "rows_in_snapshot": 2
+      },
+      "measurements": {
+        "name": "measurements",
+        "type": "table",
+        "sql": "CREATE TABLE measurements (\n            id INTEGER PRIMARY KEY,\n            experiment_id INTEGER NOT NULL REFERENCES experiments(id),\n            value REAL NOT NULL,\n            concentration REAL,\n            concentration_unit TEXT,\n            note TEXT\n        )",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1
+          },
+          {
+            "cid": 1,
+            "name": "experiment_id",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0
+          },
+          {
+            "cid": 2,
+            "name": "value",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0
+          },
+          {
+            "cid": 3,
+            "name": "concentration",
+            "type": "REAL",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0
+          },
+          {
+            "cid": 4,
+            "name": "concentration_unit",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0
+          },
+          {
+            "cid": 5,
+            "name": "note",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0
+          }
+        ],
+        "foreign_keys": [
+          {
+            "from": "experiment_id",
+            "referenced_table": "experiments",
+            "to": "id",
+            "on_update": "NO ACTION",
+            "on_delete": "NO ACTION"
+          }
+        ],
+        "indexes": [],
+        "rows_in_snapshot": 4
+      }
+    },
+    "snapshot_metadata": {
+      "user_version": 0,
+      "schema_version": 2,
+      "application_id": 0,
+      "journal_mode": "delete"
+    }
+  },
+  "query_plan": [
+    {
+      "id": 8,
+      "parent": 0,
+      "notused": 216,
+      "detail": "SCAN m"
+    },
+    {
+      "id": 10,
+      "parent": 0,
+      "notused": 45,
+      "detail": "SEARCH e USING INTEGER PRIMARY KEY (rowid=?)"
+    },
+    {
+      "id": 13,
+      "parent": 0,
+      "notused": 0,
+      "detail": "USE TEMP B-TREE FOR GROUP BY"
+    }
+  ],
+  "relationships": {
+    "tables": [
+      {
+        "table": "experiments",
+        "alias": "e",
+        "keyword": "FROM"
+      },
+      {
+        "table": "measurements",
+        "alias": "m",
+        "keyword": "JOIN"
+      }
+    ],
+    "joins": [
+      {
+        "table": "measurements",
+        "on_present": true,
+        "pairs": [
+          {
+            "left": "experiments.id",
+            "right": "measurements.experiment_id",
+            "declared_foreign_key": true,
+            "explicitly_allowed": false
+          }
+        ]
+      }
+    ],
+    "all_qualified_conditions": [
+      {
+        "left": "experiments.id",
+        "right": "measurements.experiment_id"
+      }
+    ],
+    "referenced_join_columns": [
+      "experiments.id",
+      "measurements.experiment_id"
+    ]
+  },
+  "aggregation": {
+    "group_by": [
+      "e.name"
+    ],
+    "grain": [
+      "name"
+    ],
+    "grain_check": {
+      "grain": [
+        "name"
+      ],
+      "unique": true,
+      "duplicate_groups": [],
+      "group_count": 2
+    }
+  },
+  "field_interpretation": [
+    {
+      "column": "name",
+      "description": "experimental arm",
+      "unit": null,
+      "semantic": "categorical",
+      "source": "data_dictionary",
+      "ambiguous_dictionary_matches": [],
+      "referenced_tables": [
+        "experiments",
+        "measurements"
+      ]
+    },
+    {
+      "column": "n",
+      "description": "measurement count",
+      "unit": null,
+      "semantic": "count",
+      "source": "data_dictionary",
+      "ambiguous_dictionary_matches": [],
+      "referenced_tables": [
+        "experiments",
+        "measurements"
+      ]
+    },
+    {
+      "column": "mean_value",
+      "description": "mean response in AU",
+      "unit": "AU",
+      "semantic": "numeric",
+      "source": "data_dictionary",
+      "ambiguous_dictionary_matches": [],
+      "referenced_tables": [
+        "experiments",
+        "measurements"
+      ]
+    }
+  ],
+  "execution": {
+    "driver": "SQLite",
+    "sqlite_version": "3.50.4",
+    "read_only_uri": true,
+    "query_only_pragma": true,
+    "authorizer": true,
+    "single_statement": true,
+    "row_count": 2,
+    "column_count": 3,
+    "truncated": false,
+    "max_rows": 100,
+    "timeout_seconds": 20.0,
+    "referenced_tables": [
+      "experiments",
+      "measurements"
+    ],
+    "referenced_columns": [
+      {
+        "table": "experiments",
+        "column": "id"
+      },
+      {
+        "table": "experiments",
+        "column": "name"
+      },
+      {
+        "table": "measurements",
+        "column": "experiment_id"
+      },
+      {
+        "table": "measurements",
+        "column": "id"
+      },
+      {
+        "table": "measurements",
+        "column": "value"
+      }
+    ],
+    "database_sha256_before": "f09b6eba3910e27c93e37387e8b31524adb79e43b51912e7caec8ca59e374c81",
+    "database_sha256_after": "f09b6eba3910e27c93e37387e8b31524adb79e43b51912e7caec8ca59e374c81",
+    "snapshot_stable": true,
+    "query_sha256": "24b6b929582bb4f1dd3e02e705ce3f42f9fda4acaf8794b1a605e1b06890dc57",
+    "rows_sha256": "1379c988ddcc7da9609b4fb6b73dfa2636f047683f4a6f2f4f00be261a8e7a0b",
+    "analysis_rows_sha256": "1379c988ddcc7da9609b4fb6b73dfa2636f047683f4a6f2f4f00be261a8e7a0b"
+  },
+  "conclusions": {
+    "result": "SQLite returned 2 rows and 3 columns from one read-only statement.",
+    "row_count": 2,
+    "grain_check": {
+      "grain": [
+        "name"
+      ],
+      "unique": true,
+      "duplicate_groups": [],
+      "group_count": 2
+    },
+    "independent_check_passed": true,
+    "interpretation": "The snapshot has two measurements per arm; this is an execution fact, not a causal claim.",
+    "trace": {
+      "query_sha256": "24b6b929582bb4f1dd3e02e705ce3f42f9fda4acaf8794b1a605e1b06890dc57",
+      "rows_sha256": "1379c988ddcc7da9609b4fb6b73dfa2636f047683f4a6f2f4f00be261a8e7a0b"
+    }
+  },
+  "query": {
+    "sql": "SELECT e.name AS name, COUNT(m.id) AS n, AVG(m.value) AS mean_value FROM experiments AS e JOIN measurements AS m ON e.id = m.experiment_id GROUP BY e.name ORDER BY e.name",
+    "parameters": []
+  },
+  "artifacts": {
+    "query_sql": "<output>\\query.sql",
+    "database_snapshot": "<output>\\database_snapshot.sqlite",
+    "schema": "<output>\\schema.json",
+    "query_plan": "<output>\\query_plan.json",
+    "rows_json": "<output>\\rows.json",
+    "rows_csv": "<output>\\rows.csv",
+    "analysis_rows_json": "<output>\\analysis_rows.json",
+    "analysis_rows_csv": "<output>\\analysis_rows.csv",
+    "execution_log": "<output>\\execution_log.json"
+  },
+  "provenance": {
+    "engine": "sqlite-query-analysis/v1",
+    "python_sqlite_module": null,
+    "sqlite_runtime": "3.50.4",
+    "database_file": "<input>/example.sqlite",
+    "database_sha256": "f09b6eba3910e27c93e37387e8b31524adb79e43b51912e7caec8ca59e374c81",
+    "snapshot_metadata": {
+      "user_version": 0,
+      "schema_version": 2,
+      "application_id": 0,
+      "journal_mode": "delete"
+    },
+    "task_file": null,
+    "task_sha256": null
+  },
+  "limits": [],
+  "case_id": "demo-db-001",
+  "example_note": "Actual local run of make_example.py + dbquery.py; paths normalised. This is not an official case or a prepared official answer."
+}

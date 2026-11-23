@@ -1,0 +1,71 @@
+{
+  "schema_version": "pdf-parse-bench/v2",
+  "backend_available": true,
+  "fixture_notice": "generated synthetic scientific PDF, not official case output",
+  "scenarios": [
+    {
+      "scenario": "rich_scientific_pdf_clean_and_complete",
+      "pass": true,
+      "why": "outline=7, tables=1, formulas=1, refs=2"
+    },
+    {
+      "scenario": "native_merged_table_cell_geometry",
+      "pass": true,
+      "why": "merged=1, cells=12"
+    },
+    {
+      "scenario": "column_order_and_verbatim_locators",
+      "pass": true,
+      "why": "columns=2"
+    },
+    {
+      "scenario": "short_pdf_does_not_fall_back",
+      "pass": true,
+      "why": "backend=pymupdf"
+    },
+    {
+      "scenario": "mixed_scanned_page_is_partial_not_fabricated",
+      "pass": true,
+      "why": "exit=3, scanned=[2]"
+    },
+    {
+      "scenario": "encrypted_pdf_named_refusal",
+      "pass": true,
+      "why": "exit=5, reason=encrypted"
+    },
+    {
+      "scenario": "unknown_section_exit5_full_contract",
+      "pass": true,
+      "why": "exit=5"
+    },
+    {
+      "scenario": "case_not_object_exit4_result",
+      "pass": true,
+      "why": "exit=4"
+    },
+    {
+      "scenario": "missing_pdf_exit5_result",
+      "pass": true,
+      "why": "exit=5, reason=pdf_missing"
+    },
+    {
+      "scenario": "no_table_fabricated_from_aligned_prose",
+      "pass": true,
+      "why": "tables=0"
+    },
+    {
+      "scenario": "engine_case_null_contract_priority",
+      "pass": true,
+      "why": "status=review"
+    },
+    {
+      "scenario": "deterministic_result_and_artifacts_replay",
+      "pass": true,
+      "why": "five artifacts byte compared"
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  }
+}

@@ -1,57 +1,819 @@
 {
-  "schema_version": "pdf-parse/v1",
+  "schema_version": "pdf-parse/v2",
   "status": "clean",
-  "case_id": "demo-drfigure-1",
+  "case_id": "demo-pdf-parse-1",
   "reading_result": {
+    "document_metadata": {
+      "title": "Synthetic PDF Parse Example",
+      "author": "Example Author",
+      "metadata_policy": "PDF metadata and byline candidates are distinguished; authors_candidate is never promoted automatically."
+    },
     "outline": [
-      {"level": "1", "title": "1 Introduction", "page": 1, "block": 0, "children": []}
+      {
+        "level": 1,
+        "title": "1 Methods",
+        "page": 1,
+        "block": 2,
+        "block_id": "p0001-b002",
+        "bbox": [
+          60.0,
+          116.025,
+          120.697,
+          133.887
+        ],
+        "children": []
+      }
     ],
-    "block_kinds": {"paragraph": 42, "heading": 6, "formula": 3},
-    "table_count": 1,
-    "formula_count": 3,
-    "body_chars": 8231,
-    "scanned_pages": 0
+    "sections": [
+      {
+        "section_id": "p0001-b002",
+        "title": "1 Methods",
+        "level": 1,
+        "section_path": [
+          "1 Methods"
+        ],
+        "start": {
+          "page": 1,
+          "block": 2,
+          "order": 2,
+          "column": 0,
+          "bbox": [
+            60.0,
+            116.025,
+            120.697,
+            133.887
+          ],
+          "block_id": "p0001-b002"
+        },
+        "end_page": 1,
+        "block_ids": [
+          "p0001-b003",
+          "p0001-b004"
+        ],
+        "text": "This synthetic document demonstrates real text extraction and source locators.\n\nE = mc² (1)"
+      }
+    ],
+    "block_kinds": {
+      "authors": 1,
+      "formula": 1,
+      "heading": 1,
+      "paragraph": 1,
+      "title": 1
+    },
+    "text_blocks": 5,
+    "table_count": 0,
+    "formula_count": 1,
+    "reference_count": 0,
+    "caption_count": 0,
+    "figure_count": 0,
+    "body_chars": 98,
+    "raw_text_chars": 144,
+    "page_count": 1,
+    "scanned_pages": [],
+    "pages_with_text": [
+      1
+    ]
   },
   "evidence_and_boundaries": {
     "locators": [
-      {"page": 1, "block": 0, "column": 0, "kind": "heading", "quote": "1 Introduction"}
+      {
+        "page": 1,
+        "block": 0,
+        "order": 0,
+        "column": 0,
+        "bbox": [
+          60.0,
+          40.65,
+          302.082,
+          65.382
+        ],
+        "block_id": "p0001-b000",
+        "kind": "title",
+        "char_start": 0,
+        "char_end": 27,
+        "quote": "Synthetic PDF Parse Example",
+        "text_sha256": "5eff368e79b12aca2df550f7d8b2bc07e783dcc15077f68e19f8f54a6a2d16d3"
+      },
+      {
+        "page": 1,
+        "block": 1,
+        "order": 1,
+        "column": 0,
+        "bbox": [
+          60.0,
+          79.25,
+          131.14,
+          92.99
+        ],
+        "block_id": "p0001-b001",
+        "kind": "authors",
+        "char_start": 0,
+        "char_end": 14,
+        "quote": "Example Author",
+        "text_sha256": "050f81da099978bd64933979ef64417ebdb9b17c74d701fd71314043fe7a0cc6"
+      },
+      {
+        "page": 1,
+        "block": 2,
+        "order": 2,
+        "column": 0,
+        "bbox": [
+          60.0,
+          116.025,
+          120.697,
+          133.887
+        ],
+        "block_id": "p0001-b002",
+        "kind": "heading",
+        "char_start": 0,
+        "char_end": 9,
+        "quote": "1 Methods",
+        "text_sha256": "c923e4a2e7d634ad240dbdb24df1f65113c5e24cd72833bc63a6c774bafe3b85"
+      },
+      {
+        "page": 1,
+        "block": 3,
+        "order": 3,
+        "column": 0,
+        "bbox": [
+          60.0,
+          150.0,
+          408.48,
+          163.74
+        ],
+        "block_id": "p0001-b003",
+        "kind": "paragraph",
+        "char_start": 0,
+        "char_end": 78,
+        "quote": "This synthetic document demonstrates real text extraction and source locators.",
+        "text_sha256": "8fb2bd83006201be36320c2cb6e9499193b715ca25dc6a86c34c22aa47bcda44"
+      },
+      {
+        "page": 1,
+        "block": 4,
+        "order": 4,
+        "column": 0,
+        "bbox": [
+          60.0,
+          263.175,
+          114.703,
+          278.289
+        ],
+        "block_id": "p0001-b004",
+        "kind": "formula",
+        "char_start": 0,
+        "char_end": 11,
+        "quote": "E = mc² (1)",
+        "text_sha256": "3b16a84cf952e465a53344ab2a65a898e9f828d02eabe50393126b829d681509"
+      }
+    ],
+    "table_locators": [],
+    "formula_locators": [
+      {
+        "formula_id": "p0001-b004-formula",
+        "page": 1,
+        "block": 4,
+        "order": 4,
+        "column": 0,
+        "bbox": [
+          60.0,
+          263.175,
+          114.703,
+          278.289
+        ],
+        "block_id": "p0001-b004"
+      }
     ],
     "unverified": [],
-    "note": "anchors are exact substrings of source text"
+    "note": "Every quote is the exact prefix of its extracted block at char_start:char_end; no paraphrase is used as a locator."
   },
   "provenance": {
-    "sha256": "f45be31dda92de5f",
+    "sha256": "87c5d5aafa15858ca9dc6507d3b7f4b9317979937025ebf20fd9c8e1bf8c2521",
     "backend": "pymupdf",
-    "page_count": 12,
-    "engine_version": "pdf-parse/v1",
-    "utc": "2026-11-23T00:00:00Z"
+    "backend_version": "2.1",
+    "source_name": "paper.pdf",
+    "page_count": 1,
+    "engine_version": "pdf-parse/v2",
+    "determinism": "No wall-clock or elapsed-time fields; byte replay is expected for the same input and backends.",
+    "backend_errors_before_success": []
   },
+  "metadata": {
+    "title": "Synthetic PDF Parse Example",
+    "author": "Example Author",
+    "metadata_policy": "PDF metadata and byline candidates are distinguished; authors_candidate is never promoted automatically."
+  },
+  "source_toc": [],
   "outline": [
-    {"level": "1", "title": "1 Introduction", "page": 1, "block": 0, "children": []}
-  ],
-  "tables": [
     {
-      "columns": ["Replicate", "Control mg/L", "Treatment mg/L"],
-      "rows": [["1", "0.0", "3.0"], ["2", "0.1", "3.1"]],
-      "col_count": 3,
-      "row_count": 2,
-      "method": "x-grid",
-      "locator": {"page": 4, "bbox": [40, 230, 270, 280]}
+      "level": 1,
+      "title": "1 Methods",
+      "page": 1,
+      "block": 2,
+      "block_id": "p0001-b002",
+      "bbox": [
+        60.0,
+        116.025,
+        120.697,
+        133.887
+      ],
+      "children": []
     }
   ],
-  "blocks": [
-    {"type": "text", "kind": "heading", "text": "1 Introduction",
-     "column": 0, "order": 0, "bbox": [40, 40, 200, 60],
-     "locator": {"page": 1, "block": 0, "column": 0}},
-    {"type": "text", "kind": "paragraph",
-     "text": "We study the surface capture of compound X under controlled conditions.",
-     "column": 0, "order": 1, "bbox": [40, 80, 280, 140],
-     "locator": {"page": 1, "block": 1, "column": 0}}
+  "outline_flat": [
+    {
+      "level": 1,
+      "title": "1 Methods",
+      "page": 1,
+      "block": 2,
+      "block_id": "p0001-b002",
+      "bbox": [
+        60.0,
+        116.025,
+        120.697,
+        133.887
+      ],
+      "section_path": [
+        "1 Methods"
+      ]
+    }
   ],
+  "sections": [
+    {
+      "section_id": "p0001-b002",
+      "title": "1 Methods",
+      "level": 1,
+      "section_path": [
+        "1 Methods"
+      ],
+      "start": {
+        "page": 1,
+        "block": 2,
+        "order": 2,
+        "column": 0,
+        "bbox": [
+          60.0,
+          116.025,
+          120.697,
+          133.887
+        ],
+        "block_id": "p0001-b002"
+      },
+      "end_page": 1,
+      "block_ids": [
+        "p0001-b003",
+        "p0001-b004"
+      ],
+      "text": "This synthetic document demonstrates real text extraction and source locators.\n\nE = mc² (1)"
+    }
+  ],
+  "pages": [
+    {
+      "page": 1,
+      "columns": 1,
+      "column_ranges": [
+        {
+          "column": 0,
+          "x0": 0.0,
+          "x1": 612.0,
+          "block_count": 5
+        }
+      ],
+      "text_char_count": 139,
+      "is_scanned": false
+    }
+  ],
+  "tables": [],
+  "blocks": [
+    {
+      "type": "text",
+      "column": 0,
+      "lines": [
+        {
+          "line": 0,
+          "bbox": [
+            60.0,
+            40.65,
+            302.082,
+            65.382
+          ],
+          "text": "Synthetic PDF Parse Example",
+          "raw_text": "Synthetic PDF Parse Example",
+          "spans": [
+            {
+              "text": "Synthetic PDF Parse Example",
+              "bbox": [
+                60.0,
+                40.65,
+                302.082,
+                65.382
+              ],
+              "size": 18.0,
+              "font": "Helvetica",
+              "flags": 0,
+              "color": 0,
+              "origin": [
+                60.0,
+                60.0
+              ]
+            }
+          ],
+          "dir": [
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "text": "Synthetic PDF Parse Example",
+      "raw_text": "Synthetic PDF Parse Example",
+      "bbox": [
+        60.0,
+        40.65,
+        302.082,
+        65.382
+      ],
+      "pdf_block": 0,
+      "font_size_max": 18.0,
+      "font_size_min": 18.0,
+      "font_size_median": 18.0,
+      "fonts": [
+        "Helvetica"
+      ],
+      "flags": [
+        0
+      ],
+      "source_block": 0,
+      "order": 0,
+      "include_in_body": false,
+      "page": 1,
+      "block_id": "p0001-b000",
+      "locator": {
+        "page": 1,
+        "block": 0,
+        "order": 0,
+        "column": 0,
+        "bbox": [
+          60.0,
+          40.65,
+          302.082,
+          65.382
+        ],
+        "block_id": "p0001-b000"
+      },
+      "section_path": [],
+      "kind": "title"
+    },
+    {
+      "type": "text",
+      "column": 0,
+      "lines": [
+        {
+          "line": 0,
+          "bbox": [
+            60.0,
+            79.25,
+            131.14,
+            92.99
+          ],
+          "text": "Example Author",
+          "raw_text": "Example Author",
+          "spans": [
+            {
+              "text": "Example Author",
+              "bbox": [
+                60.0,
+                79.25,
+                131.14,
+                92.99
+              ],
+              "size": 10.0,
+              "font": "Helvetica",
+              "flags": 0,
+              "color": 0,
+              "origin": [
+                60.0,
+                90.0
+              ]
+            }
+          ],
+          "dir": [
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "text": "Example Author",
+      "raw_text": "Example Author",
+      "bbox": [
+        60.0,
+        79.25,
+        131.14,
+        92.99
+      ],
+      "pdf_block": 1,
+      "font_size_max": 10.0,
+      "font_size_min": 10.0,
+      "font_size_median": 10.0,
+      "fonts": [
+        "Helvetica"
+      ],
+      "flags": [
+        0
+      ],
+      "source_block": 1,
+      "order": 1,
+      "include_in_body": false,
+      "page": 1,
+      "block_id": "p0001-b001",
+      "locator": {
+        "page": 1,
+        "block": 1,
+        "order": 1,
+        "column": 0,
+        "bbox": [
+          60.0,
+          79.25,
+          131.14,
+          92.99
+        ],
+        "block_id": "p0001-b001"
+      },
+      "section_path": [],
+      "kind": "authors"
+    },
+    {
+      "type": "text",
+      "column": 0,
+      "lines": [
+        {
+          "line": 0,
+          "bbox": [
+            60.0,
+            116.025,
+            120.697,
+            133.887
+          ],
+          "text": "1 Methods",
+          "raw_text": "1 Methods",
+          "spans": [
+            {
+              "text": "1 Methods",
+              "bbox": [
+                60.0,
+                116.025,
+                120.697,
+                133.887
+              ],
+              "size": 13.0,
+              "font": "Helvetica",
+              "flags": 0,
+              "color": 0,
+              "origin": [
+                60.0,
+                130.0
+              ]
+            }
+          ],
+          "dir": [
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "text": "1 Methods",
+      "raw_text": "1 Methods",
+      "bbox": [
+        60.0,
+        116.025,
+        120.697,
+        133.887
+      ],
+      "pdf_block": 2,
+      "font_size_max": 13.0,
+      "font_size_min": 13.0,
+      "font_size_median": 13.0,
+      "fonts": [
+        "Helvetica"
+      ],
+      "flags": [
+        0
+      ],
+      "source_block": 2,
+      "order": 2,
+      "include_in_body": true,
+      "page": 1,
+      "block_id": "p0001-b002",
+      "locator": {
+        "page": 1,
+        "block": 2,
+        "order": 2,
+        "column": 0,
+        "bbox": [
+          60.0,
+          116.025,
+          120.697,
+          133.887
+        ],
+        "block_id": "p0001-b002"
+      },
+      "section_path": [],
+      "kind": "heading",
+      "heading_level": 1
+    },
+    {
+      "type": "text",
+      "column": 0,
+      "lines": [
+        {
+          "line": 0,
+          "bbox": [
+            60.0,
+            150.0,
+            408.48,
+            163.74
+          ],
+          "text": "This synthetic document demonstrates real text extraction and source locators.",
+          "raw_text": "This synthetic document demonstrates real text extraction and source locators.",
+          "spans": [
+            {
+              "text": "This synthetic document demonstrates real text extraction and source locators.",
+              "bbox": [
+                60.0,
+                150.0,
+                408.48,
+                163.74
+              ],
+              "size": 10.0,
+              "font": "Helvetica",
+              "flags": 0,
+              "color": 0,
+              "origin": [
+                60.0,
+                160.75
+              ]
+            }
+          ],
+          "dir": [
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "text": "This synthetic document demonstrates real text extraction and source locators.",
+      "raw_text": "This synthetic document demonstrates real text extraction and source locators.",
+      "bbox": [
+        60.0,
+        150.0,
+        408.48,
+        163.74
+      ],
+      "pdf_block": 3,
+      "font_size_max": 10.0,
+      "font_size_min": 10.0,
+      "font_size_median": 10.0,
+      "fonts": [
+        "Helvetica"
+      ],
+      "flags": [
+        0
+      ],
+      "source_block": 3,
+      "order": 3,
+      "include_in_body": true,
+      "page": 1,
+      "block_id": "p0001-b003",
+      "locator": {
+        "page": 1,
+        "block": 3,
+        "order": 3,
+        "column": 0,
+        "bbox": [
+          60.0,
+          150.0,
+          408.48,
+          163.74
+        ],
+        "block_id": "p0001-b003"
+      },
+      "section_path": [
+        "1 Methods"
+      ],
+      "kind": "paragraph"
+    },
+    {
+      "type": "text",
+      "column": 0,
+      "lines": [
+        {
+          "line": 0,
+          "bbox": [
+            60.0,
+            263.175,
+            114.703,
+            278.289
+          ],
+          "text": "E = mc² (1)",
+          "raw_text": "E = mc² (1)",
+          "spans": [
+            {
+              "text": "E = mc² (1)",
+              "bbox": [
+                60.0,
+                263.175,
+                114.703,
+                278.289
+              ],
+              "size": 11.0,
+              "font": "Helvetica",
+              "flags": 0,
+              "color": 0,
+              "origin": [
+                60.0,
+                275.0
+              ]
+            }
+          ],
+          "dir": [
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "text": "E = mc² (1)",
+      "raw_text": "E = mc² (1)",
+      "bbox": [
+        60.0,
+        263.175,
+        114.703,
+        278.289
+      ],
+      "pdf_block": 4,
+      "font_size_max": 11.0,
+      "font_size_min": 11.0,
+      "font_size_median": 11.0,
+      "fonts": [
+        "Helvetica"
+      ],
+      "flags": [
+        0
+      ],
+      "source_block": 4,
+      "order": 4,
+      "include_in_body": true,
+      "page": 1,
+      "block_id": "p0001-b004",
+      "locator": {
+        "page": 1,
+        "block": 4,
+        "order": 4,
+        "column": 0,
+        "bbox": [
+          60.0,
+          263.175,
+          114.703,
+          278.289
+        ],
+        "block_id": "p0001-b004"
+      },
+      "section_path": [
+        "1 Methods"
+      ],
+      "kind": "formula",
+      "script_spans": [
+        {
+          "text": "E = mc² (1)",
+          "bbox": [
+            60.0,
+            263.175,
+            114.703,
+            278.289
+          ],
+          "size": 11.0,
+          "font": "Helvetica",
+          "flags": 0,
+          "basis": "unicode-script-codepoint"
+        }
+      ],
+      "formula_sha256": "3b16a84cf952e465a53344ab2a65a898e9f828d02eabe50393126b829d681509",
+      "equation_number": "1",
+      "formula_representation": "verbatim_unicode"
+    }
+  ],
+  "formulas": [
+    {
+      "formula_id": "p0001-b004-formula",
+      "text": "E = mc² (1)",
+      "equation_number": "1",
+      "locator": {
+        "page": 1,
+        "block": 4,
+        "order": 4,
+        "column": 0,
+        "bbox": [
+          60.0,
+          263.175,
+          114.703,
+          278.289
+        ],
+        "block_id": "p0001-b004"
+      },
+      "symbols": [
+        "²"
+      ],
+      "script_spans": [
+        {
+          "text": "E = mc² (1)",
+          "bbox": [
+            60.0,
+            263.175,
+            114.703,
+            278.289
+          ],
+          "size": 11.0,
+          "font": "Helvetica",
+          "flags": 0,
+          "basis": "unicode-script-codepoint"
+        }
+      ],
+      "unicode_sha256": "3b16a84cf952e465a53344ab2a65a898e9f828d02eabe50393126b829d681509",
+      "latex": null,
+      "structure_status": "verbatim_only_no_latex_inference"
+    }
+  ],
+  "captions": [],
+  "references": [],
+  "cross_page_continuations": [],
+  "findings": [],
   "warnings": [],
+  "limits": [
+    "Formula output is verbatim Unicode with source span/script evidence; latex=null and no semantics are inferred.",
+    "No native table grid was detected/extracted; no rectangular table was fabricated from ordinary prose."
+  ],
   "run_state": {
-    "exit_meaning": "0 clean / 3 review / 4 refused / 5 undetermined",
-    "handoff": "broken blocks flagged in evidence_and_boundaries.locators"
+    "exit_meaning": "0 clean / 3 review / 4 caller error / 5 undetermined",
+    "handoff": "Inspect findings, evidence_and_boundaries.unverified and source_pages.json; OCR scanned gaps before claiming completeness.",
+    "final_status": "clean"
   },
-  "limits": []
+  "change_records": [
+    {
+      "operation": "extract",
+      "backend": "pymupdf",
+      "source_sha256": "87c5d5aafa15858ca9dc6507d3b7f4b9317979937025ebf20fd9c8e1bf8c2521"
+    },
+    {
+      "operation": "reading_order",
+      "pages": [
+        {
+          "page": 1,
+          "columns": 1,
+          "column_ranges": [
+            {
+              "column": 0,
+              "x0": 0.0,
+              "x1": 612.0,
+              "block_count": 5
+            }
+          ],
+          "text_char_count": 139,
+          "is_scanned": false
+        }
+      ]
+    },
+    {
+      "operation": "structure",
+      "outline_items": 1,
+      "tables": 0,
+      "formulas": 1,
+      "references": 0
+    }
+  ],
+  "output_contract": [
+    "status",
+    "case_id",
+    "reading_result",
+    "evidence_and_boundaries"
+  ],
+  "output_contract_fields": [
+    "status",
+    "case_id",
+    "reading_result",
+    "evidence_and_boundaries"
+  ],
+  "artifacts": [
+    {
+      "path": "full_text.txt",
+      "kind": "ordered_body_text"
+    },
+    {
+      "path": "document.md",
+      "kind": "structured_editable_markdown"
+    },
+    {
+      "path": "tables.json",
+      "kind": "native_table_cells"
+    },
+    {
+      "path": "source_pages.json",
+      "kind": "unmodified_backend_page_text"
+    }
+  ]
 }

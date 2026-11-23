@@ -1,8 +1,6 @@
 {
-  "_note": "示例输出（非正式案例结果）：由 examples/example-spec.json 与 examples/example-data.csv 实跑生成，文件路径为本机运行路径示意。",
-  "schema_version": "data-viz/v1",
+  "schema_version": "data-viz/v2",
   "status": "clean",
-  "case_id": "demo-chart-001",
   "findings": [],
   "severity_counts": {},
   "encoding": {
@@ -14,7 +12,55 @@
       "group": "group"
     },
     "rows_in_source": 4,
-    "marks_drawn": 4
+    "marks_drawn": 4,
+    "field_types": {
+      "group": {
+        "type": "nominal",
+        "reason": "two-level categorical values",
+        "non_null": 4,
+        "missing": 0,
+        "distinct": 2
+      },
+      "condition": {
+        "type": "nominal",
+        "reason": "two-level categorical values",
+        "non_null": 4,
+        "missing": 0,
+        "distinct": 2
+      },
+      "response": {
+        "type": "quantitative",
+        "reason": "all non-missing values parse as finite numbers",
+        "non_null": 4,
+        "missing": 0,
+        "distinct": 4
+      },
+      "response_sd": {
+        "type": "quantitative",
+        "reason": "all non-missing values parse as finite numbers",
+        "non_null": 4,
+        "missing": 0,
+        "distinct": 4
+      },
+      "n": {
+        "type": "quantitative",
+        "reason": "all non-missing values parse as finite numbers",
+        "non_null": 4,
+        "missing": 0,
+        "distinct": 1
+      }
+    },
+    "selection": null,
+    "group_layout": "dodged with stable category order"
+  },
+  "artifacts": {
+    "svg": "<output>\\figure.svg",
+    "pdf": "<output>\\figure.pdf",
+    "png": "<output>\\figure.png",
+    "caption": "<output>\\caption.txt",
+    "source_snapshot": "<output>\\source_snapshot.csv",
+    "mark_to_row": "<output>\\mark_to_row.json",
+    "resolved_spec": "<output>\\resolved_spec.json"
   },
   "mark_to_row": [
     {
@@ -23,23 +69,106 @@
       "x": "control",
       "y": 12.4,
       "series": "WT",
-      "y_err": 1.1
+      "y_err": 1.1,
+      "rendered": {
+        "x": -0.20499999999999996,
+        "y": 12.4,
+        "width": 0.38539999999999996
+      }
     },
-    "...(共 4 条，每条一个 mark)"
+    {
+      "mark": "bar1",
+      "row": 1,
+      "x": "drug",
+      "y": 31.2,
+      "series": "WT",
+      "y_err": 2.4,
+      "rendered": {
+        "x": 0.7950000000000002,
+        "y": 31.2,
+        "width": 0.3854000000000001
+      }
+    },
+    {
+      "mark": "bar2",
+      "row": 2,
+      "x": "control",
+      "y": 10.1,
+      "series": "KO",
+      "y_err": 0.9,
+      "rendered": {
+        "x": 0.205,
+        "y": 10.1,
+        "width": 0.38539999999999996
+      }
+    },
+    {
+      "mark": "bar3",
+      "row": 3,
+      "x": "drug",
+      "y": 14.8,
+      "series": "KO",
+      "y_err": 1.3,
+      "rendered": {
+        "x": 1.205,
+        "y": 14.8,
+        "width": 0.38539999999999996
+      }
+    }
   ],
-  "artifacts": {
-    "svg": "out_example/figure.svg",
-    "pdf": "out_example/figure.pdf",
-    "png": "out_example/figure.png",
-    "source_snapshot": "out_example/source_snapshot.csv"
+  "mark_to_row_sha256": "b63054b5ed4be475a1a97e1918d819631d3a13c16b5c297b39fda84677e1cc11",
+  "aggregates": [],
+  "layout": {
+    "text_overflow": [],
+    "caption_dynamically_wrapped": true
   },
-  "limits": [],
+  "accessibility": {
+    "palette": "Okabe-Ito",
+    "redundant_series_encoding": "colour + shape/dash/hatch + legend text",
+    "svg_title_description": true,
+    "description": "bar chart; x=处理组; y=响应强度; series=group; source rows=4; uncertainty=SD. Bars show source-row values; error bars are defined in the caption. | Declared sample size n = 6 | Uncertainty = SD",
+    "note": "programmatic encoding checks are not a claim of human visual inspection"
+  },
+  "limits": [
+    "Programmatic geometry and artefact checks do not constitute human visual inspection or validate the scientific hypothesis."
+  ],
+  "spec": {
+    "case_id": "demo-chart-001",
+    "output_contract": [
+      "status",
+      "findings",
+      "encoding",
+      "mark_to_row",
+      "artifacts",
+      "provenance"
+    ],
+    "kind": "bar",
+    "title": "Treatment response by genotype",
+    "caption": "Bars show source-row values; error bars are defined in the caption.",
+    "figsize": [
+      3.5,
+      2.8
+    ],
+    "x_label": "处理组",
+    "y_label": "响应强度",
+    "y_unit": "a.u.",
+    "errorbar_meaning": "SD",
+    "panel": "a",
+    "caption_n": 6,
+    "legend": true,
+    "encoding": {
+      "x": "condition",
+      "y": "response",
+      "y_err": "response_sd",
+      "group": "group"
+    }
+  },
   "provenance": {
-    "engine": "chartguard/v1",
-    "matplotlib": "3.10.8",
-    "spec_file": "examples/example-spec.json",
-    "spec_sha256": "daa075c5f41c1210352f7e7480305242718a1eacd1e2828efd5e5e076e5c6898",
-    "data_file": "examples/example-data.csv",
+    "engine": "chartguard/v2",
+    "matplotlib": "3.10.0",
+    "spec_file": "<output>\\resolved_spec.json",
+    "spec_sha256": "999485857f2128493ec6cc68d6f89d582fb5ff24b9dad5d7822febaa8628bfc9",
+    "data_file": "<input>/example-data.csv",
     "data_sha256": "91f184bdc9dd183d2150d401dbb4d3226690c0d9bde1f6afc0a9c4d91efe7fda",
     "rows_in_source": 4,
     "font": {
@@ -47,6 +176,8 @@
       "path": "C:\\Windows\\Fonts\\msyh.ttc"
     },
     "dpi": 300,
-    "source_snapshot": "out_example/source_snapshot.csv"
-  }
+    "source_snapshot": "<output>\\source_snapshot.csv"
+  },
+  "case_id": "demo-chart-001",
+  "example_note": "Actual local run of the documented CLI; paths normalised. This is not an official case or a prepared official answer."
 }

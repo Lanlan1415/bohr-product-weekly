@@ -1,0 +1,90 @@
+{
+  "schema_version": "quality-appraisal-bench/v2",
+  "fixture_notice": "synthetic regression only",
+  "scenarios": [
+    {
+      "scenario": "clean_complete_rct_zero_findings",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "abstract_only_forces_overall_abstention",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "same_sentence_pvalue_contradiction_high",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "observational_causal_overreach_high",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "not_blinded_is_not_positive_evidence",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_design_uses_generic_checks",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "preprint_not_mislabelled_peer_reviewed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "rct_and_cohort_have_distinct_checklists",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "protocol_abstains_on_results_and_conclusions",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "computational_test_leakage_concern",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "valid_manual_review_retains_engine_judgement",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_review_evidence_id_rejected",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "all_text_quotes_slice_verified",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "relevance_and_quality_not_conflated",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "object_list_contract_engine_case_null_priority",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "deterministic_byte_replay",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 16,
+    "of": 16
+  }
+}

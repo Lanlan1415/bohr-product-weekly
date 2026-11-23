@@ -1,356 +1,248 @@
 ---
 name: data-viz
 description: >
-  科研数据可视化：把一张源数据表变成可投稿、可复核的统计图。读取数据表后先按声明式
-  encoding spec 校验图型与通道（图型与数据结构不匹配时拒绝而不是硬画），渲染
-  bar/line/scatter/box/heatmap 并输出可编辑导出（live-text SVG + 300 dpi PNG + PDF），
-  然后审计可视化准确性：坐标轴标目与单位、截断基线与对数轴、数值是否被轴范围或色标
-  范围裁掉、图例与数据分组一致、误差通道是否真的画了且声明了含义（SD/SEM/CI）、类别
-  过多、图注样本量与表是否一致、显著性标注是否指向数据里存在的分组、中文字体覆盖
-  （缺字形报出而不是留空框），以及 mark→row 溯源——图上每个视觉元素都能回指到源数据
-  行，并附 sha256 级复现证据。结果回填案例的 output_contract 字段与 case_id。Use
-  when the task supplies a data table and asks for a chart, figure, figure panel,
-  or publication-grade export whose values must be traceable to the source rows.
+  科研数据可视化：从真实 CSV/TSV/JSON 数据表生成可复核、可编辑的科研图，而不只是给
+  绘图建议。按字段类型与分析目的选择 bar/line/scatter/box/heatmap/histogram，显式记录
+  field/type/channel 编码，输出标题、轴和单位、图例、误差定义、样本量或源行数、色盲友好
+  且灰度可辨的系列样式、live-text SVG、300 dpi PNG、PDF、caption、完整 mark_to_row、
+  resolved_spec 与输入哈希。画后回读实际图元坐标和值，检查重叠/错值、裁切、截断基线、
+  双轴、文字越界和导出完整性。用于数据表绘图、分布/比较/趋势/相关/矩阵图及发表级导出。
+  不用于无源数据的示意图、机制图、图像数字化或统计方法选择。
 ---
 
 # data-viz（科研数据可视化）
 
-一张图是一个关于数据的断言。本 Skill 让这个断言可检查：每个 mark 绑定一行源数据，
-每个编码通道绑定一个列，导出在交付前先被审计。
+一张图是关于数据的断言。本 Skill 的交付不是一句“建议画柱图”，而是**实际图件 + 图注 +
+可复跑 CLI + 每个图元到源行的映射 + 画后审计**。不把肉眼未检查的布局说成已人工验收；
+程序审计和实际打开图像（若执行者确实打开）分别记录。
 
-三步：
+## 运行时入口：读 case，尽早落盘，最终交付
 
-1. **encode** — 把 spec 与数据表对照校验，不匹配就拒绝（refused）
-2. **render** — 绘图并保留 mark → row 映射
-3. **audit** — 检查标目、单位、裁剪、基线、图例一致性、字体覆盖、溯源、导出规格
+平台输入是 `/input/case.json` 与 `task.md`。材料路径以实际文件为准，不按文件名猜内容。
+在 `/app/work` 写 spec，在 `/app/output` 交付。预算内先保存诚实的部分结果，再改进。
 
-**拒绝是第一步的目的。** 对文本列要柱状图，得到的是命名错误，不是一张全零的图。
-建立在被误读列上的图比没有图更糟，因为它看起来是权威的。
-
-## 运行时入口（每个案例六步）
-
-运行时输入是 /input/case.json 与 task.md；材料与产物按题目要求提供。预算为 64 次模型
-请求、900 秒、每次响应 16384 token——所以第 2 步先落盘部分诚实交付，再逐步改进。
-
-| 步 | 动作 | 产物 |
+| 步 | 必做动作 | 产物 |
 |-|-|-|
-| 0 读案例 | 读 /input/case.json 与 task.md：记录 case_id；抄下 output_contract 点名的全部字段清单；从材料里定位真正的数据表文件（读实际文件，不按标签猜内容） | case_id、契约字段清单、数据路径 |
-| 1 判形态 | 按下面路由表判断本次任务的形态；不属于本包范围的明确声明不用并说明 | 路由决定 |
-| 2 先产目标 | 先把已知部分落盘到 /app/output：数据表快照、已确认的 spec 草案、半成品 result.json（status 如实标注） | 部分诚实交付（预算中断时也有可评分产物） |
-| 3 构造 spec | 声明 kind、encoding 通道到列名的映射、标目、单位、errorbar_meaning、panel、caption_n，需要时加 ylim、y_scale、color_range；把 case_id 与 output_contract 写进 spec 顶层 | spec.json |
-| 4 审计 | 跑一次引擎，读 findings 与 status | result.json 初版 |
-| 5 修发现重跑 | 逐条 findings 修 spec 或清洗数据列后重跑；blocked/refused 不得带病交付 | 收敛后的 result.json |
-| 6 合并交付 | 确认 result.json 含 case_id 且 output_contract 点名的每个键都存在（引擎已推导的保留，spec 携带的直通，推导不了的填 null 并在 limits 里说明）；连同 figure 三件套与 source_snapshot 放进 /app/output | 最终交付 |
+| 0 读案例 | 记录 `case_id`，逐项抄下原始 `output_contract` 字段；读 task 与数据字典 | 契约清单、数据路径、问题目的 |
+| 1 识别数据 | 读真实表头和行，确认连续/分类/时间/编码字段、缺失、重复、单位及样本口径 | 字段类型与分析粒度 |
+| 2 先保存 | 把已知信息整理为 resolved spec 草案；若依赖或数据缺失，先写带 limits 的结果 | 部分结果，不伪造图件 |
+| 3 选图 | 用自动模式产出可审 spec，或按下方决策表手工指定；不要用饼图、3D 或双轴掩盖比较 | kind + encoding + selection reason |
+| 4 实跑 | 运行 CLI，得到真实 SVG/PNG/PDF、caption、mapping 和 result | 初版图件与审计 |
+| 5 修并重跑 | 处理 high/medium findings；无法修的保留状态与限制，不把 review/blocked 改成 clean | 收敛结果或结构化失败 |
+| 6 核对交付 | 检查文件非空、`case_id` 原样存在、原始契约每键齐全；需要时实际打开 PNG，另存说明 | `/app/output/result.json` 与全部产物 |
 
-## 任务措辞 → 路由
+不要把本说明末尾的 Verification 当成正式案例的强制前置步骤；正式工作流在交付结束。
 
-| 任务措辞信号 | 路由 |
-|-|-|
-| 画图 / 出图 / 绘制 figure / 可视化，输入是数据表 | 走六步全流程（0–6） |
-| 只问"建议用什么图型"，不要求交付图件 | 用下方选型规则给出图型与理由，不调用渲染；说明这是建议而非成图 |
-| 多面板组图 / panel 拼版 | 每个面板一份 spec，panel 字段必填，逐面板审计后合并交付 |
-| 期刊规格导出 / 单栏双栏 / 300 dpi | figsize 按栏宽取 3.5 in 或 7.2 in 起，dpi 不低于 300，SVG 保持 live text |
-| 热图 / 矩阵强度面 | kind 取 heatmap，color_range 必须声明（缺失或裁剪都会被点名） |
-| 要误差线 / 显著性标注 / 图注样本量 | 误差列走 y_err 通道并声明 errorbar_meaning；significance 只校验不绘制 |
-| 中文标签 / 中文图注 | 字体按图上实际字符解析；缺字形会被点名，不静默画框 |
-| 数据在位图曲线里，只有图没有表 | 本包不数字化曲线；先走数字化路径，读数不确定性必须带入成图 |
-| 示意图 / 机制图 / 流程图（无数据可映射） | 不用本包——没有源数据行就没有溯源可言 |
-| 让清洗数据 / 选统计检验 / 补实验设计 | 超出本包边界：引擎不做统计计算；在异常说明里声明该部分未覆盖 |
-| 只有报告里的数字、没有源数据表 | 拒绝凭记忆敲数字——值只活在数据文件里；请求数据或声明未完成 |
+## CLI：两种真实出图方式
 
-## 环境要求
+以下假设 Skill 安装在 `/skills/weekly-skill`；其他环境把前缀换为本包实际根目录。
 
-Python 3.9+，依赖 matplotlib、numpy（字体度量另用 Pillow，缺则跳过文字溢出检查并如实
-说明）。无网络依赖；字体从系统字体目录解析。运行验证用 python -X utf8（Windows 下保证
-中文路径与标签不乱码）。
+### A. 显式编码（需要精确控制时）
 
-## 图型选型规则
+```bash
+python -X utf8 /skills/weekly-skill/scripts/chartguard.py \
+  --spec /app/work/spec.json \
+  --data /input/table.csv \
+  --case /input/case.json \
+  --task /input/task.md \
+  --out /app/output
+```
 
-引擎支持五种图型（CHART_KINDS）：bar、line、scatter、box、heatmap。按分析目的选：
+`--case` 只补充 spec 中尚无的 `case_id` 和 `output_contract`，不会把查询结果或案例正文
+倾倒进 spec。`--task` 可选；显式模式的分析目的由 spec 记录。
 
-| 分析目的 | 数据结构 | 推荐 | 不推荐及原因 |
-|-|-|-|---|
-| 分布 | 一列连续值（可按组拆分） | box（每组一个箱体，行仍可溯源） | 饼图——分布没有"构成"含义 |
-| 组间比较 | 分类 x + 数值 y（±误差列） | bar（分类轴从列值生成） | 折线——分类间没有连续性，连线暗示趋势 |
-| 相关 | 两列连续值 | scatter | 并列柱——丢失逐点配对信息 |
-| 趋势 | 时间/有序 x + 数值 y | line（x 轴保持有序） | 并列柱——把时间序列切成孤块；引擎会报 time_as_bars |
-| 构成 / 强度面 | x-y 网格 + 数值 | heatmap（缺格画成 NaN 空洞，不补零；color_range 必声明） | 堆叠柱——面积编码难以精确读数 |
-| 构成占比 | 无序分类 | bar 按值排序 | 饼图——角度/面积夸大差异，类别多时不可读 |
+最小 spec：
 
-明确不支持并被拒绝（`encoding.unknown_chart_kind`）：pie、histogram、violin、
-ridgeline、contour、3D。直方图被拒的原因：分箱是派生统计，bin 宽度是无人复核的
-自由参数——若需要分布，请先用 box 展示原始行，或显式在表里聚合后说明口径。
-
-## Workflow
-
-### 1. 读数据，不要手工转录
-
-``bash
-python scripts/chartguard.py --spec spec.json --data table.csv --out /app/output
-``
-
-CSV / JSON（UTF-8，含 BOM 亦可，逗号或制表符分隔自动识别）。数值必须来自文件；
-凭记忆敲进 spec 的数字是伪造值。spec 或数据不可读时引擎给出 undetermined 状态与
-退出码 5，绝不以 traceback 收场。
-
-### 2. 显式声明编码
-
-``json
+```json
 {
-  "case_id": "demo-chart-001",
-  "output_contract": ["status", "findings", "encoding", "mark_to_row", "artifacts", "provenance"],
   "kind": "bar",
-  "x_label": "处理组",
-  "y_label": "响应强度",
+  "title": "Treatment response by genotype",
+  "caption": "Bars show source-row values; error bars are SD.",
+  "x_label": "Treatment",
+  "y_label": "Response",
   "y_unit": "a.u.",
   "errorbar_meaning": "SD",
-  "panel": "a",
   "caption_n": 6,
+  "panel": "a",
   "legend": true,
-  "encoding": {"x": "condition", "y": "response", "y_err": "response_sd", "group": "group"}
+  "encoding": {"x": "condition", "y": "response", "y_err": "response_sd", "group": "group"},
+  "export": {"width_mm": 89, "tolerance_mm": 2}
 }
-``
+```
 
-| 通道 | 必需于 | 含义 |
+通道映射的是**列名，不是手抄数值**。SD/SEM/CI 必须来自明确的源误差列与
+`errorbar_meaning`；引擎不会从原始观察擅自计算一种误差再冒充题目要求的口径。
+
+### B. 问题感知自动选型（仍会真实渲染）
+
+```bash
+python -X utf8 /skills/weekly-skill/scripts/chartguard.py \
+  --auto --data /input/table.csv \
+  --question "Compare response distributions by treatment" \
+  --units '{"response":"a.u."}' \
+  --case /input/case.json --out /app/output
+```
+
+可用 `--kind`、`--x`、`--y`、`--group`、`--x-err`、`--y-err` 覆盖推断；`--task` 可代替 `--question`。
+自动分支先写 `resolved_spec.json`，再经过与手工 spec 完全相同的校验、渲染和审计。
+字段类型和选择理由不是文档自述，而会进入 `encoding` 的 `field_types` 与 `selection`。
+单位只来自数据字典/用户声明，未知时不编造。
+
+## 图型与编码决策表
+
+| 数据类型 + 问题 | 实际图型 | 关键约束 |
 |-|-|-|
-| x | 每种图型 | x 通道；bar/box/heatmap 的非数值列自动成为分类或网格轴，line/scatter 要求数值 |
-| y | bar、line、scatter、box | 测量值（heatmap 的 y 是网格坐标，可为分类） |
-| value | heatmap | 格值 |
-| group | 可选 | 系列拆分；驱动颜色与图例 |
-| y_err | 可选 | 每行误差幅度（声明了就必须画出来，否则 `error.column_not_drawn`；且必须声明含义，否则 `annotation.errorbar_meaning_missing`） |
+| 时间/有序字段 + 数值，问趋势 | line | x 保持数值顺序；每组独立线型、点形与颜色 |
+| 两个连续字段，问相关/配对 | scatter | 不用并列柱丢失配对；缺失坐标不强排到行号 |
+| 分类 + 每类一个数值，问比较 | bar | 从 0 起；同一 x+group 重复会拒绝，先显式聚合 |
+| 分类 + 重复观察，问分布/组间差异 | box + 原始点 | 不只画均值；x×group 分组箱体和每个观察可回溯 |
+| 一个连续字段，问分布 | histogram | 默认 10 bins，可声明 `bins`、`bin_edges`；完整边界、计数与成员行入 `aggregates` |
+| 两个网格字段 + 数值，问强度面 | heatmap | 缺格为 NaN；声明 `color_range` 与 `value_unit`，重复格拒绝 |
+| 多系列任何支持图 | Okabe-Ito + 冗余编码 | 颜色之外还有 hatch/dash/marker 和文字图例 |
+| 高基数或多指标不同量纲 | 分面/显式标准化后重跑 | 不使用双 y 轴；>12 类别或 >8 系列给可读性 finding |
 
-通道映射到**列名**而不是数值。这个间接层是溯源成立的前提：值只活在数据文件里。
+Vega-Lite 的 field、type、channel 明确类型模型、`detail` 分组和 `description` 可访问性思想
+已落实为 `field_types`、encoding、源行映射及 SVG `<title>/<desc>`；seaborn 的集中数据映射和
+逐通道 scale 设置用于统一推断与审计。参考实现来源见文末，运行时无需访问这些链接。
 
-其余可选字段：figsize（单栏 3.5 in 起）、dpi（默认 300）、x_unit、title、caption、
-panel（拼版面板编号）、ylim（声明后截断基线会被点名）、y_scale（log 轴遇非正值会被
-点名）、color_range（heatmap 色标范围）、significance（两个分组都必须在数据里）、
-caption_n（图注声称的样本量，与表的 n 列或行数核对）。
+## spec 主要选项
 
-### 3. 读懂审计，修复，重跑
-
-| status | 退出码 | 含义 |
-|-|-|-|
-| clean | 0 | 无发现 |
-| review | 3 | 只有 low/medium 发现，可交付但应在异常说明里列出 |
-| blocked | 4 | 有 high 发现——图已渲染但带缺陷，修完再交付 |
-| refused | 5 | 编码方案在渲染前被拒绝（spec 错，不是数据错） |
-| undetermined | 5 | 输入不可读或渲染本身失败，无法给出可信产物 |
-
-blocked、refused、undetermined 都写 result.json 并带 findings——这是可评分的诚实
-失败，不是崩溃。
-
-### 4. 验证引擎没有退化
-
-``bash
-python scripts/bench_chart.py
-``
-
-24 个场景，每个植入一个缺陷（或证明一个 FP guard）。clean 基线不得产生任何
-high/medium finding，所以"全都标"的检测器过不了。本机 24/24 pass。
-
-## 输出契约
-
-/app/output/result.json（引擎直接写出，结构如下）：
-
-| 字段 | 含义 |
+| 字段 | 用途 |
 |-|-|
-| status | clean、review、blocked、refused、undetermined 之一 |
-| findings[] | rule、severity、message，附规则上下文（行列名、实际值、缺失列表） |
-| encoding | 图型、通道到列映射、源行数、mark 数 |
-| mark_to_row[] | mark、row、x、y、series、y_err——溯源脊柱 |
-| artifacts | figure.svg（live text）、figure.pdf、figure.png（300 dpi）、source_snapshot 路径 |
-| provenance | spec 与数据的 sha256、引擎与 matplotlib 版本、解析到的字体、dpi——复现证据 |
-| case_id | 案例 0 步记录的标识，原样回填 |
-| output_contract 各键 | 案例点名的每个键：引擎已推导的保留原值，spec 携带的直通，推导不了的填 null 并在 limits 里说明 |
-| limits[] | 未覆盖项与不可推导契约字段的诚实清单 |
+| `kind`, `encoding` | 上述图型与 x/y/value/group/x_err/y_err 列映射 |
+| `field_types` | 自动模式生成的 nominal/ordinal/quantitative/temporal 证据，也可显式提供 |
+| `title`, `caption`, `x_label`, `y_label`, `value_label` | 真正画入图件的标题、图注、轴和色标文字 |
+| `x_unit`, `y_unit`, `value_unit` | 真正附加到对应轴/色标，不把分类轴强行加单位 |
+| `caption_n` | 声明样本量；与源行或 n 列对账。未声明时只写 source rows，不把行数冒充独立 n |
+| `errorbar_meaning` | SD/SEM/CI/range 等；进入图注和 SVG description |
+| `ylim`, `y_scale` | 实际应用后检查裁剪、非零柱基线和对数非正值 |
+| `bins`、`bin_edges` | histogram 分箱；不隐藏派生变换 |
+| `color_range` | heatmap 色标范围；数据越界为 high |
+| `figsize`、`dpi`、`export` 的 `width_mm` | 画布、默认 300 dpi、栏宽约束和画后实测 |
+| `accessibility_description` | 覆盖自动生成的 SVG 图意描述 |
+| `case_id`, `output_contract` | 案例标识与原样契约，不省略失败路径可读部分 |
 
-可编辑导出三件套是默认行为：SVG 以 live text 保存（svg.fonttype 设为 none，审计发现
-文字被转成轮廓会报 `export.no_live_text`），PNG 300 dpi，PDF 矢量。字体按图上实际
-字符解析（中文标签自动选 CJK 字体），缺字形会点名字符而不是留一排空框。原始数据表
-以 source_snapshot 落在输出目录，数据到成图的链条可离线复核。
+## 画后审计：不是“保存成功就算对”
 
-## rubric 三段结构映射
+- **实际几何回读**：bar 中心与高度、scatter/line/box 原始点、heatmap 格值与源行比对。
+  分组柱使用共享类别顺序与 dodge 位置，不再叠在同一坐标。
+- **数据完整性**：必需数值缺失留空并给 `data.missing_numeric`；不把 NULL/空值改成 0。
+  完全重复源行保留并提示；bar/heatmap 的重复键会重叠，直接拒绝而非静默丢行。
+- **图面语义**：标题、轴和单位、图例—系列、误差定义、样本量、色标、面板编号均可复核。
+- **防误导**：裁切、截断柱基线、对数非正值、未声明双 y 轴、类别/系列过载均给规则。
+- **文字与导出**：动态图注换行，再读取渲染后的文字 bounding box；越界为
+  `layout.text_overflow`。检查 live text、SVG 可访问性节点、PNG 文件及 pHYs dpi、PDF 头、
+  文件最小大小、实际画布栏宽和字体缺字。
 
-任务要求"每个案例返回一份结构化结果"，三行要求与 result.json 的落位：
+## 输出契约与实际文件
 
-| rubric 行 | rubric 要求要点 | result.json 落位 |
+`/app/output/result.json` 的核心字段：
+
+| 字段 | 内容 |
+|-|-|
+| `status`, `findings`, `severity_counts` | clean/review/blocked/refused/undetermined、规则与级别 |
+| `case_id` | 原样案例 ID；可读 spec/case 的失败路径同样回填 |
+| `encoding` | 图型、通道、field_types、auto selection、源行数、图元数、分组布局 |
+| `mark_to_row` | 全量源行索引、通道值、系列、误差及实际 rendered 几何，不截到前 200 行 |
+| `aggregates` | histogram 边界、计数和成员行；无派生变换时为空 |
+| `artifacts` | svg/png/pdf/caption/mark_to_row/resolved_spec/source_snapshot 的真实路径 |
+| `provenance` | resolved spec 与源表 sha256、引擎/matplotlib/字体/dpi、源快照 |
+| `accessibility`, `layout` | 调色板与冗余编码、SVG description、文字越界结果 |
+| `limits` | 未覆盖语义、契约不可推导项、科学解释边界；契约缺键填 null 且逐键说明 |
+| 原始 `output_contract` 其他键 | 引擎已有结果保留；spec 给定值直通；不可推导填 null + limits |
+
+成功渲染会实际生成：`figure.svg`、`figure.png`、`figure.pdf`、`caption.txt`、
+`mark_to_row.json`、`resolved_spec.json`、`source_snapshot.<suffix>` 和 `result.json`。
+SVG 嵌入 `role="img"`、`<title>` 与 `<desc>`；这不等于声称完成人类视觉检查。
+
+### 状态与退出码
+
+| status | exit | 何时使用 |
 |-|-|-|
-| 分析结果 | 清洗表、统计结果、图表、代码或查询结果；与数据字典、规则和任务一致 | encoding 通道映射 + mark_to_row 溯源 + artifacts 三件套 + source_snapshot + spec 回显 |
-| 质量与复现证据 | 原始快照、规则表、日志、代码和版本；他人可复算 | provenance（sha256、引擎与 matplotlib 版本、字体、dpi、快照路径）+ findings 即规则表 + bench 套件可复跑 |
-| 异常说明 | 缺失、异常、失败查询、无法解释和人工确认；不静默修改或掩盖 | findings[]（rule/severity/message）+ limits[] + refused/undetermined 状态本身 |
+| clean | 0 | 没有 finding；自动与显式 clean 实例都必须真的出图 |
+| review | 3 | 仅 low/medium，例如缺单位、数值缺失、低样本或非致命可读性问题 |
+| blocked | 4 | 已渲染但有 high，例如几何错值、裁剪、基线误导或文字越界 |
+| refused | 5 | 渲染前拒绝：未知图型、列错误、重复 bar/heatmap 键、双轴等 |
+| undetermined | 5 | 输入不可读、依赖不可用或渲染失败；能力不可确定，不伪造成功 |
+
+所有可预见的 spec/data/render 错误都写结构化 `result.json`，不输出 traceback；CLI 参数本身
+缺失由 argparse 以用法错误 2 报告。blocked/refused/undetermined 不是 clean，也不得在文字中
+改称成功。
+
+## 限制与不适用情况
+
+- 支持六种图型；pie、3D、contour、violin 和任意未知图型不会被静默近似。
+- **显著性比较只校验组名，不画括号**；若用了 `significance`，该限制必入 limits。
+- 不从原始重复观察自动选择 SD/SEM/CI，不做统计检验，不验证研究假设。
+- heatmap 画给定网格，不自动计算相关系数；先显式生成带行列/value 的相关矩阵表。
+- 多量纲指标不使用双轴，需分面或先声明标准化；复杂拼版逐面板运行。
+- 字符串展示字段超过 240 字符会截短并报 `input.label_truncated`，不能悄悄当成原文。
+- 字体依赖系统字体目录；缺字或不可解析会报告。像素效果可因 matplotlib/字体版本不同。
+- 自动选型是保守启发式，必须结合 task 和数据字典核对；它不会推断因果或独立实验单位。
+
+## 异常处置
+
+| 症状 | 结构与退出 | 正确处理 |
+|-|-|-|
+| JSON 不可读/非对象 | undetermined + `input.spec_unreadable/spec_not_object`, 5 | 修文件；若无 --case 可回显，真实不可读部分保持 unknown |
+| 数据缺失/格式错/重复表头 | undetermined + `input.data_unreadable`, 5 | 从真实材料重新导出，不手工补数字 |
+| matplotlib/numpy 不可用 | undetermined + `dependency.unavailable`, 5 | 在 scientific Python 环境运行，不生成空图充数 |
+| 文本数值列/缺列/空表/未知图型 | refused + 对应 encoding/data 规则, 5 | 修映射或先明确清洗/聚合 |
+| 同 x+group 重复 bar/heatmap 格 | refused + `data.duplicate_marks`, 5 | 显式聚合，或改 box/scatter 展示观察 |
+| 双 y 轴 | refused + `encoding.dual_axis_unsupported`, 5 | 分面或声明标准化，不换隐蔽名次 |
+| 数值缺失 | review + `data.missing_numeric`, 3 | 保持缺失与 limits，不填 0；必要时说明排除口径 |
+| 画后几何不符/文本越界 | blocked + `encoding.drawn_value_mismatch/layout.text_overflow`, 4 | 修渲染与布局，不能只编辑 JSON |
+| 契约字段不可推导 | 键为 null + limits | 不硬编码假值；根据真实产物补齐可补字段 |
+
+## 完整 finding 规则索引
+
+以下均为引擎实际会写出的 id；测试自检字符串不属于正式 finding。
+
+- Encoding：`encoding.unknown_chart_kind`、`encoding.required_channel_unmapped`、
+  `encoding.column_missing`、`encoding.not_numeric`、`encoding.unsupported_channel`、
+  `encoding.unsupported_channel_for_kind`、`encoding.dual_axis_unsupported`、
+  `encoding.time_as_bars`、`encoding.drawn_value_mismatch`、`input.encoding_not_object`。
+- Data：`data.no_rows`、`data.duplicate_marks`、`data.duplicate_rows`、
+  `data.missing_numeric`、`data.small_sample`、`traceability.missing`、`traceability.row_coverage`。
+- Axis/readability：`axis.x_label_missing`、`axis.y_label_missing`、`axis.x_unit_missing`、
+  `axis.y_unit_missing`、`axis.value_clipped`、`axis.truncated_baseline`、`axis.log_nonpositive`、
+  `read.too_many_categories`、`layout.panel_missing`、`layout.text_overflow`。
+- Annotation/series：`annotation.title_missing`、`annotation.errorbar_meaning_missing`、
+  `annotation.unknown_comparison`、`caption.n_mismatch`、`error.column_not_drawn`、
+  `legend.absent`、`legend.series_mismatch`、`series.missing_from_chart`。
+- Colour：`color.range_clipped`、`color.range_invalid`、`color.range_undeclared`、`color.unit_missing`。
+- Export/font：`export.accessibility_description_missing`、`export.empty_artifact`、`export.low_dpi`、
+  `export.no_live_text`、`export.pdf_invalid`、`export.png_dpi_mismatch`、
+  `export.width_invalid`、`export.width_out_of_band`、`font.glyph_missing`、`font.unresolved`。
+- Input/runtime：`input.spec_unreadable`、`input.spec_not_object`、`input.data_unreadable`、
+  `input.request_invalid`、`input.label_truncated`、`dependency.unavailable`、`render.failed`、`runtime.failed`。
+
+## Requirements
+
+Python 3.10+，`matplotlib` 3.x、`numpy`；字体度量使用 matplotlib `ft2font`，系统需有可用
+字体。无网络、付费服务、 seaborn/Vega-Lite/SQLGlot 运行时依赖。Linux/Windows 使用
+`python -X utf8`。科学运行环境缺依赖时是明确的 undetermined，不是可交付图件。
 
 ## 最小调用示例
 
-输入：examples/example-spec.json（含 case_id 与 output_contract 声明）+ examples/example-data.csv
-（4 行，组×处理）。
+`examples/example-data.csv`（4 行）与 `examples/example-spec.json` 是本包自建演示，不是官方
+案例。运行本说明 A 命令即可复跑；`examples/example-result.json` 来自真实本地运行，仅规格化
+了输出路径并加 `example_note`，不是预写的官方答案。几何测试还确认示例四根柱中心互不相同。
 
-调用：
+## 参考机制落地
 
-``bash
-python scripts/chartguard.py --spec examples/example-spec.json --data examples/example-data.csv --out out_example
-``
+- [Vega-Lite encoding 文档](https://github.com/vega/vega-lite/blob/main/site/docs/encoding.md)：落地 field、type、channel、分组、位置/
+  误差通道和 SVG description，而非只附链接。
+- [seaborn Plotter 实现](https://github.com/mwaskom/seaborn/blob/master/seaborn/_core/plot.py)：落地集中变量映射、逐通道 scale 与编译后 plotter
+  审计思想；本包不引出 seaborn 依赖。
+- 本地高分图表包的几何回读：从 ax artist 读回实际数值并与源行对账，解决“mapping 写对但画错”。
 
-实跑退出码 0，控制台回显 status 与 case_id；完整示意输出见 examples/example-result.json
-（由上述两个文件实跑生成、标注为示例）。形状如下：
+## Verification（作者自查，非运行时必需步骤）
 
-``json
-{
-  "schema_version": "data-viz/v1",
-  "status": "clean",
-  "case_id": "demo-chart-001",
-  "findings": [],
-  "encoding": {"chart_kind": "bar", "rows_in_source": 4, "marks_drawn": 4},
-  "mark_to_row": [
-    {"mark": "bar0", "row": 0, "x": "control", "y": 12.4, "series": "WT", "y_err": 1.1}
-  ],
-  "artifacts": {"svg": ".../figure.svg", "pdf": ".../figure.pdf", "png": ".../figure.png",
-                "source_snapshot": ".../source_snapshot.csv"},
-  "provenance": {"engine": "chartguard/v1", "spec_sha256": "daa0...", "data_sha256": "91f1...",
-                 "font": {"family": "Microsoft YaHei"}, "dpi": 300},
-  "limits": []
-}
-``
+```bash
+python -X utf8 /skills/weekly-skill/scripts/bench_chart.py
+```
 
-（示意输出——说明接口与结果形状，不是正式案例结果；output_contract 点名的六个键
-全部在结果中出现。）
-
-## 审计规则
-
-| rule | severity | 证明什么 |
-|-|-|-|
-| `encoding.unknown_chart_kind` | high | 请求的图型不支持——拒绝，不近似 |
-| `encoding.required_channel_unmapped` | high | 图型必需的通道没有映射 |
-| `encoding.column_missing` | high | spec 点名的列在表中不存在 |
-| `encoding.not_numeric` | high | 文本列在驱动数值通道 |
-| `data.no_rows` | high | 表没有数据行——拒绝，不是崩溃 |
-| `encoding.time_as_bars` | medium | 时间列被画成并列柱，连续性与拐点不可见 |
-| `axis.x_label_missing` / `axis.y_label_missing` | high | 坐标轴没有标目 |
-| `axis.x_unit_missing` / `axis.y_unit_missing` | medium | **数值**轴没有声明单位（分类轴不要求单位） |
-| `axis.value_clipped` | high | 数值落在轴范围外，mark 不可见 |
-| `axis.truncated_baseline` | high | 声明的柱状图基线高于零，柱长不再编码数值 |
-| `axis.log_nonpositive` | medium | 对数轴遇非正值，点被静默丢弃 |
-| `series.missing_from_chart` | high | 数据里的分组没有被画出来 |
-| `legend.absent` | medium | 多分组却无图例，颜色失去含义 |
-| `error.column_not_drawn` | high | 声明了误差通道但没有渲染误差线 |
-| `annotation.errorbar_meaning_missing` | medium | 误差线没有声明是 SD、SEM 还是置信区间 |
-| `read.too_many_categories` | medium | 类别超过 12 或系列超过 8，单栏宽度下不可读、颜色复用 |
-| `color.range_undeclared` | medium | 热图未声明色标范围，读者无法判断调色板是否截断 |
-| `color.range_clipped` | high | 数据值落在声明的色标范围外，量级被误读 |
-| `layout.panel_missing` | low | 未声明面板编号；单图可无，拼版必须有 |
-| `traceability.missing` | high | mark 缺少源行索引 |
-| `traceability.row_coverage` | medium | mark 少于源行，部分行没有进图 |
-| `caption.n_mismatch` | high | 图注样本量与表不符（含 caption_n 非数值） |
-| `annotation.unknown_comparison` | high | 显著性标注指向数据里不存在的分组 |
-| `export.no_live_text` | high | SVG 文字是轮廓，文件不可编辑 |
-| `export.pdf_invalid` | high | PDF 导出不是合法 PDF |
-| `export.low_dpi` | medium | 位图低于 300 dpi |
-| `font.unresolved` | medium | 找不到可读字体文件，字形覆盖无法证明 |
-| `font.glyph_missing` | medium | 标签含已解析字体缺字形的字符（中文乱码的前兆） |
-| `input.label_truncated` | medium | spec 字符串字段超长被裁剪后才渲染，被裁字段随 finding 记录 |
-| `input.spec_unreadable` | high | spec 不是可读 JSON——undetermined，不崩溃 |
-| `input.spec_not_object` | high | spec 不是 JSON 对象——undetermined |
-| `input.data_unreadable` | high | 数据文件读不出来——undetermined |
-| `render.failed` | high | 渲染本身抛异常——undetermined，异常名随 finding 记录 |
-
-## Limits
-
-- **只有五种图型。** pie / histogram / violin / contour / 3D 一律拒绝，不静默降级。
-- **不做统计计算。** 误差线来自声明的误差列；引擎绝不自己算 SEM/SD/CI——算错的
-  派生统计量与测得的无法区分。表里只有重复测量时，先显式聚合并注明口径。
-- **显著性标注只校验不绘制。** 审计确认比较双方都在数据里；摆括号是手工步骤。
-- **热图色标范围只核对声明与数据，不判断研究问题。** 声明一个故意截断的范围且数据
-  恰在其内，审计无法知道这是否掩盖了感兴趣的差异。
-- **审计证明编码，不证明推断。** 它能告诉你某个 bar 无法溯源；不能告诉你 t 检验
-  选错了。
-- **字体解析依赖系统字体目录。** 找不到任何字体文件时报 `font.unresolved`（可复核性
-  缺口），不会假装覆盖完整。
-- **时间轴判定是保守的。** time_as_bars 只在列名含时间词或取值是年份数字时触发，
-  剂量梯度（0、5、10、20）画柱不报——剂量柱状图在文献里是正当的。
-- **undetermined 不回填契约字段。** spec 不可读时没有可信来源可回填，result.json
-  如实声明这一点。
-
-## 异常处置表
-
-| 症状 | 引擎行为 | 处置 |
-|-|-|-|
-| spec 不是可读 JSON | status undetermined，finding `input.spec_unreadable`，exit 5 | 重新导出/修复 spec 文件再跑 |
-| spec 是列表或字符串而非对象 | undetermined，`input.spec_not_object` | spec 顶层必须是对象 |
-| 数据文件缺失或解析失败 | undetermined，`input.data_unreadable` | 确认材料里的真实数据路径与格式 |
-| 渲染抛异常（figsize 形状错等） | undetermined，`render.failed`，异常名入 finding | 修几何参数；dpi/figsize 已自动回退默认值 |
-| 图型不在五种之内 | refused，`encoding.unknown_chart_kind` | 换支持图型或显式聚合后再画 |
-| 文本列驱动数值通道 | refused，`encoding.not_numeric` | 显式清洗或排除，绝不强转 0 |
-| spec 点名的列不存在 | refused，`encoding.column_missing`（附可用列清单） | 按 finding 里的 available 清单改列名 |
-| 表没有数据行 | refused，`data.no_rows` | 检查是否只读了表头 |
-| 数值落在轴范围外 | blocked，`axis.value_clipped` | 放宽轴限，或检查是否误把离群值列成了误差 |
-| 柱状图基线高于零 | blocked，`axis.truncated_baseline` | 基线归零，或改用点图表达偏移 |
-| 对数轴遇非正值 | review，`axis.log_nonpositive` | 换 symlog 或先变换数据并说明 |
-| 图注样本量对不上 | blocked，`caption.n_mismatch` 且表有 n 列 | 图注可能是分组的 n；看 finding 里的 distinct_n |
-| 误差线画了但没声明含义 | review，`annotation.errorbar_meaning_missing` | 在 spec 里补 errorbar_meaning（SD/SEM/CI） |
-| 类别或系列过多 | review，`read.too_many_categories` | 拆面板或合并类目后再导出 |
-| 热图色标未声明/裁剪数据 | review 或 blocked，`color.range_undeclared` / `color.range_clipped` | 声明覆盖数据的 color_range |
-| SVG 文字被转轮廓 | blocked，`export.no_live_text` | 以 svg.fonttype=none 重新导出 |
-| 标签缺字形 | review，`font.glyph_missing`（点名字符） | 换覆盖该字符的字体，或删装饰字符；不要留空框交付 |
-| mark 少于源行 | review，`traceability.row_coverage` | 有行被跳过——通常是空白值被未声明的过滤吃掉 |
-| output_contract 字段推导不了 | 该键填 null，limits 里记一条 | 在异常说明里向读者说明该字段为何缺失 |
-| matplotlib/numpy 缺失 | 引擎无法运行；依赖检查先行 | 按下节安装；缺依赖时不得伪造图件，如实声明运行失败 |
-
-## Dependencies
-
-``
-pip install matplotlib numpy Pillow
-``
-
-- **matplotlib**（3.x，实测 3.10.8）：渲染与导出、字体度量（ft2font）
-- **numpy**：数组运算与 NaN 缺口绘制
-- **Pillow**：可选，缺省时跳过文字溢出类检查并如实说明
-
-这三个包缺失时渲染与审计无法运行，上面所有 CLI 命令都会以 undetermined 退出——
-这是声明的失败模式，不是静默降级。引擎核心（审计规则、溯源、契约回填）不依赖网络
-与付费服务。
-
-## 创新增益
-
-以下能力均为引擎真实实现，边界如实标注：
-
-1. **mark→row 溯源脊柱**：图上每个视觉元素在 mark_to_row 里回指源数据行与通道值
-   （mark、row、x、y、series、y_err），评审可逐元素核对"图上的数与表里的数一致"。
-   通用 Agent 画完图即丢弃映射，无法自证这一点。边界：溯源证明编码正确，不证明
-   统计推断正确。
-2. **拒绝式编码校验**：图型×数据结构不匹配（文本列驱动数值通道、时间列画并列柱、
-   未知图型）在渲染前被拒绝并给出行列级证据，而不是产出一张"看起来完成"的错图。
-   边界：时间轴判定保守（列名时间词或年份取值才触发），剂量梯度画柱不误报。
-3. **字符级字体覆盖证明**：字体按图上实际会画的字符（spec 标签 + 数据类别值）解析，
-   缺字形点名具体字符与字体——直击"中文标签渲染成空框但文件照样保存"的隐形失败。
-   边界：依赖系统字体目录，找不到字体时报 `font.unresolved` 而不是假装覆盖。
-4. **导出即审计**：live-text SVG、300 dpi PNG、矢量 PDF 三件套在交付前过审计
-   （文字轮廓化、dpi 不足、PDF 非法都会被点名），期刊规格违规在交付前暴露。
-   边界：字体嵌入度（Type 3 vs Type 42）不做字节级检查。
-5. **sha256 级复现证据**：provenance 记录 spec 与数据的哈希、引擎与 matplotlib 版本、
-   解析字体与 dpi，原始数据表快照随图交付——换一台机器重跑可逐字节核对输入。
-   边界：只证明输入一致，不消除 matplotlib 版本间的渲染像素差异。
-6. **clean 基线回归套件**：24 个场景逐条对应规则，clean 基线必须零 high/medium
-   发现，"全都标"的检测器过不了 bench——检测器自身被检测。
-
-## 生态贡献
-
-- **SKILL.md**：用途、适用条件、六步调用方式、输入输出、异常处置表、限制和自查方法
-- **references/audit-rules.md**：每条审计规则证明什么、为何存在（规则表可独立阅读）
-- **references/encoding-spec.md**：编码规格、验证顺序、轴与标注选项、状态与退出码表
-- **examples/**：最小调用示例三件套（spec + 数据 + 实跑 result，示意输出已标注）
-- **scripts/chartguard.py**：渲染+审计引擎，CLI 可直接复跑，函数可独立导入复用
-- **scripts/fontsel.py**：字符级字体解析模块，任何 matplotlib 项目可直接复用
-- **scripts/bench_chart.py**：24 场景回归套件，一键复跑验证引擎行为
-- **维护信息**：依赖版本（上节实测版本）、平台限制（50 文件/500KB/2MB 内无二进制）、
-  已知边界全部写入 Limits 与异常处置表
-
-## 验证
-
-``bash
-python scripts/bench_chart.py   # 24 scenarios：每个植入一个缺陷或证明一个 FP guard
-``
-
-本机 24/24 pass。clean 基线零 high/medium finding，FP guard 钉住关键行为：
-表头空表走拒绝而不是崩溃、部分空白的误差列正常渲染、部分缺失不画成零高度柱、
-中文标签解析到 CJK 字体、缺字形字符被点名而不是静默画框、分类热图不再被误拒。
-另有 15 项敌意探针（坏 JSON、非对象、文件缺失、类型错位、超长、CJK、契约字段垃圾、
-重跑幂等）全部通过：退出码落在 0/3/4/5，result.json 必在，无 traceback。
+当前 29/29 场景通过。包含 clean baseline、负面规则、重复/缺失/双轴、实际几何、图注语义、
+SVG 可访问性、直方图计数、文字越界、错误退出码与 PNG/PDF/SVG 非空检查。测试图片全部写入
+系统临时目录，不把二进制测试产物打进 Skill。正式案例交付仍以真实 case 的运行结果为准。

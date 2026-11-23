@@ -1,134 +1,85 @@
-# Audit rules: what each one proves
+# Audit rules: what is actually checked
 
-## Encoding and structure
+## Pre-render refusals
 
-**`encoding.required_channel_unmapped`**, **`encoding.column_missing`**,
-**`encoding.not_numeric`**, **`encoding.unknown_chart_kind`**, **`data.no_rows`** —
-all five are refusals raised before anything is drawn. They exist so the failure
-mode is an error message rather than a chart of zeros or a crash.
+- `encoding.unknown_chart_kind`: kind is outside bar/line/scatter/box/heatmap/histogram.
+- `encoding.required_channel_unmapped`, `encoding.column_missing`, `encoding.not_numeric`: the
+  declared mapping cannot be executed without inventing positions or values.
+- `encoding.unsupported_channel`, `encoding.unsupported_channel_for_kind`: a channel would otherwise
+  be silently ignored.
+- `encoding.dual_axis_unsupported`: a second quantitative y scale is declared. Facet or normalise
+  explicitly instead of making magnitudes look directly comparable.
+- `input.encoding_not_object`: encoding is not a channel-to-column map.
+- `data.no_rows`: a header-only or empty table cannot support a chart.
+- `data.duplicate_marks`: repeated x(/y)/group keys in bar/heatmap would overplot one another.
 
-**`encoding.time_as_bars`** — the x column is time-like (a date/time column name,
-or four-plus integer values in year range) but is drawn as disconnected bars.
-Ordering survives as a label, continuity does not: the between-point trend a
-reader assumes from a time axis is invisible. Line or scatter preserves it.
+A refusal carries case_id plus all readable output_contract fields and exits 5.
 
-**`series.missing_from_chart`** — a group present in the data never reached the
-canvas. This is the data-chart equivalent of dropping a treatment arm.
+## Source and chart consistency
 
-**`legend.absent`** — several groups are drawn in different colours with nothing
-saying which is which. Colour without a legend is decoration, not encoding.
+- `data.missing_numeric` (medium): required numeric cells are absent. They remain undrawn, never zero.
+  Optional blank uncertainty cells are allowed and draw no error segment.
+- `data.duplicate_rows` (low): identical input rows are preserved and counted, not silently removed.
+- `data.small_sample` (low): fewer than three source rows limits distribution/uncertainty reading.
+- `traceability.missing` (high): a visual record lacks its source row index.
+- `traceability.row_coverage` (medium): fewer mark records than source rows.
+- `encoding.drawn_value_mismatch` (high): the actual rendered centre/value differs from the mapped
+  source, or a non-missing value has no expected geometry. This includes the previously overlapping
+  grouped-bar failure; checking only the spec cannot catch it.
 
-## Axes
+## Axes, encodings and annotation
 
-**`axis.x_label_missing` / `axis.y_label_missing`** — an unlabelled axis makes the
-panel unreadable once it is separated from its caption.
+- `axis.x_label_missing`, `axis.y_label_missing` (high): no axis label or fallback field name.
+- `axis.x_unit_missing`, `axis.y_unit_missing` (medium): numeric axes have no declared unit; category
+  axes are intentionally exempt.
+- `color.unit_missing` (medium): numeric heatmap colour scale has no unit.
+- `axis.value_clipped` (high): source values fall outside actual x/y limits. Bar auditing retains the
+  zero-length baseline semantics.
+- `axis.truncated_baseline` (high): declared bar baseline starts above zero.
+- `axis.log_nonpositive` (medium): log/symlog/logit is requested over non-positive values.
+- `encoding.time_as_bars` (medium): a time-like x field is shown as disconnected bars.
+- `annotation.title_missing` (medium): no title is rendered.
+- `annotation.errorbar_meaning_missing` (medium): x_err/y_err is mapped without SD/SEM/CI/range text.
+- `error.column_not_drawn` (high): every declared uncertainty value is missing, so no bars appeared.
+- `annotation.unknown_comparison` (high): a significance declaration names absent groups. The package
+  does not render significance brackets and reports that limitation explicitly.
+- `caption.n_mismatch` (high): caption_n is non-numeric or unsupported by rows/the declared n column.
+  Without caption_n, the rendered caption says source rows rather than inferring independent n.
 
-**`axis.x_unit_missing` / `axis.y_unit_missing`** — raised only for a **numeric**
-axis. A categorical axis ("control", "drug") has no unit, and demanding one
-produces a finding nobody can act on. This rule was narrowed during development
-for exactly that reason: the first version fired on every categorical bar chart.
+## Series and readability
 
-**`axis.value_clipped`** — a data value sits outside the drawn limits, so its mark
-is invisible while the chart still looks complete. Bar charts are compared against
-a lower bound of zero, because that is what a reader assumes a bar length means.
+- `series.missing_from_chart` (high): a source group did not reach the rendering groups.
+- `legend.absent`, `legend.series_mismatch` (medium): legend and actual series disagree.
+- `read.too_many_categories` (medium): >12 categorical x values or >8 series. Okabe-Ito is always
+  backed by hatch/dash/marker plus text, so colour is not the only series channel.
+- `layout.panel_missing` (low): no panel identifier is declared for possible composite use.
+- `layout.text_overflow` (high): renderer bounding boxes show title, axis label, or caption outside
+  the canvas. Caption wrapping is retried before this finding is evaluated.
 
-**`axis.truncated_baseline`** — the spec declares a y-axis that starts above zero
-on a bar chart. Bar length is read as value; a baseline above zero keeps only the
-tip of each bar and exaggerates the differences between them. The engine applies
-the declared limit before auditing, so what is reported is what the reader sees.
+## Exports and accessibility
 
-**`axis.log_nonpositive`** — the declared y scale is logarithmic while the data
-contain zero or negative values. A log axis cannot place them; they drop out
-silently unless the audit names the count.
+- `export.empty_artifact` (high): SVG/PNG/PDF is absent or implausibly small.
+- `export.no_live_text` (high): SVG labels are outlines rather than editable text.
+- `export.accessibility_description_missing` (medium): SVG title/description was not embedded.
+- `export.pdf_invalid` (high): output lacks a PDF signature.
+- `export.low_dpi` (medium): requested raster dpi is below 300.
+- `export.png_dpi_mismatch` (medium): the actual PNG pHYs chunk is below 300 dpi.
+- `export.width_out_of_band` (medium): actual canvas misses the declared width/tolerance.
+- `export.width_invalid` (medium): declared width cannot be measured.
+- `font.unresolved`, `font.glyph_missing` (medium): no provable font, or a drawn character lacks a
+  glyph. Font coverage includes title/caption/labels/units and category/legend text.
 
-## Errors and statistics
+## Unrunnable input and render failures
 
-**`error.column_not_drawn`** — an error channel is mapped but no bars appeared,
-usually because the column is blank or the wrong column was named. Drawing a mean
-without its spread is a claim in itself.
+- `input.spec_unreadable`, `input.spec_not_object`: malformed JSON or non-object spec.
+- `input.data_unreadable`: missing/unreadable table, malformed JSON rows, duplicate CSV headers, or
+  row/header shape mismatch.
+- `input.request_invalid`: CLI auto/case preparation failed.
+- `input.label_truncated` (medium): presentation text exceeded 240 characters and was clipped.
+- `dependency.unavailable`: matplotlib/numpy cannot be imported in the scientific runtime.
+- `render.failed`, `runtime.failed`: a concrete exception name is returned as undetermined, never a
+  traceback or a blank image passed off as success.
 
-**`annotation.errorbar_meaning_missing`** — an error channel is drawn but the spec
-never says whether the bars are SD, SEM or a confidence interval. The three answer
-different questions; a caption cannot retro-declare what the spec omitted.
-
-**`annotation.unknown_comparison`** — a significance bracket compares two groups
-and one of them is not in the data. This catches a bracket copied from a template.
-
-**`caption.n_mismatch`** — the caption's sample size disagrees with the source.
-When the table has an explicit `n` column, that column is authoritative and the
-row count is not, because one row may aggregate several observations; the finding
-carries `distinct_n` and `n_total` so the reviewer can judge which reading the
-caption meant. A non-numeric caption_n is reported here too: it cannot name a
-sample size at all.
-
-## Readability
-
-**`read.too_many_categories`** — more than twelve categories on one categorical
-axis, or more than eight series on one palette. Past those limits the panel stops
-being readable at single-column width and colours repeat, so the legend can no
-longer disambiguate the series. The fix is a split panel or grouped classes,
-declared before export rather than discovered by a reviewer.
-
-## Traceability
-
-**`traceability.missing`** — marks exist without a source row index. The
-`mark_to_row` mapping is the deliverable that makes a figure reviewable; marks
-outside it cannot be audited at all.
-
-**`traceability.row_coverage`** — fewer marks than source rows. Usually rows were
-filtered out by an undeclared step; the fix is to declare the filter, not to
-silently accept the shortfall.
-
-## Colour range (heatmap)
-
-**`color.range_undeclared`** — a heatmap ships without a declared colour scale
-range, so a reader cannot tell whether the palette spans the data or quietly
-truncates it.
-
-**`color.range_clipped`** — a declared colour range does not cover the data: cells
-beyond the range are pinned to the palette ends and their magnitude is misread.
-
-## Layout
-
-**`layout.panel_missing`** — no panel letter is declared. Low severity on purpose:
-a lone figure may legitimately have none, but a composite cannot place this export
-without one, and the result records nothing.
-
-## Export and fonts
-
-**`export.no_live_text`** — the SVG carries no `<text>` elements: every label was
-converted to outlines, so the file cannot be edited downstream.
-
-**`export.pdf_invalid`** — the "PDF" is not a PDF; whatever was written cannot be
-submitted.
-
-**`export.low_dpi`** — the raster preview is below 300 dpi, below common journal
-requirements.
-
-**`font.unresolved`** — no readable font file was found on the machine, so glyph
-coverage could not be proven. Reported as a review finding, never assumed away.
-
-**`font.glyph_missing`** — a drawn label contains characters with no glyph in the
-resolved font (the classic cause of Chinese-as-empty-boxes). The finding names the
-font and the exact missing characters, so the fix is to switch fonts or drop the
-characters — knowingly, not after a reviewer finds the boxes.
-
-**`input.label_truncated`** — a spec string field exceeded the presentation length
-limit (2000 characters) and was clipped before rendering, because a megabyte-long
-label stalls the renderer for minutes. The clipped fields are named; the drawn
-labels are no longer the submitted text verbatim until the spec is fixed.
-
-## Unrunnable input (status undetermined)
-
-**`input.spec_unreadable`** — the spec file is not readable JSON. The run answers
-with a result.json and exit 5, never a traceback.
-
-**`input.spec_not_object`** — the spec parses but is not a JSON object (a bare
-list or string), so no encoding can be planned from it.
-
-**`input.data_unreadable`** — the data file cannot be parsed as CSV or JSON
-(missing file, decode error, malformed JSON).
-
-**`render.failed`** — the spec and data are readable but the rendering itself
-raised (a geometry matplotlib rejects, for example). The failure is reported with
-its exception name; nothing partial is passed off as a figure.
+Low/medium findings yield review (3); high findings on a rendered figure yield blocked (4); refused
+and undetermined yield 5. The output limits distinguish programmatic evidence from scientific validity
+and from human visual inspection.

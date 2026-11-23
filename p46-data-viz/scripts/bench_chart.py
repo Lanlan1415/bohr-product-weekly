@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -32,6 +33,8 @@ KO,drug,14.8
 
 BASE = {
     "kind": "bar",
+    "title": "Treatment response by genotype",
+    "caption": "Bars show source-row values; error bars are defined in the caption.",
     "x_label": "Treatment",
     "y_label": "Response",
     "y_unit": "a.u.",
@@ -99,7 +102,7 @@ EMPTY_DATA = "group,condition,response,response_sd,n" + chr(10)
 
 PARTIAL_ERR = ("group,condition,response,response_sd,n" + chr(10)
                + "WT,control,12.4,1.1,6" + chr(10)
-               + "WT,drug,,2.4,6" + chr(10)
+               + "WT,drug,31.2,,6" + chr(10)
                + "KO,control,10.1,,6" + chr(10)
                + "KO,drug,14.8,1.3,6" + chr(10))
 
@@ -195,9 +198,9 @@ HEAT_DATA = ("row_x,col_y,uptake" + chr(10)
 
 
 def _heat_spec(extra):
-    s = {"kind": "heatmap", "x_label": "Sample", "y_label": "Dose",
-         "value_label": "uptake", "panel": "a", "encoding": {"x": "row_x", "y": "col_y",
-                                                             "value": "uptake"}}
+    s = {"kind": "heatmap", "title": "Uptake matrix", "x_label": "Sample", "y_label": "Dose",
+         "value_label": "uptake", "value_unit": "a.u.", "panel": "a", "encoding": {"x": "row_x", "y": "col_y",
+                                                                                  "value": "uptake"}}
     s.update(extra)
     return s
 
@@ -234,6 +237,33 @@ def scen_label_truncated():
     return s, DATA, ["input.label_truncated"]
 
 
+def scen_title_missing():
+    s = dict(BASE)
+    s.pop("title")
+    return s, DATA, ["annotation.title_missing"]
+
+
+def scen_dual_axis():
+    s = dict(BASE, secondary_y="other_measure")
+    return s, DATA, ["encoding.dual_axis_unsupported"]
+
+
+def scen_duplicate_bars():
+    return dict(BASE), DATA + "KO,drug,99.0,1.3,6\n", ["data.duplicate_marks"]
+
+
+def scen_missing_numeric():
+    data = DATA.replace("WT,drug,31.2", "WT,drug,")
+    return dict(BASE), data, ["data.missing_numeric"]
+
+
+def scen_histogram_clean():
+    s = {"kind": "histogram", "title": "Response distribution", "x_label": "Response",
+         "x_unit": "a.u.", "panel": "a", "bins": 3,
+         "encoding": {"x": "response"}}
+    return s, DATA, []
+
+
 SCENARIOS = [
     ("clean", scen_clean),
     ("empty_table", scen_empty_table),
@@ -259,6 +289,11 @@ SCENARIOS = [
     ("heatmap_clean", scen_heatmap_clean),
     ("panel_missing", scen_panel_missing),
     ("label_truncated", scen_label_truncated),
+    ("title_missing", scen_title_missing),
+    ("dual_axis", scen_dual_axis),
+    ("duplicate_bars", scen_duplicate_bars),
+    ("missing_numeric", scen_missing_numeric),
+    ("histogram_clean", scen_histogram_clean),
 ]
 
 
@@ -275,21 +310,37 @@ def run_one(name, builder, root: Path) -> dict:
     spurious = []
     if not expect:
         spurious = [f["rule"] for f in r.get("findings", []) if f["severity"] in ("high", "medium")]
+    if name == "clean":
+        centers = [m["rendered"]["x"] for m in r.get("mark_to_row", [])]
+        if len(centers) != 4 or len(set(centers)) != 4:
+            spurious.append("selfcheck_grouped_bar_overlap")
+        caption = (d / "out" / "caption.txt").read_text(encoding="utf-8")
+        if "SD" not in caption or "n = 6" not in caption:
+            spurious.append("selfcheck_caption_semantics_missing")
+        svg = (d / "out" / "figure.svg").read_text(encoding="utf-8")
+        if "<desc>" not in svg or "role=\"img\"" not in svg:
+            spurious.append("selfcheck_accessibility_metadata_missing")
+        if (r.get("layout") or {}).get("text_overflow"):
+            spurious.append("selfcheck_text_overflow")
+    if name == "histogram_clean":
+        if sum(a["count"] for a in r.get("aggregates", [])) != 4:
+            spurious.append("selfcheck_histogram_count_mismatch")
     return {"scenario": name, "expected": expect, "fired": sorted(fired),
             "missing": missing, "spurious": spurious, "status": r["status"],
             "pass": not missing and not spurious}
 
 
 def main() -> int:
-    root = Path(__file__).resolve().parent / "_run"
-    rows = [run_one(n, b, root) for n, b in SCENARIOS]
+    with tempfile.TemporaryDirectory(prefix="chartguard-bench-") as tmp:
+        root = Path(tmp)
+        rows = [run_one(n, b, root) for n, b in SCENARIOS]
     passed = sum(1 for r in rows if r["pass"])
     report = {
-        "schema_version": "chart-bench/v1",
+        "schema_version": "chart-bench/v2",
         "scenarios": rows,
         "totals": {"passed": passed, "of": len(rows)},
-        "note": ("One planted defect per scenario. The clean baseline must stay silent on high "
-                 "and medium findings, so blanket flagging cannot pass."),
+        "note": ("One planted defect per scenario plus rendered-geometry, caption and accessibility "
+                 "assertions. Runtime images are written to a temporary directory, never shipped."),
     }
     (Path(__file__).resolve().parent / "report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

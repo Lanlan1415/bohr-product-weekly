@@ -1,5 +1,5 @@
 {
-  "schema_version": "chart-bench/v1",
+  "schema_version": "chart-bench/v2",
   "scenarios": [
     {
       "scenario": "clean",
@@ -143,7 +143,8 @@
         "export.low_dpi"
       ],
       "fired": [
-        "export.low_dpi"
+        "export.low_dpi",
+        "export.png_dpi_mismatch"
       ],
       "missing": [],
       "spurious": [],
@@ -293,8 +294,70 @@
         "input.label_truncated"
       ],
       "fired": [
-        "input.label_truncated"
+        "input.label_truncated",
+        "layout.text_overflow"
       ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "title_missing",
+      "expected": [
+        "annotation.title_missing"
+      ],
+      "fired": [
+        "annotation.title_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "dual_axis",
+      "expected": [
+        "encoding.dual_axis_unsupported"
+      ],
+      "fired": [
+        "encoding.dual_axis_unsupported"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_bars",
+      "expected": [
+        "data.duplicate_marks"
+      ],
+      "fired": [
+        "data.duplicate_marks"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "refused",
+      "pass": true
+    },
+    {
+      "scenario": "missing_numeric",
+      "expected": [
+        "data.missing_numeric"
+      ],
+      "fired": [
+        "data.missing_numeric"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "histogram_clean",
+      "expected": [],
+      "fired": [],
       "missing": [],
       "spurious": [],
       "status": "clean",
@@ -302,8 +365,8 @@
     }
   ],
   "totals": {
-    "passed": 24,
-    "of": 24
+    "passed": 29,
+    "of": 29
   },
-  "note": "One planted defect per scenario. The clean baseline must stay silent on high and medium findings, so blanket flagging cannot pass."
+  "note": "One planted defect per scenario plus rendered-geometry, caption and accessibility assertions. Runtime images are written to a temporary directory, never shipped."
 }

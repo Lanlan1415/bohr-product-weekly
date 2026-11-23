@@ -1,0 +1,209 @@
+{
+  "schema_version": "pdf-parse-hostile/v2",
+  "backend_available": true,
+  "fixture_notice": "synthetic hostile PDF and case probes only",
+  "probes": [
+    {
+      "probe": "clean_pdf",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "case_missing",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "case_bad_json",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "case_not_object_exit4",
+      "expected_exit": 4,
+      "actual_exit": 4,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "no_pdf_path_exit4",
+      "expected_exit": 4,
+      "actual_exit": 4,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "wrong_pdf_path_type_exit4",
+      "expected_exit": 4,
+      "actual_exit": 4,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "missing_pdf_exit5_contract",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "unknown_section_exit5_contract",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "garbage_pdf_exit5",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "directory_instead_of_pdf_exit5",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "fully_scanned_refusal_not_ocr_fiction",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "encrypted_named_refusal",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "mixed_scan_partial_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "bom_case",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "nested_materials_pdf",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "sole_pdf_autodiscovery_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "multiple_pdfs_primary_only_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "native_tables_disabled_no_fake_grid",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_bad_shape_no_crash",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_object_list_complete",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_missing_field_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "deterministic_byte_replay",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 22,
+    "of": 22
+  }
+}

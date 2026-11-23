@@ -9,6 +9,8 @@
     "provenance"
   ],
   "kind": "bar",
+  "title": "Treatment response by genotype",
+  "caption": "Bars show source-row values; error bars are defined in the caption.",
   "figsize": [
     3.5,
     2.8

@@ -1,0 +1,382 @@
+{
+  "schema_version": "dbquery-bench/v1",
+  "totals": {
+    "passed": 32,
+    "of": 32
+  },
+  "scenarios": [
+    {
+      "scenario": "clean_select",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "null_preserved",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "aggregate_gold",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "left_join_null",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "not_null_violation",
+      "expected": [
+        "validation.unexpected_null"
+      ],
+      "fired": [
+        "validation.unexpected_null"
+      ],
+      "status": "blocked",
+      "exit_code": 4,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "temperature_conversion",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_grain",
+      "expected": [
+        "validation.grain_not_unique"
+      ],
+      "fired": [
+        "validation.grain_not_unique"
+      ],
+      "status": "blocked",
+      "exit_code": 4,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_rows",
+      "expected": [
+        "data.duplicate_rows"
+      ],
+      "fired": [
+        "data.duplicate_rows"
+      ],
+      "status": "review",
+      "exit_code": 3,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "unit_conversion",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "unit_incompatible",
+      "expected": [
+        "unit.incompatible"
+      ],
+      "fired": [
+        "unit.incompatible"
+      ],
+      "status": "blocked",
+      "exit_code": 4,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "mixed_units_audit",
+      "expected": [
+        "unit.mixed_units"
+      ],
+      "fired": [
+        "unit.mixed_units"
+      ],
+      "status": "review",
+      "exit_code": 3,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "empty_result",
+      "expected": [
+        "query.empty_result"
+      ],
+      "fired": [
+        "query.empty_result"
+      ],
+      "status": "review",
+      "exit_code": 3,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "row_count_mismatch",
+      "expected": [
+        "validation.row_count_mismatch"
+      ],
+      "fired": [
+        "validation.row_count_mismatch"
+      ],
+      "status": "blocked",
+      "exit_code": 4,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "expected_rows_mismatch",
+      "expected": [
+        "validation.rows_mismatch"
+      ],
+      "fired": [
+        "validation.rows_mismatch"
+      ],
+      "status": "blocked",
+      "exit_code": 4,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "independent_check_failure",
+      "expected": [
+        "validation.independent_check_failed"
+      ],
+      "fired": [
+        "validation.independent_check_failed"
+      ],
+      "status": "blocked",
+      "exit_code": 4,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "write_rejected",
+      "expected": [
+        "query.not_read_only"
+      ],
+      "fired": [
+        "query.not_read_only"
+      ],
+      "status": "refused",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "multi_statement_rejected",
+      "expected": [
+        "query.multiple_statements"
+      ],
+      "fired": [
+        "query.multiple_statements"
+      ],
+      "status": "refused",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "cte_write_rejected",
+      "expected": [
+        "security.read_only_violation"
+      ],
+      "fired": [
+        "security.read_only_violation"
+      ],
+      "status": "refused",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "attach_rejected",
+      "expected": [
+        "query.not_read_only"
+      ],
+      "fired": [
+        "query.not_read_only"
+      ],
+      "status": "refused",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "dangerous_function_rejected",
+      "expected": [
+        "security.read_only_violation"
+      ],
+      "fired": [
+        "security.read_only_violation"
+      ],
+      "status": "refused",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "readfile_rejected",
+      "expected": [
+        "security.read_only_violation"
+      ],
+      "fired": [
+        "security.read_only_violation"
+      ],
+      "status": "refused",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_columns",
+      "expected": [
+        "query.duplicate_column_names"
+      ],
+      "fired": [
+        "query.duplicate_column_names"
+      ],
+      "status": "review",
+      "exit_code": 3,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "semicolon_literal",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "valid_cte",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "comma_join_condition",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "join_without_condition",
+      "expected": [
+        "join.condition_missing"
+      ],
+      "fired": [
+        "join.condition_missing"
+      ],
+      "status": "blocked",
+      "exit_code": 4,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "truncated_result",
+      "expected": [
+        "query.rows_truncated"
+      ],
+      "fired": [
+        "query.rows_truncated"
+      ],
+      "status": "blocked",
+      "exit_code": 4,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "contract_passthrough",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_database",
+      "expected": [
+        "connection.unavailable"
+      ],
+      "fired": [
+        "connection.unavailable"
+      ],
+      "status": "undetermined",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "invalid_database",
+      "expected": [
+        "connection.invalid_database"
+      ],
+      "fired": [
+        "connection.invalid_database"
+      ],
+      "status": "undetermined",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "unsupported_driver",
+      "expected": [
+        "connection.unsupported_driver"
+      ],
+      "fired": [
+        "connection.unsupported_driver"
+      ],
+      "status": "undetermined",
+      "exit_code": 5,
+      "failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "deterministic_rerun",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "exit_code": 0,
+      "failures": [],
+      "pass": true
+    }
+  ],
+  "gold_note": "Aggregate gold rows are independent literals from the known fixture; databases are generated in temp dirs."
+}

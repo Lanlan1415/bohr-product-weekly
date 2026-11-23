@@ -1,0 +1,29 @@
+{
+  "documents": [
+    {
+      "id": "quality-rct-clean",
+      "title": "Synthetic exercise trial with complete reporting",
+      "doi": "10.0000/synthetic.rct.1",
+      "journal": "Synthetic Methods Journal",
+      "year": "2025",
+      "publication_status": "published",
+      "source": "synthetic local full text",
+      "source_type": "provided_full_text",
+      "version": "v1",
+      "license": "synthetic regression fixture",
+      "design": "randomized_trial",
+      "full_text_available": true,
+      "full_text": "Methods: This randomized controlled trial used a computer-generated random sequence and central randomization with allocation concealed from recruiters. Participants and outcome assessors were blinded; the trial was double-blind. We enrolled 240 participants using stratified sampling with prespecified inclusion and exclusion criteria. An a priori power calculation targeted 90% power. The primary outcome was pain measured with a validated and reliable scale at 12 weeks of follow-up. The protocol and materials were published before enrolment; trial registration NCT12345678 was completed and all pre-specified outcomes were reported. Statistical analysis used mixed-effects regression and reports mean difference = 2.1 points with a 95% confidence interval of 1.2 to 3.0 and standard error = 0.46. There were no missing outcome data; intention-to-treat analysis included every randomized participant. Results: The observed between-group mean difference was 2.1 points at 12 weeks. Conclusion: Structured exercise was associated with a modest improvement in the prespecified pain outcome in this trial population. Limitations: The single-centre setting limits generalizability. Ethics committee approval and informed consent were obtained. Funding: public synthetic grant; competing interests: none declared. Data and code availability: the deidentified data, analysis code, software version and random seed are archived at https://github.com/example/synthetic-quality-fixture."
+    },
+    {
+      "id": "quality-cohort-abstract",
+      "title": "Synthetic observational abstract with limited reporting",
+      "doi": "10.0000/synthetic.cohort.2",
+      "publication_status": "preprint",
+      "source": "synthetic abstract-only snapshot",
+      "source_scope": "abstract_only",
+      "abstract_only": true,
+      "abstract": "Methods: A retrospective cohort study compared 88 adults who chose exercise with 91 adults who did not. Outcome measurement at 12 weeks was not reported. Results: Pain differed between groups; p = 0.20 and the difference was statistically significant. Conclusion: Exercise prevents chronic pain in all adults. Confounding adjustment and a protocol were not reported."
+    }
+  ]
+}
