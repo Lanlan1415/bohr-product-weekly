@@ -10,6 +10,11 @@ readers: log axes, an inverted axis, markers-only, error bars, bar charts with
 annotations, and a bare image panel with no frame at all — where the tool must
 refuse to invent a calibration.
 
+The fixture figures are drawn and encoded with the standard library
+(`figdraw.py` + `pngio.py`): the bench used to import Pillow and numpy, which
+made the bench itself die on machines without them — before it could prove
+anything about the engine.
+
 An ablation repeats every case with log detection disabled and both axes forced
 to linear. The gap between the two runs is the measured value of axis-type
 discrimination, one of the capabilities this route claims. It is reported as
@@ -26,14 +31,16 @@ artefacts in the package.
 from __future__ import annotations
 
 import json
+import math
 import shutil
+import statistics
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-import numpy as np
-from PIL import Image, ImageDraw
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import figdraw  # noqa: E402
 
 SCRIPTS = Path(__file__).resolve().parent
 FIGPARSE = SCRIPTS / "figparse.py"
@@ -50,8 +57,8 @@ class Fig:
     def __init__(self, w=640, h=480, left=90, right=600, top=60, bottom=400):
         self.W, self.H = w, h
         self.left, self.right, self.top, self.bottom = left, right, top, bottom
-        self.im = Image.new("RGB", (w, h), "white")
-        self.d = ImageDraw.Draw(self.im)
+        self.im = figdraw.Canvas(w, h, bg=(255, 255, 255))
+        self.d = self.im
 
     def frame(self):
         self.d.line([(self.left, self.top), (self.left, self.bottom)], fill=(0, 0, 0), width=2)
@@ -70,7 +77,7 @@ class Fig:
     def px_x(self, v, xlim, log=False):
         lo, hi = xlim
         if log:
-            f = (np.log10(v) - np.log10(lo)) / (np.log10(hi) - np.log10(lo))
+            f = (math.log10(v) - math.log10(lo)) / (math.log10(hi) - math.log10(lo))
         else:
             f = (v - lo) / (hi - lo)
         return self.left + f * (self.right - self.left)
@@ -78,20 +85,22 @@ class Fig:
     def px_y(self, v, ylim, log=False):
         lo, hi = ylim
         if log:
-            f = (np.log10(v) - np.log10(lo)) / (np.log10(hi) - np.log10(lo))
+            f = (math.log10(v) - math.log10(lo)) / (math.log10(hi) - math.log10(lo))
         else:
             f = (v - lo) / (hi - lo)
         return self.bottom - f * (self.bottom - self.top)
 
     def series(self, fn, xlim, ylim, color, n=300, width=3, logx=False, logy=False):
-        xs = np.linspace(xlim[0], xlim[1], n)
+        step = (xlim[1] - xlim[0]) / (n - 1)
         pts = []
-        for x in xs:
+        for i in range(n):
+            x = xlim[0] + i * step
             y = fn(x)
-            if not np.isfinite(y):
+            if not math.isfinite(y):
                 continue
             pts.append((self.px_x(x, xlim, logx), self.px_y(y, ylim, logy)))
-        self.d.line(pts, fill=color, width=width)
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            self.d.line(x0, y0, x1, y1, fill=color, width=width)
 
     def markers(self, fn, xlim, ylim, color, x_values, r=4, err=None):
         for x in x_values:
@@ -100,24 +109,24 @@ class Fig:
             if err is not None:
                 e = err(x)
                 h = abs(self.px_y(y + e, ylim) - py)
-                self.d.line([(px, py - h), (px, py + h)], fill=color, width=2)
-                self.d.line([(px - 4, py - h), (px + 4, py - h)], fill=color, width=2)
-                self.d.line([(px - 4, py + h), (px + 4, py + h)], fill=color, width=2)
-            self.d.ellipse([px - r, py - r, px + r, py + r], fill=color)
+                self.d.line(px, py - h, px, py + h, fill=color, width=2)
+                self.d.line(px - 4, py - h, px + 4, py - h, fill=color, width=2)
+                self.d.line(px - 4, py + h, px + 4, py + h, fill=color, width=2)
+            self.d.ellipse_fill(px - r, py - r, px + r, py + r, color)
 
     def bar(self, xlim, ylim, x_center, width, value, color):
         x0 = self.px_x(x_center - width / 2, xlim)
         x1 = self.px_x(x_center + width / 2, xlim)
         ytop = self.px_y(value, ylim)
-        self.d.rectangle([x0, ytop, x1, self.bottom], fill=color)
+        self.d.rect_fill(x0, ytop, x1, self.bottom, color)
 
     def bar_err(self, xlim, ylim, x_center, value, err, half_w=6):
         px = self.px_x(x_center, xlim)
         ytop = self.px_y(value, ylim)
         yup = self.px_y(value + err, ylim)
-        self.d.line([(px, yup), (px, ytop)], fill=(0, 0, 0), width=2)
-        self.d.line([(px - half_w, yup), (px + half_w, yup)], fill=(0, 0, 0), width=2)
-        self.d.line([(px - half_w, ytop), (px + half_w, ytop)], fill=(0, 0, 0), width=2)
+        self.d.line(px, yup, px, ytop, fill=(0, 0, 0), width=2)
+        self.d.line(px - half_w, yup, px + half_w, yup, fill=(0, 0, 0), width=2)
+        self.d.line(px - half_w, ytop, px + half_w, ytop, fill=(0, 0, 0), width=2)
 
     def save(self, path: Path):
         self.im.save(path)
@@ -195,8 +204,8 @@ def emit(case: dict, root: Path) -> None:
 
     if case.get("bare_image"):
         fig = Fig()
-        fig.d.ellipse([200, 150, 400, 330], fill=(120, 120, 130))
-        fig.d.ellipse([250, 190, 320, 260], fill=(200, 200, 210))
+        fig.d.ellipse_fill(200, 150, 400, 330, (120, 120, 130))
+        fig.d.ellipse_fill(250, 190, 320, 260, (200, 200, 210))
         fig.save(d / "fig.png")
         (d / "case.json").write_text(json.dumps(
             {"case_id": case["name"], "images": [{"path": "fig.png"}]}, indent=2))
@@ -209,7 +218,8 @@ def emit(case: dict, root: Path) -> None:
     fig.frame()
     fig.ticks(case, case["xlim"], case["ylim"])
 
-    env = {"sin": np.sin, "cos": np.cos, "log10": np.log10, "exp": np.exp, "sqrt": np.sqrt}
+    env = {"sin": math.sin, "cos": math.cos, "log10": math.log10, "exp": math.exp,
+           "sqrt": math.sqrt}
     for s in case.get("series", []):
         fig.series(lambda x, e=s["fn"]: eval(e, env, {"x": x}), case["xlim"], case["ylim"],
                    s["color"], logx=case.get("x_log", False), logy=case.get("y_log", False))
@@ -230,9 +240,9 @@ def emit(case: dict, root: Path) -> None:
         if bars.get("sig_at") is not None:
             px = fig.px_x(bars["sig_at"], case["xlim"])
             py = fig.px_y(bars["values"][bars["centers"].index(bars["sig_at"])], case["ylim"])
-            fig.d.text((px - 6, py - 18), "*", fill=(0, 0, 0))
-            fig.d.text((px, py - 18), "*", fill=(0, 0, 0))
-            fig.d.text((px + 6, py - 18), "*", fill=(0, 0, 0))
+            fig.d.glyph(int(px) - 6, int(py) - 18)
+            fig.d.glyph(int(px), int(py) - 18)
+            fig.d.glyph(int(px) + 6, int(py) - 18)
 
     fig.save(d / "fig.png")
 
@@ -276,12 +286,17 @@ def run_figparse(case_dir: Path, force_linear: bool = False) -> dict:
     try:
         (tmp / "case.json").write_text(json.dumps(case), encoding="utf-8")
         shutil.copy(case_dir / "fig.png", tmp / "fig.png")
-        r = subprocess.run([sys.executable, str(FIGPARSE), "run",
+        r = subprocess.run([sys.executable, "-I", "-X", "utf8", str(FIGPARSE), "run",
                             "--case", str(tmp / "case.json"), "--out", str(tmp / "out")],
-                           capture_output=True, text=True, timeout=120)
-        if r.returncode != 0:
+                           capture_output=True, text=True, timeout=300)
+        if r.returncode not in (0, 3, 4, 5) or "Traceback" in r.stderr:
             return {"status": "error", "stderr": r.stderr[-800:]}
-        return json.loads((tmp / "out" / "result.json").read_text(encoding="utf-8"))
+        result_path = tmp / "out" / "result.json"
+        if not result_path.exists():
+            return {"status": "error", "stderr": "result.json missing"}
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        result["_exit"] = r.returncode
+        return result
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -290,11 +305,13 @@ def score_case(case_dir: Path, result: dict) -> dict:
     truth = json.loads((case_dir / "truth.json").read_text(encoding="utf-8"))
     if "expect" in truth:
         panels = result.get("panels", [])
-        ok = bool(panels) and all(p.get("frame_px") is None for p in panels)
+        ok = (bool(panels) and all(p.get("frame_px") is None for p in panels)
+              and result.get("_exit") == 5)
         return {"case": case_dir.name, "kind": "no-frame", "status": result.get("status"),
                 "pass": ok, "note": "frame refused" if ok else "invented a frame"}
 
-    env = {"sin": np.sin, "cos": np.cos, "log10": np.log10, "exp": np.exp, "sqrt": np.sqrt}
+    env = {"sin": math.sin, "cos": math.cos, "log10": math.log10, "exp": math.exp,
+           "sqrt": math.sqrt}
     panels = [p for p in result.get("panels", []) if p.get("series")]
     if not panels:
         return {"case": case_dir.name, "status": result.get("status"), "pass": False,
@@ -332,20 +349,23 @@ def score_case(case_dir: Path, result: dict) -> dict:
 
     errs = []
     for s in panels[0]["series"]:
-        gx = np.array(s["x"], dtype=float)
-        gy = np.array(s["y"], dtype=float)
+        gx = [float(v) for v in s["x"]]
+        gy = [float(v) for v in s["y"]]
         if s.get("x_unit") == "axis_fraction":
             return {"case": case_dir.name, "status": result.get("status"), "pass": False,
                     "note": "fell back to axis_fraction, no physical units"}
         best = None
         for t in truth.get("series", []):
-            ty = np.array([eval(t["fn"], env, {"x": float(x)}) for x in gx], dtype=float)
-            e = np.abs(gy - ty)
+            ty = [eval(t["fn"], env, {"x": float(x)}) for x in gx]
             # On a log axis the reading error is multiplicative, so rank and
             # report relative error there.
-            metric = e / np.maximum(np.abs(ty), 1e-12) if truth.get("y_log") else e
-            if best is None or np.median(metric) < best[0]:
-                best = (float(np.median(metric)), float(np.max(metric)), t["label"])
+            if truth.get("y_log"):
+                metric = [abs(a - b) / max(abs(b), 1e-12) for a, b in zip(gy, ty)]
+            else:
+                metric = [abs(a - b) for a, b in zip(gy, ty)]
+            m = statistics.median(metric)
+            if best is None or m < best[0]:
+                best = (m, max(metric), t["label"])
         if best:
             errs.append({"metric": best[0], "max": best[1], "label": best[2]})
 
@@ -369,15 +389,21 @@ def score_case(case_dir: Path, result: dict) -> dict:
 
 def run_tables(files: list[Path], case_obj: dict | None, work: Path) -> dict:
     out = work / "tables_out"
-    cmd = [sys.executable, str(TABLES)] + [str(f) for f in files] + ["--out", str(out)]
+    cmd = [sys.executable, "-I", "-X", "utf8", str(TABLES)] + [str(f) for f in files] \
+        + ["--out", str(out)]
     if case_obj is not None:
         cp = work / "case.json"
         cp.write_text(json.dumps(case_obj), encoding="utf-8")
         cmd += ["--case", str(cp)]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-    if r.returncode != 0:
+    if r.returncode not in (0, 3, 4, 5) or "Traceback" in r.stderr:
         return {"status": "error", "stderr": r.stderr[-800:]}
-    return json.loads((out / "result.json").read_text(encoding="utf-8"))
+    result_path = out / "result.json"
+    if not result_path.exists():
+        return {"status": "error", "stderr": "result.json missing"}
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    result["_exit"] = r.returncode
+    return result
 
 
 def table_scenarios(work: Path) -> list[dict]:
@@ -392,7 +418,7 @@ def table_scenarios(work: Path) -> list[dict]:
     res = run_tables([csv], None, work)
     tables = [t for t in res.get("tables", []) if t.get("ok")]
     cols = {c["column"]: c for t in tables for c in t.get("columns", [])}
-    ok = (res.get("status") != "error" and len(tables) == 1
+    ok = (res.get("status") != "error" and res.get("_exit") == 0 and len(tables) == 1
           and cols.get("concentration_uM", {}).get("kind") == "numeric"
           and cols.get("inhibition", {}).get("kind") == "numeric"
           and cols.get("inhibition", {}).get("unit_hint") == "percent"
@@ -409,7 +435,7 @@ def table_scenarios(work: Path) -> list[dict]:
     res = run_tables([md], None, work)
     tables = [t for t in res.get("tables", []) if t.get("ok")]
     cols = {c["column"]: c for t in tables for c in t.get("columns", [])}
-    ok = (res.get("status") != "error" and len(tables) == 1
+    ok = (res.get("status") != "error" and res.get("_exit") == 0 and len(tables) == 1
           and cols.get("sample", {}).get("kind") == "text"
           and cols.get("sample", {}).get("values") == ["A1", "B2", "C3"]
           and cols.get("yield", {}).get("kind") == "text"
@@ -426,7 +452,7 @@ def table_scenarios(work: Path) -> list[dict]:
     res = run_tables([missing, bad], {"case_id": "tables-refusal-demo"}, work)
     entries = res.get("tables", [])
     refused = [t for t in entries if not t.get("ok")]
-    ok = (res.get("status") != "error" and len(refused) == 2
+    ok = (res.get("status") != "error" and res.get("_exit") == 5 and len(refused) == 2
           and all(t.get("reason") for t in refused)
           and res.get("case_id") == "tables-refusal-demo")
     rows.append({"scenario": "tables_refusal_by_name", "pass": bool(ok),

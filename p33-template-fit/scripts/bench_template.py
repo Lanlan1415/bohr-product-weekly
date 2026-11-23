@@ -38,7 +38,10 @@ EMU = P.EMU_IN
 
 TPL_RULES = ("template.layout_not_found", "template.theme_font_mismatch",
              "template.title_geometry_drift", "template.title_size_off",
-             "template.slide_size_mismatch", "template.unreadable")
+             "template.slide_size_mismatch", "template.unreadable",
+             "template.slide_size_unmeasured", "template.theme_unmeasured",
+             "template.title_placeholder_missing", "template.title_geometry_unmeasured",
+             "template.layout_master_missing", "template.duplicate_layout_name")
 
 
 def title_box_content():
@@ -238,11 +241,170 @@ def scen_slide_size_mismatch():
     return with_template(three_slides(), "size_mm", size=(9144000, 6858000))
 
 
+def scen_slide_size_same_aspect_mismatch():
+    # Same 16:9 ratio, half the canvas: an aspect-only check would miss this.
+    return with_template(three_slides(), "size_same_aspect_mm",
+                         size=(P.SLIDE_W // 2, P.SLIDE_H // 2))
+
+
 def scen_template_unreadable():
     s = copy.deepcopy(three_slides())
     s["template"]["file"] = str(OUT / "not-a-template.json")
     (OUT / "not-a-template.json").write_text('{"not": "a presentation"}', encoding="utf-8")
     return s
+
+
+def _patch_template(source: Path, target: Path, edits: dict) -> None:
+    """Copy a template while replacing named package parts with edited bytes."""
+    import xml.etree.ElementTree as ET
+    ET.register_namespace("a", "http://schemas.openxmlformats.org/drawingml/2006/main")
+    ET.register_namespace("p", "http://schemas.openxmlformats.org/presentationml/2006/main")
+    ET.register_namespace("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+    with zipfile.ZipFile(source) as zin, zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as zout:
+        replacements = dict(edits)
+        for name in zin.namelist():
+            data = zin.read(name)
+            if name in replacements:
+                edit = replacements.pop(name)
+                data = edit(data)
+            zout.writestr(name, data)
+
+
+def _xml_edit(fn):
+    def apply(data: bytes) -> bytes:
+        import xml.etree.ElementTree as ET
+        root = ET.fromstring(data)
+        fn(root)
+        return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    return apply
+
+
+def _new_measurement_spec(name: str, part: str, fn) -> dict:
+    source = OUT / f"{name}_source.potx"
+    build_template(source)
+    target = OUT / f"{name}.potx"
+    _patch_template(source, target, {part: _xml_edit(fn)})
+    spec = three_slides()
+    spec["template"]["file"] = str(target)
+    return spec
+
+
+def scen_slide_size_unmeasured():
+    pns = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    def drop_size(root):
+        node = root.find(f"{{{pns}}}sldSz")
+        if node is not None:
+            root.remove(node)
+    return _new_measurement_spec("no_slide_size", "ppt/presentation.xml", drop_size)
+
+
+def scen_theme_unmeasured():
+    return with_template(three_slides(), "no_theme_fonts", latin="", ea="")
+
+
+def scen_title_placeholder_missing():
+    pns = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    def drop_title(root):
+        tree = root.find(f".//{{{pns}}}spTree")
+        for sp in list(root.iter(f"{{{pns}}}sp")):
+            ph = sp.find(f".//{{{pns}}}ph")
+            if tree is not None and ph is not None and (ph.get("type") or "body") == "title":
+                tree.remove(sp)
+    return _new_measurement_spec("no_title_placeholder", "ppt/slideLayouts/slideLayout2.xml", drop_title)
+
+
+def scen_title_geometry_unmeasured():
+    ans = "http://schemas.openxmlformats.org/drawingml/2006/main"
+    pns = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    def drop_xfrm(root):
+        for sp in root.iter(f"{{{pns}}}sp"):
+            ph = sp.find(f".//{{{pns}}}ph")
+            if ph is not None and (ph.get("type") or "body") == "title":
+                spr = sp.find(f"{{{pns}}}spPr")
+                box = spr.find(f"{{{ans}}}xfrm") if spr is not None else None
+                if box is not None:
+                    spr.remove(box)
+    return _new_measurement_spec("no_title_geometry", "ppt/slideLayouts/slideLayout2.xml", drop_xfrm)
+
+
+def scen_master_geometry_inherited():
+    """FP guard for inheritance: layout without xfrm is valid when master has it."""
+    source = OUT / "master_inherited_source.potx"
+    build_template(source)
+    target = OUT / "master_inherited.potx"
+    ans = "http://schemas.openxmlformats.org/drawingml/2006/main"
+    pns = "http://schemas.openxmlformats.org/presentationml/2006/main"
+
+    def drop_layout_xfrm(root):
+        for sp in root.iter(f"{{{pns}}}sp"):
+            ph = sp.find(f".//{{{pns}}}ph")
+            if ph is not None and (ph.get("type") or "body") == "title":
+                spr = sp.find(f"{{{pns}}}spPr")
+                box = spr.find(f"{{{ans}}}xfrm") if spr is not None else None
+                if box is not None:
+                    spr.remove(box)
+
+    def add_master_title(root):
+        with zipfile.ZipFile(source) as zin:
+            layout = ET.fromstring(zin.read("ppt/slideLayouts/slideLayout2.xml"))
+        title = next(sp for sp in layout.iter(f"{{{pns}}}sp")
+                     if sp.find(f".//{{{pns}}}ph") is not None)
+        tree = root.find(f".//{{{pns}}}spTree")
+        tree.append(copy.deepcopy(title))
+
+    import xml.etree.ElementTree as ET
+    _patch_template(source, target, {
+        "ppt/slideLayouts/slideLayout2.xml": _xml_edit(drop_layout_xfrm),
+        "ppt/slideMasters/slideMaster1.xml": _xml_edit(add_master_title),
+    })
+    spec = three_slides()
+    spec["template"]["file"] = str(target)
+    return spec
+
+
+def scen_layout_master_missing():
+    pns = "http://schemas.openxmlformats.org/package/2006/relationships"
+    def break_master(root):
+        for rel in root.findall(f"{{{pns}}}Relationship"):
+            if (rel.get("Type") or "").endswith("/slideMaster"):
+                rel.set("Target", "../slideMasters/ghost.xml")
+    return _new_measurement_spec("broken_layout_master", "ppt/slideLayouts/_rels/slideLayout2.xml.rels",
+                                 break_master)
+
+
+def _duplicate_template(alias: str) -> dict:
+    source = OUT / f"duplicate_{alias}_source.potx"
+    build_template(source, layouts=("Shared", "Shared"))
+    target = OUT / f"duplicate_{alias}.potx"
+    def first_layout(_data: bytes) -> bytes:
+        import xml.etree.ElementTree as ET
+        ET.register_namespace("a", "http://schemas.openxmlformats.org/drawingml/2006/main")
+        ET.register_namespace("p", "http://schemas.openxmlformats.org/presentationml/2006/main")
+        ET.register_namespace("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+        with zipfile.ZipFile(source) as zin:
+            root = ET.fromstring(zin.read("ppt/slideLayouts/slideLayout2.xml"))
+        # Same display name and content geometry, but a distinct exact type.
+        root.set("type", "title")
+        return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    _patch_template(source, target, {"ppt/slideLayouts/slideLayout1.xml": first_layout})
+    spec = three_slides()
+    # All slides take the content geometry; replacing layout1 with layout2 makes
+    # the two candidates identical except for their type, isolating name ambiguity.
+    for slide in spec["slides"]:
+        slide["layout"] = alias
+    spec["template"]["layouts"] = [alias]
+    spec["template"]["file"] = str(target)
+    return spec
+
+
+def scen_duplicate_layout_name():
+    return _duplicate_template("Shared")
+
+
+def scen_duplicate_layout_unique_type_guard():
+    # An exact unique type match must not be punished merely because another
+    # layout shares its display name; only ambiguous resolution is a finding.
+    return _duplicate_template("body")
 
 
 def _patch_title_y(pptx: Path) -> None:
@@ -302,6 +464,21 @@ def main() -> int:
             ("theme_font_mismatch", ["template.theme_font_mismatch"], scen_theme_font_mismatch),
             ("title_size_off", ["template.title_size_off"], scen_title_size_off),
             ("slide_size_mismatch", ["template.slide_size_mismatch"], scen_slide_size_mismatch),
+            ("same_aspect_size_mismatch", ["template.slide_size_mismatch"],
+             scen_slide_size_same_aspect_mismatch),
+            ("slide_size_unmeasured", ["template.slide_size_unmeasured"],
+             scen_slide_size_unmeasured),
+            ("theme_unmeasured", ["template.theme_unmeasured"], scen_theme_unmeasured),
+            ("title_placeholder_missing", ["template.title_placeholder_missing"],
+             scen_title_placeholder_missing),
+            ("title_geometry_unmeasured", ["template.title_geometry_unmeasured"],
+             scen_title_geometry_unmeasured),
+            ("master_geometry_inherited", [], scen_master_geometry_inherited),
+            ("layout_master_missing", ["template.layout_master_missing"],
+             scen_layout_master_missing),
+            ("duplicate_layout_name", ["template.duplicate_layout_name"],
+             scen_duplicate_layout_name),
+            ("duplicate_name_unique_type_guard", [], scen_duplicate_layout_unique_type_guard),
             ("template_unreadable", ["template.unreadable"], scen_template_unreadable)):
         spec = builder()
         r = run(name, spec)

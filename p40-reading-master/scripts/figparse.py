@@ -22,23 +22,61 @@ import json
 import sys
 from pathlib import Path
 
-import numpy as np
-from PIL import Image
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import calibrate as C  # noqa: E402
+import contract as CT  # noqa: E402
 import digitize as D  # noqa: E402
+import pngio  # noqa: E402
+import rasterkit as R_  # noqa: E402
 
 SCHEMA_VERSION = "figparse/v1"
 
 
-def _load_rgb(path: Path) -> np.ndarray:
-    with Image.open(path) as im:
-        return np.asarray(im.convert("RGB"))
+class ImageUnsupported(Exception):
+    """The image format cannot be read in this environment, honestly."""
+
+
+def _load_rgb(path: Path) -> list:
+    """Rows of (r, g, b), read with the standard library.
+
+    PNG (the format every plotting library exports and the bench generates) is
+    decoded here directly, including 8/16-bit grey/RGB/palette/alpha. For other
+    raster formats Pillow is used when it happens to be installed; when it is
+    not, ImageUnsupported is raised and the caller reports an honest limit —
+    the old hard `from PIL import Image` instead killed the whole route on
+    machines without it.
+    """
+    try:
+        return pngio.read_png_rgb(path)
+    except pngio.PngError as exc:
+        if str(path).lower().endswith((".png",)):
+            raise ImageUnsupported(f"{path.name}: {exc}") from exc
+    try:
+        from PIL import Image  # optional acceleration for JPEG/TIFF/...
+        with Image.open(path) as im:
+            return [list(map(tuple, row)) for row in
+                    (list(im.convert("RGB").getdata())[i * im.size[0]:
+                                                       (i + 1) * im.size[0]]
+                     for i in range(im.size[1]))]
+    except Exception as exc:
+        raise ImageUnsupported(
+            f"{path.name}: not a decodable PNG and Pillow is unavailable "
+            f"({type(exc).__name__}: {str(exc)[:120]})") from exc
 
 
 def cmd_calibrate(args: argparse.Namespace) -> int:
-    rgb = _load_rgb(Path(args.image))
+    try:
+        rgb = _load_rgb(Path(args.image))
+    except (ImageUnsupported, OSError) as exc:
+        report = {"schema_version": SCHEMA_VERSION, "image": str(args.image),
+                  "panels": [], "limits": [f"image could not be read: {exc}"]}
+        text = json.dumps(report, ensure_ascii=False, indent=2)
+        if args.out:
+            Path(args.out).write_text(text, encoding="utf-8")
+            print(json.dumps({"ok": False, "wrote": args.out, "reason": str(exc)[:160]}))
+        else:
+            print(text)
+        return 5
     mask = C.dark_ink_mask(rgb)   # axis furniture only: bars must not read as spines
     panels = C.find_panels(mask)
 
@@ -177,7 +215,7 @@ def _axis_reading(panel_mask, frame, spec: dict, axis: str) -> dict:
 
 
 def _bar_series(i: int, col: dict, bars_info: dict, frame: dict, fx: dict, fy: dict,
-                ink: "np.ndarray", x0: int, y0: int) -> dict:
+                ink, x0: int, y0: int) -> dict:
     """One hue detected as solid bars: per-bar values, plus the marks above them.
 
     Each bar reports its top, the shared baseline and — when both axes are
@@ -261,7 +299,7 @@ def _bar_series(i: int, col: dict, bars_info: dict, frame: dict, fx: dict, fy: d
 def _digitise_panel(rgb, panel, spec) -> dict:
     x0, y0 = panel["bbox_px"]["x0"], panel["bbox_px"]["y0"]
     x1, y1 = panel["bbox_px"]["x1"], panel["bbox_px"]["y1"]
-    sub_rgb = rgb[y0:y1, x0:x1]
+    sub_rgb = [row[x0:x1] for row in rgb[y0:y1]]
     # Axis furniture (frame, ticks) is near-black; data ink is saturated. Frame
     # and tick search run on the dark subset so solid bars never read as spines.
     axis_mask = C.dark_ink_mask(sub_rgb)
@@ -288,7 +326,8 @@ def _digitise_panel(rgb, panel, spec) -> dict:
             "(0 = frame left/bottom, 1 = frame right/top) instead of physical values."
         )
 
-    colors = D.find_series_colors(sub_rgb, frame)
+    hsv = D.to_hsv(sub_rgb)
+    colors = D.find_series_colors(sub_rgb, frame, hsv=hsv)
     if fy.get("values_increase_downward"):
         out["notes"].append(
             "y calibration has values increasing downward. If this figure's y axis is "
@@ -296,7 +335,7 @@ def _digitise_panel(rgb, panel, spec) -> dict:
             "re-run with the values reversed to confirm."
         )
     for i, col in enumerate(colors):
-        m = D.series_mask(sub_rgb, frame, col["hue_bin"])
+        m = D.series_mask(sub_rgb, frame, col["hue_bin"], hsv=hsv)
 
         # --- statistical charts: solid bars -------------------------------
         # A bar read through the curve path would come out as a horizontal line
@@ -314,19 +353,19 @@ def _digitise_panel(rgb, panel, spec) -> dict:
             continue
         pts = D.thin_curve(pts, spec.get("every", 1))
 
-        xs_px = np.array([p["x_px"] for p in pts])
-        ys_px = np.array([p["y_px"] for p in pts])
+        xs_px = [p["x_px"] for p in pts]
+        ys_px = [p["y_px"] for p in pts]
 
         if fx.get("ok") and fy.get("ok"):
             xs = C.px_to_value(xs_px, fx)
             ys = C.px_to_value(ys_px, fy)
             unit_x, unit_y = fx.get("unit"), fy.get("unit")
         else:
-            xs = (xs_px - frame["left"]) / max(frame["right"] - frame["left"], 1)
-            ys = (frame["bottom"] - ys_px) / max(frame["bottom"] - frame["top"], 1)
+            xs = [(v - frame["left"]) / max(frame["right"] - frame["left"], 1) for v in xs_px]
+            ys = [(frame["bottom"] - v) / max(frame["bottom"] - frame["top"], 1) for v in ys_px]
             unit_x = unit_y = "axis_fraction"
 
-        thick = np.array([p.get("thickness_px", 1) for p in pts], dtype=float)
+        thick = [float(p.get("thickness_px", 1)) for p in pts]
         # A stroked line is several pixels wide; its centre is only known to
         # about half the stroke, so convert that stroke width into data units
         # and report it as the per-point reading uncertainty.
@@ -334,7 +373,7 @@ def _digitise_panel(rgb, panel, spec) -> dict:
         # becomes a constant *factor*, not a constant offset. Reporting a linear
         # bar there would understate the error at the top of the axis and
         # overstate it at the bottom.
-        half_thick = float(np.median(thick) / 2.0)
+        half_thick = float(R_.median(thick) / 2.0)
         if fy.get("ok") and fy.get("scale") == "log":
             factor = float(10 ** (half_thick * abs(fy["slope"])))
             y_unc = None
@@ -384,9 +423,11 @@ def _digitise_panel(rgb, panel, spec) -> dict:
                 "tall isolated vertical strokes, reported as candidates: an error bar and a "
                 "steep line segment look alike, so a reviewer must confirm against the figure"
             ) if bars else "none detected",
-            "features": _features(xs, ys, y_unc if y_unc is not None else float(np.median(np.abs(ys)) * (y_unc_rel or 0.0))),
+            "features": _features(xs, ys, y_unc if y_unc is not None else float(
+                R_.median([abs(v) for v in ys]) * (y_unc_rel or 0.0))),
             "evidence": {
-                "read_by": "colour-mask column sampling inside the detected frame",
+                "read_by": ("colour-mask column sampling inside the detected frame; dense "
+                            "curves use [1,2,1]/4 sub-pixel smoothing with raw y retained"),
                 "frame_px": {k: frame[k] for k in ("left", "top", "right", "bottom")},
                 "panel_origin_px": [x0, y0],
             },
@@ -398,35 +439,43 @@ def _digitise_panel(rgb, panel, spec) -> dict:
     return out
 
 
-def _features(xs: np.ndarray, ys: np.ndarray, y_unc: float) -> dict:
+def _features(xs, ys, y_unc: float) -> dict:
     """Summary descriptors that are true by construction from the digitised trace.
 
     Kept deliberately small: only quantities that a reader could verify by eye
     on the figure. Anything requiring a model assumption (fit parameters,
     derivative sign at a point) is left to the caller.
     """
-    if xs.size < 2:
+    n = len(xs)
+    if n < 2:
         return {}
-    i_max, i_min = int(np.argmax(ys)), int(np.argmin(ys))
-    d = np.diff(ys)
+    i_max = max(range(n), key=lambda i: ys[i])
+    i_min = min(range(n), key=lambda i: ys[i])
     # Count direction changes on a lightly smoothed trace. On raw pixel data
     # the stroke jitter flips the sign of the difference almost every column,
     # so the raw count measures noise, not shape.
-    w = max(3, (ys.size // 60) * 2 + 1)
-    w = min(w, ys.size if ys.size % 2 else ys.size - 1)
-    smooth = np.convolve(ys, np.ones(w) / w, mode="valid") if w >= 3 else ys
-    ds = np.diff(smooth)
-    flips = int(np.sum(np.sign(ds[1:]) != np.sign(ds[:-1]))) if ds.size > 1 else 0
+    w = max(3, (n // 60) * 2 + 1)
+    w = min(w, n if n % 2 else n - 1)
+    smooth = R_.moving_mean(list(ys), w) if w >= 3 else list(ys)
+    flips = 0
+    prev_sign = 0
+    for i in range(1, len(smooth)):
+        d = smooth[i] - smooth[i - 1]
+        sign = (d > 0) - (d < 0)
+        if sign != 0 and prev_sign != 0 and sign != prev_sign:
+            flips += 1
+        if sign != 0:
+            prev_sign = sign
     # Net change across the whole trace, not the mean step: a monotone ramp has
     # a tiny mean step and a large net change, and "flat" would be wrong.
     net = float(ys[-1] - ys[0])
     return {
-        "x_range": [round(float(xs.min()), 6), round(float(xs.max()), 6)],
+        "x_range": [round(float(min(xs)), 6), round(float(max(xs)), 6)],
         "y_max": round(float(ys[i_max]), 6),
         "y_max_at_x": round(float(xs[i_max]), 6),
         "y_min": round(float(ys[i_min]), 6),
         "y_min_at_x": round(float(xs[i_min]), 6),
-        "y_span": round(float(ys.max() - ys.min()), 6),
+        "y_span": round(float(max(ys) - min(ys)), 6),
         "direction_changes": flips,
         "direction_changes_basis": f"sign changes of the trace smoothed over {w} points",
         "trend": ("increasing" if net > 2 * y_unc else
@@ -438,19 +487,52 @@ def _features(xs: np.ndarray, ys: np.ndarray, y_unc: float) -> dict:
 
 def cmd_run(args: argparse.Namespace) -> int:
     case_path = Path(args.case)
-    case = json.loads(case_path.read_text(encoding="utf-8")) if case_path.exists() else {}
+    try:
+        case = CT.read_case(case_path)
+    except ValueError as exc:
+        result = _run_refused(case_path, str(exc))
+        _write_result(args, result)
+        return 5
+    return _run_case(args, case_path, case)
+
+
+def _run_refused(case_path: Path, message: str) -> dict:
+    return {"schema_version": SCHEMA_VERSION,
+            "case_id": "UNKNOWN", "status": "undetermined", "panels": [],
+            "limits": [f"the case could not be run as declared: {message}"[:200]],
+            "provenance": {"tool": "figparse", "case_file": str(case_path),
+                           "images_seen": 0}}
+
+
+def _write_result(args: argparse.Namespace, result: dict) -> None:
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
+                                         encoding="utf-8")
+    print(json.dumps({"ok": result.get("status") != "undetermined", "status": result.get("status"),
+                      "panels": len(result.get("panels") or []),
+                      "wrote": str(out_dir / "result.json")}, ensure_ascii=False))
+
+
+def _run_case(args: argparse.Namespace, case_path: Path, case: dict) -> int:
 
     case_id = case.get("case_id") or case.get("id") or "UNKNOWN"
+    if case_id == "UNKNOWN" and isinstance(case.get("case"), dict):
+        case_id = case["case"].get("case_id") or "UNKNOWN"
     images = case.get("images") or case.get("figures") or []
     if isinstance(images, str):
         images = [images]
+    malformed_images = not isinstance(images, list)
+    if malformed_images:
+        images = []
 
     result = {
         "schema_version": SCHEMA_VERSION,
         "case_id": case_id,
         "status": "undetermined",
         "panels": [],
-        "limits": [],
+        "limits": (["images/figures must be a path or a list of image records"]
+                   if malformed_images else []),
         "provenance": {"tool": "figparse", "case_file": str(case_path), "images_seen": len(images)},
     }
 
@@ -461,18 +543,32 @@ def cmd_run(args: argparse.Namespace) -> int:
             result["limits"].append(
                 f"an image entry was neither a path nor an object: {spec!r}"[:120])
             continue
-        p = Path(spec.get("path", ""))
-        if not p.is_absolute():
-            p = case_path.parent / p
-        if not p.exists():
-            result["limits"].append(f"image not found: {p}")
+        raw_path = spec.get("path") or ""
+        if not isinstance(raw_path, (str, bytes)) or not raw_path:
+            result["limits"].append(f"an image record has no usable path: {raw_path!r}"[:160])
             continue
-        rgb = _load_rgb(p)
-        mask = C.ink_mask(C.load_gray(rgb))
-        for panel in C.find_panels(mask):
-            entry = _digitise_panel(rgb, panel, spec)
-            entry["image"] = str(p)
-            result["panels"].append(entry)
+        try:
+            p = Path(raw_path)
+            if not p.is_absolute():
+                p = case_path.parent / p
+            if not p.exists():
+                result["limits"].append(f"image not found: {p}")
+                continue
+            rgb = _load_rgb(p)
+            mask = C.ink_mask(C.load_gray(rgb))
+            for panel in C.find_panels(mask):
+                entry = _digitise_panel(rgb, panel, spec)
+                entry["image"] = str(p)
+                result["panels"].append(entry)
+        except (ImageUnsupported, OSError, ValueError, TypeError) as exc:
+            # A corrupt/unsupported image or malformed image record degrades only
+            # that image; the case still receives a JSON result and other panels run.
+            result["limits"].append(f"image could not be decoded: {exc}"[:200])
+            continue
+        except Exception as exc:
+            result["limits"].append(
+                f"image analysis was undetermined: {type(exc).__name__}: {str(exc)[:140]}"[:200])
+            continue
 
     got = [p for p in result["panels"] if p.get("series")]
     if got and all(p["status"] == "success" for p in got):
@@ -484,19 +580,12 @@ def cmd_run(args: argparse.Namespace) -> int:
         result["status"] = "undetermined"
         result["limits"].append("No panel produced a digitizable calibrated series.")
 
-    # Fill any contract fields the case file declares, so the grader finds them.
-    contract = case.get("output_contract") or {}
-    for key in contract:
-        if key not in result:
-            result[key] = None
-            result["limits"].append(f"output_contract field '{key}' was not derivable by figparse")
-
-    out_dir = Path(args.out)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"ok": True, "status": result["status"], "panels": len(result["panels"]),
-                      "wrote": str(out_dir / "result.json")}, ensure_ascii=False))
-    return 0
+    # Backfill the original case contract on graded success/partial runs. An
+    # undetermined no-panel result stays a refusal and does not gain fake null answers.
+    if result["status"] != "undetermined":
+        CT.merge_result(result, case)
+    _write_result(args, result)
+    return CT.status_exit(result["status"])
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -515,7 +604,29 @@ def main(argv: list[str] | None = None) -> int:
     r.set_defaults(func=cmd_run)
 
     args = ap.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except Exception as exc:  # final CLI boundary: no traceback escapes a reading case
+        if args.cmd == "run":
+            result = _run_refused(Path(args.case),
+                                  f"the figure audit ended unexpectedly: {type(exc).__name__}: "
+                                  f"{str(exc)[:160]}")
+            try:
+                _write_result(args, result)
+            except Exception:
+                print(json.dumps({"ok": False, "status": "undetermined", "wrote": None},
+                                 ensure_ascii=False))
+            return 5
+        report = {"schema_version": SCHEMA_VERSION, "status": "undetermined",
+                  "limits": [f"calibration failed: {type(exc).__name__}: {str(exc)[:160]}"]}
+        if args.out:
+            try:
+                Path(args.out).write_text(json.dumps(report, ensure_ascii=False, indent=2),
+                                          encoding="utf-8")
+            except OSError:
+                pass
+        print(json.dumps(report, ensure_ascii=False))
+        return 5
 
 
 if __name__ == "__main__":

@@ -62,7 +62,7 @@ def run_cli(spec_obj, work: Path, name: str, argv_extra=None) -> dict:
     else:
         res["has_result"] = False
     res["ok"] = (r.returncode in (0, 3, 4, 5) and res["no_traceback"]
-                 and (res["has_result"] or r.returncode == 5 and not res["has_result"]))
+                 and res["has_result"])
     return res
 
 
@@ -107,10 +107,9 @@ def main() -> int:
     s["output_contract"] = 7
     r = run_cli(s, work, "p6_contract_int")
     res = r.get("result") or {}
-    rows.append(("P6 contract unknown shape -> no crash",
-                 r["exit"] in (0, 3, 4) and r["no_traceback"]
-                 and any("output_contract" in l for l in res.get("limits", [])) is False
-                 or r["exit"] in (0, 3, 4), r))
+    rows.append(("P6 contract unknown shape -> honest limit + result.json",
+                 r["exit"] in (0, 3, 4) and r["no_traceback"] and r["has_result"]
+                 and any("output_contract shape" in line for line in res.get("limits", [])), r))
 
     # P7 template.file = corrupt bytes
     s = json.loads(json.dumps(BASE))
@@ -194,6 +193,50 @@ def main() -> int:
     r = run_cli(s, work, "p15_nosection")
     rows.append(("P15 no section -> audit rules only, exit in set",
                  r["exit"] in (0, 3) and r["no_traceback"], r))
+
+    # P16 well-formed zip with malformed template XML must be an unreadable
+    # template finding, not an unexpected engine traceback.
+    import bench_template as BT
+    import zipfile
+    s = json.loads(json.dumps(BASE))
+    source = work / "p16_source.potx"
+    broken = work / "p16_broken.potx"
+    BT.build_template(source)
+    with zipfile.ZipFile(source) as zin, zipfile.ZipFile(broken, "w", zipfile.ZIP_DEFLATED) as zout:
+        for part in zin.namelist():
+            zout.writestr(part, b"<p:presentation" if part == "ppt/presentation.xml"
+                          else zin.read(part))
+    s["template"]["file"] = str(broken)
+    r = run_cli(s, work, "p16_malformed_xml")
+    fired = [f["rule"] for f in (r.get("result") or {}).get("findings", [])]
+    rows.append(("P16 malformed template XML -> template.unreadable + exit4",
+                 r["exit"] == 4 and r["has_result"] and r["no_traceback"]
+                 and "template.unreadable" in fired, r))
+
+    # P17 equal aspect ratio but different canvas extents is still a mismatch.
+    s = json.loads(json.dumps(BASE))
+    same_aspect = work / "p17_same_aspect.potx"
+    BT.build_template(same_aspect, size=(6096000, 3429000))
+    s["template"]["file"] = str(same_aspect)
+    r = run_cli(s, work, "p17_same_aspect")
+    fired = [f["rule"] for f in (r.get("result") or {}).get("findings", [])]
+    rows.append(("P17 same aspect/different size -> measured mismatch",
+                 "template.slide_size_mismatch" in fired and r["no_traceback"], r))
+
+    # P18 case nested contract and values are merged, including a custom field.
+    s = json.loads(json.dumps(BASE))
+    s.pop("case_id", None)
+    s.pop("output_contract", None)
+    s["case"] = {"case_id": "nested-contract-33",
+                 "output_contract": ["case_id", "custom_note", "missing_field"],
+                 "custom_note": "kept verbatim"}
+    r = run_cli(s, work, "p18_nested_contract")
+    res = r.get("result") or {}
+    rows.append(("P18 nested output_contract copied and nulls limited",
+                 res.get("case_id") == "nested-contract-33"
+                 and res.get("custom_note") == "kept verbatim"
+                 and "missing_field" in res and res.get("missing_field") is None
+                 and any("missing_field" in line for line in res.get("limits", [])), r))
 
     print()
     failed = 0

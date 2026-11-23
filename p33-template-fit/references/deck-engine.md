@@ -69,11 +69,18 @@ no longer measure as one unbreakable token.
 
 `templateread.py` opens a declared `.potx`/`.pptx` with `zipfile` and reads what the
 package actually provides: layout names and types from `slideLayouts/*.xml`
-(`cSld name` / `type`), theme typefaces from `theme1.xml`'s font scheme, title
+(`cSld name` / `type`), theme typefaces from the theme related to each master, title
 placeholder geometry and declared run size per layout, slide size from
-`presentation.xml`, and the master chain behind each layout. The `template.*` rules
-compare the written deck against those measurements; `deckbuild` echoes a
-`template_measured` object into result.json so a reviewer can verify
+`presentation.xml`, and the master chain behind each layout. If a layout placeholder
+omits geometry or size, the reader resolves its actual layout→master relationship and
+uses the same placeholder there, recording `title_geometry_inherited` or
+`title_size_inherited`. Orphan layouts and duplicate aliases are not hidden.
+
+The `template.*` rules compare the written deck against those measurements. Six extra
+states distinguish absent constraints from unmeasurable ones: missing slide size,
+unmeasured theme, missing title placeholder, unmeasured title geometry, missing master
+back-link, and ambiguous duplicate layout names. `deckbuild` echoes concise names plus
+full `layout_details` in `template_measured`, so a reviewer can verify
 "母版、版式、占位符继承关系可查" without PowerPoint. When no template file is named,
 all of it stays silent — the declarative checks are unchanged.
 
@@ -104,13 +111,16 @@ template_fit   format.size_ladder_flat, format.undeclared_layout,
                                             28/28 pass
 ```
 
-Nine scenarios in `bench_template.py` prove the measured-template rules on a real
+Eighteen scenarios in `bench_template.py` prove the measured-template rules on a real
 `.potx`-shaped package built by the bench itself, with clean/no-file FP guards:
 
 ```
 clean, no_file, layout_not_found, theme_font_mismatch, title_size_off,
-slide_size_mismatch, template_unreadable, title_geometry_drift,
-template_measured_echo                     9/9 pass
+slide_size_mismatch, same_aspect_size_mismatch, slide_size_unmeasured,
+theme_unmeasured, title_placeholder_missing, title_geometry_unmeasured,
+master_geometry_inherited, layout_master_missing, duplicate_layout_name,
+duplicate_name_unique_type_guard, template_unreadable, title_geometry_drift,
+template_measured_echo                    18/18 pass
 ```
 
 Every clean baseline must report no high or medium finding, so a detector cannot

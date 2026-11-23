@@ -188,6 +188,7 @@ def conclusion_extract(spec: dict, findings: list[dict]) -> None:
 
     declared_sources = set(spec.get("sources_present") or SOURCE_KINDS)
     seen_sources: set[str] = set()
+    seen_claims: set[tuple[str, str]] = set()
 
     for i, it in enumerate(items):
         claim = str(it.get("claim") or "")
@@ -198,6 +199,14 @@ def conclusion_extract(spec: dict, findings: list[dict]) -> None:
         if not claim.strip():
             _add(findings, "extract.empty_claim", "high",
                  "an extraction item has no claim text", item=i)
+        claim_key = (re.sub(r"\s+", " ", claim).strip().casefold(),
+                     re.sub(r"\s+", " ", locator).strip().casefold())
+        if claim.strip() and claim_key in seen_claims:
+            _add(findings, "extract.duplicate_claim", "medium",
+                 "the same claim and locator appear more than once, inflating extraction "
+                 "coverage without adding evidence", item=i, locator=locator[:60])
+        elif claim.strip():
+            seen_claims.add(claim_key)
 
         # conclusion / limitation / speculation must not be conflated: the difference
         # decides how much the paper actually claims.
@@ -231,10 +240,22 @@ def conclusion_extract(spec: dict, findings: list[dict]) -> None:
                  "granularity is below what a second reader can check",
                  item=i, locator=locator[:60])
 
-        if not str(it.get("condition") or "").strip():
+        condition = str(it.get("condition") or "").strip()
+        if not condition:
             _add(findings, "extract.missing_condition", "high",
                  "a finding is recorded without the conditions it holds under (sample, "
                  "setting, baseline), so it cannot be applied", item=i, claim=claim[:80])
+        elif source_text:
+            unsupported = []
+            for qty in G.extract_quantities(condition):
+                token = f"{qty.value:g}"
+                if token not in G.normalise(source_text):
+                    unsupported.append({"value": qty.value, "unit": qty.unit})
+            if unsupported:
+                _add(findings, "extract.condition_value_unsupported", "high",
+                     "a numeric extraction condition does not occur in the supplied source, "
+                     "so the result applies under conditions the material does not establish",
+                     item=i, values=unsupported[:6], condition=condition[:100])
 
         if it.get("hedged") is False and ABSOLUTE.search(claim):
             _add(findings, "extract.hedge_dropped", "high",
@@ -327,6 +348,7 @@ def claim_verify(spec: dict, findings: list[dict]) -> None:
 
         # --- link 2/3: the span exists, and it is locatable ------------------
         best_overlap = 0.0
+        source_gap_reported = False
         for s in _records(spans):
             quote = str(s.get("quote") or "")
             best_overlap = max(best_overlap, _overlap(text, quote))
@@ -344,6 +366,11 @@ def claim_verify(spec: dict, findings: list[dict]) -> None:
                      "the quoted evidence does not occur in the supplied source text, so the "
                      "span either paraphrases it or does not exist there",
                      claim=i, quote=quote[:80])
+            elif not source_text and not source_gap_reported:
+                _add(findings, "verify.source_unavailable", "medium",
+                     "no source text was supplied, so quoted evidence can be located but its "
+                     "verbatim existence cannot be verified", claim=i)
+                source_gap_reported = True
 
             loc = str(s.get("locator") or "")
             if not loc.strip():
@@ -407,6 +434,30 @@ def claim_verify(spec: dict, findings: list[dict]) -> None:
             _add(findings, "verify.counter_evidence_missing", "high",
                  "the claim is declared contested but no counter-evidence span is given, so "
                  "the report shows only one side", claim=i)
+        elif c.get("contested"):
+            raw_counter = c.get("counter_evidence")
+            if isinstance(raw_counter, dict):
+                raw_counter = [raw_counter]
+            counters = list(_records(raw_counter if isinstance(raw_counter, list) else []))
+            if not counters:
+                _add(findings, "verify.counter_evidence_unverified", "high",
+                     "counter-evidence is declared but has no auditable record", claim=i)
+            for j, ce in enumerate(counters):
+                quote = str(ce.get("quote") or "").strip()
+                locator = str(ce.get("locator") or "").strip()
+                reasons = []
+                if not quote:
+                    reasons.append("quote missing")
+                if not locator:
+                    reasons.append("locator missing")
+                if quote and source_text and quote not in source_text:
+                    reasons.append("quote not in source_text")
+                if quote and not source_text:
+                    reasons.append("source_text unavailable")
+                if reasons:
+                    _add(findings, "verify.counter_evidence_unverified", "high",
+                         "counter-evidence cannot be audited: " + "; ".join(reasons),
+                         claim=i, counter_evidence=j, quote=quote[:70], locator=locator[:60])
 
     # --- reference metadata ------------------------------------------------
     for key, r in refs.items():
@@ -491,6 +542,12 @@ def compare_docs(spec: dict, findings: list[dict]) -> None:
         _add(findings, "compare.no_schema", "high",
              "no unified field schema was declared, so the comparison has no common ground")
         return
+    field_names = [str(f.get("name") or "") for f in fields]
+    duplicate_fields = sorted({name for name in field_names if name and field_names.count(name) > 1})
+    if duplicate_fields:
+        _add(findings, "compare.duplicate_field_name", "high",
+             "a field name occurs more than once in the comparison schema, so cells and "
+             "synthesis verdicts cannot be assigned unambiguously", fields=duplicate_fields)
 
     # --- the field table must cover the groups a comparison needs ------------
     required_groups = spec.get("field_groups") or list(FIELD_GROUPS)
@@ -556,6 +613,12 @@ def compare_docs(spec: dict, findings: list[dict]) -> None:
                 _add(findings, "compare.cell_not_in_source", "high",
                      "a cell quotes text that does not occur in the paper it is attributed to",
                      field=name, document=did, verbatim=verbatim[:70])
+            elif not doc_text.strip() and (verbatim or U.parse_measurement(text).get("kind")
+                                          in ("single", "plus_minus", "range")):
+                _add(findings, "compare.cell_source_unverifiable", "medium",
+                     "a reported value has no document text against which its existence can be "
+                     "checked; the cell is attributable in form only, not verified",
+                     field=name, document=did, value=text[:70])
 
             # --- conditions travel with the value
             if group in METADATA_GROUPS:
@@ -1171,11 +1234,22 @@ def qa(spec: dict, findings: list[dict]) -> None:
     pairs = list(_records(spec.get("answers")))
     evidence = spec.get("evidence") or []
     by_id: dict[str, dict] = {}
-    for e in evidence:
-        if isinstance(e, dict):
-            by_id[str(e.get("id"))] = e
-        else:
-            by_id[str(e)] = {"id": str(e)}
+    seen_evidence_ids: set[str] = set()
+    for pos, e in enumerate(evidence):
+        if not isinstance(e, dict):
+            e = {"id": str(e)}
+        eid = str(e.get("id") or "")
+        if eid and eid in seen_evidence_ids:
+            _add(findings, "qa.duplicate_evidence_id", "high",
+                 "two evidence records share an id, so a citation cannot identify which one "
+                 "supports the answer", evidence_id=eid, position=pos)
+        elif eid:
+            seen_evidence_ids.add(eid)
+        if not str(e.get("quote") or "").strip():
+            _add(findings, "qa.evidence_empty_quote", "high",
+                 "an evidence record has no quoted material, so a citation to it cannot be "
+                 "checked", evidence_id=eid or None, position=pos)
+        by_id[eid] = e
 
     if not pairs:
         _add(findings, "qa.no_answers", "high", "no question/answer pairs were supplied")
@@ -1196,6 +1270,10 @@ def qa(spec: dict, findings: list[dict]) -> None:
         cites = [str(c) for c in (a.get("cites") or [])]
         refused = bool(a.get("refused"))
 
+        if not q.strip():
+            _add(findings, "qa.question_empty", "high",
+                 "an answer record has no question, so coverage and relevance cannot be judged",
+                 question=i)
         if not ans.strip() and not refused:
             _add(findings, "qa.empty_answer", "high",
                  "a question has neither an answer nor an explicit refusal", question=i,

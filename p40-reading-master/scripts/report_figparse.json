@@ -4,7 +4,7 @@
     {
       "case": "01-linear-two-series",
       "status": "success",
-      "worst_max_error": 1.855,
+      "worst_max_error": 1.839,
       "error_kind": "absolute",
       "tolerance": 2.0,
       "pass": true
@@ -12,7 +12,7 @@
     {
       "case": "02-log-x",
       "status": "success",
-      "worst_max_error": 0.588,
+      "worst_max_error": 0.699,
       "error_kind": "absolute",
       "tolerance": 2.0,
       "pass": true
@@ -20,7 +20,7 @@
     {
       "case": "03-log-y",
       "status": "success",
-      "worst_max_error": 0.0781,
+      "worst_max_error": 0.0655,
       "error_kind": "relative",
       "tolerance": 0.1,
       "pass": true
@@ -28,7 +28,7 @@
     {
       "case": "04-three-series",
       "status": "success",
-      "worst_max_error": 1.593,
+      "worst_max_error": 1.887,
       "error_kind": "absolute",
       "tolerance": 2.0,
       "pass": true
@@ -36,7 +36,7 @@
     {
       "case": "05-markers-errorbars",
       "status": "success",
-      "worst_max_error": 0.588,
+      "worst_max_error": 1.299,
       "error_kind": "absolute",
       "tolerance": 2.0,
       "pass": true
@@ -44,7 +44,7 @@
     {
       "case": "06-inverted-y",
       "status": "success",
-      "worst_max_error": 0.392,
+      "worst_max_error": 0.404,
       "error_kind": "absolute",
       "tolerance": 2.0,
       "pass": true
@@ -60,7 +60,7 @@
       "case": "08-bar-chart",
       "kind": "bar",
       "status": "success",
-      "worst_max_error": 0.294,
+      "worst_max_error": 0.0,
       "tolerance": 2.0,
       "n_bars_read": 4,
       "n_bars_truth": 4,

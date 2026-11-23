@@ -203,6 +203,7 @@
       "fired": [
         "compare.cell_metadata_missing",
         "compare.cell_no_locator",
+        "compare.cell_source_unverifiable",
         "compare.field_missing"
       ],
       "missing": [],

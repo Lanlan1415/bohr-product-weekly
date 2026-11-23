@@ -251,6 +251,13 @@ def build_and_audit(spec_path: Path, out_dir: Path) -> dict:
     if not audit["checked"].get("text_measured"):
         limits.append("text overflow was estimated, not measured: no font file was available")
 
+    nested_case = spec.get("case") if isinstance(spec.get("case"), dict) else {}
+    output_contract = spec.get("output_contract")
+    if output_contract is None and nested_case:
+        output_contract = nested_case.get("output_contract")
+    if output_contract is not None and not isinstance(output_contract, (str, dict, list)):
+        limits.append("output_contract shape was not recognised; expected list, object, or string")
+
     result = {
         "schema_version": "deckbuild/v1",
         "status": audit["status"],
@@ -272,8 +279,11 @@ def build_and_audit(spec_path: Path, out_dir: Path) -> dict:
             "read": bool(template_info.get("read")),
             "slide_size_emu": template_info.get("slide_size_emu"),
             "layouts": [l.get("name") for l in (template_info.get("layouts") or [])],
+            "layout_details": template_info.get("layouts") or [],
             "theme_fonts": template_info.get("theme_fonts") or {},
             "masters": template_info.get("masters") or [],
+            "inheritance_model": ("layout placeholder first, then the same placeholder on its "
+                                  "related slide master; absent placeholders are not inherited"),
         }
 
     cid = _case_id(spec)
@@ -287,11 +297,14 @@ def build_and_audit(spec_path: Path, out_dir: Path) -> dict:
     # — all three are read the same way, because a shape this engine does not
     # recognise must refuse honestly, never crash.
     _bulky = ("output_contract", "section", "slides", "template", "paper", "text")
-    for key in _contract_fields(spec.get("output_contract")):
+    for key in _contract_fields(output_contract):
         if key in result:
             continue
         if key in spec and key not in _bulky:
             result[key] = spec[key]
+            continue
+        if key in nested_case and key not in _bulky:
+            result[key] = nested_case[key]
             continue
         result[key] = None
         limits.append(f"output_contract field '{key}' was not derivable by this audit")
@@ -359,7 +372,7 @@ def _refused(out_dir: Path, message: str) -> dict:
     dress a refusal up as a deliverable.
     """
     result = {"schema_version": "deckbuild/v1", "status": "undetermined",
-              "findings": [{"rule": "audit.no_section", "severity": "high",
+              "findings": [{"rule": X.REFUSAL_RULE, "severity": "high",
                             "message": message}],
               "severity_counts": {"high": 1}, "deck": {}, "preview": {"rendered": False},
               "reproducibility": {"deterministic": None}, "checked": {},

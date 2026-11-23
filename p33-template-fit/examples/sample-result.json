@@ -4,6 +4,7 @@
   "findings": [],
   "severity_counts": {},
   "deck": {
+    "path": "examples\\demo_out\\deck.pptx",
     "slides": 2,
     "size_emu": [
       12192000,
@@ -49,6 +50,44 @@
       "Title Slide",
       "Title and Content"
     ],
+    "layout_details": [
+      {
+        "name": "Title Slide",
+        "type": "title",
+        "master": "ppt/slideMasters/slideMaster1.xml",
+        "part": "ppt/slideLayouts/slideLayout1.xml",
+        "title_present": true,
+        "title_ph": {
+          "x": 822960,
+          "y": 2194560,
+          "cx": 10546080,
+          "cy": 1371600
+        },
+        "title_sz": 40.0,
+        "body_present": false,
+        "body_ph": null,
+        "title_geometry_inherited": false,
+        "title_size_inherited": false
+      },
+      {
+        "name": "Title and Content",
+        "type": "body",
+        "master": "ppt/slideMasters/slideMaster1.xml",
+        "part": "ppt/slideLayouts/slideLayout2.xml",
+        "title_present": true,
+        "title_ph": {
+          "x": 457200,
+          "y": 320040,
+          "cx": 11277600,
+          "cy": 914400
+        },
+        "title_sz": 32.0,
+        "body_present": false,
+        "body_ph": null,
+        "title_geometry_inherited": false,
+        "title_size_inherited": false
+      }
+    ],
     "theme_fonts": {
       "major_latin": "Arial",
       "major_ea": "Microsoft YaHei",
@@ -57,7 +96,8 @@
     },
     "masters": [
       "ppt/slideMasters/slideMaster1.xml"
-    ]
+    ],
+    "inheritance_model": "layout placeholder first, then the same placeholder on its related slide master; absent placeholders are not inherited"
   },
   "case_id": "ppt-710fbc72-demo",
   "slide_evidence_map": [

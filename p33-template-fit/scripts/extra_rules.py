@@ -29,6 +29,11 @@ import re
 import templateread as _tr
 
 
+# Shared with deckbuild's unreadable/unknown-spec refusal. Keeping the literal in
+# the scanned rule module makes documentation/engine parity mechanically auditable.
+REFUSAL_RULE = "audit.no_section"
+
+
 def _add(findings, rule, severity, message, **extra):
     findings.append({"rule": rule, "severity": severity, "message": message, **extra})
 
@@ -365,8 +370,47 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
                  "template file, not from the spec's declaration",
                  layouts=unmatched, available=[l.get("name") for l in layouts][:12])
 
+        # A readable package can still leave individual constraints unmeasurable.
+        # Those states are not silently converted into "missing" or "matching".
+        if not tinfo.get("slide_size_emu"):
+            _add(findings, "template.slide_size_unmeasured", "medium",
+                 "presentation.xml has no usable slide size, so deck geometry cannot be "
+                 "compared with the template")
         theme_fonts = {str(v).strip().lower() for v in (tinfo.get("theme_fonts") or {}).values()
                        if v}
+        if not theme_fonts:
+            _add(findings, "template.theme_unmeasured", "medium",
+                 "no theme typeface could be measured from the template's master/theme chain, "
+                 "so theme-font conformance is unknown rather than satisfied")
+
+        masters = set(tinfo.get("masters") or [])
+        for layout_name in sorted(used):
+            matches = _tr.match_layouts(layout_name, layouts)
+            if not matches:
+                continue
+            if len(matches) > 1:
+                _add(findings, "template.duplicate_layout_name", "medium",
+                     "the requested layout name resolves to more than one measured layout, so "
+                     "choosing either would make geometry and inheritance arbitrary",
+                     requested=layout_name,
+                     candidates=[m.get("part") for m in matches])
+            lay = matches[0]
+            if not lay.get("master") or lay.get("master") not in masters:
+                _add(findings, "template.layout_master_missing", "high",
+                     "a used layout has no valid relationship back to a slide master, so its "
+                     "theme and placeholder inheritance are broken",
+                     requested=layout_name, layout=lay.get("part"), master=lay.get("master") or None)
+            if not lay.get("title_present"):
+                _add(findings, "template.title_placeholder_missing", "high",
+                     "a used layout has no title placeholder, so title inheritance cannot occur; "
+                     "an explicit fallback text box is required and must be declared",
+                     requested=layout_name, layout=lay.get("part"))
+            elif not lay.get("title_ph"):
+                _add(findings, "template.title_geometry_unmeasured", "medium",
+                     "a used layout has a title placeholder but neither it nor its master gives "
+                     "the placeholder geometry, so title-position conformance is unverifiable",
+                     requested=layout_name, layout=lay.get("part"))
+
         theme_names = sorted({str(v) for v in (tinfo.get("theme_fonts") or {}).values() if v})
         declared_fonts = {str(f).strip() for f in (spec.get("font_ea"), spec.get("font_latin"))
                           if f}
@@ -382,7 +426,11 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
         dsize = summary.get("slide_size_emu")
         if tsize and dsize and all(v for v in tsize) and all(v for v in dsize):
             ta, da = tsize[0] / max(tsize[1], 1), dsize[0] / max(dsize[1], 1)
-            if abs(ta - da) / max(ta, 1e-9) > 0.02:
+            # Aspect-only comparison missed a uniformly scaled template: identical
+            # ratio but different EMU extents still changes every placeholder box.
+            # A 0.01-inch tolerance absorbs serialisation rounding, not rescaling.
+            extent_drift = any(abs(int(t) - int(d)) > 9144 for t, d in zip(tsize, dsize))
+            if extent_drift or abs(ta - da) / max(ta, 1e-9) > 0.02:
                 _add(findings, "template.slide_size_mismatch", "medium",
                      "the deck's slide size does not match the template's, so the layout "
                      "geometry cannot carry over: pages will be letterboxed or cropped",

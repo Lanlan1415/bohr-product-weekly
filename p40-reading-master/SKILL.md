@@ -5,9 +5,10 @@ description: >
   一个技能覆盖整条阅读流水线。把栅格图表读成带读数层级（calibrated / axis_fraction）的数字、把
   论文的结论与数值提取成可溯源的字段表、核验论断与证据的关系、回答带原文定位的问题、对照多篇
   文档的同名字段、审计翻译双语产物、审计证据驱动的引用写作。关键结果回到原文证据（页码/段落/
-  字段/图表定位），未报告/无法判断/材料冲突明确说明而不是写成事实。Use when a reading task must
-  produce checkable results — extraction tables, verified claims, anchored answers, digitised
-  figures — rather than a shorter summary.
+  字段/图表定位），未报告/无法判断/材料冲突明确说明而不是写成事实。四个 CLI 共用 case_id 与
+  output_contract 直通、统一 0/3/4/5 退出码；PNG 解码和图表数字化无第三方硬依赖。
+  Use when a reading task must produce checkable results — extraction tables, verified claims,
+  anchored answers, digitised figures — rather than a shorter summary.
 ---
 
 # reading-master — 文献阅读领域总课题
@@ -23,6 +24,36 @@ description: >
 | sections 引擎（14 个审计器，本包路由其中 4 个） | 提取、核验、问答、对照 | `scripts/secrun.py` |
 | writing 引擎（4 个写作轨审计器，本包路由其中 2 个） | 翻译双语、证据驱动写作 | `scripts/writeaudit.py` |
 | figparse 工具链（图表数字化 + 表格类型化） | 图表、表格 | `scripts/figparse.py` 与 `scripts/tables.py` |
+
+## 首发失败复盘（attempt 88031，真实记录）
+
+平台状态为 **execStatus=failed / harbor_status=evaluation_error / score=null**，即未进入评分；
+平台 execLog 为空，不能据此虚构“超时”或“服务故障”。开发留痕中的旧提交版探针则给出两条
+确定、可复现的代码级失败：损坏 PNG 在 `_load_rgb` 抛出 **PIL.UnidentifiedImageError**，缺失
+图片在 calibrate 抛出 `FileNotFoundError`；旧版 figparse 还在模块导入时硬依赖 numpy、scipy、
+Pillow，而 Requirements 未完整声明它们。旧表格路由对坏 JSON 也没有完整兜底。
+
+当前版据此做了根因修复，而非只改状态文案：PNG 由包内 pngio 直接解码，栅格计算由 rasterkit
+执行，第三方库不再硬导入；解码/文件/逐面板异常逐图进 limits；四个 CLI 都有最终异常边界并写
+JSON；无可用面板或全部表格失败为 undetermined，退出 5。历史 p10/pc 探针已重跑为
+p18/p19，25 项总探针全过。平台日志未保留更上游原因时，结论严格限定为：**已确认并消除
+旧提交版会导致执行中断的依赖与 traceback 路径，不声称证明平台基础设施没有其他问题。**
+
+## 六步运行时入口（每个固定案例依序）
+
+0. **先读原始输入。** 读 `/input/case.json`，原样记录 `case_id` 和 `output_contract`；再读
+   `task.md`、PDF/图像/表格本身。不要按文件名或领域标签补造论文内容。
+1. **按措辞路由。** 用下表选择一条或多条路线；先保存一个诚实的部分结果，再逐步补齐。
+2. **准备运行 spec。** sections/writing 路由写 JSON spec；图表路由直接读 case；表格路由读原表。
+   所有路由都必须保留材料定位，不把推测写成数值或引文。
+3. **实际执行。** 命令中的输出目录用 `/app/output`；中间文件在 `/app/work`。需要多路由时按
+   task.md 顺序执行，避免后一路由覆盖前一路由的 result.json（tables 会合并已有图表结果）。
+4. **读取并修复 findings。** high 先修，medium/low 复核；重跑直到 clean，或把无法消除的问题
+   写进 limits。未报告、提取失败、材料冲突、无法判断必须分开。
+5. **合并并核对契约。** 每个非拒绝结果保留 case_id，逐键复制 output_contract 已有值；无法推导
+   的键为 null 且点名。拒绝结果只写 undetermined 和失败原因，不用一串 null 冒充正式答案。
+6. **交付三件套。** 主阅读结果、逐条证据与边界、运行状态/限制/变更记录都放在 `/app/output`；
+   检查真实退出码和 JSON 可读性，不宣称未执行的 OCR、PDF 渲染或外部工具已经成功。
 
 ## 路由表
 
@@ -48,7 +79,9 @@ task.md 的顺序运行，交付前按统一输出契约合并。
 spec 是一个 JSON 对象；section 字段选择规则集（CLI 的 --section 覆盖它），其余是案例内容加定位。
 
 **figparse run** 读 `/input/case.json`：tick 值由调用方提供（OCR 读出），工具永远不发明刻度值；
-标签缺失时降级为 axis_fraction 并把 status 置为 partial。
+标签缺失时降级为 axis_fraction 并把 status 置为 partial；完全没有可用面板为 undetermined。
+PNG 由纯标准库 pngio 解码，面板/拟合/曲线/柱状图由 rasterkit 与 calibrate/digitize 计算；
+Pillow 只在读取 JPEG/TIFF 等其他格式时作为可选后端。
 
 ```json
 {"case_id": "a028c71c-fig", "images": [{"path": "fig3b.png",
@@ -165,20 +198,22 @@ source_text，来源类型与年份进表，主张的不确定性留位。
 
 案例自带字段：
 
-- 四个 CLI（secrun、writeaudit、figparse、tables）都回填 case_id（spec/case 里有就带出），并按
-  case 的 output_contract 补齐字段——推导不出的填 null 并在 limits 里写明，评审看到的是键加
-  诚实说明而不是静默缺口。
+- 四个 CLI 都由包内 contract.py 统一回填 case_id（顶层或嵌套 case），并读取 list、
+  name→description object、多行 string、list-of-objects 四种 output_contract。
+- 契约字段优先使用引擎已推导值；其次逐字复制 spec/case 中已有的同名字段；仍无法推导才填
+  null 并在 limits 点名。未知 contract 形状只进 limits，不迭代到 TypeError。
+- **拒绝路径不调用契约合并。** 无法读取案例、未知 section、全部图表/表格不可用等 undetermined
+  结果只陈述失败，不凭空补齐一串看似完整的 null 字段。
 
 诚实状态规则：
 
 - findings 含 high 时 blocked（退出码 4）；只有 medium/low 时 review（3）；无发现时 clean（0）。
-- undetermined（5）= 案例无法按声明运行（见异常处理保证）——不是通过也不是失败，不假装。
+- 图表 success/partial 分别退出 0/3；完全没有可用面板为 undetermined（5）。表格全部失败也是
+  undetermined（5），部分表格或已有图表面板可用时为 partial（3）。
+- 四个 CLI 的映射统一为 **clean/success→0，review/partial→3，blocked→4，undetermined→5**。
 - 未报告 / 无法判断 / 材料冲突：论文没报的字段带 `_status: not_reported`（提取失败是
   extraction_failed）；冲突同时给双方 locator；这些标记永远不写成事实。figparse 的三档读数
   （verbatim 表值 / calibrated 读数 / axis_fraction）同样分档陈述，未标定面板不冒充物理单位。
-
-退出码：secrun 与 writeaudit 为 0 / 3 / 4 / 5；figparse 与 tables 退出码恒为 0，结论在
-result.json 的 status 与 limits 里（partial / undetermined 如实降级）。
 
 ## 最小工作示例（示意）
 
@@ -206,8 +241,14 @@ result.json 的 status 与 limits 里（partial / undetermined 如实降级）�
 python scripts/secrun.py --spec examples/spec-extract.json --section conclusion_extract --out /app/output
 ```
 
-示意输出（真实运行 status 为 clean、findings 为空；这里展示字段形状，secrun 会把 spec 里的
-case_id 与 output_contract 字段一并向后补）：
+在包根目录以 `python -I -X utf8` 实跑通过，退出码 0；真实终端输出为：
+
+```json
+{"status": "clean", "section": "conclusion_extract", "findings": [],
+ "wrote": "examples/demo_extract/result.json"}
+```
+
+真实 result.json（已另存 `examples/sample-result.json`，是本地示例而非平台正式答案）：
 
 ```json
 {"schema_version": "secrun/v1", "section": "conclusion_extract", "status": "clean",
@@ -216,7 +257,8 @@ case_id 与 output_contract 字段一并向后补）：
  "case_id": "a028c71c-extract-demo"}
 ```
 
-有发现时 findings 同形（每条含 rule / severity / message 加条目与 locator 上下文）。
+`examples/spec-verify.json` 也已实跑为 clean / exit 0。有发现时 findings 同形（每条含
+rule / severity / message 加条目与 locator 上下文）。
 
 ## 规则索引（路由各节完整规则，对齐严格验收）
 
@@ -250,6 +292,8 @@ case_id 与 output_contract 字段一并向后补）：
 | rule | severity |
 |-|-|
 | `verify.counter_evidence_missing` | high |
+| `verify.counter_evidence_unverified` | high |
+| `verify.source_unavailable` | medium |
 | `verify.empty_claim` | high |
 | `verify.evidence_empty_quote` | high |
 | `verify.evidence_locator_vague` | medium |
@@ -273,6 +317,9 @@ case_id 与 output_contract 字段一并向后补）：
 | rule | severity |
 |-|-|
 | `qa.answer_value_not_in_source` | high |
+| `qa.question_empty` | high |
+| `qa.duplicate_evidence_id` | high |
+| `qa.evidence_empty_quote` | high |
 | `qa.citation_no_locator` | high |
 | `qa.citation_unsupportive` | high |
 | `qa.conflict_unhandled` | medium |
@@ -301,6 +348,8 @@ case_id 与 output_contract 字段一并向后补）：
 | `compare.conversion_unreproducible` | high |
 | `compare.direction_missing` | high |
 | `compare.duplicate_document_id` | medium |
+| `compare.duplicate_field_name` | high |
+| `compare.cell_source_unverifiable` | medium |
 | `compare.field_group_missing` | high |
 | `compare.field_missing` | medium |
 | `compare.field_undefined` | medium |
@@ -356,6 +405,8 @@ case_id 与 output_contract 字段一并向后补）：
 | `xlate.number_conversion_unexplained` | medium |
 | `xlate.segment_id_duplicate` | high |
 | `xlate.segment_unpaired` | high |
+| `xlate.segment_source_not_in_source` | high |
+| `xlate.segment_target_not_in_target` | high |
 | `xlate.segments_missing` | high |
 | `xlate.target_not_translated` | high |
 | `xlate.term_entry_no_basis` | medium |

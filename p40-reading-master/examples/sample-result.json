@@ -1,0 +1,13 @@
+{
+  "schema_version": "secrun/v1",
+  "section": "conclusion_extract",
+  "status": "clean",
+  "findings": [],
+  "severity_counts": {},
+  "limits": [],
+  "checked": {
+    "section": "conclusion_extract",
+    "items": 2
+  },
+  "case_id": "a028c71c-extract-demo"
+}

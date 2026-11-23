@@ -136,12 +136,76 @@ def _read_theme(z: zipfile.ZipFile, master_part: str) -> dict:
     return fonts
 
 
-def read_template(path) -> dict:
-    """Measure one template package.
+def _placeholder_defaults(z: zipfile.ZipFile, master_part: str) -> dict:
+    """Title/body placeholders on a master, used when a layout omits geometry.
 
-    Returns {"read": bool, "reason": str?, "slide_size_emu": [cx, cy]?,
-             "layouts": [{name, type, master, title_ph, title_sz}...]?,
-             "theme_fonts": {...}?, "masters": [str...]?}
+    Real templates often put only ``ph type=title`` on the layout and leave the
+    box and type size on the master. Reading just the layout therefore reports
+    "no geometry" for a perfectly measurable template. The fallback is scoped
+    to a placeholder that is actually present on the layout: a blank layout
+    must not acquire a title merely because its master has one.
+    """
+    out = {"title_ph": None, "title_sz": None, "body_ph": None, "body_sz": None}
+    try:
+        root = ET.fromstring(z.read(master_part))
+    except (KeyError, ET.ParseError):
+        return out
+    for sp in root.iter(f"{{{NS['p']}}}sp"):
+        kind = _shape_ph(sp)
+        if kind in TITLE_PH_TYPES and out["title_ph"] is None:
+            out["title_ph"] = _xfrm_of(sp)
+            out["title_sz"] = _first_size(sp)
+        elif kind in BODY_PH_TYPES and out["body_ph"] is None:
+            out["body_ph"] = _xfrm_of(sp)
+            out["body_sz"] = _first_size(sp)
+    return out
+
+
+def _layout_info(z: zipfile.ZipFile, part: str, master_defaults: dict) -> dict:
+    """Read one layout and the relationship that joins it back to its master."""
+    root = ET.fromstring(z.read(part))
+    c_sld = root.find("p:cSld", NS)
+    masters = _rel_targets(z, part, "slideMaster")
+    master = (_resolve(posixpath.dirname(part), masters[0]) if masters else "")
+    defaults = master_defaults.get(master) or {}
+    entry = {
+        "name": (c_sld.get("name") or "").strip() if c_sld is not None else "",
+        "type": (root.get("type") or "").strip(),
+        "master": master,
+        "part": part,
+        "title_present": False,
+        "title_ph": None,
+        "title_sz": None,
+        "body_present": False,
+        "body_ph": None,
+        "title_geometry_inherited": False,
+        "title_size_inherited": False,
+    }
+    for sp in root.iter(f"{{{NS['p']}}}sp"):
+        kind = _shape_ph(sp)
+        if kind in TITLE_PH_TYPES and not entry["title_present"]:
+            entry["title_present"] = True
+            entry["title_ph"] = _xfrm_of(sp)
+            entry["title_sz"] = _first_size(sp)
+            if entry["title_ph"] is None and defaults.get("title_ph") is not None:
+                entry["title_ph"] = defaults["title_ph"]
+                entry["title_geometry_inherited"] = True
+            if entry["title_sz"] is None and defaults.get("title_sz") is not None:
+                entry["title_sz"] = defaults["title_sz"]
+                entry["title_size_inherited"] = True
+        elif kind in BODY_PH_TYPES and not entry["body_present"]:
+            entry["body_present"] = True
+            entry["body_ph"] = _xfrm_of(sp) or defaults.get("body_ph")
+    return entry
+
+
+def read_template(path) -> dict:
+    """Measure one template package, including master/layout inheritance.
+
+    Returns ``read=False`` for any malformed XML rather than silently treating a
+    parse failure as evidence that a layout or font is absent. Missing optional
+    measurements remain structured ``None`` values so the caller can distinguish
+    "not measurable" from "does not exist".
     """
     out: dict = {"read": False, "layouts": [], "theme_fonts": {}, "masters": [],
                  "slide_size_emu": None}
@@ -157,11 +221,7 @@ def read_template(path) -> dict:
             if pres not in names:
                 out["reason"] = "presentation.xml missing — not a presentation package"
                 return out
-            try:
-                proot = ET.fromstring(z.read(pres))
-            except ET.ParseError as exc:
-                out["reason"] = f"presentation.xml does not parse: {exc}"
-                return out
+            proot = ET.fromstring(z.read(pres))
             sz = proot.find("p:sldSz", NS)
             if sz is not None:
                 try:
@@ -171,42 +231,25 @@ def read_template(path) -> dict:
 
             master_parts = sorted(n for n in names
                                   if re.fullmatch(r"ppt/slideMasters/slideMaster\d+\.xml", n))
+            out["masters"] = list(master_parts)
+            master_defaults = {mp: _placeholder_defaults(z, mp) for mp in master_parts}
+            layout_parts = sorted(n for n in names
+                                  if re.fullmatch(r"ppt/slideLayouts/slideLayout\d+\.xml", n))
             for mp in master_parts:
-                out["masters"].append(mp)
-                theme_fonts = _read_theme(z, mp)
-                for k, v in theme_fonts.items():
+                for k, v in _read_theme(z, mp).items():
                     out["theme_fonts"].setdefault(k, v)
-                for target in _rel_targets(z, mp, "slideLayout"):
-                    lay_part = _resolve(posixpath.dirname(mp), target)
-                    if lay_part not in names:
-                        continue
-                    try:
-                        lroot = ET.fromstring(z.read(lay_part))
-                    except ET.ParseError:
-                        continue
-                    cSld = lroot.find("p:cSld", NS)
-                    name = (cSld.get("name") or "").strip() if cSld is not None else ""
-                    ltype = (lroot.get("type") or "").strip()
-                    title_ph = None
-                    title_sz = None
-                    for sp in lroot.iter(f"{{{NS['p']}}}sp"):
-                        if _shape_ph(sp) in TITLE_PH_TYPES:
-                            title_ph = _xfrm_of(sp)
-                            title_sz = _first_size(sp)
-                            break
-                    out["layouts"].append({
-                        "name": name,
-                        "type": ltype,
-                        "master": mp,
-                        "part": lay_part,
-                        "title_ph": title_ph,
-                        "title_sz": title_sz,
-                    })
+            # Read every layout part, including an orphan whose master back-link is
+            # broken. Filtering only through slideMaster relationships would erase
+            # precisely the defect that template.layout_master_missing must expose.
+            out["layouts"] = [_layout_info(z, part, master_defaults)
+                              for part in layout_parts]
             out["read"] = bool(master_parts)
             if not out["read"]:
                 out["reason"] = "the package carries no slide master"
-    except zipfile.BadZipFile as exc:
-        out["reason"] = f"corrupt package: {exc}"
+    except (zipfile.BadZipFile, ET.ParseError, OSError) as exc:
+        out.update({"read": False, "layouts": [], "theme_fonts": {}, "masters": [],
+                    "slide_size_emu": None,
+                    "reason": f"template XML/package could not be parsed: {exc}"})
         return out
     return out
 
@@ -216,27 +259,31 @@ def norm_layout(s: str) -> str:
     return "".join(c for c in str(s or "").lower() if c.isalnum())
 
 
-def match_layout(declared: str, layouts: list[dict]) -> dict | None:
-    """The measured layout a declared name refers to, or None.
+def match_layouts(declared: str, layouts: list[dict]) -> list[dict]:
+    """Every measured layout a declared name could denote, best tier first.
 
-    Exact normalised match first, then containment — "title" is the name people
-    write for the layout the template calls "Title Slide", and a containment
-    match under-reports rather than inventing a mismatch. No match at all is
-    what fires template.layout_not_found.
+    Exact normalised name/type matches win over containment. Keeping all ties is
+    important: choosing the first duplicate would turn an ambiguous layout name
+    into a confident but arbitrary geometry check.
     """
     want = norm_layout(declared)
     if not want:
-        return None
-    for lay in layouts:
-        if norm_layout(lay.get("name")) == want or norm_layout(lay.get("type")) == want:
-            return lay
-    for lay in layouts:
-        nm, ty = norm_layout(lay.get("name")), norm_layout(lay.get("type"))
-        if nm and (nm in want or want in nm):
-            return lay
-        if ty and (ty in want or want in ty):
-            return lay
-    return None
+        return []
+    exact = [lay for lay in layouts
+             if norm_layout(lay.get("name")) == want or norm_layout(lay.get("type")) == want]
+    if exact:
+        return exact
+    return [lay for lay in layouts
+            if (norm_layout(lay.get("name"))
+                and (norm_layout(lay.get("name")) in want or want in norm_layout(lay.get("name"))))
+            or (norm_layout(lay.get("type"))
+                and (norm_layout(lay.get("type")) in want or want in norm_layout(lay.get("type"))))]
+
+
+def match_layout(declared: str, layouts: list[dict]) -> dict | None:
+    """The first best-tier match, or None when the layout is absent."""
+    matches = match_layouts(declared, layouts)
+    return matches[0] if matches else None
 
 
 def geom_close(a: dict | None, b: dict | None, tol: int = GEOM_TOL_EMU) -> bool:

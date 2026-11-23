@@ -1,0 +1,252 @@
+{
+  "schema_version": "reading-master-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "extract_duplicate_guard",
+      "kind": "guard",
+      "section": "conclusion_extract",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "extract_duplicate_defect",
+      "kind": "defect",
+      "section": "conclusion_extract",
+      "expected": [
+        "extract.duplicate_claim"
+      ],
+      "fired": [
+        "extract.duplicate_claim"
+      ],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "extract_condition_guard",
+      "kind": "guard",
+      "section": "conclusion_extract",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "extract_condition_defect",
+      "kind": "defect",
+      "section": "conclusion_extract",
+      "expected": [
+        "extract.condition_value_unsupported"
+      ],
+      "fired": [
+        "extract.condition_value_unsupported"
+      ],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "verify_source_guard",
+      "kind": "guard",
+      "section": "claim_verify",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "verify_source_defect",
+      "kind": "defect",
+      "section": "claim_verify",
+      "expected": [
+        "verify.source_unavailable"
+      ],
+      "fired": [
+        "verify.source_unavailable"
+      ],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "verify_counter_guard",
+      "kind": "guard",
+      "section": "claim_verify",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "verify_counter_defect",
+      "kind": "defect",
+      "section": "claim_verify",
+      "expected": [
+        "verify.counter_evidence_unverified"
+      ],
+      "fired": [
+        "verify.counter_evidence_unverified"
+      ],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "qa_question_guard",
+      "kind": "guard",
+      "section": "qa",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "qa_question_defect",
+      "kind": "defect",
+      "section": "qa",
+      "expected": [
+        "qa.question_empty"
+      ],
+      "fired": [
+        "qa.question_empty"
+      ],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "qa_duplicate_evidence_guard",
+      "kind": "guard",
+      "section": "qa",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "qa_duplicate_evidence_defect",
+      "kind": "defect",
+      "section": "qa",
+      "expected": [
+        "qa.duplicate_evidence_id"
+      ],
+      "fired": [
+        "qa.duplicate_evidence_id"
+      ],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "qa_empty_evidence_guard",
+      "kind": "guard",
+      "section": "qa",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "qa_empty_evidence_defect",
+      "kind": "defect",
+      "section": "qa",
+      "expected": [
+        "qa.evidence_empty_quote"
+      ],
+      "fired": [
+        "qa.evidence_empty_quote"
+      ],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "compare_duplicate_field_guard",
+      "kind": "guard",
+      "section": "compare_docs",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "compare_duplicate_field_defect",
+      "kind": "defect",
+      "section": "compare_docs",
+      "expected": [
+        "compare.duplicate_field_name"
+      ],
+      "fired": [
+        "compare.duplicate_field_name"
+      ],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "compare_no_text_guard",
+      "kind": "guard",
+      "section": "compare_docs",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "compare_no_text_defect",
+      "kind": "defect",
+      "section": "compare_docs",
+      "expected": [
+        "compare.cell_source_unverifiable"
+      ],
+      "fired": [
+        "compare.cell_source_unverifiable"
+      ],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "xlate_segment_source_guard",
+      "kind": "guard",
+      "section": "translation",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "xlate_segment_source_defect",
+      "kind": "defect",
+      "section": "translation",
+      "expected": [
+        "xlate.segment_source_not_in_source"
+      ],
+      "fired": [
+        "xlate.segment_source_not_in_source"
+      ],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "xlate_segment_target_guard",
+      "kind": "guard",
+      "section": "translation",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "xlate_segment_target_defect",
+      "kind": "defect",
+      "section": "translation",
+      "expected": [
+        "xlate.segment_target_not_in_target"
+      ],
+      "fired": [
+        "xlate.segment_target_not_in_target"
+      ],
+      "status": "blocked",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 22,
+    "of": 22
+  },
+  "note": "Each added rule has an independent defect and zero-finding FP guard."
+}

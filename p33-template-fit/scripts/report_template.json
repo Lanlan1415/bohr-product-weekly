@@ -78,6 +78,115 @@
       "status": "review"
     },
     {
+      "scenario": "same_aspect_size_mismatch",
+      "expected": [
+        "template.slide_size_mismatch"
+      ],
+      "fired": [
+        "template.slide_size_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "slide_size_unmeasured",
+      "expected": [
+        "template.slide_size_unmeasured"
+      ],
+      "fired": [
+        "template.slide_size_unmeasured"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "theme_unmeasured",
+      "expected": [
+        "template.theme_unmeasured"
+      ],
+      "fired": [
+        "template.theme_unmeasured"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "title_placeholder_missing",
+      "expected": [
+        "template.title_placeholder_missing"
+      ],
+      "fired": [
+        "template.title_placeholder_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "title_geometry_unmeasured",
+      "expected": [
+        "template.title_geometry_unmeasured"
+      ],
+      "fired": [
+        "template.title_geometry_unmeasured"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "master_geometry_inherited",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "layout_master_missing",
+      "expected": [
+        "template.layout_master_missing"
+      ],
+      "fired": [
+        "template.layout_master_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "duplicate_layout_name",
+      "expected": [
+        "template.duplicate_layout_name"
+      ],
+      "fired": [
+        "template.duplicate_layout_name"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "duplicate_name_unique_type_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
       "scenario": "template_unreadable",
       "expected": [
         "template.unreadable"
@@ -118,6 +227,44 @@
           "Title Slide",
           "Title and Content"
         ],
+        "layout_details": [
+          {
+            "name": "Title Slide",
+            "type": "title",
+            "master": "ppt/slideMasters/slideMaster1.xml",
+            "part": "ppt/slideLayouts/slideLayout1.xml",
+            "title_present": true,
+            "title_ph": {
+              "x": 822960,
+              "y": 2194560,
+              "cx": 10546080,
+              "cy": 1371600
+            },
+            "title_sz": 40.0,
+            "body_present": false,
+            "body_ph": null,
+            "title_geometry_inherited": false,
+            "title_size_inherited": false
+          },
+          {
+            "name": "Title and Content",
+            "type": "body",
+            "master": "ppt/slideMasters/slideMaster1.xml",
+            "part": "ppt/slideLayouts/slideLayout2.xml",
+            "title_present": true,
+            "title_ph": {
+              "x": 457200,
+              "y": 320040,
+              "cx": 11277600,
+              "cy": 914400
+            },
+            "title_sz": 32.0,
+            "body_present": false,
+            "body_ph": null,
+            "title_geometry_inherited": false,
+            "title_size_inherited": false
+          }
+        ],
         "theme_fonts": {
           "major_latin": "Arial",
           "major_ea": "Microsoft YaHei",
@@ -126,13 +273,14 @@
         },
         "masters": [
           "ppt/slideMasters/slideMaster1.xml"
-        ]
+        ],
+        "inheritance_model": "layout placeholder first, then the same placeholder on its related slide master; absent placeholders are not inherited"
       }
     }
   ],
   "totals": {
-    "passed": 9,
-    "of": 9
+    "passed": 18,
+    "of": 18
   },
   "note": "Template constraints are measured from a real .potx-shaped package built by this bench; clean and no-file scenarios guard against firing without a template."
 }

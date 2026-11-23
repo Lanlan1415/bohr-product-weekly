@@ -340,6 +340,29 @@ def translation(spec: dict, findings: list[dict]) -> None:
                      "a segment has no target text, so part of the source is untranslated",
                      segment=i, segment_id=sid or None)
 
+    # A declared full source/target is the outer artifact: segment pairs must be
+    # actual spans of those artifacts, not a parallel account with different content.
+    # If the caller supplies only segments there is no outer text to compare, so both
+    # rules stay silent (declarative, with an explicit FP guard in bench_reading.py).
+    def _flat(value) -> str:
+        return re.sub(r"\s+", " ", G.normalise(str(value or ""))).strip()
+
+    full_source = _flat(spec.get("source_text"))
+    full_target = _flat(spec.get("target_text"))
+    for i, seg in enumerate(segments):
+        source_span = _flat(seg.get("source"))
+        target_span = _flat(seg.get("target"))
+        if full_source and source_span and source_span not in full_source:
+            _add(findings, "xlate.segment_source_not_in_source", "high",
+                 "a segment's source is not a span of the declared source artifact, so the "
+                 "alignment does not describe this translation input",
+                 segment=i, segment_id=str(seg.get("id") or "") or None)
+        if full_target and target_span and target_span not in full_target:
+            _add(findings, "xlate.segment_target_not_in_target", "high",
+                 "a segment's target is not a span of the declared target artifact, so the "
+                 "bilingual record and delivered translation disagree",
+                 segment=i, segment_id=str(seg.get("id") or "") or None)
+
     # (segment-coverage checking removed — Lesson 8 revert, see segment_id_missing)
 
     # (backcheck_missing/orphaned removed — Lesson 8 revert: demanding back-translation

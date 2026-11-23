@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p33-template-fit
+https://github.com/Lanlan1415/bohr-product-weekly
+p33-template-fit/
