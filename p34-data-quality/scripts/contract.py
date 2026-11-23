@@ -1,53 +1,47 @@
-"""Case contract plumbing: refusal results and output_contract echo.
+"""Case contract plumbing, including structured refusals.
 
-The Harbor runtime contract says every case returns a result.json that keeps
-case_id and every field the case's output_contract names. Two helpers serve
-that, deliberately tiny:
-
-  refused       the undetermined result every unrunnable case gets — an exit
-                code, not a traceback. It copies exactly one scalar (case_id)
-                and never runs the contract echo, because the echo reads
-                nested spec structure and a refusal must not be able to raise.
-  echo_contract fills the named contract fields into a finished result: a
-                field the result already carries is kept, one the spec supplies
-                under the same name is copied verbatim (bulky inputs excluded),
-                and one nobody can supply is written as null and named in
-                limits, so a grader finds an honest gap instead of a missing key.
+Every readable case keeps case_id and every output_contract key, including when
+execution is refused. Undetermined fields are null and named in limits; a refusal
+never substitutes an empty artifact for a completed result.
 """
-
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
-# Spec keys whose values are bulky cleaning inputs rather than deliverable
-# values: echoing a whole table into result.json would bury the verdict the
-# grader reads first (the table itself is preserved verbatim in original.json).
-BULKY = ("rows", "columns", "key_columns", "value_columns", "missing_tokens",
+BULKY = {"rows", "columns", "key_columns", "value_columns", "missing_tokens",
          "table_path", "section", "output_contract", "encoding", "delimiter",
-         "units", "rules", "workorder")
+         "units", "rules", "workorder", "spec"}
+DERIVED = {
+    "change_ledger": "changes",
+    "changes": "changes",
+    "reversible_log": "reversible_log",
+    "before_after": "before_after",
+    "validation_results": "validation_results",
+    "data_dictionary": "data_dictionary",
+    "cleaned_table": "cleaned_table",
+    "quality_report": "quality_report",
+    "anomalies": "anomalies",
+}
+REFUSED_SCHEMA = "data-quality/v3"
 
-REFUSED_SCHEMA = "datarun/v1"
 
-
-def refused(out_dir, message: str, spec=None,
-            rule: str = "clean.refused") -> dict:
-    """Write and return the undetermined result for a case that cannot run.
-
-    This path deliberately does not run the contract echo (which reads nested
-    spec structure): a refusal must never be able to raise, so it only copies
-    one scalar and writes with every failure swallowed — an unwritable output
-    directory is itself the undetermined run.
-    """
+def refused(out_dir, message: str, spec=None, rule: str = "clean.refused") -> dict:
+    """Write a safe undetermined result and preserve every known contract key."""
     result = {
         "schema_version": REFUSED_SCHEMA,
         "status": "undetermined",
-        "findings": [{"rule": rule, "severity": "high", "message": message}],
+        "findings": [{"rule": rule, "severity": "high", "message": str(message)}],
         "severity_counts": {"high": 1},
         "limits": ["the case could not be run as declared"],
     }
-    if isinstance(spec, dict) and spec.get("case_id") is not None:
-        result["case_id"] = spec.get("case_id")
+    if isinstance(spec, dict):
+        if spec.get("case_id") is not None:
+            result["case_id"] = spec.get("case_id")
+        echo_contract(spec, result, result["limits"])
+    else:
+        result["case_id"] = None
+        result["limits"].append("case metadata was unavailable; case_id could not be recovered")
     try:
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -59,29 +53,44 @@ def refused(out_dir, message: str, spec=None,
 
 
 def echo_contract(spec: dict, result: dict, limits: list) -> None:
-    """Fill the case's output_contract fields into `result` in place."""
+    """Fill every declared key without dropping or inventing output values."""
+    if not isinstance(spec, dict):
+        return
     contract = spec.get("output_contract")
     if isinstance(contract, dict):
-        keys = list(contract.keys())
+        keys = [str(k) for k in contract.keys()]
     elif isinstance(contract, (list, tuple)):
-        keys = [str(k) for k in contract]
+        keys = [k for k in contract if isinstance(k, str)]
+        if len(keys) != len(contract):
+            limits.append("non-string output_contract entries were not valid field names")
+    elif contract is None:
+        return
     else:
+        limits.append("output_contract was neither an object nor a list of field names")
+        result["output_contract_fields"] = []
         return
     for key in keys:
         if key in result:
             continue
+        # A supplied value is authoritative and passes through unchanged, even on
+        # a structured refusal (it is case input, not an invented result).
         if key in spec and key not in BULKY:
             result[key] = spec[key]
             continue
+        source = DERIVED.get(key)
+        if result.get("status") != "undetermined" and source in result:
+            result[key] = result[source]
+            continue
         result[key] = None
-        limits.append(f"output_contract field '{key}' was not derivable by this audit")
+        limits.append(f"output_contract field '{key}' was not derivable in status "
+                      f"{result.get('status', 'undetermined')}")
     result["output_contract_fields"] = keys
 
 
 def load_spec(spec_path) -> tuple[dict | None, str | None]:
-    """Read a spec file, returning (spec, error). Any failure is a message, not a raise."""
+    """Read UTF-8/UTF-8-BOM JSON, returning an error instead of raising."""
     try:
-        raw = Path(spec_path).read_text(encoding="utf-8")
+        raw = Path(spec_path).read_text(encoding="utf-8-sig")
     except OSError as exc:
         return None, f"the spec file could not be read: {exc}"
     except UnicodeDecodeError as exc:

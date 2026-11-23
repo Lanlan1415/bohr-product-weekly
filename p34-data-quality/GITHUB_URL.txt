@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p34-data-quality
+https://github.com/Lanlan1415/bohr-product-weekly
+p34-data-quality/

@@ -1,0 +1,18 @@
+{
+  "case_id": "cite-smoke-clean",
+  "status": "case-must-not-override-engine",
+  "output_contract": ["case_id", "status", "audit_report", "citation_checks", "metadata_checks", "evidence_bounds", "result_state", "custom_missing"],
+  "manuscript_text": "Abstract\nThe porous coating increased uptake three-fold [1].\n\n1 Introduction\nWe ask whether a porous coating changes uptake.\n\n2 Methods\nWe compared coated and uncoated samples.\n\n3 Results\nThe porous coating increased uptake three-fold in 24 samples.\n\nReferences\n[1] Doe, J. and Roe, R. (2020). Porous coatings increase uptake. Journal of Surfaces, 4, 10-20. https://doi.org/10.1234/example.1\n",
+  "sources": [
+    {
+      "key": "1",
+      "doi": "10.1234/example.1",
+      "title": "Porous coatings increase uptake",
+      "authors": [{"family": "Doe"}, {"family": "Roe"}],
+      "year": 2020,
+      "registry_source": "supplied registry snapshot",
+      "registry_locator": "snapshot:doi/10.1234/example.1",
+      "text": "2 Results\nIn 24 samples, the porous coating increased uptake three-fold compared with uncoated controls.\n"
+    }
+  ]
+}

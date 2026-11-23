@@ -1,0 +1,25 @@
+{
+  "case_id": "demo-direct-analysis",
+  "rows": [
+    {"group": "a", "response": 1},
+    {"group": "a", "response": 2},
+    {"group": "a", "response": 3},
+    {"group": "b", "response": 4},
+    {"group": "b", "response": 5},
+    {"group": "b", "response": 6}
+  ],
+  "columns": [
+    {"name": "group", "semantic": "categorical"},
+    {"name": "response", "semantic": "numeric"}
+  ],
+  "analyses": [
+    {"metric": "response", "group_col": "group", "test": "welch", "alpha": 0.05}
+  ],
+  "output_contract": {
+    "case_id": "identifier",
+    "status": "run status",
+    "analysis_results": "computed Welch comparison",
+    "result_text": "interpretation bound to computed values",
+    "power_and_sample_size": "honest power limitation"
+  }
+}

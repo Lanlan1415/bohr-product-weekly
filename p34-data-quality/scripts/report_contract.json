@@ -35,10 +35,25 @@
       "scenario": "idempotent_rerun",
       "problems": [],
       "pass": true
+    },
+    {
+      "scenario": "refusal_contract_from_case",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "case_merge_and_undo_cli",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "gb18030_and_duplicate_header",
+      "problems": [],
+      "pass": true
     }
   ],
   "totals": {
-    "passed": 7,
-    "of": 7
+    "passed": 10,
+    "of": 10
   }
 }

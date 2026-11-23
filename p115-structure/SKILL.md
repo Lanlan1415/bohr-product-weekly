@@ -58,23 +58,78 @@ other, and a promise none of whose content words reappears is reported.
 the most damage: causal wording for an observational design in the abstract is refused, and
 an abstract that shares no content with the conclusion is reported as a mismatch.
 
-## 运行时入口（每个案例六步）
+## 主入口：全文主张—证据—推理链审查
 
-运行时输入是 /input/case.json 与 task.md；稿件材料按题目提供（实际全文，不带预抽答案层——
-必须读实际文件，不按领域标签补造内容）。预算为 64 次模型请求、900 秒、每次响应 16384
-token——第 2 步先落盘部分诚实交付，再逐步改进。
+运行时输入为 `/input/case.json` 与 `task.md`。先读实际全文；扫描 PDF 用平台 OCR/PDF 工具求真文本，
+不能根据领域标签编造一篇论文，也不能只写六个占位 diagnosis 就声称完成。
 
-| 步 | 动作 | 产物 |
+```bash
+python scripts/logiccheck.py --case /input/case.json --out /app/output
+# PDF/OCR 后：
+python scripts/logiccheck.py --case /input/case.json \
+  --material /app/work/manuscript.txt --out /app/output
+```
+
+引擎参照开源 argdown/argdown 的主张、前提、支持/反驳关系组织结果，但不假装词汇对齐等于逻辑
+蕴含。`argument_map[]` 每条含 claim id、原句与页/段/句定位、作者设计、claim strength、限定语、
+结果证据及 locator、warrant 状态和替代解释检查。`reasoning_gaps` 是实际逻辑发现；
+`cross_section_checks` 保存承诺—交付与矛盾两侧证据。
+
+退出码为 0 clean、3 review/partial、4 blocked（有 high）、5 undetermined。每个非命令行用法错误
+路径都写 `result.json`、`audit_report.md`、`run_log.json`，无 traceback。先核对原句，再把修改建议
+交给作者；不得把"证据尚未链接"升级成"结论已被证伪"。
+
+### 实际规则、严重度与修改方式
+
+| rule | 触发边界 | 可执行修改 |
 |-|-|-|
-| 0 读案例 | 读 /input/case.json 与 task.md：记录 case_id；抄下 output_contract 点名的全部字段清单；从材料读入稿件全文（PDF 解析失败、扫描版无文本时如实声明，见异常处置表） | case_id、契约字段清单、稿件文本 |
-| 1 判形态 | 按下面路由表判断审查形态与深度；超长稿件分段抽取主张与诊断，不静默截断 | 路由决定 |
-| 2 先产目标 | 先把已确认的部分落盘 /app/output：稿件快照、主张清单、半成品 result.json（status 如实标注 partial 内容） | 部分诚实交付 |
-| 3 构造 spec | manuscript_text 用稿件原文逐字摘录；抽取 research_question、design、conclusion、abstract、promises 与 delivery_text、contributions 锚点、paragraphs 及其 claims 支撑；把 case_id 与 output_contract 写进 spec 顶层 | spec.json |
-| 4 审计 | 跑一次引擎（--section structure_logic），读 findings 与 status | result.json 初版 |
-| 5 修发现重跑 | 逐条 findings 修 spec：伪造引用改回逐字摘录、补定位、补建议动词、降口径；重跑至 clean 或把余留写成 limits 与待复核 | 收敛后的 result.json |
-| 6 合并交付 | 确认 result.json 含 case_id 且 output_contract 点名的每个键都存在（引擎已推导的保留，spec 携带的直通，推导不了的填 null 并在 limits 里说明）；映射成任务要求的三段结果（见下） | 最终交付 |
+| `logic.causal_overreach` | 方法证据为观察/相关设计，作者在摘要/讨论/结论使用无限定因果词；转述、假设和 hedged association 不触发 | 把因果动词改为 association，保留人群/时间窗，或补真正的因果设计 |
+| `logic.non_significant_result_claimed_as_effect` | 链接的结果明确 non-significant，却被写成效应 | 对齐显著性、效应方向与结果，给双侧位置 |
+| `logic.species_or_population_extrapolation` | 非人体方法/证据被直接外推到人一样确定结论 | 限定到 measured species/cohort，补人体验证 |
+| `logic.sample_scope_extrapolation` | 单中心/有限样本等却写 universal/all/widely applicable | 限定样本与外推范围，补外部验证 |
+| `logic.evidence_link_missing` | 强结论无结果句、图表指针或引文，且 lexical evidence 也不存在 | 添加能蕴含该子结论的结果/表图与不确定性，或删降该句；不等于结论为假 |
+| `logic.alternative_explanations_not_addressed` | 观察设计却断言机制/因果链，全文没有 limitation/confound/alternative | 明确讨论混杂、反向因果、测量偏倚及各自能否排除 |
+| `logic.boundary_conditions_missing` | 绝对/强结论没有任何边界条件 | 加群体、时间窗、测量与适用限制 |
+| `logic.promise_not_delivered` | 引言 aim/compare/evaluate 的内容在方法/结果/讨论无最低文本对应 | 补具名分析及结果定位，或一致删除承诺 |
+| `logic.cross_section_contradiction` | 高度对齐的摘要/正文出现不同效应值、相反方向或非显著口径；共享对照值不妨碍识别另一值变化 | 给两侧原句，回到底表判断哪侧错误并记录修正 |
+| `logic.case_unreadable` / `logic.case_not_object` / `logic.no_manuscript` / `logic.internal_error` / `logic.runner_error` | 案例无法运行，不猜科学问题 | structured undetermined；明确缺什么及如何重跑 |
 
-## 任务措辞 → 路由
+### 误报抑制与范围
+
+- 明确标注的研究假设、`may/might/suggest/associated with/consistent with/limited to`、
+  `according to` / `Smith et al.` 的他人观点都不是作者的过强结论，可保留在 map 但不触发。
+- `et al.` 不作为句号切开，意图性随机对照/实验设计不会被观察性因果规则误报；设计未知时只记
+  pending，不假定观察性。
+- 结果链接是**待复核支持候选**，不是自动蕴含证明。每侧原文、定位、claim coverage 和 warrant
+  均公开，供复核人接受或否定。
+- 只有短节选、无结果或无讨论/结论时在 uncertainty 明写，不宣称完成全文审查。统计复算、原始
+  数据验证、他人来源事实真伪属于 `not_checked`。
+
+### 输出与严格契约
+
+`audit_report[]` 每条包含 rule、category、kind、severity、severity_basis、location、excerpt、verdict、
+basis、fix，适用时带 `evidence_quote / evidence_locator / replacement_text`。另输出
+`argument_map`、`reasoning_gaps`、`promise_checks`、`contradiction_checks`、`evidence_bounds`、
+`result_state`、`sources`、`checked`、`severity_counts`、`uncertainty` 和 `change_records`。
+
+原始 `case_id` 位于顶层；`output_contract` 每个字段原名保留，优先级严格为
+**引擎值 > case 显式值 > null + limits**。支持字符串/dict/field/name/key 对象；`审查报告 /
+依据与边界 / 结果状态` 原名直通实际三段。structured refusal 同样执行。离线同案重跑三个工件
+逐字节一致，无时间戳。
+
+`examples/case.json` 为合成完整试验稿（非正式答案），clean 基线要求 0 finding、exit 0。
+
+```bash
+python scripts/bench_logic_case.py   # 17 个功能/误报/跨章节场景
+python scripts/probe_logic_case.py   # 14 个敌意、契约、拒绝、冷导入与幂等探针
+```
+
+引擎只用 Python 标准库；`review_common.py` 在 review 新家族三包中保持字节一致，共享修改必须
+同步并回归。
+
+---
+
+## Legacy structured-spec 路由（可选补充）
 
 | 任务措辞信号 | 路由 |
 |-|-|

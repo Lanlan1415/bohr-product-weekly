@@ -18,7 +18,115 @@ description: >
 
 # claim-verification
 
-The deliverable is not "this claim is supported". It is a chain a second reader can walk
+## Primary full-text case mode (run this first)
+
+For the original Harbor task, do **not** start by inventing a structured review spec. Read the
+actual case and cited materials, then run the end-to-end parser:
+
+1. Read `/input/case.json` and `task.md`. Preserve the original top-level `case_id` and every
+   field named by `output_contract`. Use the platform PDF/OCR tool when the manuscript is a PDF;
+   write its real text output under `/app/work`. Never infer text from a filename or domain label.
+2. Put cited-source full texts and any authoritative metadata snapshots in the case (`sources`,
+   `source_documents`, `metadata_registry`, `doi_registry`) or pass them as repeated `--material`
+   paths after the manuscript. A metadata-only record is useful for identity checks but cannot
+   supply an evidence quotation.
+3. Run:
+
+   ```bash
+   python scripts/citecheck.py --case /input/case.json --out /app/output
+   # or, after PDF/OCR extraction:
+   python scripts/citecheck.py --case /input/case.json \
+     --material /app/work/manuscript.txt --out /app/output
+   ```
+
+4. Read `result.json`, `audit_report.md` and `run_log.json`. Verify every reported quotation and
+   locator against the source. Do not manually upgrade `undetermined` because a DOI or title
+   matched. Missing full text, ambiguous sources and unavailable metadata remain explicitly
+   unresolved. Exit codes are 0 clean, 3 review/partial, 4 blocked by a high finding, and 5
+   structured refusal; every non-usage path writes JSON, never a traceback.
+
+The older section-based spec engine remains available below for bespoke six-facet audits, but it
+is not a substitute for this source parsing path.
+
+### What the full-text engine actually checks
+
+- **Reference segmentation and callout linking**, following the segmentation -> field assembly ->
+  validation pattern used by the open-source inukshuk/anystyle project. Numeric `[1]`, ranges,
+  author-year and narrative callouts are linked to bibliography entries; unresolved callouts are
+  findings rather than silently matched sources.
+- **DOI/title/author/year identity fields.** DOIs are normalised, titles receive an explicit parse
+  confidence, and authors/year are compared independently. Crossref consolidation is available
+  only when `--refresh-metadata` is explicitly supplied. The implementation follows the
+  bibliographic-consolidation distinction used by kermitt2/grobid: identity resolution and
+  claim support are separate operations.
+- **Evidence-bound support.** Each claim or separable subclaim receives a claim locator, exact
+  cited-source quote, page/paragraph/sentence locator and one of `supports`, `partial`,
+  `not_supported`, or `undetermined`. Numbers, polarity, hedging, causality and population scope
+  can downgrade support. A lexical match alone is never promoted to independent factual truth.
+- **Cross-section facts.** Highly aligned abstract/body statements with conflicting values are
+  reported with both quotations and locations. Citation numbers and author-year markers are not
+  scientific measurements and are excluded from this comparison.
+
+Every `citation_checks[]` item contains `support_verdict`, `metadata_status`, `evidence_quote`,
+`evidence_locator`, and `fact_verified`. `fact_verified` is deliberately false: even direct
+textual support does not independently establish that a scientific claim is true. `metadata_checks[]`
+contains per-field `match` / `mismatch` / `undetermined` states and the registry locator.
+
+### Full-text finding rules
+
+| rule | default severity | evidence and required action |
+|-|-|-|
+| `cite.reference_not_in_list` | high | show the callout and resolve/add its bibliography target |
+| `cite.doi_malformed` | medium | show the reference; correct rather than invent a DOI |
+| `cite.metadata_mismatch` | high for DOI/title, otherwise medium | name differing fields and the supplied registry record |
+| `cite.evidence_quote_not_in_source` | high | replace with an exact cited-source span and locator |
+| `cite.claim_not_supported` | high | show claim and insufficient/polarity-conflicting evidence |
+| `cite.claim_partially_supported` | medium | narrow the omitted number, population, modality or strength |
+| `logic`/`verify` legacy rules below | see tables | optional structured-mode reviews only |
+| `fact.numeric_conflict` | high | compare aligned abstract/body values and correct the source of error |
+| `cite.case_unreadable`, `cite.case_not_object`, `cite.no_manuscript`, `cite.internal_error`, `cite.runner_error` | high/undetermined | write a structured refusal with limits; no scientific verdict |
+
+### Strict result contract
+
+`result.json` always has top-level `case_id` plus `audit_report[]`, `findings[]`,
+`citation_checks[]`, `metadata_checks[]`, `fact_checks[]`, `evidence_bounds`, `result_state`,
+`sources`, `uncertainty`, `checked`, `severity_counts`, `limits` and `change_records`. For every
+original `output_contract` field, including list entries such as `{field: ...}` / `{name: ...}` /
+`{key: ...}` and Chinese rubric names, precedence is exactly:
+
+**engine-derived value > explicit case-carried value > null plus a limits entry.**
+
+This completion also applies to structured refusals. The contract's original field spelling is
+retained. `audit_report[]` entries carry rule, category, location, excerpt, verdict, severity,
+basis and executable fix. Re-running an identical offline case byte-for-byte reproduces all three
+artifacts; no timestamps or network values are inserted implicitly.
+
+### Minimal real-input example and verification
+
+`examples/case.json` is a synthetic interface example, not an official answer. It contains full
+manuscript text, one cited source, DOI metadata and a deliberately unresolvable custom contract
+field. The clean support/metadata baseline must have zero findings and exit 0.
+
+```bash
+python scripts/bench_citation_case.py   # 18 functional scenarios; clean baseline silent
+python scripts/probe_citation_case.py   # 14 hostile/contract/refusal/cold-import/idempotence probes
+```
+
+Network refresh is opt-in:
+
+```bash
+python scripts/citecheck.py --case /input/case.json --refresh-metadata \
+  --timeout 8 --out /app/output
+```
+
+Crossref errors become per-DOI `undetermined` records with the failed lookup recorded; no verification
+message is fabricated when the network or registry is unavailable. The full-text engine uses only
+Python's standard library. The three packages in this review family carry identical
+`review_common.py` copies; any locator/contract change must be synchronised across all of them.
+
+---
+
+The deliverable is not merely "this claim is supported". It is a chain a second reader can walk
 without reopening the whole paper:
 
 | link | rule when it is missing |
@@ -47,7 +155,7 @@ compound claim must be decomposed, and each sub-judgement carries its own verdic
 **A one-sided report.** A claim the literature contests, presented with supporting
 evidence only. A contested flag obliges counter-evidence.
 
-## Workflow
+## Legacy structured-spec workflow (optional)
 
 ### 1. Write the chain
 

@@ -1,0 +1,85 @@
+{
+  "schema_version": "statscore-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "mann_whitney_exact",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "multiplicity_anchors",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "paired_t_hand_anchor",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "wilcoxon_exact",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "kruskal_hand_anchor",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "anova_and_posthoc",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "cleaned_units_drive_statistics",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "correlation_and_causation",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "diagnostics",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "auto_and_degenerate",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_design_guard",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "dictionary_inference_and_determinism",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "sqlite_and_read_only_refusal",
+      "problems": [],
+      "pass": true
+    },
+    {
+      "scenario": "broken_spec_contract",
+      "problems": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 14,
+    "of": 14
+  },
+  "cross_checks": {
+    "paired_t": "differences [1,2,3] -> t=2*sqrt(3), df=2",
+    "mann_whitney": "U=4 for [1,2] vs [3,4] -> exact p=2/6",
+    "kruskal": "H=7.2, df=2 -> p=exp(-3.6)",
+    "holm": "[.01,.04,.03] -> [.03,.06,.06]"
+  }
+}

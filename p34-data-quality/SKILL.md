@@ -1,187 +1,59 @@
 ---
 name: research-data-quality
 description: >
-  Clean, standardise and quality-report a fixed research data table with a numbered,
-  prioritised, re-runnable rule set driven by a data dictionary. Checks dictionary-to-table
-  alignment before touching values, separates "not detected" from "detected as 0", converts
-  units through a real dimension model, recognises near-duplicate records against true keys,
-  names mixed written units that would corrupt a downstream average, normalises dates to
-  ISO 8601 without inventing precision, and emits a machine-checkable quality report whose
-  numbers are computed from the table itself — so a hand-written report that disagrees with
-  the data is flagged, not trusted. Never overwrites the original: the input hash is
-  recorded and the cleaned table is written beside it with a full change ledger. Every
-  case returns result.json with case_id and the case's output_contract fields. Use when a
-  task supplies a dirty research table (missing tokens, mixed units, duplicates, date soup)
-  that must become analysable without losing provenance.
+  Dictionary-driven scientific table cleaning with explicit missing/zero semantics,
+  units, dates, duplicates, range/type checks, CSV encoding validation, before/after
+  reconciliation and reversible edit logs. Emits per-expectation validation results
+  and a structured result.json preserving case_id plus every output_contract field,
+  including honest refusals. Use for dirty research CSV/TSV/inline tables with a data
+  dictionary and cleaning workorder. Do NOT use to impute source values, infer population
+  statistics, run hypothesis tests, or design experiments.
 ---
 
-# research-data-quality
+# research-data-quality（科研数据清洗与处理）
 
-The failure this prevents is not a crash. It is a table that looks clean and is
-wrong — `12 mV` averaged with `1.2 V`, "未检测" counted as zero, the same sample
-entered twice and silently averaged, a quality report whose numbers no longer match
-the table it describes — plus a cleaning pass that cannot be re-run or rolled back.
+把“看起来干净了”变成可逐格证明：输入原值仍在、每次修改有规则依据、最终表上的
+quality gate 可以被重算，且台账能实际回滚。**缺失值只标记、不填补；异常只标记、不
+擅自删改；重复记录与重复实验不混为一谈。**
 
-So the design is built around five guarantees:
+## 本题边界与运行时
 
-1. **Nothing changes silently.** Every edit carries rule id, row, column, original
-   value and reason; the original table is preserved verbatim beside the result, and
-   its sha256 is recorded.
-2. **The pass is idempotent.** Running the same rules twice finds nothing left to
-   rewrite; a second pass that still changes cells is reported as a high finding,
-   because it means the rule priorities disagree.
-3. **The report is computed, not written.** Every number in the quality report is
-   derived from the table, so a supplied report that disagrees with the data is
-   flagged (clean.report_inconsistent) instead of being trusted.
-4. **The data dictionary drives the rules.** Columns declare their semantic —
-   numeric, date, categorical, id, text — and the rules branch on it instead of
-   guessing from cell shapes; the dictionary-to-table alignment itself is checked
-   before any value rule runs.
-5. **Unrunnable input is a verdict, not a crash.** A missing spec, bad JSON, an
-   unreadable table_path or an audit failure returns status undetermined (exit 5)
-   with a result.json that names the case.
+- 固定案例是已发表聚合表的转录及注入的存储/编码故障，附数据字典、逐指标单位/QC
+  规则和清洗工单，不是原始实验。按案例自己的工单执行，不套别的数据集范围。
+- **不得推断总体统计，不得填补缺失或无效源值。** `ND`、`<LOQ`、`-999`、空白不是 0。
+  运行时没有承诺的 `quality-gold.md`，不要等待、引用或伪造该文件。
+- 原始输入在 `/input/case.json` 与 `task.md`。先读实际文件、字典和工单，再构造 spec；
+  不按文件名猜科学内容。中间文件放 `/app/work`，最终交付放 `/app/output`。
+- 执行预算：64 次模型请求、900 秒、单次响应 16384 tokens。Skill 资源最多 50 个 UTF-8
+  文本文件、单文件 500KB、总计 2MB、无符号链接。先保存诚实的部分结果，再改进。
 
-## 题面五类处理 → 规则
+## 六步调用
 
-| 题面处理类 | rule / 机制 |
-|-|-|
-| 缺失值：区分未检测、低于检出限、录入缺失与真值 0 | R02 + missing_tokens；clean.missing_values；不填补 |
-| 异常值：结合物理上下限与分布诊断 | R05 对 declared plausible 范围；保留/剔除/盖帽留给人工记录 |
-| 重复记录：真实主键 + 近似重复 | R06 键归一 + R07 记录/实验二分；clean.key_column_missing 在键失效时拦 |
-| 格式与单位转换 | R04 维度模型换算（记录因子）+ R08 日期归一；clean.mixed_units 点名未声明目标的混写单位 |
-| 数据质量报告 | quality_report 逐列计算 + R09 对供给报告的一致性核对 |
-| 字段级规则与可复现 | 字典外置（columns/key_columns/value_columns/missing_tokens）+ rules_applied + original.json + sha256 + 幂等自检 |
+0. 从 `case.json` 逐字段记录 `case_id` 与 `output_contract`；确定工单要求的动作。
+1. 定位真实表和字典。内联记录放 `rows`，CSV/TSV 放 `table_path`；声明各列 `semantic`、
+   `target_unit`、`plausible`，真实键放 `key_columns`，重复判值列放 `value_columns`。
+2. 把案例自有缺失记号加入 `missing_tokens`。不要把未检测、低于检出限、录入缺失改写为
+   数值 0；不要均值/中位数/模型填补。
+3. 工单若有旧质量报告，放 `quality_report`，引擎会对供给值和实算值做一致性检查。
+4. 运行：
 
-## 运行契约（Harbor runtime contract）
+   ```bash
+   python scripts/dataquality.py \
+     --spec /app/work/spec.json --case /input/case.json --out /app/output
+   ```
 
-- 运行时输入是 /input/case.json 与 task.md：先读 case.json，逐字记录 case_id 与
-  output_contract 的字段名清单（本题交付字段是清洗表、质量与复现证据、异常说明这类）；
-  再读 task.md 与清洗工单确认要做的处理步骤。材料一律读实际文件，不按标签臆测。
-- 工作目录 /app/work 放中间产物；最终实际结果放 /app/output，其中 result.json 必须保留
-  output_contract 全部字段和 case_id（引擎自动回填，见第六步）。清洗表（cleaned.csv）、
-  原始快照（original.json）与 result.json 同目录交付。
-- 预算：64 次模型请求、900 秒、每次响应 16384 token（含推理）。先尽早写出诚实的部分成果，
-  再增量改进。三个固定案例、每条件重复三次；不得伪造缺失的软件状态或科学数据。
-- Skill 资源限制：最多 50 个 UTF-8 文本文件、单文件 500KB、总量 2MB、无符号链接。
+   退出码：`0=clean`、`3=review`、`4=blocked`、`5=undetermined`。退出码非 0 也可有
+   合法、完整的结构化结果；查看 findings 和 limits，不把异常吞掉。
+5. 核对 `cleaned.csv`、`validation_results.json`、`before_after` 与 `change_ledger`。
+   修复输入或规则后换输出目录重跑。同一输入写同目录会被 `clean.already_cleaned`
+   拒绝并保留首次 `result.json`，拒绝详情另存 `result-refused.json`。
+6. 确认 `result.json` 的 `case_id` 和 `output_contract_fields` 完整，`idempotent=true`，
+   `report_reconciliation.all_match=true`。若合同字段不可推导，其值必须是 `null` 且
+   `limits` 给出原因，不得编造一个漂亮字段。
 
-## 演练纪律（本题固定案例的边界，逐条遵守）
+## spec 最小示例
 
-- 案例材料是已发表的聚合表（aggregate table）转录，带有刻意注入的存储/编码故障、数据字典、逐指标
-  单位与 QC 规则和明确的清洗工单——不是原始实验数据。清洗动作以工单为准，不自行加戏。
-- 不得推断总体统计：清洗产出是逐记录的表级结果，不做分布推断、不做显著性声明。
-- 不得填补缺失或无效源值："未检测"是命名缺口（named gap），列均值填补是编造数据；
-  下游若一定要数，把该决定记录为人工步骤，而不是写成规则。
-- 运行时没有承诺的 quality-gold.md 文件：不要等待或引用它；对照用的源/故障出处由平台
-  侧留存支撑评分，本 Skill 只交付自己算出的证据。
-- 数据字典先行：先读字段语义、单位与 QC 规则，再定 target_unit 与 plausible——从别的
-  数据集抄来的范围是离群值制造机，不是约束。
-
-## 六步运行时入口
-
-0. **读 case.json 取标识**：记下 case_id 与 output_contract 的每个字段名；读 task.md 与
-   清洗工单，确认五类处理里本案例要做哪几类。
-1. **判形态路由**：按下面的「任务措辞 → 路由」决策表决定字段与检查项。
-2. **先产出目标产物**：清洗后的表先行——按字典语义逐列过 R01–R08，得到逐条变更台账；
-   缺失/无法解析/单位拒绝的单元格保留为命名缺口，不静默改写。
-3. **构造 spec**：行数据进 rows（或 table_path 指向表文件），字典进 columns（name/
-   semantic/target_unit/plausible），主键进 key_columns，重复判值列进 value_columns，
-   案例自有缺失记号进 missing_tokens，工单供给的质量报告进 quality_report（触发 R09
-   核对）。附上 case_id，并把 output_contract 的每个字段以同名键放进 spec——spec 携带的
-   值逐字直通进 result.json。
-4. **审计**：运行 python scripts/dataquality.py --spec spec.json --out /app/output。
-   退出码：0 clean、3 review、4 blocked、5 undetermined（输入无法审计）。
-5. **修发现重跑**：每条 finding 按 Failure handling 表处置。缺失与重复实验是数据的真实
-   属性，不是待修复的缺陷——它们如实保留并说明；可修复的是单位、日期、空白与对齐问题。
-   换输出目录重跑，同输入同目录会被 already_cleaned 拒绝（防止二遍叠一遍）。
-6. **合并 result.json**：确认 /app/output/result.json 含 case_id 和 output_contract 全部
-   字段（引擎自动回填：spec 带同名值的逐字直通，两边都没有的字段写 null 并在 limits
-   注明）；quality_report 就是与结果表自洽的质量报告；changes/changes_by_rule 是逐条
-   变更台账；idempotent 为 true 才交付。
-
-## 任务措辞 → 路由决策表
-
-| 任务里的措辞 | 路由与动作 |
-|-|-|
-| 「清洗这张表 / 按清洗工单处理」 | 六步主路径全量跑：字典对齐 → R01–R08 → 质量报告 |
-| 「数据字典在附件里 / 先读字段语义」 | columns 进 spec（semantic/target_unit/plausible）；引擎先做字典-表对齐检查（column_missing / key_column_missing / ragged_rows） |
-| 「未检测不是 0 / 缺失值处理」 | missing_tokens 声明案例自有记号；R02 归缺失；绝不填补 |
-| 「异常值 / 离群点处置」 | plausible 声明物理范围；R05 给值/范围/理由，保留-剔除-盖帽留人工 |
-| 「同一样品出现三次 / 去重」 | key_columns 声明真实主键 + value_columns 声明判值列；R06/R07 把记录副本与重复实验分开，后者绝不平均 |
-| 「单位一处 mg/L 一处 μg/mL / 单位换算」 | target_unit 声明目标单位走 R04（换算因子入账）；未声明 target 而混写单位 → clean.mixed_units 点名 |
-| 「日期有的是 2023/5/14 有的是 2023年5月14日」 | semantic 取 date；R08 归一 ISO 8601 并记录来源格式；认不出的日期是命名缺口 |
-| 「质量报告数字要和结果表对得上」 | 工单供给的报告进 spec.quality_report → R09 逐字段核对；无供给则计算版直出 |
-| 「表在 CSV/TSV 文件里」 | table_path 指文件；逗号/制表符自动判别，utf-8-sig 读取；读不了是 undetermined 拒跑，不是崩溃 |
-| 「重新清洗 / 再跑一遍」 | 换输出目录；同输入同目录会被 clean.already_cleaned 拒绝（exit 4） |
-| 「只清洗部分列」 | columns 只声明目标列；未声明列原样通过并被 clean.column_undeclared 点名 |
-| 「编码乱码 / 老文件」 | 引擎以 utf-8-sig + 宽容读取；坏字节落进未解析名单，不静默丢弃、不伪造可读性 |
-
-## The rule library
-
-| id | priority | rule |
-|-|-|-|
-| R01 | 10 | trim surrounding whitespace from every cell |
-| R02 | 20 | treat the not-reported tokens as a missing value, never as 0 |
-| R03 | 30 | parse a value into number / error / unit / range structure |
-| R04 | 40 | convert a unit to the column's target unit, recording the factor |
-| R05 | 50 | flag a value outside the declared plausible range |
-| R06 | 60 | normalise the entity key for duplicate detection |
-| R07 | 70 | mark duplicate records separately from duplicate experiments |
-| R08 | 80 | normalise dates to ISO 8601; never invent numeric precision |
-
-Priorities matter: R04 runs before R05 so the range check sees the value in the
-target unit. The ledger shows which rule won when two touch the same cell.
-
-The two distinctions this module refuses to collapse:
-
-- **duplicate record vs duplicate experiment** — identical rows are safe to drop
-  after review; the same entity with different values is two measurements, and
-  averaging them silently would hide the disagreement.
-- **missing vs zero** — "not reported", "ND", "-" and blank are missing, not 0.
-  A genuine 0 stays a measured zero.
-
-## Dictionary-to-table alignment (checked before any value rule)
-
-| rule | severity | what it proves |
-|-|-|-|
-| `clean.key_column_missing` | high | a declared key column exists in no row, so the duplicate census cannot identify entities |
-| `clean.column_missing` | medium | the dictionary declares columns the table does not carry — 工单与表不一致 |
-| `clean.ragged_rows` | medium | some rows miss columns other rows carry — 表内列漂移 |
-| `clean.column_undeclared` | low | the table carries columns the dictionary does not declare; they pass through untouched, named |
-| `clean.empty_rows` | medium | every cell of every row is blank — nothing to clean despite a well-formed table |
-| `clean.mixed_units` | medium | one column carries several written units with no declared target — a downstream average would add incompatible quantities |
-
-## Data dictionary
-
-```json
-{
-  "columns": [
-    {"name": "sample_id", "semantic": "id"},
-    {"name": "bandgap", "target_unit": "eV", "plausible": [0, 6], "semantic": "numeric"},
-    {"name": "measured_on", "semantic": "date"},
-    {"name": "batch", "semantic": "categorical"}
-  ],
-  "key_columns": ["sample_id"],
-  "value_columns": ["bandgap"],
-  "missing_tokens": ["n.d.", "-999"]
-}
-```
-
-`value_columns` decides what "same record" means for duplicates: same key with
-identical values is a record copy (clean.duplicate_records), same key with
-differing values is an experiment pair (clean.duplicate_experiments). Undeclared,
-it defaults to every non-key column — comparing full rows.
-
-`missing_tokens` extends the built-in not-reported set ("ND", "not reported",
-"未检出", blank, "-999" — the sentinel the task names) per case.
-
-`semantic` decides how a column is treated: date columns go through R08 (ISO 8601
-output, source format recorded), categorical columns get whitespace collapse and a
-value census, text/id columns skip measurement parsing, numeric columns go through
-R03–R05. A column with no semantic is parsed as a measurement, as before.
-
-## Worked example（示例，非正式案例结果）
-
-examples/spec.json 的完整输入（带 case_id 与 output_contract；此处节选关键结构）：
+`examples/spec.json` 是可运行的脱敏示例，不冒充正式案例。核心形状：
 
 ```json
 {
@@ -193,198 +65,154 @@ examples/spec.json 的完整输入（带 case_id 与 output_contract；此处节
   ],
   "columns": [
     {"name": "sample_id", "semantic": "id"},
-    {"name": "bandgap", "target_unit": "eV", "plausible": [0, 6], "semantic": "numeric"},
-    {"name": "measured_on", "semantic": "date"}],
+    {"name": "bandgap", "semantic": "numeric", "target_unit": "eV", "plausible": [0, 6]},
+    {"name": "measured_on", "semantic": "date"}
+  ],
   "key_columns": ["sample_id"],
-  "output_contract": {"cleaned_table": "清洗后的表", "quality_report": "逐列质量报告",
-                      "change_ledger": "逐条变更台账", "anomaly_notes": "异常与缺口说明"},
-  "anomaly_notes": "S2 bandgap 未检出：missing，不是 0；14.06.2023 为 dot 格式日期，转 ISO。"
+  "output_contract": {
+    "cleaned_table": "清洗表", "quality_report": "质量报告",
+    "change_ledger": "变更台账", "anomaly_notes": "异常说明"
+  },
+  "anomaly_notes": "S2 未报告：保留为 missing，不是 0。"
 }
 ```
 
-运行（示例命令，正式运行时 --out 用 /app/output）：
+```bash
+python scripts/dataquality.py --spec examples/spec.json --out /app/work/demo-clean
+```
+
+示例实跑为 `review`：一个单位换算、三个日期归一、一个命名缺失和一组同键不同值均
+进入台账；`change_ledger` 就是真实的 `changes` 数组，不再被置空。S2 的 `not reported`
+原样保留。这里的数值只是脱敏接口示例，不是正式评分答案。
+
+## 规则与字段语义
+
+| 规则 | 实际行为 | 证据 |
+|---|---|---|
+| R01 空白 | 去首尾空白；分类值折叠内部空白 | row/column/original/new |
+| R02 缺失 | 内建及案例声明的 token 归为 missing，真 0 保持测量值 | missing 计数、行定位；不填补 |
+| R03 类型 | 数值、误差、区间和文本解析；无法解析保留命名缺口 | unparsed/unit_refused 计数 |
+| R04 单位 | 7 基量纲模型，先换算再查范围；未知或异量纲拒绝 | 原单位、目标单位、公式、因子 |
+| R05 范围 | 只查字典声明的 `plausible=[lo,hi]`；越界保留待确认，不盖帽、不删除 | 值、范围、规则理由 |
+| R06/R07 重复 | 键大小写/空白/连字符归一；同键同值与不同值分组 | 记录副本与键冲突分组、行号 |
+| R08 日期 | 支持 ISO、slash、dot、中文日期和月精度；输出 ISO 8601 | 原格式、粒度、原值、新值 |
+| R09 报告 | 供给报告与表算报告逐字段比较 | claimed/computed；修报告而非造数据 |
+
+`semantic` 可为 numeric、date、categorical、text 或 id。字典与表先做对齐检查：声明列缺失、
+真实键缺失、行级列漂移、未声明列都会分别报告。未声明列原样通过，不静默清洗。
+
+CSV/TSV 还检查重复表名、空表头、超宽行。编码按声明值或 BOM/UTF-8/GB18030 顺序严格
+解码，实际编码、分隔符、字节数与文件 SHA-256 写入 `input_metadata`。无法解码、权限不足、
+目录冒充文件都是结构化拒绝，不使用 `errors=replace` 悄悄制造乱码。
+
+## 清洗前后、expectation 与可逆台账
+
+### `validation_results`
+
+借鉴 Great Expectations 的 completeness/validity/uniqueness/schema 工作流及 validation
+result 思路，但**实现不依赖该包**。每个 expectation 都记录：
+
+- `dimension`、`column`、`parameters`：检查对象与声明阈值；
+- `observed_count`、`before_failed`、`after_failed`、`success`、`success_rate`：真实计数；
+- `failing_rows`、`evidence`：可回指的行和原因；未声明主键时 uniqueness 明写
+  `not_evaluated`，不假装通过。
+
+覆盖 schema、非缺失完整性、声明类型、声明范围、目标单位一致性、记录副本唯一性和
+键冲突。`validation_summary` 分别汇总 before/after 失败数；`success` 只评价真实最终表。
+
+### `before_after` 与 `report_reconciliation`
+
+`before_after` 给出清洗前后的行、列、单元格、缺失、未解析、重写、重复计数及差分，
+实际修改坐标、增加/删除行数、缺失填补数、输入/输出 SHA-256。当前规则不自动删行、不填补，
+对应计数应为真实 0，而不是文档假定。
+
+`report_reconciliation` 另用一次直接 row/cell 遍历核对最终表的 rows/columns/cells/
+missing_cells；任何不一致产生 `clean.report_table_mismatch` 高严重度 finding。
+
+### 真实回滚
+
+`reversible_log` 只含真正改写值的 R01/R04/R08；R02/R03/R05 是诊断，不伪称撤销对象。
+`scripts/undo_cleaning.py` 按台账逆序恢复原值，遇到台账漂移会拒绝覆盖：
 
 ```bash
-python scripts/dataquality.py --spec examples/spec.json --out examples/_demo_out
+python scripts/undo_cleaning.py \
+  --result /app/output/result.json --out /app/work/restored
 ```
 
-本机实跑 exit 3（review），以下为实跑得到的示意输出关键字段（示例，非正式案例结果；
-完整运行还会写出 cleaned.csv 与 original.json）：
+写出 `restored.json`、`restored.csv` 和 `restoration.json`。只有与 `original.json` 完全
+一致才退出 0；无原快照可验证退出 3；失配/错误退出 5。台账达到 2000 条上限时
+`reversible_log_complete=false` 且 limits 明说不能验证全量回滚。
 
-```json
-{
-  "schema_version": "data-quality/v1",
-  "case_id": "demo-case-340",
-  "status": "review",
-  "findings": [
-    {"rule": "clean.missing_values", "severity": "medium",
-     "message": "some values are not reported; they are missing, not zero",
-     "columns": ["bandgap"]},
-    {"rule": "clean.duplicate_experiments", "severity": "medium",
-     "message": "the same entity appears with different values; ...", "count": 1}
-  ],
-  "changes_by_rule": {"R04": 1, "R02": 1, "R08": 3},
-  "duplicates": {"duplicate_records": 0, "duplicate_experiments": 1},
-  "quality_report": {"rows": 3, "cells": 9, "missing_cells": 1, "unparsed_cells": 0,
-                     "rewritten_cells": 4,
-                     "per_column": [{"column": "bandgap", "semantic": "numeric",
-                                     "target_unit": "eV", "cells": 3, "missing": 1,
-                                     "unparsed": 0, "unit_refused": 0, "rewritten": 1,
-                                     "parse_rate": 0.6667, "completeness": 0.6667}]},
-  "cleaned_table": [
-    {"sample_id": "S1", "bandgap": "3.20 eV", "measured_on": "2023-05-14"},
-    {"sample_id": "s1", "bandgap": "3.2 eV", "measured_on": "2023-05-14"},
-    {"sample_id": "S2", "bandgap": "not reported", "measured_on": "2023-06-14"}
-  ],
-  "anomaly_notes": "S2 bandgap 未检出：missing，不是 0；14.06.2023 为 dot 格式日期，转 ISO。",
-  "change_ledger": null,
-  "output_contract_fields": ["cleaned_table", "quality_report", "change_ledger",
-                             "anomaly_notes"],
-  "idempotent": true
-}
-```
+## `result.json` 输出契约
 
-change_ledger 在 spec 与引擎能力里都没有同名交付物，回填 null 并在 limits 点名——契约
-直通的诚实形态：不编造，也不漏字段。cleaned_table 保留 S1 的 "3.20 eV" 原文（转换只对
-需要换算的单元格做，且逐条留痕）；S2 的 "not reported" 原样保留为命名缺口，绝不写成 0。
+| 组 | 字段/文件 |
+|---|---|
+| 运行状态 | `schema_version=data-quality/v3`、`case_id`、`status`、`findings`、`severity_counts`、`limits` |
+| 主结果 | `cleaned_table`、`cleaned.csv`、`original.json`、`input_metadata` |
+| 质量结果 | `quality_report`、`validation_results`、`validation_summary`、`before_after`、`report_reconciliation` |
+| 证据 | `rules_applied`、`changes`/`change_ledger`、`changes_by_rule`、`reversible_log`、`original_sha256`、`idempotent`、`data_dictionary` |
+| 异常 | missing/unparsed/unit_refused/range/duplicate findings、拒绝消息与人工确认项 |
+| 合同 | `output_contract_fields` 以及合同原字段：已算保留、案例自带值直通、未知为 null+limits |
 
-## 评分要求映射（rubric 三段 → 本 Skill 落点）
+**拒绝也有合同纪律。** 可读取的 spec/case 提供 `case_id` 和合同字段时，即使坏表、无行、
+SQL/文件读取失败或内部拒绝，仍保留这些键；无法推导的产物字段为 `null` 并在 limits 解释。
+没有可读 case 元数据时 `case_id=null`，不虚构标识。
 
-| rubric 输出要求 | 完成标准（rubric 原词） | 本 Skill 落点 |
-|-|-|-|
-| 分析结果 | 清洗表、统计结果、图表、代码或查询结果；结果与数据字典、规则和任务一致 | cleaned.csv + cleaned_table + 字典对齐检查（column_missing/key_column_missing/ragged_rows）+ R01–R08 逐条变更台账，动作可追溯到规则 |
-| 质量与复现证据 | 原始快照、规则表、日志、代码和版本；他人可复算，报告数字与结果一致 | original.json（原始快照）+ original_sha256 + rules_applied（规则表）+ quality_report（由表计算，与结果表自洽）+ idempotent 二遍自检 + changes_by_rule 汇总 |
-| 异常说明 | 缺失、异常、失败查询、无法解释和人工确认；不静默修改或掩盖异常 | findings（missing/unparsed/duplicates/mixed_units/empty_rows）+ unit_refused 逐格记录 + anomaly_notes 直通字段 + limits 写明未确认项 |
+## 题面评分点映射
 
-## 异常处置表
+| Rubric | 可运行落点 |
+|---|---|
+| 缺失/异常/重复/格式转换/质量报告 | R01-R09、真实主键分组、量纲模型、逐 expectation 结果 |
+| 结果正确与完整 | 字典对齐、缺失≠0、重复副本≠重复实验、只读原值和真实前后差分 |
+| 可复核与复跑 | original.json、SHA-256、逐格台账、直接重计数、幂等检查、可执行 undo |
+| 稳定性与异常 | 编码/表头/权限/空表/未知单位/键冲突/重复运行全为命名状态，退出码固定 |
+| 可复用生态 | spec 即数据字典模板，纯标准库引擎、脱敏示例、独立 bench 和回滚工具 |
 
-| 情况 | 处置 |
-|-|-|
-| case.json 缺失或不可读 | 依 task.md 继续；result.json 的 case_id 写 null 并在 limits 注明来源缺失 |
-| spec 不是合法 JSON / 不是对象 / 文件不存在 | clean.refused，status undetermined（exit 5）；修 spec 后重跑，不得手写 result.json |
-| rows 为空、rows 不是列表、table_path 缺失或不可读 | clean.refused（exit 5）并保留 case_id；补数据后重跑 |
-| table_path 指向目录 / 权限不足 | clean.refused，消息带系统原因；不伪造清洗成功 |
-| 编码乱码（非 UTF-8 字节） | utf-8-sig + 宽容读取；乱码单元格按未解析/缺失入名单，不静默丢弃、不假装可读 |
-| 空表（0 行） | clean.refused（exit 5）——没有可清洗的数据 |
-| 全空行表（字典完好但无值） | clean.empty_rows（medium）如实点名，不输出假 clean |
-| 字典声明的列不在表中 | clean.column_missing（medium）：工单与表不一致，先对齐再清洗 |
-| key 列不在表中 | clean.key_column_missing（high）：重复普查失效，blocked |
-| 部分行缺列 | clean.ragged_rows（medium）：列出每列的行覆盖数 |
-| 单位不明 / 换算拒绝 | R04 refusal（unit_refused）逐格留痕：未知单位或量纲不匹配按名报告，绝不猜 |
-| 未声明 target_unit 且同列混写单位 | clean.mixed_units（medium）：点名全部写法；声明 target 后由 R04 统一 |
-| 同 key 不同值（重复实验） | clean.duplicate_experiments（medium）：两个测量，不平均、不合并 |
-| 同输入重洗同目录 | clean.already_cleaned（exit 4）：首次 result.json 完好保留，拒绝信息另存 result-refused.json |
-| result.json 缺 contract 字段 | contract echo 回填；spec 没带值的字段写 null 并在 limits 注明，不得编造 |
-| 重跑结果不一致 | 引擎纯确定性（bench_contract 场景断言两次运行 findings 全等）；不一致说明 spec 被改动，恢复 spec 重跑 |
+## 失败处置
 
-## Output contract
+| 症状 | 行动 |
+|---|---|
+| `clean.refused` / exit 5 | 修 spec、表路径、编码、表头或权限后重跑；查看合同字段和 limits，不手写成功结果 |
+| `clean.missing_values` | 保持缺口；下游需要数值时记录人工决策，不由本 Skill 填补 |
+| `clean.unparsed_values` / unit_refused | 修原值或补充字典映射；不猜单位、不删行 |
+| `clean.duplicate_records` | 审查记录副本；本包不自动删除，工单决定去留 |
+| `clean.duplicate_experiments` | 同键不同值是独立测量或键冲突；不平均、不合并 |
+| `clean.report_inconsistent` | 修供给报告，不能倒改表让数字“对上” |
+| `clean.not_idempotent` / report_table_mismatch | 停止交付，修规则和报告一致性后换目录重跑 |
+| `clean.already_cleaned` / exit 4 | 使用新输出目录；首次结果未被覆盖 |
 
-/app/output/result.json（由 scripts/dataquality.py 写出）包含：schema_version
-（data-quality/v1）、case_id、status（clean、review、blocked、undetermined 四态之一）、
-findings 数组（每条带 rule、severity、message 与 columns/count 等定位字段）、
-severity_counts、rows、rules_applied、changes_by_rule、changes（rule/row/column/
-original/new/why 逐条台账）、duplicates（记录副本与重复实验分列）、anomalies、
-cleaned_table、quality_report（计算版，逐列 parse_rate/completeness）、
-original_sha256、idempotent、row_source、limits，以及 output_contract 每个字段的回填值
-（spec 携带值逐字直通，缺失为 null）与 output_contract_fields（字段名清单）。
-同目录另有 cleaned.csv（重写后的表）与 original.json（输入原样快照）。
+## 机器可读规则索引
 
-## Limits
+以下 ID 与引擎发出点一一对应，便于结构化处理而非只靠自然语言：
 
-- **No imputation.** Missing values are named gaps. Filling "未检测" with a column
-  mean invents data; if the downstream analysis demands a number, that decision is
-  recorded as a human step, not a rule.
-- **No population statistics.** The pass produces record-level results; it does not
-  infer distributions or significance — that is a different task.
-- **Interpretation is out of scope.** Whether 3.2 eV is consistent with the
-  mechanism is not a cleaning question.
-- **Outliers are flagged, not deleted.** R05 gives value, range and reason; the
-  keep/drop/cap decision stays on the record.
-- **Duplicate detection needs keys.** The census runs only when key_columns is declared; without them it is skipped with a note rather than collapsing every row into one entity.
-- **Duplicate detection is key-based.** Two rows are the same experiment only when
-  the declared keys match after normalisation; fuzzy similarity is not guessed.
-- **Date parsing covers the declared formats.** A date outside them is a named gap;
-  adding a format is a one-line change to DATE_FORMATS.
-- **Report consistency checks integers only.** Narrative claims in a supplied report
-  are not parsed.
-- **Mixed-unit detection is about written units.** It fires when no target unit is
-  declared; with a declared target the mix is the conversion plan, not a hazard.
+- 输入/结构：`clean.refused`、`clean.dictionary_refused`、`clean.column_missing`、
+  `clean.column_undeclared`、`clean.key_column_missing`、`clean.ragged_rows`、`clean.empty_rows`。
+- 值与单位：`clean.missing_values`、`clean.unparsed_values`、`clean.unit_refused`、
+  `clean.mixed_units`。
+- 重复：`clean.duplicate_records`、`clean.duplicate_experiments`。
+- 一致性/恢复：`clean.report_inconsistent`、`clean.report_table_mismatch`、
+  `clean.not_idempotent`、`clean.already_cleaned`、`clean.undo_refused`。
+- Gate 命名：`schema.columns_present`、`validity.declared_type`、`validity.declared_range`、
+  `uniqueness.no_record_copies`；其余 expectation 名称也在 `validation_results` 原样输出。
 
-## Failure handling
-
-| symptom | what to do |
-|-|-|
-| `clean.missing_values` | keep them missing; if the analysis needs a number, record the decision as a human step |
-| `clean.unparsed_values` | fix the cell or extend the parser; never guess |
-| `clean.duplicate_records` | identical rows — safe to drop after review |
-| `clean.duplicate_experiments` | same entity, different values — two measurements; do not average |
-| `clean.report_inconsistent` | the supplied report disagrees with the table; fix the report, not the table |
-| `clean.not_idempotent` | the rule priorities disagree; reorder before shipping |
-| `clean.refused` | the case could not run as declared (unreadable spec, no rows, unreadable table) — fix the input, rerun; never hand-write result.json |
-| `clean.column_missing` | align the dictionary with the table before cleaning |
-| `clean.key_column_missing` | declare key columns that actually exist in the table |
-| `clean.ragged_rows` | fill the structural gaps or restrict the dictionary to what every row carries |
-| `clean.column_undeclared` | declare the column or accept it passes through untouched |
-| `clean.empty_rows` | the table carries no data; get the real rows |
-| `clean.mixed_units` | declare a target_unit and let R04 convert, or split the column |
-| unit refusal (R04, new: null) | unknown or incompatible unit; name it, never silently drop the row |
-| `clean.already_cleaned` | this exact input (same sha256) was already cleaned into this output directory; re-cleaning is refused (exit 4) so a second pass never stacks on the first |
-
-## Verification
+## 验证与参考落地
 
 ```bash
-python scripts/bench_dataquality.py   # 25 scenarios: one per defect class plus FP guards
-python scripts/bench_contract.py      # 7 scenarios: case_id/output_contract passthrough and refusals
+python scripts/bench_dataquality.py  # 25 个规则/FP 场景
+python scripts/bench_contract.py     # 10 个合同、拒绝、编码、回滚场景
 ```
 
-Both pass in full on this machine (25 + 7 = 32). The clean baseline fires nothing at
-all, so a detector cannot pass by flagging everything; the FP guards pin the
-behaviour that matters (a genuine 0 stays a zero, an in-range unusual value stays, a
-matching supplied report stays silent, a declared target unit absorbs a unit mix, the
-cleaned table re-runs to zero changes).
+本轮本机结果为 **25/25 + 10/10**。第二轮敌意/合同/退出码/幂等探针另为 **9/9**，第三轮
+GB18030 聚合表 smoke、双冷启动字节一致性与 undo 精确回滚通过（这些仅为本地验收证据，
+不是正式案例答案）。clean baseline 零
+high/medium，真 0、合理范围、匹配报告、目标单位混写均设 FP guard；--case 拒绝回填、
+GB18030、重复表头拒绝、台账逆序回滚和独立 undo CLI 都有实测。
 
-## 创新增益
+参考项目：**Great Expectations 数据质量工作流**（completeness、validity、uniqueness、
+schema 与 validation results）。落地是上述逐 expectation 对象、前后失败数、行级证据和
+直接重计数，而非只附链接。项目地址：https://github.com/great-expectations/great_expectations 。
 
-以下均为引擎真实具备、可复跑验证的能力（bench 与 gate 是回归证据）：
+## Requirements / Limits
 
-1. **规则优先级库**：R01–R08 每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时
-   由优先级决定胜者且双方都留痕（changes 台账同时记录）——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改写（idempotent 字段），仍有改写报
-   clean.not_idempotent（high）——这是一个可计算的 self-check，bench 场景钉住。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，changes_by_rule 汇总，
-   审计者可逐条复核或撤销任何单条修改。
-4. **字典驱动的语义分支与对齐检查**：列按 semantic 走不同规则链，清洗前先核对字典与表
-   的对齐（键列失效 high、工单列缺失 medium、行级漂移 medium、未声明列 low）——"先读数据
-   字典和字段语义"由机制保证，而不是提示词嘱咐。
-5. **两个不合并的区分 + 维度模型换算**：缺失≠0、重复记录≠重复实验各有 FP 守卫场景；
-   单位换算走 7 基量纲维度模型（拒绝 mg→mm 这类量纲错误），换算因子逐条入账，未声明目标
-   的混写单位由 clean.mixed_units 在平均之前点名。
-6. **契约直通与确定性**：case_id 与 output_contract 字段自动回填 result.json，spec 携带值
-   逐字直通，无法派生的写 null 并在 limits 点名；一切拒跑路径（坏 JSON/非对象/缺文件/
-   无数据/表不可读/内部异常）输出 status undetermined 的可追踪 result.json（exit 5）且
-   绝不伪造契约字段；同输入同目录二遍清洗被 already_cleaned 拒绝且首次结果完好。
-
-## 生态贡献
-
-1. **SKILL.md 全量文档**：用途、适用条件、调用方式、输入输出、异常处置（16 类）、限制
-   与自查方法齐备，说明与提交版本一致。
-2. **纯标准库引擎**：scripts/ 下 cleaning.py（规则引擎）、units.py（维度模型）、
-   dataquality.py（入口与 result.json）、contract.py（契约直通与拒跑）无第三方依赖，
-   可独立导入、可嵌入他人清洗流水线。
-3. **字段级规则外置可配置**：missing_tokens、plausible、target_unit、key_columns、
-   value_columns、semantic 全部声明在 spec——同一引擎换个字典就是另一张表的清洗规则，
-   规则即配置，可直接当数据字典模板复用。
-4. **规则清单与引擎一一对应**：本文件每条 rule id 都能在引擎里找到发出点（验收 gate 的
-   规则奇偶校验强制）；规则表可直接当作清洗工单自查清单。
-5. **最小调用示例**：examples/spec.json（带 case_id 与 output_contract 的完整输入）+
-   实跑示意输出（标注为示例，非正式案例结果）。
-6. **回归套件可独立复跑**：bench_dataquality 25 场景 + bench_contract 7 场景，每条规则
-   至少一个场景、每个关键行为配 FP 守卫，clean 基线必须零发现。
-7. **异常处置表与 Failure handling 表**：16 类异常、15 类发现的处置动作可直接移植到
-   其他清洗任务（空表、乱码、权限、主键冲突、单位不明等均有着落）。
-8. **验收 gate 可复跑**：本包可通过 strict_gate.py 的 G1-G7 七项验收（打包/基准/文档
-   路径/规则奇偶/确定性/冷启动/真实输入冒烟），他人可对复刻包执行同一验收。
-
-## Requirements
-
-Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
+Python 3.10+（本机 3.14 实测），纯标准库。日期仅覆盖已声明格式；数值引用和聚合统计
+不属于本清洗题；不做总体推断、缺失插补、因果解释、图表美化、数据库运维或实验设计。

@@ -25,33 +25,93 @@ description: >
 不判动机：类型词表与容忍带全部显式声明，规则触发条件之外的差异一律保持安静。漏报与
 误报同样扣分，所以每条规则同时配一个 bench 场景钉住它的触发与误报。
 
-## 六步运行时入口（Harbor）
+## 主入口：真实全文合规审查（优先运行）
 
-运行时原始输入固定为 /input/case.json 与 task.md；中间产物写 /app/work，最终结果写
-/app/output。依序执行：
+原始输入固定为 `/input/case.json` 与 `task.md`。先读实际稿件，不能只构造一个"看起来可审"
+的 spec 而避开全文。扫描 PDF 先用平台 OCR/PDF 工具，把真实文本写进 `/app/work`；标签、文件名
+和领域字段都不是证据。
 
-- **第 0 步·读案例**：读 /input/case.json，取 case_id 与 output_contract（结果必须
-  保留的字段清单），再按 task.md 指向的路径读**实际材料文件**（修订稿、答复信、
-  译文、期刊指南）。读实际文件，不按文件名或领域标签猜内容——实际输入文件是事实依据。
-- **第 1 步·判形态路由**：按下方「任务措辞与形态 → 路由」决策表选 section；修订类
-  材料跑 review_response，引用类跑 evidence_writing，双语类跑 translation，投稿
-  合规类跑 format_template；材料跨多面时多跑几道再合并。
-- **第 2 步·先产出目标产物**：先把审查单本身（逐条问题、位置、严重度、依据、建议）
-  写进 /app/work 作为中间交付——预算有限时先有诚实的不完整清单，再增量补齐。
-- **第 3 步·构造 spec**：把材料结构化抽取成所选 route 的 spec 字段（见 Workflow 第
-  1 步的字段表），并带上 case_id 与 output_contract 原样传递。抽不到的字段留空并
-  标注 missing——抽取缺口会变成发现（待复核），绝不静默跳过，也绝不编造字段值去
-  "喂饱"规则。
-- **第 4 步·审计**：跑 scripts/writeaudit.py，得 findings 与 result.json（退出码
-  0/3/4/5，见下）。
-- **第 5 步·修发现重跑**：逐条回原文复核 findings——定位错的重抽、答复漏的补答复、
-  声明缺的补声明；确认是引擎口径内误报的按 Limits 处理并在报告中说明，不删条目。
-  修完重跑直至清单稳定。
-- **第 6 步·合并 result.json**：写 /app/output/result.json——回填 case_id 与
-  output_contract 点名的每个字段（三段结构映射见下），引擎的 findings、
-  severity_counts、pending、checked、limits 原样保留作为操作证据。
+```bash
+python scripts/compliancecheck.py --case /input/case.json --out /app/output
+# PDF/OCR 后：
+python scripts/compliancecheck.py --case /input/case.json \
+  --material /app/work/manuscript.txt --out /app/output
+```
 
-## 任务措辞与形态 → 路由
+输出为 `result.json`、`audit_report.md`、`run_log.json`。退出码 0/3/4/5 分别为 clean、review、
+blocked、undetermined；不可读案例、无正文和内部异常均结构化拒绝并写回 Contract 字段，绝不
+traceback。先回原文复核 finding 再交付，不得为降低数量而删除真实条目，也不得把"未报告"
+改写成"学术不端"。
+
+### 14 个风险面的真实覆盖矩阵
+
+`compliance_matrix` 对每面分别记录 `problem / checked / not_applicable / not_checked`、finding ids、
+证据与原因：
+
+1. 文本复用；2. 数据/图像诚信；3. 署名与贡献；4. 利益冲突；5. 伦理审批；6. 知情同意；
+7. 数据可用性；8. 代码可用性；9. 重复发表；10. AI 使用披露；11. 引用诚信；12. 隐私；
+13. 第三方版权/许可；14. 目标期刊要求。
+
+- **没有比对语料就不判抄袭或重复发表。** `comparison_corpus` / `related_publications` 提供
+  前作全文后，才执行 12 词连续序列比对和题名/摘要重合计。重复词串是调查信号，不是动机判决；
+  引号、正文或紧随句后的合法引用标记可豁免。完全相同图像 hash 同样只是调查信号。
+- **没有原始数据/图像就不判篡改或伪造。** 这些面明确进入 `not_checked`，不能用文风猜测。
+- **缺声明不等于没有审批或存在不端。** 根据人体/动物、原始数据、代码和 AI 辅助的实际触发句
+  检查声明；严重度与"影响审批/主结论/一般报告完整性"对应。人体方法无伦理或同意声明为 high；
+  其他声明缺项通常为 medium。定位包含触发原句、全文 SHA-256 检索范围和最近预期位置。
+- **AI 是研究对象不等于作者使用了 AI。** 只有实际写作/分析/编码辅助才要求披露；明确准备阶段
+  使用说明可通过。没有目标指南时不杜撰"所有论文必须写 AI 声明"的条款。
+- **期刊检查只使用提供的指南。** `journal_requirements` 可声明 `required_sections`、
+  `required_declarations`、`word_limit`、`version` 与 `date` 及来源。无版本时保留限制；无指南时该项
+  `not_checked`，不生成虚构规则。
+
+### 新增全文规则索引
+
+| rule 前缀 | 判定输出 |
+|-|-|
+| `compliance.coi_not_reported` | 完整稿件未见利益冲突声明（报告缺口） |
+| `compliance.ethics_approval_not_reported` / `compliance.informed_consent_not_reported` | 人体/动物触发证据与缺失声明；not_reported，不是审批不存在 |
+| `compliance.ethics_identifier_not_reported` | 已有伦理声明但未检出批件/豁免编号 |
+| `compliance.data_availability_not_reported` / `compliance.code_availability_not_reported` | 原始数据/研究代码触发，声明缺失 |
+| `compliance.ai_use_disclosure_not_reported` | 实际 AI 辅助触发，未见准备/使用披露 |
+| `compliance.author_contribution_not_mapped` / `compliance.contributor_not_in_author_list` | 结构化作者—贡献记录双向错位，不推断 guest/ghost authorship |
+| `compliance.retracted_source_used` | 提供的参考文献/撤稿记录明确标撤稿，保留通知定位 |
+| `integrity.possible_unattributed_text_reuse` | 双侧原句、双侧 locator、12 词重合数；possible_reuse，不判抄袭 |
+| `integrity.possible_redundant_publication` | 前作重合+缺少关联披露，需人工比较数据、问题和贡献 |
+| `integrity.identical_image_reuse_undeclared` | 不同图号的相同 hash 且未声明复用，不等于 falsification |
+| `privacy.direct_identifier_exposed` | 明确标识符标签和值的原文位置；作者正常通讯邮箱不误报 |
+| `copyright.reuse_permission_not_reported` | 第三方复用原句，许可/权限未见；不是侵权判决 |
+| `journal.required_section_missing` / `journal.required_declaration_missing` / `journal.word_limit_exceeded` | 逐条映射实际指南及版本，给观测值和修改动作 |
+| `compliance.case_unreadable` / `compliance.case_not_object` / `compliance.no_manuscript` / `compliance.internal_error` / `compliance.runner_error` | structured undetermined + limits，不造成科学结论 |
+
+### 全文输出与严格契约
+
+`audit_report[]` 每条包含 rule、facet、category、kind、severity、location、excerpt、verdict、basis、
+search_scope（适用时）与可执行 fix。`evidence_bounds` 保存声明证据、双侧复用证据和覆盖矩阵；
+`result_state` 分 passed/problems/pending_review/not_checked。`sources`、`declarations`、
+`guideline_checks`、`text_reuse_checks`、`duplicate_publication_checks`、`uncertainty` 均为实际结果。
+
+原始 `case_id` 永远位于顶层；`output_contract` 各字段原名保留，优先级严格为
+**引擎值 > case 显式携带值 > null + limits**。支持字符串、dict 及 field/name/key 对象列表；
+`审查报告 / 依据与边界 / 结果状态` 分别映射实际 `audit_report / evidence_bounds / result_state`。
+拒绝路径也执行这一契约。相同离线输入重复运行三个工件逐字节一致，不添加时间戳。
+
+### 最小真实输入示例与独立验证
+
+`examples/case.json` 为合成接口例子，不是正式案例答案。它含完整人体方法、伦理/同意、数据/代码、
+署名和利益冲突声明，clean 基线必须零 finding、exit 0。
+
+```bash
+python scripts/bench_compliance_case.py   # 23 个功能/误报场景
+python scripts/probe_compliance_case.py   # 13 个敌意、契约、拒绝、冷导入与幂等探针
+```
+
+新增引擎和 `review_common.py` 都只用 Python 标准库。review 新家族三个包共享完全相同的
+`review_common.py`；任何共享定位/契约变更必须三包同步并回归。
+
+---
+
+## Legacy structured-spec 路由（可选补充）
 
 | 任务措辞 / 案例形态 | 跑什么 | 审什么 |
 |-|-|-|

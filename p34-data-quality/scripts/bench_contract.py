@@ -3,8 +3,8 @@
 The Harbor runtime contract requires every case result.json to keep case_id and
 every field the case's output_contract names. This bench pins that behaviour and
 the refusal ladder: an unrunnable input is an exit-5 undetermined result.json,
-never a traceback, a refusal never runs the contract echo, and a re-clean of the
-same input into the same directory stays refused without stacking.
+never a traceback, every readable refusal preserves case_id/output_contract,
+and a re-clean of the same input into the same directory stays refused.
 
     python bench_contract.py
 """
@@ -19,6 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import dataquality  # noqa: E402
+import quality_gates  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "_run_contract"
 
@@ -62,10 +63,15 @@ def scen_case_id_echo():
         problems.append("carried contract value did not pass through verbatim")
     if r.get("quality_report", {}).get("rows") != 3:
         problems.append("quality_report not derived")
-    if r.get("change_ledger") is not None:
-        problems.append("unsupplyable field should be null, not invented")
-    if not any("change_ledger" in x for x in r.get("limits", [])):
-        problems.append("unsupplyable contract field not named in limits")
+    if r.get("change_ledger") != r.get("changes"):
+        problems.append("change_ledger was not derived from the real edit ledger")
+    if any("change_ledger" in x for x in r.get("limits", [])):
+        problems.append("derivable change_ledger was incorrectly marked undetermined")
+    if not r.get("validation_results") or not (r.get("report_reconciliation") or {}).get("all_match"):
+        problems.append("validation evidence or report/table reconciliation missing")
+    restored = quality_gates.restore_rows(r["cleaned_table"], r["changes"])
+    if restored != CLEAN["rows"]:
+        problems.append("reverse ledger did not restore the exact original rows")
     if r.get("output_contract_fields") != list(CLEAN["output_contract"]):
         problems.append("contract field list not recorded")
     return problems
@@ -83,8 +89,8 @@ def scen_bad_json():
         problems.append("status not undetermined")
     if not any(f.get("rule") == "clean.refused" for f in r.get("findings", [])):
         problems.append("refusal finding missing")
-    if r.get("output_contract_fields") is not None:
-        problems.append("refusal must not run the contract echo")
+    if r.get("case_id") is not None:
+        problems.append("unreadable input without --case cannot recover a case_id")
     return problems
 
 
@@ -179,6 +185,82 @@ def scen_idempotent_rerun():
     return problems
 
 
+def scen_refusal_contract_from_case():
+    """A broken spec still preserves contract metadata supplied by --case."""
+    case_path = OUT / "refusal_case.json"
+    case = {"case_id": "case-refusal-34", "note": "case-owned pass-through",
+            "output_contract": {"case_id": "id", "cleaned_table": "table",
+                                "quality_report": "report", "note": "text"}}
+    case_path.write_text(json.dumps(case, ensure_ascii=False), encoding="utf-8")
+    spec_path = write_spec("badjson_with_case", "{broken")
+    code = dataquality.main(["--spec", str(spec_path), "--out", str(OUT / "badjson_case_out"),
+                             "--case", str(case_path)])
+    r = json.loads((OUT / "badjson_case_out" / "result.json").read_text(encoding="utf-8"))
+    problems = []
+    if code != 5 or r.get("status") != "undetermined":
+        problems.append("broken spec was not exit-5 undetermined")
+    if r.get("case_id") != "case-refusal-34" or r.get("note") != "case-owned pass-through":
+        problems.append("case-owned fields were lost")
+    for key in ("cleaned_table", "quality_report"):
+        if key not in r or r[key] is not None:
+            problems.append(key + " must be present and null on refusal")
+    if r.get("output_contract_fields") != list(case["output_contract"]):
+        problems.append("refusal contract field list incomplete")
+    return problems
+
+
+def scen_case_merge_and_undo_cli():
+    """--case fills missing metadata and the standalone undo command restores exactly."""
+    spec = copy.deepcopy(CLEAN)
+    spec.pop("case_id")
+    spec.pop("output_contract")
+    spec.pop("anomaly_notes")
+    case_path = OUT / "merge_case.json"
+    case_path.write_text(json.dumps({k: CLEAN[k] for k in
+                                     ("case_id", "output_contract", "anomaly_notes")},
+                                    ensure_ascii=False), encoding="utf-8")
+    out = OUT / "merge_out"
+    r = dataquality.build_and_audit(write_spec("merge", spec), out, case_path)
+    problems = []
+    if r.get("case_id") != CLEAN["case_id"] or r.get("anomaly_notes") != CLEAN["anomaly_notes"]:
+        problems.append("case metadata merge failed")
+    import subprocess
+    undo = OUT / "undo_out"
+    proc = subprocess.run([sys.executable, "-I", "-X", "utf8",
+                           str(Path(__file__).resolve().parent / "undo_cleaning.py"),
+                           "--result", str(out / "result.json"), "--out", str(undo)],
+                          capture_output=True, text=True, timeout=60)
+    if proc.returncode != 0 or "Traceback" in proc.stderr:
+        problems.append("undo CLI failed: " + proc.stderr[-200:])
+    else:
+        restored = json.loads((undo / "restored.json").read_text(encoding="utf-8"))
+        if restored != CLEAN["rows"]:
+            problems.append("undo CLI output differs from original")
+    return problems
+
+
+def scen_gb18030_and_duplicate_header():
+    """Real encoding conversion is logged; ambiguous headers are structured refusals."""
+    table = OUT / "gb18030.csv"
+    table.write_bytes("样品,值\n甲,1.5\n乙,2.5\n".encode("gb18030"))
+    spec = {"case_id": "encoding-demo", "table_path": str(table),
+            "columns": [{"name": "样品", "semantic": "id"},
+                        {"name": "值", "semantic": "numeric"}], "key_columns": ["样品"]}
+    r = dataquality.build_and_audit(write_spec("encoding", spec), OUT / "encoding_out")
+    problems = []
+    if r.get("status") != "clean" or (r.get("input_metadata") or {}).get("encoding") != "gb18030":
+        problems.append("GB18030 table was not decoded and logged")
+    bad = OUT / "duplicate_header.csv"
+    bad.write_text("a,a\n1,2\n", encoding="utf-8")
+    spec2 = {"case_id": "duplicate-header", "table_path": str(bad),
+             "columns": [{"name": "a", "semantic": "numeric"}]}
+    r2 = dataquality.build_and_audit(write_spec("duplicate_header", spec2),
+                                     OUT / "duplicate_header_out")
+    if r2.get("status") != "undetermined" or "duplicate header" not in str(r2.get("findings")):
+        problems.append("duplicate header was not refused")
+    return problems
+
+
 SCENARIOS = [
     ("case_id_echo", scen_case_id_echo),
     ("bad_json", scen_bad_json),
@@ -187,6 +269,9 @@ SCENARIOS = [
     ("no_rows", scen_no_rows),
     ("table_path_error", scen_table_path_error),
     ("idempotent_rerun", scen_idempotent_rerun),
+    ("refusal_contract_from_case", scen_refusal_contract_from_case),
+    ("case_merge_and_undo_cli", scen_case_merge_and_undo_cli),
+    ("gb18030_and_duplicate_header", scen_gb18030_and_duplicate_header),
 ]
 
 
