@@ -1,0 +1,103 @@
+{
+  "schema_version": "experimental-result-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "grouped_iqr_and_physical_flags",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "outlier_effect_and_retention",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "three_hypothesis_boundaries",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "trend_not_story_descriptive",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "effect_sizes_and_influence_sensitivity",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "five_split_paired_effect",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "paired_ci_present",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "spc_three_explicit_rules",
+      "pass": true,
+      "detail": [
+        "beyond_3_sigma",
+        "run_8_same_side",
+        "trend_6_monotonic"
+      ]
+    },
+    {
+      "scenario": "no_invented_spc_reference",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "units_not_causally_or_arbitrarily_converted",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "censoring_not_zero",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "duplicate_pairs_not_last_row_wins",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "csv_cli_contract_determinism",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "source_row_trace",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "structured_refusal_with_original_contract",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "xlsx_zip_xml_real_fallback",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "xlsx_explicit_sheet_and_read",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "numeric_mat_matrix_read",
+      "pass": true,
+      "detail": {}
+    }
+  ],
+  "totals": {
+    "passed": 18,
+    "of": 18
+  }
+}

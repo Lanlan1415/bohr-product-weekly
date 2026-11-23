@@ -1,226 +1,166 @@
 ---
 name: experiment-optimize
 description: >
-  实验参数优化建议: audit a parameter-optimisation recommendation so it can be taken to the
-  bench and re-run by someone else. Every recommended value must carry provenance (device
-  manual / SOP / history, or declared as chosen with a justification), the feasible domain
-  must come from recorded constraints with conflicts flagged, every response metric needs a
-  tolerance, a comparison basis and a significance verdict, an out-of-tolerance trade-off
-  must be classified as noise or methodological, and the final recommendation must be
-  graded with its basis. Use when a task asks for parameter optimisation advice, search
-  strategy with a stopping rule, cost-response trade-offs, or constraint-aware parameter
-  recommendations.
+  实验参数优化建议：从带来源的有限参数域、设备/材料/安全硬约束和明确响应模型或重复实测，
+  确定性搜索可执行候选。包括目标函数与方向、基线、收益/成本多目标评分、搜索预算与停止
+  规则、响应定义及容差、独立重复与统计不确定性、Morris 敏感度和权重扰动复排、参数出处
+  与可复跑记录。没有可行完备点则拒绝推荐，不把模型预测伪装成实测；用于参数搜索而不是
+  随意编造经验最优值。
 ---
 
 # experiment-optimize
 
-参数优化建议的交付物不是一段解释，而是一份可以拿去开机的方案。判断它做没做对，看三件事：
-建议参数是否落在真实可行域内、每条权衡是否有响应指标与成本口径支撑、整条建议链能否被
-他人复跑。本 Skill 把参数优化建议路由到 `reproduce` 节审计器——优化循环与复现闭环同构：
+主入口 `scripts/bounded_optimize.py` 直接执行有限域优化；不是只审计已有优化报告。
+所有具体系数、范围、基线与实测都来自 case 原文或材料，程序不会从科研常识补齐数值，
+不会把目标变成性能实测。
 
-| 评分点 | 规则 |
-|-|-|
-| 建议链可复跑（轮次、快照、搜索命令、日志） | `repro.stage_missing`, `repro.no_commit`, `repro.no_data_version`, `repro.no_command`, `repro.no_logs`, `repro.no_exit_status` |
-| 约束有出处（设备手册/SOP/历史实验） | `repro.material_without_source`, `repro.material_without_version`, `repro.material_state_undeclared`, `repro.material_no_license` |
-| 可行域可判定，约束冲突被登记 | `repro.environment_incomplete`, `repro.env_conflict_unflagged` |
-| 每个建议值有依据 | `repro.parameter_source_undeclared`, `repro.assumed_without_justification`, `repro.parameter_no_locator` |
-| 响应指标有容差与判定 | `repro.no_tolerance`, `repro.no_comparison_basis`, `repro.no_statistic`, `repro.metric_no_verdict`, `repro.difference_unclassified`, `repro.difference_unexplained` |
-| 优化结论分级且有据 | `repro.verdict_unclassified`, `repro.verdict_without_basis` |
+## 实际运行
 
-## 四类被拦截的失败
+1. 读 `/input/case.json` 和 `task.md` 指向的实际材料，保存 `case_id`、`output_contract`。
+   将原文参数域、单位、约束、响应定义、模型校准记录与 raw-data locator 映射到 spec；
+   模型与设备手册分开记录。版本和工作稿放 `/app/work`，答案放 `/app/output`。
+2. 每个有限变量必须有 name、kind、source，另可给 locator。有 `values` 则取明确的离散网格；
+   连续参数可用 lower、upper、step，对不上网格的端点必须显式允许
+   `allow_final_partial_step`，否则拒绝。支持 `categorical` 枚举。
+3. 在 spec 声明目标 `{name,direction: maximize|minimize,weight,unit,measurement,tolerance}`。
+   响应名字既可为实验响应，也可为 `total_cost`、`total_time_hours`、`total_samples`。
+4. 运行：
 
-**建议值没有出处。** "温度建议 350 C"——来自设备手册、SOP 还是优化器自选？三类依据
-（`paper` 手册与规程 / `code` 现有配置默认 / `assumed` 优化器选定）各有义务：手册类要
-定位到章节，自选的要说明理由。
+```bash
+python /skills/weekly-skill/scripts/bounded_optimize.py \
+  --spec /app/work/bounded-spec.json --case /input/case.json --out /app/output
+```
 
-**推荐值越界无人知晓。** 目标温度 350 C、设备额定 280 C——约束冲突登记在
-`environment.dependencies_detail`，缺 `conflict` 字段即报出。
+5. 原始 `output_contract` 的每个键均保留：优先使用已经计算出的同名产物，明确要求
+   回传的非大体积字段逐项拷贝，不可推导为 `null + limits`。`case_id` 从工作 spec 优先
+   回填，其次取原 case。即使拒绝路径，也能从 `--case` 恢复契约字段；没有输入中的字段
+   绝不凭空补造。
+6. 检查 `findings`、`recommended_parameters`、`candidate_evaluations` 和 `limits`。
+   状态为运行结论，不是实验已完成承诺：clean 映射 done，review 映射 partial，blocked 映射 failed；
+   CLI 对 `undetermined` 另返回 5。若点仅有模型结果，`recommendation.pending_validation`
+   为 true，必须保留待定批准、独立验证与风险说明。
 
-**权衡没有分类。** 建议值下指标差了 0.11：是数值噪声还是方法性代价？不写 `delta_class`
-和 `explanation`，"最优解"就无从取舍。
+示例输入 `examples/bounded-spec.json` 使用众所周知的 F(60,1.2,-0.006) 合成多项式仅为算式
+演示，不是真实论文、设备、报价或已测响应。示意输出只求证形状，禁止冒充固定案例答案。
 
-**结论没有依据。** "建议采纳"但要害是哪条指标在容差内、哪个约束被满足——`verdict_basis`
-必须能对到指标表。
-
-## Workflow
-
-### 1. 记录优化循环
+## 参数、目标与来源
 
 ```json
 {
-  "section": "reproduce",
-  "commit": "opt-round-2024-05-17",
-  "data_version": "exp-history@2024-05",
-  "commands": ["python optimise.py --strategy sequential --budget 60"],
-  "checklist": {
-    "materials": [{"name": "管式炉温控模块", "source": "设备手册 TC-220 rev C",
-                   "version": "rev C", "state": "present"}],
-    "environment": {"dependencies": "约束清单 constraints.csv v3",
-                    "hardware": "管式炉 TC-220 / K 型热电偶", "seed": "0"},
-    "parameters": [{"name": "退火温度", "source": "paper", "locator": "SOP-A07 §4.2"}],
-    "run": {"logs": "runs/opt-round3.log", "exit_status": "succeeded"},
-    "results": {"tolerance": "±2 C", "comparison_basis": "转化率主指标",
-                "statistic": "3 次重复的均值",
-                "metrics": [{"name": "转化率", "paper": 0.82, "reproduced": 0.815,
-                             "within_tolerance": true}]},
-    "verdict": "reproducible",
-    "verdict_basis": "所有响应指标在容差内，建议值均落在量程与安全阈值内"
-  }
+  "variables": [{"name": "temperature", "kind": "continuous", "values": [60, 80, 100],
+                  "unit": "C", "source": "equipment-file §2", "locator": "row 5"}],
+  "hard_constraints": [{"id": "T", "metric": "parameter.temperature", "op": "<=",
+    "value": 100, "unit": "C", "source": "equipment-manual rev2"}],
+  "response_models": {"yield": {"kind": "polynomial", "intercept": 60,
+    "coefficients": {"temperature": 1.2}, "quadratic": {"temperature": -0.006},
+    "source": "calibration-file model C"}},
+  "cost_model": {"intercept": 10, "coefficients": {"temperature": 0.1},
+    "source": "prospective-price-ledger v3"},
+  "objectives": [
+    {"name": "yield", "direction": "maximize", "weight": 0.7,
+      "measurement": "declared measurement method", "tolerance": {"absolute": 0.5}}
+  ],
+  "baseline": {"parameters": {"temperature": 60}},
+  "study_design": {"independent_replicates": 3},
+  "search": {"seed": 42, "max_evaluations": 12, "patience": 2,
+    "improvement_tolerance": 0.001, "initial_fraction": 0.6}
 }
 ```
 
-字段语义映射：`commit` = 优化轮次标识；`data_version` = 历史实验数据快照；`commands` =
-搜索策略与预算（网格/序贯/贝叶斯，初始点与停止判据）；`materials` = 设备与材料约束；
-`parameters[].source` 取字面值 `paper`（手册/规程/文献，附 locator）/ `code`（现有配置
-默认）/ `assumed`（优化器自选，附 justification）；`results.metrics[].paper` = 基准值、
-`reproduced` = 建议值下的预测/实测值。约束冲突写在
-`environment.dependencies_detail: {"name": ..., "paper_version": "350 C",
-"actual_version": "280 C", "conflict": "目标温度超过设备额定"}`。
+完整案例可任意添加 `time_model`、`sample_model`、`observed_runs`。响应多项式支持显式
+`intercept`、`coefficients`、`quadratic`、`interactions`（变量名以冒号连接），不偷偷做题
+目拟合。多个响应模型分别给出 `source`。`observed_runs` 中的
+parameters、responses、source、locator 依次指明其参数、结果与出处，匹配观测优先于相同变量组合的模型响应；每条响应可以是
+`[重复值1, ...]`。同一变量的匹配有数值近似容差 `1e-8`，非数值变量精确匹配，避免
+`60` 与不完全相同的单位记录混为一谈。凡有实测 run 缺来源，整案结构化拒绝。
 
-`verdict` 取三个字面值之一：`reproducible`（建议可复跑、可执行）/ `partially_reproducible`
-（有条件采纳）/ `not_reproducible`（无可行解或约束冲突未解）。
+硬约束支持 `<=,<,>=,>,==,!=,in,not_in`，metric 可为 `parameter.<name>`、`response.<name>`、
+`total_cost,total_time_hours,total_samples` 或显式 `metrics`。资源上限可从
+`resources` 的同一命名值生成；相应每一个 cost_model、time_model、sample_model 的
+公式输出均乘 `study_design.independent_replicates`，同时记录计算因子。技术重复不能替代
+此独立重复。未知响应不会回退为模型猜测。
 
-### 2. 运行
+## 搜索与选择（真实机制）
 
-```bash
-python scripts/secrun.py --spec spec.json --section reproduce --out /app/output
-```
+- 预算由 `max_evaluations` 给定；上限 5000，乘积域总大小超过 20000 cell 会结构化拒绝，
+  不会无界展开。未给预算时取 `min(1000, full_grid_size)` 并产生 `budget_defaulted`。
+- 先加入合法的 baseline 中的 parameters；较小域穷举，较大域取前缀加**显式 seed**的
+  分层 LHS 初始点，再以当前完整可行候选作中心作单变量坐标邻域搜索。
+  没给 seed 时用 0 但发出 `seed_missing`，不掩盖来源缺失。
+- 停止条件是预算耗尽、每个有限邻点都已检查，或新点评分改进不超过
+  `improvement_tolerance` 达到 patience 轮。每轮实际经过的点、来源、预算与停止理由见
+  `search_record`，不能仅写一个“运行至收敛”。
+- 采用 pymoo 式**可行优先**：`infeasible` 不参与加权评分；只有 gate=feasible 且全部
+  目标都可求值的点才可入选。`unknown` 不当作约束满足。冲突候选有归一化 CV，
+  类别不一致用有限的非物理 CV=1 提供诊断，不产生 NaN/Infinity JSON。
+- 目标方向分开：最大化 `(value-min)/(max-min)`，最小化 `(max-value)/(max-min)`；
+  权重归一化后求和，常数指标满分 1。评分覆盖当前完整可行评估池，不代表全局/临床最优。
+  收益和成本可以方向相反地同时入目标；`weight_sensitivity` 将每个权重分别乘
+  0.8/1.2、重归一化并在**整个**可行候选集重新排名，报告 winner_changed。
+- `baseline_comparisons` 用源数据或模型给出原始差值及非零基线的相对差值，不适合比较的
+  用 null。若基线与候选都有重复实测，则报告 pooled-SD Cohen d，作为效应量而非因果结论。
 
-Exit codes: `0` clean, `3` review, `4` blocked, `5` undetermined（spec 不可读/缺 section——
-拒绝执行，绝不崩溃）。
+## 重复、容差、统计不确定性与 Morris
 
-## Rules
+对与点匹配的观测，计算 `n_independent`、重复值数组、mean、sample_sd、standard_error、
+`mean_ci95 = mean ± t(0.975,n-1)*SE`；n=1 不伪造 SD 或 CI，df>30 明示 t 临界值近似 2.0。
+`response_models[].sd` 仅作为模型 SD，不代替实验 SD。缺 `measurement` 会报响应容差背景
+缺失，数值容差原样保留，禁止自造目标通过结论。
 
-### 循环与凭据
+`parameter_sensitivity` 使用 SALib/Morris 的基本效应，沿所选点有限网格改变一个变量：
+`EE=(f(x_i+delta)-f(x_i))/delta`，报告 `mu`、`mu_star`、样本 `sigma`、具体点及
+gate 状态。网格超过 4 个 levels 只取低/中/高局部筛选；路径少时不将 sigma 当作交互显著性。
+它也是重新调用硬约束与响应计算，不是把目标值做形式微分出去。
 
-| rule | severity | 判定 |
-|-|-|-|
-| `repro.stage_missing` | high | 循环一段缺失 |
-| `repro.no_commit` | high | 轮次/版本未记录 |
-| `repro.no_data_version` | high | 数据快照无法恢复 |
-| `repro.no_command` | high | 搜索命令未记录 |
-| `repro.no_logs` / `repro.no_exit_status` | medium | 执行不可检查 |
+## 输出与规则
 
-### 约束与可行域
+主结果包括 `experiment_plan`、`evidence_and_risks`、`confirmation_items`、
+`recommended_parameters`（或无推荐原因）、`objective_declaration`、`parameter_domains`、
+所有候选的完整 `gate`，资源公式与响应统计，`sources`、`uncertainty`、`limits`、
+`search_trace`、`weight_sensitivity`、`parameter_sensitivity`、
+`reproducibility.domain_sha256` 和固定 CLI。输入没有模型或观测能支撑目标时，
+`recommendation.status=not_recommended`，原因保留在高严重度 finding。
 
-| rule | severity | 判定 |
-|-|-|-|
-| `repro.material_without_source` | high | 约束无出处 |
-| `repro.material_without_version` | medium | 手册/规格版本未记录 |
-| `repro.material_state_undeclared` | medium | present/missing/partial 未声明 |
-| `repro.material_no_license` | medium | 声明为 code/repository 的工件无许可 |
-| `repro.environment_incomplete` | medium | 可行域字段缺失 |
-| `repro.env_conflict_unflagged` | high | 两个约束源不一致且未登记 |
-
-### 建议值与响应指标
-
-| rule | severity | 判定 |
-|-|-|-|
-| `repro.parameter_source_undeclared` | high | paper/code/assumed 未声明 |
-| `repro.assumed_without_justification` | high | 自选值无理由 |
-| `repro.parameter_no_locator` | medium | 手册/规程出处无定位 |
-| `repro.no_tolerance` | high | 无法判断建议是否达标 |
-| `repro.no_comparison_basis` | medium | 对齐口径未声明 |
-| `repro.no_statistic` | low | 未声明聚合方式 |
-| `repro.metric_no_verdict` | high | 指标无达标判定 |
-| `repro.difference_unclassified` | high | 权衡未分类（噪声/方法） |
-| `repro.difference_unexplained` | medium | 分类了但未解释 |
-
-### 结论
-
-| rule | severity | 判定 |
-|-|-|-|
-| `repro.verdict_unclassified` | high | 结论不在三级之内 |
-| `repro.verdict_without_basis` | high | 结论无依据 |
-| `repro.no_stages` | medium | 未声明任何阶段 |
-| `repro.stage_unknown` | low | 声明的阶段不在六段之内 |
-
-## Output contract
-
-每个案例 result.json 必须按此优先级携带：
-
-1. **平台契约字段（原样）**：case.json 的 `output_contract` 全部字段——逐字段拷贝
-   （不得改名、不得遗漏；审计推导字段 > 调用方携带值 > 推导不出填 null 并在 limits
-   注记）。`case_id` 顶层回填。
-2. **引擎字段**：`status`、`section`、`findings[]`（含 rule、severity、message 与定位字段）、
-   `severity_counts`、`checked`、`limits`。规格字段以外的值直通（`_BULKY` 排除大体积输入）。
-3. **rubric 三段交付映射**（按本题具体字段名原词对接）：
-
-| 题目三段 | result.json 落点 | 完成标准 |
-|---------|----------------|---------|
-| 阅读/解析结果 | `reading_result`（结构/计数/内容摘要） | 满足题目指定体裁、口径与可读性 |
-| 证据与边界 | `evidence_and_boundaries`（locator、改动前后的原值、参考来源）+ `pending_review[]`（待人工确认） | 关键结论逐项可复核；无法判断的不写成事实 |
-| 运行状态 | `status`（clean/review/blocked/undetermined）+ `run_state`（exit_meaning、handoff、未交付项指向） | 异常原因与接管位置清楚 |
-
-实测验证：spec 顶层提供的字段值会被原样直通到 result.json（特殊的字段名以
-output_contract 单独列出为准）；推导不出的字段值写 null 并在 `limits` 里说明——
-不会让"未提供"被误读为"已通过"。
-
-## 示意
-
-输入见 `examples/spec.json`。运行后 result.json（示意，节选）：
-
-```json
-{"status": "clean", "section": "reproduce", "findings": [],
- "severity_counts": {"high": 0, "medium": 0, "low": 0},
- "checked": {"section": "reproduce", "items": 60}}
-```
-
-（示意输出——说明形态，不是正式案例结果。）
-
-## Limits
-
-- **审计读建议，不执行实验。** 是否真的跑过由 `run` 块记录，不实测。
-- **量程与安全阈值不判断合理性**，只判断存在与冲突。
-- **`delta_class` 是声明。** 审计要求分类与解释；分类对不对需要数字与方法本身。
-- **容差必填但不校准。** ±2 C 是否合适是领域判断。
-- **版本冲突是字符串比较。** `2.1.0` 与 `2.1.00` 读作冲突。
-- **不搭建环境。** 复现快照的搭建不在本 Skill 范围。
-
-## Failure handling
-
-| 症状 | 处理 |
+| rule | 说明 |
 |-|-|
-| `no_commit` / `no_data_version` / `no_command` | 三者记全，否则建议只是口头传说 |
-| `env_conflict_unflagged` | 登记两个约束源与可能的影响 |
-| `material_without_version` | 写明手册/规格版本 |
-| `parameter_no_locator` | 写明在手册或 SOP 的哪一节 |
-| `assumed_without_justification` | 说明为何取该值，可附敏感性说明 |
-| `difference_unclassified` | 先分类（噪声/方法代价）再解释 |
-| `verdict_without_basis` | 给出依据——指标与容差 |
-| `audit.no_section`（exit 5） | 未声明/未知 section，或 spec 不是可读 JSON——拒绝执行，绝不崩溃 |
+| `optimization.no_feasible_complete_point` | high，无同时通过全部界限和完整目标的点，拒绝伪最优 |
+| `optimization.spec_unreadable` | high，拒绝结构错误、缺失来源/目标/有限域或过大展开，exit 5 |
+| `optimization.validation_required` | low，即使选择合法也不得跳过实验验证 |
+| `optimization.budget_defaulted` | medium，未声明搜索预算，写出实际回退值 |
+| `optimization.seed_missing` | medium，未声明 seed，写出确定性回退 seed 0 |
+| `optimization.response_model_only` | medium，只有显式模型而非已测响应 |
+| `optimization.response_tolerance_undeclared` | medium，响应测量方法/容差依据未声明完整 |
+| `optimization.baseline_missing` | medium，无可用基线，不声称有改善比例 |
+| `audit.no_section` | 仅旧审计入口 `scripts/secrun.py` 的 exit 5 拒绝，主 CLI 不依赖它 |
 
-## Requirements
+`0=clean, 3=review, 4=blocked, 5=undetermined`；正常完成模型但不会写成湿实验事实。
+输出目录复跑是**幂等计算**，会确定性重写同一结果，而不是叠加数值/指数；相同 spec 与
+seed 的两次独立运行应逐字节一致。
 
-Python 3.9+，仅标准库（`json`、`re`、`argparse`、`unicodedata`）。无网络、无第三方包。
+## 边界与不适用
 
-## Verification
+这不是任意闭式连续优化器、统计显著性判定器或自动实验执行器。正在使用未校准经验公式时
+只能把它标成模型；缺原文单位、设备量程、安全阈值、审批与高危操作细节时交由专家确认，
+不得擅自更改约束。外部 PDF/工作簿/计划档的提取工具应在运行环境里实际调用；没法读的
+部分必须在 limits 暴露。模型校准数据未提供不会触发联网猜取。
 
-```bash
-python scripts/bench_optimize.py  # 25 scenarios covering 24 rules
-python scripts/bench_sections.py  # 51 scenarios: cross-section regression plus false-positive guards
-```
+旧 `scripts/secrun.py`、旧 bench 作为兼容性检查仍保留，但不是生成优化建议的主路径。
+Requirements：Python 3.9+，仅标准库，无 NumPy 或 SciPy 必需依赖。无网络或第三方安装即可复跑。
 
-Both pass in full on this machine. The clean baseline in each must report nothing.
+## 作者自查与公开方法
 
-## 创新增益
+可选运行 `python scripts/bench_bounded_optimize.py`（18 场景：已知最优点、上限改最优、
+双目标、无模型/无可行解、重复 CI/Cohen d、类别 CV、LHS 复跑、契约拒绝等）；旧 25/51
+回归保持可选。自查不是固定案例运行时必需步骤。
 
-本包相对通用 Agent 的真实新增能力（每条附边界与证据形式）：
+具体开源机制来源与落地：
+- **pymoo Constraints / Feasibility First**：<https://pymoo.org/constraints/index.html>；
+  已实现完整硬约束 gate，代价换租的不可行点不参与多目标排名。
+- **SciPy QMC LatinHypercube**：
+  <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.qmc.LatinHypercube.html>；
+  已实现有限网格的分层初始设计和显式 seed；不宣称从连续区间获得自动高维全局覆盖。
+- **SALib Morris 源码**：<https://github.com/SALib/SALib/blob/main/src/SALib/analyze/morris.py>；
+  已实现 elementary effect 与 mu/mu_star/sigma 的实际重算，并显式说明局部少路径边界。
 
-1. **变量本地化与跨版本感知**：参数档案要求参数取值口径与 source_type（paper/code/
-   derived/assumed）落档，让"参数从哪来"成为可复算字段。证据：bench_experiment 场景。
-2. **量程冲突检查**：`env_conflict_unflagged` 监听多个约束源间的重叠矛盾（量程覆盖不止一次给定）。
-3. **歧义边界判定分类**：推荐值范围不闭环（缺上/下界）→ `parameter_unbounded`（高），
-   拒绝把不可执行的参数范围交付给实验台。
-4. **代价-收益双轴**：差分必须 `delta_class`（noise/methodological）分类 + 容差
-   不脱离原方法，避免"数据更好"成空话。
-5. **确定性拒绝**：所有畸形 spec 一律 exit 5 + result.json，refusalRule 形如 `audit.no_section`——
-   平台评审看到的是结构化拒绝，不是 traceback。
-
-## 生态贡献
-
-- **SKILL.md** 包含用途、适用条件、调用方式、输入输出、异常处理、限制和自查方法
-- **scripts/** 纯标准库可独立导入，规则库可通过 spec 配置扩展
-- **examples/** 提供最小调用示例和示意输出
-- **bench/** 回归套件可独立复跑验证
-
+GITHUB_URL.txt 给出公开作品路径；它不能替代固定案例的真实运行：`candidate_evaluations`
+和可复跑的 spec hash 才能支撑复算。

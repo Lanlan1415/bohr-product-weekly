@@ -1,0 +1,31 @@
+{
+  "case_id": "illustrative-feasibility-input",
+  "output_contract": ["feasibility_review", "evidence_and_risks", "confirmation_items"],
+  "units": {"total_samples": "samples", "total_cost": "CNY"},
+  "source_record": {"scenario": "synthetic prospective planning example; not a real laboratory or vendor quote"},
+  "inventory": [
+    {"resource_id": "oven-X40", "status": "present", "source": "illustrative equipment record rev2", "capabilities": {"max_temperature": {"value": 120, "unit": "C"}}},
+    {"resource_id": "matrix-A", "status": "external_confirmed", "confirmed": true, "source": "illustrative prospective material contract rev1", "available_quantity": 4, "unit": "bottle", "lead_time_hours": 48}
+  ],
+  "hard_constraints": [
+    {"id": "sample-limit", "metric": "total_samples", "op": "<=", "value": 24, "unit": "samples", "source": "illustrative protocol constraint"},
+    {"id": "budget-limit", "metric": "total_cost", "op": "<=", "value": 1000, "source": "illustrative budget contract"},
+    {"id": "temperature", "metric": "parameter.temperature", "op": "<=", "value": 100, "unit": "C", "source": "illustrative equipment manual rev2"}
+  ],
+  "plan_versions": [{
+    "plan_id": "illustrative-v2", "source_version": "plan@2", "source_locator": "example plan section 4",
+    "hypothesis": "illustrative temperature-response hypothesis",
+    "variables": {"independent": "temperature", "dependent": "response"},
+    "controls": [{"control_id": "baseline", "source": "illustrative protocol section 2"}],
+    "judgement_criteria": "sample and equipment constraints must pass; unreported fields remain unknown",
+    "steps": [{"step_id": "measure", "independent_runs": 2, "sample_units": 6, "device_hours": 1, "person_hours": 1, "waiting_hours": 2, "elapsed_hours": 3, "material_quantity": 1, "unit_price": {"amount": 100, "currency": "CNY"}}],
+    "sampling": {"per_step": true},
+    "parameters": {"temperature": 80}, "units": {"parameter.temperature": "C"},
+    "parameter_domains": {"temperature": [60, 80, 100]},
+    "equipment_requirements": [{"resource_id": "oven-X40", "capability": "max_temperature", "min_value": 100, "unit": "C", "source": "illustrative protocol section 3"}],
+    "material_requirements": [{"resource_id": "matrix-A", "quantity": 2, "unit": "bottle", "source": "illustrative protocol section 3"}],
+    "ethics": {"involvement": {"human_samples": false, "animals": false, "personal_data": false, "biohazard": false}, "approvals": []},
+    "safety": {"hazards": []},
+    "risks": [{"trigger": "temperature above the verified range", "response": "stop and revise the plan for expert review", "source": "illustrative SOP section 7"}]
+  }]
+}

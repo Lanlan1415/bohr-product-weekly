@@ -1,0 +1,267 @@
+{
+  "schema_version": "feasibility-bench/v2",
+  "scenarios": [
+    {
+      "scenario": "clean_resource_arithmetic",
+      "pass": true,
+      "status": "clean",
+      "rules": [],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "technical_repeats_are_not_independent_samples",
+      "pass": true,
+      "status": "clean",
+      "rules": [],
+      "derived_metrics": {
+        "total_samples": 24.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "sample_consumption_blocks",
+      "pass": true,
+      "status": "blocked",
+      "rules": [
+        "feasibility.hard_constraint_violated"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "temperature_conflict_blocks",
+      "pass": true,
+      "status": "blocked",
+      "rules": [
+        "feasibility.hard_constraint_violated"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "prospective_procurement_is_conditional",
+      "pass": true,
+      "status": "review",
+      "rules": [
+        "feasibility.constraint_unknown"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "confirmed_supply_allows_larger_planned_order",
+      "pass": true,
+      "status": "clean",
+      "rules": [],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "stock_unavailable_blocks",
+      "pass": true,
+      "status": "blocked",
+      "rules": [
+        "feasibility.hard_constraint_violated"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "only_arithmetic_supply_not_schedule",
+      "pass": true,
+      "status": "clean",
+      "rules": [],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "approval_pending_not_execution_ready",
+      "pass": true,
+      "status": "review",
+      "rules": [
+        "feasibility.constraint_unknown"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "declared_ethics_without_approval_blocks",
+      "pass": true,
+      "status": "blocked",
+      "rules": [
+        "feasibility.hard_constraint_violated"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "unverified_safety_control_blocks",
+      "pass": true,
+      "status": "blocked",
+      "rules": [
+        "feasibility.hard_constraint_violated"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "absence_is_not_pass",
+      "pass": true,
+      "status": "review",
+      "rules": [
+        "feasibility.coverage_incomplete"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "unknown_metric_not_satisfied",
+      "pass": true,
+      "status": "review",
+      "rules": [
+        "feasibility.constraint_unknown"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "unit_mismatch_named",
+      "pass": true,
+      "status": "review",
+      "rules": [
+        "feasibility.constraint_unknown"
+      ],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "three_state_versions_preserved",
+      "pass": true,
+      "status": "clean",
+      "rules": [],
+      "derived_metrics": {
+        "total_samples": 36.0,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "bad_numbers_do_not_crash",
+      "pass": true,
+      "status": "review",
+      "rules": [
+        "feasibility.constraint_unknown"
+      ],
+      "derived_metrics": {
+        "total_samples": null,
+        "device_hours": 3.0,
+        "person_hours": 4.0,
+        "waiting_hours": 10.0,
+        "elapsed_hours": 14.0,
+        "total_cost": 400.0
+      }
+    },
+    {
+      "scenario": "contract_and_identity",
+      "pass": true
+    },
+    {
+      "scenario": "determinism",
+      "pass": true
+    },
+    {
+      "scenario": "structured_refusal",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 19,
+    "of": 19
+  }
+}

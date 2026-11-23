@@ -1,0 +1,20 @@
+{
+  "case_id": "illustrative-result-analysis",
+  "output_contract": ["interpretation", "evidence_and_risks", "confirmation_items"],
+  "table_path": "readings.csv",
+  "columns": [
+    {"name": "sample", "semantic": "id"},
+    {"name": "batch", "semantic": "categorical"},
+    {"name": "group", "semantic": "categorical"},
+    {"name": "cycle", "semantic": "ordered_numeric", "unit": "cycle"},
+    {"name": "hardness", "semantic": "response", "unit": "MPa", "plausible": [0, 20], "plausible_source": "illustrative synthetic physical range"}
+  ],
+  "group_by": "batch",
+  "order_column": "cycle",
+  "response_columns": ["hardness"],
+  "comparisons": [
+    {"response": "hardness", "group_column": "group", "left": "control", "right": "treated"}
+  ],
+  "domain": "materials",
+  "source_record": "synthetic method example only; not a formal test case or measured material proof"
+}

@@ -1,0 +1,28 @@
+{
+  "case_id": "illustrative-bounded-optimization",
+  "output_contract": ["experiment_plan", "evidence_and_risks", "confirmation_items"],
+  "variables": [
+    {"name": "temperature", "kind": "continuous", "values": [60, 70, 80, 90, 100], "unit": "C", "source": "illustrative equipment range rev1", "locator": "synthetic table 1"},
+    {"name": "pH", "kind": "discrete", "values": [6, 7, 8], "unit": "1", "source": "illustrative protocol domain rev2", "locator": "synthetic table 2"}
+  ],
+  "hard_constraints": [
+    {"id": "T-limit", "metric": "parameter.temperature", "op": "<=", "value": 100, "unit": "C", "source": "illustrative equipment manual"},
+    {"id": "cost-limit", "metric": "total_cost", "op": "<=", "value": 100, "unit": "CNY", "source": "illustrative prospective budget contract"},
+    {"id": "time-limit", "metric": "total_time_hours", "op": "<=", "value": 20, "source": "illustrative prospective booking contract"},
+    {"id": "sample-limit", "metric": "total_samples", "op": "<=", "value": 24, "source": "illustrative sample allocation"}
+  ],
+  "response_models": {
+    "yield": {"kind": "polynomial", "intercept": 60, "coefficients": {"temperature": 1.2, "pH": 0.4}, "quadratic": {"temperature": -0.006}, "source": "explicit synthetic calibration function; not measured evidence"}
+  },
+  "cost_model": {"intercept": 15, "coefficients": {"temperature": 0.2, "pH": 0.1}, "source": "explicit synthetic prospective price formula"},
+  "time_model": {"intercept": 2, "coefficients": {"temperature": 0.01}, "source": "explicit synthetic prospective time formula"},
+  "sample_model": {"intercept": 12, "source": "explicit synthetic sample formula"},
+  "objectives": [
+    {"name": "yield", "direction": "maximize", "weight": 0.6, "unit": "%", "measurement": "explicit synthetic response equation", "tolerance": {"absolute": 0.5, "source": "illustrative acceptance protocol"}},
+    {"name": "total_cost", "direction": "minimize", "weight": 0.4, "unit": "CNY", "measurement": "explicit prospective cost arithmetic", "tolerance": {"absolute": 1.0, "source": "illustrative budget protocol"}}
+  ],
+  "baseline": {"parameters": {"temperature": 60, "pH": 6}, "source": "illustrative baseline"},
+  "study_design": {"independent_replicates": 2},
+  "search": {"seed": 42, "max_evaluations": 16, "patience": 2, "improvement_tolerance": 0.001},
+  "source_record": {"scenario": "synthetic finite-domain method example only; no real laboratory, vendor price or validated future response is asserted"}
+}

@@ -1,0 +1,105 @@
+{
+  "schema_version": "bounded-optimization-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "known_polynomial_optimum",
+      "pass": true,
+      "detail": {
+        "temperature": 100.0,
+        "pH": 8.0
+      }
+    },
+    {
+      "scenario": "resource_arithmetic",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "baseline_difference",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "morris_elementary_effects",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "weight_sensitivity_full_rerank",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "stop_rules_and_seed",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "all_candidates_traceable",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "hard_constraint_changes_optimum",
+      "pass": true,
+      "detail": {
+        "temperature": 80.0,
+        "pH": 8.0
+      }
+    },
+    {
+      "scenario": "all_selected_constraints_pass",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "response_cost_multi_objective",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "infeasible_not_pretended_optimum",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "unknown_response_not_fabricated",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "matched_repeats_ci_effect",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "categorical_constraint_finite_cv",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "seeded_lhs_reproducible",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "contract_unknown_named_and_determinism",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "structured_contract_refusal",
+      "pass": true,
+      "detail": {}
+    },
+    {
+      "scenario": "repeat_summary_numbers",
+      "pass": true,
+      "detail": {}
+    }
+  ],
+  "totals": {
+    "passed": 18,
+    "of": 18
+  }
+}
