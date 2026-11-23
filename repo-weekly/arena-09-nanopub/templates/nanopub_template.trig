@@ -1,0 +1,49 @@
+# Nanopublication TriG 模板（完整示例，内容为全合成演示数据，可直接通过
+# scripts/nanopub_check.py 校验；实际使用时替换 IRI、断言与来源元数据）。
+# 结构：Head（三部挂接）/ assertion（原子断言）/ provenance（证据与来源）/
+# pubInfo（署名、时间、许可、置信度）。命名图标签本地名固定为这四个。
+
+@prefix : <http://example.org/np/mos2-plasma-001#> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <http://example.org/ontology/> .
+@prefix orcid: <https://orcid.org/> .
+
+:Head {
+  : np:hasAssertion :assertion ;
+    np:hasProvenance :provenance ;
+    np:hasPublicationInfo :pubInfo ;
+    a np:Nanopublication .
+}
+
+:assertion {
+  # 原子断言 1：数值型（主体-关系-客体，客体带单位语义）
+  ex:MoS2-Plasma60s ex:overpotentialAt10mAcm2 "178"^^xsd:float .
+  ex:MoS2-Plasma60s ex:overpotentialUnit ex:millivolt .
+  # 原子断言 2：条件限定（电解液与测试体系是断言成立的条件，不可省略）
+  ex:MoS2-Plasma60s ex:measuredIn ex:H2SO4-0.5M-ThreeElectrode .
+}
+
+:provenance {
+  # 证据挂接：DOI 回到论文；锚点串给出最小证据位置；类型区分直接/间接
+  :assertion prov:wasDerivedFrom <https://doi.org/10.0000/syn.2024.001> .
+  :assertion ex:hasEvidenceAnchor "S1 p.3 §3.1 表1" .
+  :assertion ex:evidenceType ex:DirectMeasurement .
+  # v2 可选增强（建议保留；nanopub_check.py N6 仅 WARN 提醒）：
+  # 条件范围（断言生效的适用条件/边界）与证据形式（四档受控词表）
+  :assertion ex:conditionScope "0.5 M H2SO4 三电极体系；仅酸性条件" .
+  :assertion ex:evidenceForm ex:ExperimentalData .
+}
+
+:pubInfo {
+  : pav:createdBy orcid:0000-0002-1825-0097 .
+  : pav:createdWith <http://example.org/tool/authoring-nanopublications> .
+  : dcterms:created "2024-01-15"^^xsd:date .
+  : dcterms:license <https://creativecommons.org/licenses/by/4.0/> .
+  # 置信度标注：受控词表 high/medium/low + 依据
+  : ex:confidence ex:High .
+  : ex:confidenceBasis "数值直接取自原文表格，无换算" .
+}

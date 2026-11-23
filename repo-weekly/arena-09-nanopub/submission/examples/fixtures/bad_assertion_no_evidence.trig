@@ -1,0 +1,27 @@
+# 负路径 fixture（合成，必须被拒绝）：断言无任何证据链。
+# 该 nanopub 的 assertion 图有一条三元组，但完全没有 provenance 图
+# （没有 wasDerivedFrom / hasEvidenceAnchor），即"断言无证据"。
+# nanopub_check.py 必须判 FAIL（缺三部结构谓词与命名图）。
+
+@prefix : <http://example.org/np/bad-no-evidence#> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <http://example.org/ontology/> .
+
+:Head {
+  : np:hasAssertion :assertion ;
+    np:hasPublicationInfo :pubInfo ;
+    a np:Nanopublication .
+}
+
+:assertion {
+  ex:MoS2-Plasma60s ex:overpotentialAt10mAcm2 "178"^^xsd:float .
+}
+
+:pubInfo {
+  : pav:createdBy ex:syntheticDemoAuthor .
+  : dcterms:created "2024-01-15"^^xsd:date .
+  : ex:confidence ex:High .
+}

@@ -1,0 +1,14 @@
+# 标准关系类型清单（graph_check.py --predicates 输入）
+# 语义与方向约定见 references/method_rules.md §2
+# 新增关系须先在 change_log 登记定义，再加入本清单副本
+uses
+prepares
+characterizes
+has_metric
+outperforms
+more_stable_than
+supports
+contradicts
+compares
+proposes
+reports_value
