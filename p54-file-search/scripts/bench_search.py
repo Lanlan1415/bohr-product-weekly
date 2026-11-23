@@ -62,8 +62,11 @@ def scen_boolean_or(tmp, name):
     _, res = search.search({"corpus": CORPUS,
                             "query": {"any": ["replicates", "缓冲液"]}})
     ids = [h["doc_id"] for h in res["hits"]]
-    return res["ok"] and ids == ["paper-coating", "protocol-buffer"] \
-        and res["hits"][0]["score"] == 1 and res["hits"][1]["score"] == 1
+    # The CJK hit has both heading+body BM25 evidence, so it legitimately
+    # outranks the body-only latin hit under the new relevance ranking.
+    return res["ok"] and ids == ["protocol-buffer", "paper-coating"] \
+        and res["hits"][0]["score"] == 1 and res["hits"][1]["score"] == 1 \
+        and res["hits"][0]["rank_reason"]["body_bm25"] > res["hits"][1]["rank_reason"]["body_bm25"]
 
 
 def scen_boolean_all_any(tmp, name):
@@ -368,7 +371,8 @@ def scen_cli_contract_passthrough(tmp, name):
     r3 = json.loads((out2 / "result.json").read_text(encoding="utf-8"))
     return ok1 and proc2.returncode == 5 and proc3.returncode == 5 \
         and r3.get("status") == "undetermined" \
-        and "case_id" not in r3 and "deliverable" not in r3
+        and r3.get("case_id") == "case-bench-54" and r3.get("deliverable") == "located search evidence" \
+        and r3.get("topic") == "file search"
 
 
 def scen_spec_carried_case_id(tmp, name):

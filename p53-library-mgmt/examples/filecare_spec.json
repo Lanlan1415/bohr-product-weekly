@@ -1,0 +1,7 @@
+{
+  "structure": [
+    {"folder": "protocols/buffer", "cues": ["缓冲液", "Tris"]}
+  ],
+  "meta_fields": ["author", "year", "project", "doi"],
+  "organize": {"naming_template": "author-year-title"}
+}

@@ -1,0 +1,59 @@
+{
+  "schema_version": "library-filecare-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "raw_hash_not_filename",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "sidecar_provenance_conflicts",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "attachment_links",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "plan_readonly_and_collisions",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_metadata_never_invented",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "real_ooxml_extraction",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "retrieval_hit_and_miss",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_full_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_deterministic_idempotent",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_missing_root_contract",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 10,
+    "of": 10
+  }
+}

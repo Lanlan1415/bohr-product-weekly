@@ -1,0 +1,64 @@
+{
+  "schema_version": "doc-filebatch-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "generic_extension_not_class",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "title_weight_and_boundaries",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "multilevel_and_ambiguity",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "doi_real_provenance",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ooxml_content_classification",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "materialize_readonly_idempotent",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "existing_target_not_overwritten",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "same_name_different_bytes_not_dedup",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_refusal_full_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_plan_deterministic",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "bad_min_hits_degrades",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 11,
+    "of": 11
+  }
+}

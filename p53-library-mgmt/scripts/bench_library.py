@@ -397,7 +397,8 @@ def scen_cli_contract_passthrough(tmp, name):
                            capture_output=True, text=True, timeout=120)
     r2 = json.loads((out2 / "result.json").read_text(encoding="utf-8"))
     return ok1 and proc2.returncode == 5 and r2.get("status") == "undetermined" \
-        and "case_id" not in r2 and "deliverable" not in r2
+        and r2.get("case_id") == "case-bench-53" and r2.get("deliverable") == "library handover inventory" \
+        and r2.get("case_key") == "53-library" and r2.get("materials") == "see task.md"
 
 
 def scen_spec_carried_case_id(tmp, name):

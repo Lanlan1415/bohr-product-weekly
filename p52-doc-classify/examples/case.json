@@ -1,0 +1,10 @@
+{
+  "case_id": "case-demo-52",
+  "output_contract": {
+    "deliverable": "classified library and non-destructive organised copies",
+    "library_schema": "doc-filebatch/v2",
+    "library_result": {},
+    "operation_evidence": {},
+    "failure_recovery": {}
+  }
+}

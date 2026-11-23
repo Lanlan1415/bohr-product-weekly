@@ -71,7 +71,7 @@ def _sha256_file(path: Path) -> str | None:
                 h.update(chunk)
     except OSError:
         return None
-    return h.hexdigest()[:16]
+    return h.hexdigest()
 
 
 def _hash8(text: str) -> str:
@@ -217,6 +217,18 @@ def inventory(root) -> dict:
 # P3 naming plan
 # ---------------------------------------------------------------------------
 
+def _classification_fields(entry: dict) -> dict:
+    """Keep label provenance attached to a proposed old→new operation."""
+    return {
+        "secondary_categories": list(entry.get("secondary_categories") or []),
+        "classification_confidence": entry.get("classification_confidence"),
+        "classification_reason": entry.get("classification_reason"),
+        "classification_evidence": list(entry.get("classification_evidence") or [])[:8],
+        "metadata_provenance": dict(entry.get("metadata_provenance") or {}),
+        "text_extraction": dict(entry.get("text_extraction") or {}),
+    }
+
+
 def _name_for(entry: dict, opts: dict) -> dict:
     """Canonical stem for one entry, with the declared degradation chain.
 
@@ -328,10 +340,11 @@ def build_plan(entries: list, inv: dict, opts: dict | None = None,
                          "name_basis": "archive-duplicate",
                          "metadata_incomplete": False, "missing_fields": [],
                          "why": "exact duplicate of " + (dupes_keep.get(rel) or "")
-                                + "; archived into " + dupes_dir + ", never deleted"})
+                                + "; archived into " + dupes_dir + ", never deleted",
+                         **_classification_fields(e)})
             continue
         named = _name_for({**e, "path": rel}, opts)
-        parts = [slugify(category)]
+        parts = [slugify(part) for part in category.split("/") if part.strip()] or [UNCLASSIFIED]
         if year_subdir and year not in (None, ""):
             parts.append(str(year))
         parts.append(named["name"])
@@ -354,7 +367,8 @@ def build_plan(entries: list, inv: dict, opts: dict | None = None,
                      "metadata_incomplete": bool(named["missing"]),
                      "missing_fields": named["missing"],
                      "why": "category " + category + (" / year " + str(year) if year_subdir and year not in (None, "") else "")
-                            + "; name from " + named["basis"]})
+                            + "; name from " + named["basis"],
+                     **_classification_fields(e)})
 
     if dup_entry_rows:
         findings.append({"rule": "plan.duplicate_entry", "severity": "medium",
@@ -441,13 +455,45 @@ def dedup_versions(entries: list, inv: dict, opts: dict | None = None) -> dict:
             continue  # single file, or already handled as an exact duplicate
         rels_sorted = sorted(rels)
         basis = "doi" if key.startswith("doi:") else "title+author+year"
-        near.append({"key": key, "basis": basis, "paths": rels_sorted,
+        existing = next((g for g in near if g["paths"] == rels_sorted), None)
+        if existing is not None:
+            # DOI and title+author+year describe ONE related file set, not two
+            # independent near-duplicates or version relations.
+            existing["keys"].append(key)
+            existing["basis"] = "+".join(dict.fromkeys(existing["basis"].split("+") + [basis]))
+            continue
+        near.append({"key": key, "keys": [key], "basis": basis, "paths": rels_sorted,
                      "decision": "manual_confirm"})
         findings.append({"rule": "dup.near", "severity": "medium",
                          "basis": basis, "paths": rels_sorted,
                          "why": "same " + basis + " but different bytes: candidate "
                                 "duplicate, both stay in place until a human confirms "
                                 "which one to keep"})
+
+    # Coalesce OVERLAPPING groups, not just identical path sets. A DOI group
+    # may include an attachment while title+year identifies only the article;
+    # both keys still describe one connected piece of evidence.
+    merged = True
+    while merged:
+        merged = False
+        for i in range(len(near)):
+            if merged:
+                break
+            for j in range(i + 1, len(near)):
+                if set(near[i]["paths"]) & set(near[j]["paths"]):
+                    near[i]["paths"] = sorted(set(near[i]["paths"]) | set(near[j]["paths"]))
+                    near[i]["keys"] = near[i].get("keys", [near[i]["key"]]) + near[j].get("keys", [near[j]["key"]])
+                    near[i]["basis"] = "+".join(dict.fromkeys(
+                        near[i]["basis"].split("+") + near[j]["basis"].split("+")))
+                    del near[j]
+                    merged = True
+                    break
+    findings = [f for f in findings if f.get("rule") != "dup.near"]
+    for group in near:
+        findings.append({"rule": "dup.near", "severity": "medium",
+                         "basis": group["basis"], "paths": group["paths"], "keys": group["keys"],
+                         "why": "overlapping declared identity keys were coalesced into one "
+                                "manual-confirm group; every differing file stays in place"})
 
     # version relations inside near-duplicate groups
     relations = []
@@ -474,7 +520,7 @@ def dedup_versions(entries: list, inv: dict, opts: dict | None = None) -> dict:
                              "why": "preprint vs published distinguished; the formal copy "
                                     "goes to the main directory and the relation is on the "
                                     "record for the handover inventory"})
-        elif g["basis"] == "doi" or (pre or formal):
+        elif "doi" in g["basis"] or (pre or formal):
             findings.append({"rule": "ver.ambiguous", "severity": "low",
                              "paths": g["paths"],
                              "why": "candidate duplicates but neither side declares a "
@@ -712,6 +758,92 @@ def land_run(spec: dict, root, out_dir, execute_now: bool = False,
                               "journal_path": ex["journal_path"]}
         result["idempotent"] = ex["changed"] == 0 and not ex["findings"]
     return result
+
+
+def materialize_plan(plan: list, root, destination, out_dir) -> dict:
+    """Create an organised COPY outside the source tree, never move/delete input.
+
+    Every source is checked before and after copying. Existing identical targets
+    are a no-op; differing targets are named conflicts and are never overwritten.
+    This makes the rubric's real directory deliverable compatible with a strict
+    non-destructive source contract.
+    """
+    rootp, destp, out = Path(root).resolve(), Path(destination).resolve(), Path(out_dir)
+    findings: list[dict] = []
+    if rootp == destp or rootp in destp.parents or destp in rootp.parents:
+        return {"status": "blocked", "changed": 0, "already_done": 0,
+                "findings": [{"rule": "copy.destination_conflict", "severity": "high",
+                              "why": "destination must be separate from and not contain the source root"}],
+                "input_writes": 0}
+    out.mkdir(parents=True, exist_ok=True)
+    journal: list[dict] = []
+    changed = already = 0
+    for row in plan:
+        rel_old = str(row.get("old") or "")
+        rel_new = str(row.get("new") or "")
+        src = (rootp / rel_old).resolve()
+        dst = (destp / rel_new).resolve()
+        if rootp not in src.parents or destp not in dst.parents:
+            findings.append({"rule": "copy.path_escape", "severity": "high",
+                             "source": rel_old, "target": rel_new,
+                             "why": "source/target escaped its declared root; copy refused"})
+            continue
+        try:
+            before = _sha256_file(src)
+        except OSError as exc:
+            before = None
+            findings.append({"rule": "copy.source_unreadable", "severity": "medium",
+                             "source": rel_old, "why": str(exc)})
+            continue
+        expected = row.get("sha256")
+        if before is None or before != expected:
+            findings.append({"rule": "copy.source_mismatch", "severity": "high",
+                             "source": rel_old, "expected": expected, "actual": before,
+                             "why": "source changed or is unreadable since inventory; no copy made"})
+            continue
+        if dst.exists():
+            current = _sha256_file(dst)
+            if current == expected:
+                already += 1
+                continue
+            findings.append({"rule": "copy.target_conflict", "severity": "high",
+                             "source": rel_old, "target": rel_new,
+                             "why": "target exists with different bytes; never overwritten"})
+            continue
+        try:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+        except (OSError, shutil.Error) as exc:
+            findings.append({"rule": "copy.failed", "severity": "high",
+                             "source": rel_old, "target": rel_new, "why": str(exc)})
+            continue
+        verified = _sha256_file(dst)
+        entry = {"seq": len(journal) + 1, "op": "copy", "from": rel_old, "to": rel_new,
+                 "destination_root": str(destp), "sha256": expected,
+                 "sha256_verified": verified, "why": row.get("why", "")}
+        if verified != expected:
+            entry["error"] = "post-copy hash mismatch"
+            findings.append({"rule": "copy.mismatch", "severity": "high",
+                             "source": rel_old, "target": rel_new,
+                             "why": "copied bytes differ; original remains intact, output must be inspected"})
+        else:
+            changed += 1
+        journal.append(entry)
+    journal_path = out / "copy_journal.jsonl"
+    if journal:
+        previous = journal_path.read_text(encoding="utf-8") if journal_path.exists() else ""
+        offset = len([line for line in previous.splitlines() if line.strip()])
+        with journal_path.open("a", encoding="utf-8") as fh:
+            for entry in journal:
+                entry["seq"] += offset
+                fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    status = "blocked" if any(f["severity"] == "high" for f in findings) else (
+        "review" if findings else "ok")
+    return {"status": status, "changed": changed, "already_done": already,
+            "journal": journal, "journal_path": str(journal_path), "findings": findings,
+            "input_writes": 0, "destination": str(destp),
+            "idempotent": changed == 0 and already > 0 and not findings,
+            "recovery": "source files are untouched; remove/review generated copies separately if required"}
 
 
 def render_plan_md(result: dict) -> str:

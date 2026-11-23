@@ -1,0 +1,5 @@
+{
+  "all": ["缓冲液"],
+  "any": ["Tris", "buffer"],
+  "filters": {"year": 2024, "project": "P01"}
+}

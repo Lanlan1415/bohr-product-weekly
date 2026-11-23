@@ -43,21 +43,23 @@ def _write_result(out_dir: Path, result: dict) -> None:
         json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _refused(out_dir: Path, rule: str, message: str) -> dict:
-    """The refusal result: honest undetermined, contract NOT echoed — the
-    broken file may be the case file itself."""
+def _refused(out_dir: Path, rule: str, message: str, case: dict | None = None) -> dict:
+    """Structured refusal; a readable case contract still passes through."""
     result = {"schema_version": library.SCHEMA_VERSION, "status": "undetermined",
               "refusal": {"rule": rule, "message": message},
               "limits": ["nothing was ingested into the library"]}
+    _echo_contract(result, case)
     _write_result(out_dir, result)
     return result
 
 
-def _echo_contract(result: dict, case: dict, limits: list) -> None:
-    """Contract passthrough (ok/partial path only): case_id plus every
-    output_contract field. A field the result already carries is kept; a field
-    the case supplies verbatim is copied unless bulky; a literal in the
-    contract is backfilled; anything underivable is null and named in limits."""
+def _echo_contract(result: dict, case: dict | None = None,
+                   limits: list | None = None) -> None:
+    """Case id + every contract key on success and structured refusals."""
+    if not case:
+        return
+    if limits is None:
+        limits = result.setdefault("limits", [])
     cid = case.get("case_id")
     if cid is None:
         cid = case.get("id")
@@ -87,31 +89,31 @@ def _echo_contract(result: dict, case: dict, limits: list) -> None:
 def run_spec(spec_path: Path, out_dir: Path, query=None, case_path=None,
              verify=False) -> dict:
     limits: list = []
-    try:
-        spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
-        return _refused(out_dir, "lib.spec_unreadable",
-                        "the spec file is not readable JSON: " + str(exc))
-    if not isinstance(spec, dict):
-        return _refused(out_dir, "lib.spec_unreadable",
-                        "the spec file is not a JSON object")
-    if query:
-        spec = dict(spec)
-        spec["query"] = query
-
     case = None
     if case_path:
         try:
-            case = json.loads(Path(case_path).read_text(encoding="utf-8"))
+            case = json.loads(Path(case_path).read_text(encoding="utf-8-sig"))
         except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
             return _refused(out_dir, "lib.case_unreadable",
                             "the case file is not readable JSON: " + str(exc))
         if not isinstance(case, dict):
             return _refused(out_dir, "lib.case_unreadable",
                             "the case file is not a JSON object")
+    try:
+        spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
+        return _refused(out_dir, "lib.spec_unreadable",
+                        "the spec file is not readable JSON: " + str(exc), case)
+    if not isinstance(spec, dict):
+        return _refused(out_dir, "lib.spec_unreadable",
+                        "the spec file is not a JSON object", case)
+    if query:
+        spec = dict(spec)
+        spec["query"] = query
 
     lib, result = library.run(spec, base_dir=str(Path(spec_path).resolve().parent))
     if lib is None:
+        _echo_contract(result, case)
         _write_result(out_dir, result)
         return result
 
@@ -125,7 +127,7 @@ def run_spec(spec_path: Path, out_dir: Path, query=None, case_path=None,
     except OSError as exc:
         return _refused(out_dir, "lib.export_failed",
                         "the export could not be written (disk full or "
-                        "permission denied?): " + str(exc))
+                        "permission denied?): " + str(exc), case)
     result["wrote"] = export["wrote"]
 
     if verify:
@@ -138,7 +140,7 @@ def run_spec(spec_path: Path, out_dir: Path, query=None, case_path=None,
                        "text and matched — the archive is self-consistent"})
         else:
             return _refused(out_dir, "lib.integrity_mismatch",
-                            "integrity self-check failed: " + str(vres["reason"]))
+                            "integrity self-check failed: " + str(vres["reason"]), case)
 
     if case is not None:
         _echo_contract(result, case, limits)

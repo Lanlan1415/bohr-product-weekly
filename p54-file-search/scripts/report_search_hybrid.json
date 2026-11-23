@@ -1,0 +1,59 @@
+{
+  "schema_version": "file-search-hybrid-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "bm25_saturation",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "metadata_channel",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cjk_boundaries",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "page_and_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_result_diagnostics",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ambiguity_and_copy_evidence",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "rank_explanation_recomputable",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "real_root_coverage",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "real_root_cli_and_readonly",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "refusal_contract_and_idempotence",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 10,
+    "of": 10
+  }
+}

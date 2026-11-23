@@ -1,0 +1,13 @@
+{
+  "taxonomy": [
+    {"category": "研究/实验方法", "cues": ["方法", "protocol", "we measured"]},
+    {"category": "研究/研究结果", "cues": ["结果", "increased", "three-fold"]},
+    {"category": "资料/数据集", "cues": ["dataset", "control"]}
+  ],
+  "organize": {
+    "naming_template": "author-year-title",
+    "year_subdir": true,
+    "max_name_len": 60,
+    "dupes_dir": "duplicates"
+  }
+}

@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 
 SCHEMA_VERSION = "doc-classify/v1"
 UNCLASSIFIED = "未分类"
@@ -65,8 +66,12 @@ def valid_taxonomy(taxonomy):
                             "reason": "taxonomy examples are not a list; the entry is skipped "
                                       "rather than character-split"})
             continue
+        category = str(cat["category"]).strip().strip("/")
+        parts = [p.strip() for p in category.split("/") if p.strip()]
         ok.append({
-            "category": str(cat["category"]).strip(),
+            "category": category,
+            "level": len(parts),
+            "parent": "/".join(parts[:-1]) or None,
             "cues": [str(c).strip() for c in (cues_raw or []) if str(c).strip()],
             "examples": [str(e).strip() for e in (examples_raw or []) if str(e).strip()],
         })
@@ -96,45 +101,153 @@ def cue_collisions(taxonomy):
     return out
 
 
-def classify_record(rec_id: str, text: str, taxonomy, min_hits: int = 1) -> dict:
-    """One record against the taxonomy: labels, primary, confidence, reason.
+_GENERIC_CUES = {"pdf", "txt", "doc", "docx", "csv", "tsv", "json", "file",
+                 "document", "paper", "download", "scan", "copy", "final", "new"}
+_FIELD_WEIGHTS = {"title": 2.0, "abstract": 1.5, "keywords": 2.0, "text": 1.0,
+                  "body": 1.0, "journal": 1.25, "subject": 1.5, "meta": 0.75}
 
-    A category becomes a label when at least `min_hits` declared cues or
-    example snippets appear in the record text. Confidence is the primary
-    label's share of all cue hits (1.0 when a single category matched, 0.5 on a
-    two-way tie) — a recomputable share, not a probability: the matched cues,
-    not the number, are the evidence.
+
+def _specificity(cue: str) -> float:
+    """Generic filenames/extensions cannot carry a category by themselves."""
+    cue = str(cue or "").strip().casefold().lstrip(".")
+    if not cue or cue in _GENERIC_CUES:
+        return 0.0
+    if len(cue) == 1:
+        return 0.15
+    if re.fullmatch(r"[a-z]{1,3}", cue):
+        return 0.35
+    return 1.0
+
+
+def _field_texts(record: dict) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    for key in ("title", "abstract", "keywords", "text", "body", "journal", "subject"):
+        value = record.get(key)
+        if isinstance(value, (list, tuple)):
+            value = " ".join(str(v) for v in value)
+        if value not in (None, ""):
+            fields[key] = str(value)
+    meta = record.get("meta")
+    if isinstance(meta, dict):
+        # Path/extension are deliberately excluded: those can be seen, not read.
+        vals = [str(meta[k]) for k in sorted(meta)
+                if k not in {"path", "file", "filename", "extension", "attachments"}
+                and meta[k] not in (None, "", [], {})]
+        if vals:
+            fields["meta"] = "\n".join(vals)
+    if not fields and record.get("text") is not None:
+        fields["text"] = str(record.get("text") or "")
+    return fields
+
+
+def _match(field: str, needle: str) -> tuple[int, int] | None:
+    """Casefolded substring for CJK; token boundaries for latin-only cues."""
+    if not needle:
+        return None
+    if re.fullmatch(r"[a-z0-9_.+-]+", needle, flags=re.I):
+        pattern = r"(?<![a-z0-9])" + re.escape(needle) + r"(?![a-z0-9])"
+        match = re.search(pattern, field, flags=re.I)
+        return match.span() if match else None
+    match = re.search(re.escape(needle), field, flags=re.I)
+    return match.span() if match else None
+
+
+def classify_record(rec_id: str, text, taxonomy, min_hits: int = 1) -> dict:
+    """Classify with field-weighted, source-located and calibrated evidence.
+
+    ``confidence = evidence_share * min(top_weight/2, 1)``. It is a deterministic
+    evidence score, not a learned probability. A single ordinary body cue cannot
+    exceed 0.5; a generic extension or one-letter cue cannot establish a label.
     """
-    low = str(text or "").lower()
-    min_hits = max(1, int(min_hits or 1))
+    record = text if isinstance(text, dict) else {"id": rec_id, "text": text}
+    try:
+        min_hits = max(1, int(min_hits or 1))
+    except (TypeError, ValueError):
+        min_hits = 1
+    fields = _field_texts(record)
     labels = []
-    for cat in taxonomy:
-        matched = [c for c in cat["cues"] if c.lower() in low]
-        ex_matched = [e for e in cat["examples"] if e.lower() in low]
+    weak = []
+    for order, cat in enumerate(taxonomy):
+        matched, ex_matched, evidence = [], [], []
+        weight = 0.0
+        for kind, candidates in (("cue", cat.get("cues") or []), ("example", cat.get("examples") or [])):
+            for candidate in candidates:
+                specificity = _specificity(candidate) if kind == "cue" else 1.0
+                best = None
+                for field, content in fields.items():
+                    span = _match(content, candidate)
+                    if span is None:
+                        continue
+                    field_weight = _FIELD_WEIGHTS.get(field, 0.75) * (2.0 if kind == "example" else 1.0)
+                    candidate_evidence = {"kind": kind, "cue": candidate, "field": field,
+                                          "start": span[0], "end": span[1],
+                                          "quote": content[span[0]:span[1]],
+                                          "field_weight": field_weight,
+                                          "specificity": specificity,
+                                          "weight": field_weight * specificity}
+                    if best is None or candidate_evidence["weight"] > best["weight"]:
+                        best = candidate_evidence
+                if best is None:
+                    continue
+                evidence.append(best)
+                if kind == "cue":
+                    matched.append(candidate)
+                else:
+                    ex_matched.append(candidate)
+                weight += best["weight"]
         hits = len(matched) + len(ex_matched)
-        if hits >= min_hits:
-            labels.append({"category": cat["category"], "cue_hits": hits,
-                           "matched_cues": matched, "matched_examples": ex_matched})
-    # Stable sort: ties keep the declared taxonomy order, so the primary label
-    # is a function of the spec alone, never of dict iteration luck.
-    labels.sort(key=lambda l: -l["cue_hits"])
-    total = sum(l["cue_hits"] for l in labels)
+        base = {"category": cat["category"], "level": cat.get("level", 1),
+                "parent": cat.get("parent"), "cue_hits": hits,
+                "weighted_evidence": round(weight, 6),
+                "matched_cues": matched, "matched_examples": ex_matched,
+                "evidence": evidence, "declared_order": order}
+        if hits >= min_hits and weight > 0:
+            labels.append(base)
+        elif hits:
+            weak.append(base)
+    labels.sort(key=lambda l: (-l["weighted_evidence"], -l["cue_hits"], l["declared_order"]))
+    total = sum(l["weighted_evidence"] for l in labels)
     if not labels:
-        reason = "no declared cue or example appears in the record text"
-        if not str(text or "").strip():
-            reason = "the record has no text, so no cue can match it"
+        if weak:
+            reason = "only generic/low-specificity evidence matched; candidate labels require review"
+        elif not any(v.strip() for v in fields.values()):
+            reason = "the record has no readable text or metadata, so no evidence can match"
+        else:
+            reason = "no declared cue or example appears in the record text or metadata"
         return {"id": rec_id, "primary": UNCLASSIFIED, "confidence": 0.0,
-                "multi_label": False, "labels": [], "reason": reason,
-                "cue_hits_total": 0}
+                "evidence_share": 0.0, "multi_label": False, "labels": [],
+                "candidate_labels": weak, "review_required": True,
+                "uncertainty": "unknown_or_weak_evidence", "reason": reason,
+                "cue_hits_total": sum(x["cue_hits"] for x in weak),
+                "source_evidence": [e for x in weak for e in x["evidence"]]}
     top = labels[0]
-    evidence = top["matched_cues"][:3] or top["matched_examples"][:2]
-    reason = "top label by cue hits (" + ", ".join(evidence) + ")"
-    if len(labels) > 1:
+    share = top["weighted_evidence"] / total if total else 0.0
+    coverage = min(top["weighted_evidence"] / 2.0, 1.0)
+    confidence = round(share * coverage, 4)
+    ambiguous = len(labels) > 1 and abs(top["weighted_evidence"] - labels[1]["weighted_evidence"]) < 1e-9
+    for lab in labels:
+        lab.pop("declared_order", None)
+        lab["evidence_share"] = round(lab["weighted_evidence"] / total, 4) if total else 0.0
+    first = top["evidence"][0] if top["evidence"] else None
+    reason = ("top label by field-weighted exact evidence ("
+              + ", ".join(top["matched_cues"][:3] or top["matched_examples"][:2]) + ")")
+    if first:
+        reason += f"; first evidence is {first['field']}[{first['start']}:{first['end']}]"
+    if ambiguous:
+        reason += "; runner-up has equal evidence and is retained as a candidate"
+    elif len(labels) > 1:
         reason += "; runner-up " + labels[1]["category"] + " also matched"
-    return {"id": rec_id, "primary": top["category"],
-            "confidence": round(top["cue_hits"] / total, 4),
-            "multi_label": len(labels) > 1, "labels": labels, "reason": reason,
-            "cue_hits_total": total}
+    return {"id": rec_id, "primary": top["category"], "confidence": confidence,
+            "evidence_share": round(share, 4), "evidence_coverage": round(coverage, 4),
+            "confidence_formula": "evidence_share * min(top_weighted_evidence/2, 1); not a probability",
+            "multi_label": len(labels) > 1, "labels": labels,
+            "candidate_labels": [], "review_required": confidence < 0.6 or ambiguous,
+            "uncertainty": ("ambiguous_top_labels" if ambiguous else
+                            "low_or_single_source_evidence" if confidence < 0.6 else None),
+            "ambiguity": {"is_ambiguous": ambiguous,
+                          "candidate_categories": [x["category"] for x in labels[:2]] if ambiguous else []},
+            "reason": reason, "cue_hits_total": sum(l["cue_hits"] for l in labels),
+            "source_evidence": top["evidence"]}
 
 
 def run(spec, min_hits: int = 1) -> dict:
@@ -165,10 +278,13 @@ def run(spec, min_hits: int = 1) -> dict:
     skipped = []
     for i, rec in enumerate(rec_raw):
         if isinstance(rec, dict):
-            rec_id = str(rec.get("id") or "").strip() or "rec-" + str(i + 1).zfill(3)
-            text = rec.get("text")
-            records.append({"id": rec_id, "title": str(rec.get("title") or "").strip(),
-                            "text": "" if text is None else str(text), "index": i})
+            rec_id = str(rec.get("id") or rec.get("path") or "").strip() or "rec-" + str(i + 1).zfill(3)
+            item = dict(rec)
+            item["id"] = rec_id
+            item["title"] = str(rec.get("title") or "").strip()
+            item["text"] = "" if rec.get("text") is None else str(rec.get("text"))
+            item["index"] = i
+            records.append(item)
         elif isinstance(rec, str):
             # A bare string is a document with no metadata: classify its text
             # under a generated id rather than refusing usable content.
@@ -184,9 +300,13 @@ def run(spec, min_hits: int = 1) -> dict:
 
     results = []
     for rec in records:
-        cls = classify_record(rec["id"], rec["text"], taxonomy, min_hits)
+        cls = classify_record(rec["id"], rec, taxonomy, min_hits)
         cls["index"] = rec["index"]
         cls["title"] = rec["title"]
+        if rec.get("path"):
+            cls["path"] = rec["path"]
+        if isinstance(rec.get("meta"), dict):
+            cls["metadata"] = rec["meta"]
         results.append(cls)
 
     per_category: dict = {}
@@ -201,6 +321,17 @@ def run(spec, min_hits: int = 1) -> dict:
             mentions[lab["category"]] = mentions.get(lab["category"], 0) + 1
     unclassified = [r["id"] for r in results if r["primary"] == UNCLASSIFIED]
     multi = [r["id"] for r in results if r["multi_label"]]
+    needs_review = [r["id"] for r in results if r.get("review_required")]
+    hierarchy = []
+    for cat in taxonomy:
+        name = cat["category"]
+        children = sorted({c["category"] for c in taxonomy if c.get("parent") == name})
+        subtree = sum(1 for r in results
+                      if r["primary"] == name or r["primary"].startswith(name + "/"))
+        hierarchy.append({"category": name, "level": cat.get("level", 1),
+                          "parent": cat.get("parent"), "children": children,
+                          "primary_direct": per_category.get(name, 0),
+                          "primary_subtree": subtree})
 
     findings = cue_collisions(taxonomy)
     if tax_skipped:
@@ -215,9 +346,21 @@ def run(spec, min_hits: int = 1) -> dict:
     if unclassified:
         findings.append({"rule": "cls.unclassified", "severity": "low",
                          "count": len(unclassified), "ids": unclassified,
-                         "why": "these records matched no declared cue; they are reported "
-                                "as " + UNCLASSIFIED + " with the reason, not forced into "
-                                "a category"})
+                         "why": "these records lacked sufficient declared evidence; they are "
+                                "reported as " + UNCLASSIFIED + " with reasons and candidates"})
+    low = [r["id"] for r in results if r["primary"] != UNCLASSIFIED
+           and r.get("confidence", 0) < 0.6]
+    if low:
+        findings.append({"rule": "cls.low_confidence", "severity": "low",
+                         "count": len(low), "ids": low,
+                         "why": "single or limited evidence; the score formula and source spans "
+                                "are recorded and these classifications require review"})
+    ambiguous = [r["id"] for r in results
+                 if (r.get("ambiguity") or {}).get("is_ambiguous")]
+    if ambiguous:
+        findings.append({"rule": "cls.ambiguous", "severity": "low", "count": len(ambiguous),
+                         "ids": ambiguous, "why": "top labels have equal weighted evidence; "
+                                                   "primary follows declared order and alternatives remain"})
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -229,9 +372,12 @@ def run(spec, min_hits: int = 1) -> dict:
             "label_mentions": mentions,
             "unclassified_ids": unclassified,
             "multi_label_ids": multi,
+            "needs_review_ids": needs_review,
+            "hierarchy": hierarchy,
         },
         "findings": findings,
-        "taxonomy_declared": [{"category": c["category"], "cues": c["cues"],
+        "taxonomy_declared": [{"category": c["category"], "level": c.get("level", 1),
+                               "parent": c.get("parent"), "cues": c["cues"],
                                "examples": c["examples"]} for c in taxonomy],
         "spec_sha256": hashlib.sha256(json.dumps(
             {"taxonomy": tax_raw, "records": rec_raw}, sort_keys=True,

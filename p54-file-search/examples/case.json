@@ -2,6 +2,9 @@
   "case_id": "case-demo-54",
   "output_contract": {
     "deliverable": "located search evidence",
-    "search_schema": "file-search/v1"
+    "search_schema": "file-search/v1",
+    "search_result": {},
+    "operation_evidence": {},
+    "failure_recovery": {}
   }
 }

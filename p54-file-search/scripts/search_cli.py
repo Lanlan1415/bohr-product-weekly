@@ -33,6 +33,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import search  # noqa: E402
+import localfiles  # noqa: E402
 
 # Contract fields whose VALUES are bulky material inputs, not deliverable
 # metadata: they are echoed as null (and named in limits), never copied wholesale.
@@ -46,21 +47,25 @@ def _write_result(out_dir: Path, result: dict) -> None:
         json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _refused(out_dir: Path, rule: str, message: str) -> dict:
-    """The refusal result: honest undetermined, contract NOT echoed — the
-    broken file may be the case file itself."""
+def _refused(out_dir: Path, rule: str, message: str, case: dict | None = None,
+             extra: dict | None = None) -> dict:
+    """Structured undetermined result; a readable case contract still passses."""
     result = {"schema_version": search.SCHEMA_VERSION, "status": "undetermined",
               "refusal": {"rule": rule, "message": message},
               "limits": ["no query was answered"]}
+    if extra:
+        result.update(extra)
+    _echo_contract(result, case)
     _write_result(out_dir, result)
     return result
 
 
-def _echo_contract(result: dict, case: dict, limits: list) -> None:
-    """Contract passthrough (ok/partial path only): case_id plus every
-    output_contract field. A field the result already carries is kept; a field
-    the case supplies verbatim is copied unless bulky; a literal in the
-    contract is backfilled; anything underivable is null and named in limits."""
+def _echo_contract(result: dict, case: dict, limits: list | None = None) -> None:
+    """Case id + every contract key on success and structured refusals."""
+    if not case:
+        return
+    if limits is None:
+        limits = result.setdefault("limits", [])
     cid = case.get("case_id")
     if cid is None:
         cid = case.get("id")
@@ -72,6 +77,30 @@ def _echo_contract(result: dict, case: dict, limits: list) -> None:
         for key in contract:
             if key in result:
                 continue
+            derived = {
+                "search_result": {"hits": result.get("hits") or (result.get("search_result") or {}).get("hits", []),
+                                  "ranking": result.get("ranking"),
+                                  "ambiguity": result.get("ambiguity"),
+                                  "no_result": result.get("no_result")},
+                "operation_evidence": {"index_sha256": result.get("index_sha256"),
+                                       "documents_indexed": result.get("documents_indexed"),
+                                       "wrote_index": result.get("wrote_index"),
+                                       "coverage": result.get("coverage")},
+                "failure_recovery": {"findings": result.get("findings") or [],
+                                     "refusal": result.get("refusal"),
+                                     "no_result": result.get("no_result"),
+                                     "limits": limits},
+                "sources": result.get("coverage"),
+                "uncertainty": {"ambiguity": result.get("ambiguity"),
+                                "findings": result.get("findings") or []},
+            }
+            if key in derived:
+                value = derived[key]
+                usable = value is not None and (not isinstance(value, dict) or
+                                                any(v is not None for v in value.values()))
+                if usable:
+                    result[key] = value
+                    continue
             if key in case and key not in _BULKY:
                 result[key] = case[key]
                 continue
@@ -88,25 +117,45 @@ def _echo_contract(result: dict, case: dict, limits: list) -> None:
 
 
 def run_files(corpus_path, index_path, query_path, query_str, out_dir: Path,
-              case_path=None) -> dict:
+              case_path=None, root_path=None, metadata=None) -> dict:
     limits: list = []
     spec: dict = {}
-    if index_path:
+    case = None
+    if case_path:
+        try:
+            case = json.loads(Path(case_path).read_text(encoding="utf-8-sig"))
+        except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
+            return _refused(out_dir, "search.case_unreadable",
+                            "the case file is not readable JSON: " + str(exc))
+        if not isinstance(case, dict):
+            return _refused(out_dir, "search.case_unreadable",
+                            "the case file is not a JSON object")
+    coverage = None
+    issues = []
+    if root_path:
+        loaded = localfiles.build_corpus(Path(root_path), metadata or [])
+        coverage = loaded.get("coverage")
+        issues = loaded.get("issues") or []
+        if not loaded.get("ok"):
+            return _refused(out_dir, loaded["refusal"]["rule"], loaded["refusal"]["message"],
+                            case, {"coverage": coverage, "extraction_issues": issues})
+        spec["corpus"] = loaded["corpus"]
+    elif index_path:
         try:
             idx = json.loads(Path(index_path).read_text(encoding="utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
             return _refused(out_dir, "search.spec_unreadable",
-                            "the index file is not readable JSON: " + str(exc))
+                            "the index file is not readable JSON: " + str(exc), case)
         if not isinstance(idx, dict):
             return _refused(out_dir, "search.index_malformed",
-                            "the index file is not a JSON object")
+                            "the index file is not a JSON object", case)
         spec["index"] = idx
     elif corpus_path:
         try:
             data = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
             return _refused(out_dir, "search.spec_unreadable",
-                            "the corpus file is not readable JSON: " + str(exc))
+                            "the corpus file is not readable JSON: " + str(exc), case)
         if isinstance(data, list):
             spec["corpus"] = data
         elif isinstance(data, dict) and isinstance(data.get("documents"), list):
@@ -116,47 +165,53 @@ def run_files(corpus_path, index_path, query_path, query_str, out_dir: Path,
         else:
             return _refused(out_dir, "search.empty_corpus",
                             "the corpus file holds neither a document list nor a "
-                            "documents/corpus key")
+                            "documents/corpus key", case)
     else:
         return _refused(out_dir, "search.empty_corpus",
-                        "no corpus or index was given; there is nothing to search")
+                        "no root, corpus or index was given; there is nothing to search", case)
 
     if query_path:
         try:
             spec["query"] = json.loads(Path(query_path).read_text(encoding="utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
             return _refused(out_dir, "search.spec_unreadable",
-                            "the query file is not readable JSON: " + str(exc))
+                            "the query file is not readable JSON: " + str(exc), case,
+                            {"coverage": coverage, "extraction_issues": issues})
     elif query_str is not None:
         spec["query"] = query_str
     else:
         return _refused(out_dir, "search.empty_query",
-                        "no query was given (--query or --query-file)")
-
-    case = None
-    if case_path:
-        try:
-            case = json.loads(Path(case_path).read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
-            return _refused(out_dir, "search.case_unreadable",
-                            "the case file is not readable JSON: " + str(exc))
-        if not isinstance(case, dict):
-            return _refused(out_dir, "search.case_unreadable",
-                            "the case file is not a JSON object")
+                        "no query was given (--query or --query-file)", case,
+                        {"coverage": coverage, "extraction_issues": issues})
 
     index, result = search.search(spec)
+    if coverage is not None:
+        result["coverage"] = coverage
+        result["extraction_issues"] = issues
+        if issues and index is not None:
+            result["status"] = "partial"
+            result.setdefault("findings", []).append({
+                "rule": "search.file_extraction_incomplete", "severity": "medium",
+                "count": len(issues), "entries": issues,
+                "why": "these files were not indexed; no text or metadata was invented"})
     if index is not None:
         try:
             out_dir.mkdir(parents=True, exist_ok=True)
             (out_dir / "index.json").write_text(
                 json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
+            if coverage is not None:
+                (out_dir / "coverage.json").write_text(
+                    json.dumps({"files": coverage, "issues": issues}, ensure_ascii=False, indent=2),
+                    encoding="utf-8")
         except OSError as exc:
             return _refused(out_dir, "search.export_failed",
                             "the index could not be written (disk full or "
-                            "permission denied?): " + str(exc))
+                            "permission denied?): " + str(exc), case,
+                            {"coverage": coverage, "extraction_issues": issues})
         result["wrote_index"] = str(out_dir / "index.json")
-    if case is not None:
-        _echo_contract(result, case, limits)
+        if coverage is not None:
+            result["wrote_coverage"] = str(out_dir / "coverage.json")
+    _echo_contract(result, case, limits)
     if limits:
         result["limits"] = limits
     _write_result(out_dir, result)
@@ -165,6 +220,9 @@ def run_files(corpus_path, index_path, query_path, query_str, out_dir: Path,
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="file-search", description=__doc__)
+    ap.add_argument("--root", default=None, help="real file tree to hash and extract before indexing")
+    ap.add_argument("--metadata", action="append", default=None,
+                    help="declared metadata sidecar relative to --root (repeatable; metadata.* auto-detected)")
     ap.add_argument("--corpus", default=None, help="corpus JSON (documents list)")
     ap.add_argument("--index", default=None, help="a previously built index.json to query")
     ap.add_argument("--query", default=None, help="query string (any-of its terms)")
@@ -174,11 +232,12 @@ def main(argv=None) -> int:
                     help="case.json: echoes case_id and output_contract fields into result.json")
     ap.add_argument("--out", required=True, help="output directory")
     a = ap.parse_args(argv)
-    if bool(a.corpus) == bool(a.index):
+    if sum(bool(v) for v in (a.root, a.corpus, a.index)) != 1:
         _refused(Path(a.out), "search.empty_corpus",
-                 "exactly one of --corpus / --index must be given")
+                 "exactly one of --root / --corpus / --index must be given")
         return 5
-    result = run_files(a.corpus, a.index, a.query_file, a.query, Path(a.out), a.case)
+    result = run_files(a.corpus, a.index, a.query_file, a.query, Path(a.out), a.case,
+                       root_path=a.root, metadata=a.metadata)
     print(json.dumps({"ok": result.get("ok", False),
                       "status": result.get("status"),
                       "empty": result.get("empty"),

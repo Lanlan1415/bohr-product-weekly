@@ -67,7 +67,9 @@ def scen_multi_label_recorded(tmp, name):
     r2 = _by_id(res)["r2"]
     cats = [l["category"] for l in r2["labels"]]
     return r2["multi_label"] and r2["primary"] == "实验方法" \
-        and cats == ["实验方法", "研究结果"] and r2["confidence"] == 0.5 \
+        and cats == ["实验方法", "研究结果"] and r2["confidence"] == 0.25 \
+        and r2["evidence_share"] == 0.5 and r2["review_required"] \
+        and r2["ambiguity"]["is_ambiguous"] \
         and res["summary"]["multi_label_ids"] == ["r2"]
 
 

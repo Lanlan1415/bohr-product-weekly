@@ -1,0 +1,22 @@
+{
+  "records": [
+    {
+      "id": "protocol-a",
+      "path": "protocol.txt",
+      "aliases": ["buffer-protocol"],
+      "meta": {
+        "title": "Tris 缓冲液配制",
+        "author": "Example Researcher",
+        "year": 2024,
+        "project": "P01"
+      }
+    },
+    {
+      "path": "protocol-copy.txt",
+      "meta": {
+        "title": "Tris 缓冲液配制",
+        "year": 2024
+      }
+    }
+  ]
+}

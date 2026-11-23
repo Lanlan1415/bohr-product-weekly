@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p52-doc-classify
+https://github.com/Lanlan1415/bohr-product-weekly
+p52-doc-classify/
