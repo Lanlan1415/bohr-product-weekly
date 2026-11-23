@@ -1,0 +1,385 @@
+{
+  "schema": "bench-generate/v1",
+  "engine_schema": "experiment-plan-generate/v1",
+  "total": 75,
+  "passed": 75,
+  "failed": 0,
+  "clean_baseline_findings": 0,
+  "results": [
+    {
+      "name": "clean baseline has zero findings",
+      "passed": true,
+      "detail": "{\"high\": 0, \"medium\": 0, \"low\": 0}"
+    },
+    {
+      "name": "three candidate versions retained",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "full factorial has four unique cells",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "independent repeats not conflated with technical repeats",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "cost arithmetic",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "time arithmetic includes preparation and queue",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "declared weighted sum selects P3",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "weight sensitivity is actually executed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "randomized run ids are unique",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "plan never claims execution",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "contract engine value has precedence",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "contract case value passthrough",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "contract unknown is null plus limit",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "engine deterministic in memory",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "refuse missing case_id",
+      "passed": true,
+      "detail": "case_id is required so the result remains traceable"
+    },
+    {
+      "name": "refuse missing objective",
+      "passed": true,
+      "detail": "objective is required; do not infer a research objective from a filename"
+    },
+    {
+      "name": "refuse malformed candidates",
+      "passed": true,
+      "detail": "candidate_plans must be a non-empty list (one plan is enough, three versioned plans are supported)"
+    },
+    {
+      "name": "refuse empty factors",
+      "passed": true,
+      "detail": "factors must be a non-empty list of finite parameter domains"
+    },
+    {
+      "name": "refuse duplicate factors",
+      "passed": true,
+      "detail": "duplicate factor name: treatment"
+    },
+    {
+      "name": "refuse empty domain",
+      "passed": true,
+      "detail": "factor 'treatment' has an empty domain"
+    },
+    {
+      "name": "refuse invalid numeric step",
+      "passed": true,
+      "detail": "a numeric domain must have step > 0 and max >= min"
+    },
+    {
+      "name": "refuse factorial explosion",
+      "passed": true,
+      "detail": "full factorial needs 4 cells, above declared max_combinations=3; narrow the recorded finite domain or use a separately justified design"
+    },
+    {
+      "name": "refuse nonfinite level",
+      "passed": true,
+      "detail": "factor 'temperature' contains an invalid level"
+    },
+    {
+      "name": "decimal finite domain inclusive",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "equipment out-of-range eliminates whole design",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"optimize.no_feasible_plan\"]}"
+    },
+    {
+      "name": "budget gate eliminates all candidates",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"optimize.no_feasible_plan\"]}"
+    },
+    {
+      "name": "time gate eliminates all candidates",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"optimize.no_feasible_plan\"]}"
+    },
+    {
+      "name": "sample limit gate",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"optimize.no_feasible_plan\"]}"
+    },
+    {
+      "name": "sample size missing",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"cost.unknown_multiplier\", \"optimize.no_feasible_plan\", \"sample_size.missing\", \"time.invalid_multiplier\"]}"
+    },
+    {
+      "name": "sample basis missing",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"sample_size.basis_missing\"]}"
+    },
+    {
+      "name": "randomization missing",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"randomization.incomplete\"]}"
+    },
+    {
+      "name": "unrandomized order is honestly labelled",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "blinding missing",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"blinding.incomplete\"]}"
+    },
+    {
+      "name": "controls missing",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"control.missing\"]}"
+    },
+    {
+      "name": "variable operational definition required",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"variable.undefined\"]}"
+    },
+    {
+      "name": "outcome measurement required",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"variable.measurement_missing\"]}"
+    },
+    {
+      "name": "confounder strategy required",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"variable.confounder_uncontrolled\"]}"
+    },
+    {
+      "name": "step dependency cycle",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"steps.dependency_cycle\"]}"
+    },
+    {
+      "name": "unknown step dependency",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"steps.dependency_cycle\", \"steps.unknown_dependency\"]}"
+    },
+    {
+      "name": "step failure decision required",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"steps.decision_missing\"]}"
+    },
+    {
+      "name": "decision threshold required",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"threshold.missing\"]}"
+    },
+    {
+      "name": "multiplicity required for four cells",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"statistics.multiplicity_missing\"]}"
+    },
+    {
+      "name": "risk fallback required",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"risk.missing\"]}"
+    },
+    {
+      "name": "pending safety puts execution on hold",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"safety.approval_pending\"]}"
+    },
+    {
+      "name": "pending approval HOLD is explicit",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ethics exemption needs rationale",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"ethics.rationale_missing\"]}"
+    },
+    {
+      "name": "missing resource blocks execution",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"materials.unavailable\"]}"
+    },
+    {
+      "name": "criterion scale bounds required for clean",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"criterion.bounds_derived\"]}"
+    },
+    {
+      "name": "criterion evidence required",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"criterion.evidence_missing\"]}"
+    },
+    {
+      "name": "criterion rationale required",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"criterion.rationale_missing\"]}"
+    },
+    {
+      "name": "no preference criteria is not called optimum",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"optimize.criteria_missing\"]}"
+    },
+    {
+      "name": "no-criteria fallback stable and honest",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "missing score metric cannot be silently zero-filled",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"criterion.value_missing\", \"optimize.no_feasible_plan\"]}"
+    },
+    {
+      "name": "unlike currencies are not added",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"cost.currency_mixed\"]}"
+    },
+    {
+      "name": "underpowered declared n detected",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"sample_size.underpowered\"]}"
+    },
+    {
+      "name": "power formula and attrition arithmetic exposed",
+      "passed": true,
+      "detail": "{\"method\": \"two_group_two_sided_normal_approximation\", \"formula\": \"ceil(2*((z_(1-alpha/2)+z_power)*sd/minimum_effect)^2), then attrition adjustment\", \"alpha\": 0.05, \"power\": 0.8, \"minimum_effect\": 1.0, \"sd\": 1.0, \"attrition_rate\": 0.1, \"n_per_group_before_attrition\": 16, \"n_per_group_after_attrition\": 18, \"source\": \"SRC-PILOT\\uff1a\\u8d44\\u6e90\\u7ea6\\u675f\\u7684\\u793a\\u4f8b pilot\\uff0c\\u6bcf\\u7ec6\\u80de 3 \\u4e2a\\u72ec\\u7acb\\u6279\\u6b21\\uff1b\\u4e0d\\u58f0\\u79f0\\u9a8c\\u8bc1\\u6027\\u68c0\\u9a8c\\u6548\\u80fd\"}"
+    },
+    {
+      "name": "adequate power example clean",
+      "passed": true,
+      "detail": "{\"high\": 0, \"medium\": 0, \"low\": 0}"
+    },
+    {
+      "name": "two-group power approximation not misapplied to 2x2",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"sample_size.power_model_mismatch\"]}"
+    },
+    {
+      "name": "declared extra controls materialized",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "extra controls require concrete conditions",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"design.control_conditions_mismatch\"]}"
+    },
+    {
+      "name": "declared center points materialized",
+      "passed": true,
+      "detail": "clean"
+    },
+    {
+      "name": "center values never invented",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"design.center_values_missing\"]}"
+    },
+    {
+      "name": "list contract and engine precedence",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "caller cannot overwrite engine null selected plan",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed candidate is named",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"candidate.malformed\"]}"
+    },
+    {
+      "name": "CLI clean exit 0",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI structured refusal: malformed JSON",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI structured refusal: JSON array",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI structured refusal: empty object",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI structured refusal: NaN domain",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI missing file refusal",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI invalid UTF-8 refusal",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI review exit 3",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI blocked exit 4",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI original case wrapper",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

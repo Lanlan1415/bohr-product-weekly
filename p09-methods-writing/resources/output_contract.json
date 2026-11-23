@@ -1,0 +1,7 @@
+{
+  "required": ["parameter_table", "datasets", "steps", "prose", "number_audit", "reproducibility", "limitations", "coverage", "gap_analysis", "evidence_map", "conflicts", "findings", "deliverable"],
+  "lists": ["parameter_table", "datasets", "steps", "limitations", "sources", "uncertainty", "change_records", "coverage", "gap_analysis", "evidence_map", "conflicts", "findings"],
+  "envelope": ["case_id", "status", "status_reason", "sources", "uncertainty", "change_records", "limits"],
+  "status_values": ["success", "partial", "undetermined", "refused"],
+  "notes": "methodflow/v1; case output_contract fields are top-level with engine > case > null+limits precedence. Legacy assemble_result.py is not the primary contract."
+}

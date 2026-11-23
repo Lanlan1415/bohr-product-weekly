@@ -1,0 +1,153 @@
+{
+  "case_id": "demo-plan-comparison-001",
+  "objective": "示例：在同一研究目标和资源窗下比较三个版本化实验路线，选择可复核的前瞻性方案；不是正式案例、真实报价或实测结果。",
+  "sources": [
+    {"id": "SRC-PILOT", "kind": "example_pretest_record", "locator": "示例预实验记录 P-01 §2（虚构演示资源）"},
+    {"id": "SRC-QUOTE", "kind": "example_prospective_price_record", "locator": "示例估价表 Q-01（虚构演示资源，不是供应商报价）"},
+    {"id": "SRC-BOOKING", "kind": "example_booking_record", "locator": "示例排期表 B-01（虚构演示资源）"},
+    {"id": "SRC-MANUAL", "kind": "example_device_record", "locator": "示例设备手册 M-01 §3（虚构演示资源）"},
+    {"id": "SRC-RISK", "kind": "example_risk_log", "locator": "示例风险登记 R-01（虚构演示资源）"}
+  ],
+  "criteria": [
+    {"name": "scientific_alignment", "weight": 0.25, "direction": "max", "scale_bounds": [1, 5], "unit": "declared ordinal score", "weight_basis": "主要目标匹配优先，但不越过硬约束"},
+    {"name": "total_cost", "weight": 0.2, "direction": "min", "scale_bounds": [0, 250], "unit": "CNY", "weight_basis": "预算重要，统一含一次性与按次费用；评分量表与 200 硬预算分开"},
+    {"name": "total_time_hours", "weight": 0.15, "direction": "min", "scale_bounds": [0, 24], "unit": "h", "weight_basis": "统一含准备、机时、排队和期望返工"},
+    {"name": "risk_score", "weight": 0.2, "direction": "min", "scale_bounds": [0, 5], "unit": "declared ordinal score", "weight_basis": "避免高软分掩盖失败后果"},
+    {"name": "evidence_strength", "weight": 0.2, "direction": "max", "scale_bounds": [0, 5], "unit": "declared ordinal score", "weight_basis": "优先可独立复核的证据"}
+  ],
+  "hard_constraints": [
+    {"id": "HC-BUDGET", "metric": "total_cost", "op": "<=", "value": 200, "unit": "CNY", "source": "SRC-QUOTE", "rationale": "示例总预算上限"},
+    {"id": "HC-TIME", "metric": "total_time_hours", "op": "<=", "value": 24, "unit": "h", "source": "SRC-BOOKING", "rationale": "示例总时间窗"},
+    {"id": "HC-EQUIPMENT", "metric": "resources.equipment_available", "op": "==", "value": true, "source": "SRC-BOOKING", "rationale": "目标窗设备必须可用"},
+    {"id": "HC-APPROVAL", "metric": "resources.approval_confirmed", "op": "==", "value": true, "source": "SRC-RISK", "rationale": "示例审批确认字段；真实项目须重新核验"}
+  ],
+  "candidate_plans": [
+    {
+      "plan_id": "P1", "version": "v1.0", "based_on": null,
+      "plan": {
+        "n_runs": 10,
+        "resources": {"equipment_available": true, "approval_confirmed": true},
+        "metrics": {"scientific_alignment": 4, "total_cost": 100, "total_time_hours": 12, "risk_score": 2, "evidence_strength": 3},
+        "cost_items": [
+          {"id": "P1-SETUP", "kind": "setup", "quantity": 1, "unit": "plan", "unit_cost": 40, "currency": "CNY", "basis": "per_plan", "source": "SRC-QUOTE"},
+          {"id": "P1-ASSAY", "kind": "consumable", "quantity": 1, "unit": "run", "unit_cost": 6, "currency": "CNY", "basis": "per_run", "source": "SRC-QUOTE"}
+        ],
+        "time_items": [
+          {"id": "P1-PREP", "kind": "preparation", "hours": 2, "basis": "per_plan", "source": "SRC-BOOKING"},
+          {"id": "P1-RUN", "kind": "execution", "hours": 0.6, "basis": "per_run", "source": "SRC-BOOKING"},
+          {"id": "P1-QUEUE", "kind": "queue", "hours": 3, "basis": "per_plan", "source": "SRC-BOOKING"},
+          {"id": "P1-REWORK", "kind": "rework", "hours": 4, "probability": 0.25, "basis": "per_plan", "source": "SRC-RISK"}
+        ],
+        "evidence": {
+          "scientific_alignment": [{"source_id": "SRC-PILOT", "locator": "P-01 §2.1", "quote": "示例：P1 覆盖主要终点但缺少一个次要终点"}],
+          "risk_score": [{"source_id": "SRC-RISK", "locator": "R-01 P1", "quote": "示例：两条可缓解风险，无未控高后果风险"}],
+          "evidence_strength": [{"source_id": "SRC-PILOT", "locator": "P-01 §4", "quote": "示例：单次预实验，尚无独立重复"}]
+        },
+        "rationales": {
+          "scientific_alignment": "4/5：覆盖主要终点，次要终点覆盖不足",
+          "total_cost": "100 CNY=40 setup+10×6 assay",
+          "total_time_hours": "12 h=2 prep+10×0.6 execution+3 queue+4×0.25 expected rework",
+          "risk_score": "2/5：示例风险日志中的低到中等等级",
+          "evidence_strength": "3/5：有预实验但无独立重复"
+        },
+        "uncertainties": {
+          "total_cost": {"lower": 90, "upper": 120, "source": "SRC-QUOTE", "meaning": "示例价格区间"},
+          "evidence_strength": {"lower": 2.5, "upper": 3.5, "source": "SRC-PILOT", "meaning": "示例评分不确定性"}
+        }
+      },
+      "changes": [{"field": "initial_version", "from": null, "to": "P1 baseline", "reason": "示例基线"}]
+    },
+    {
+      "plan_id": "P2", "version": "v1.1", "based_on": "P1",
+      "plan": {
+        "n_runs": 10,
+        "resources": {"equipment_available": true, "approval_confirmed": true},
+        "metrics": {"scientific_alignment": 5, "total_cost": 210, "total_time_hours": 20, "risk_score": 4, "evidence_strength": 4},
+        "cost_items": [
+          {"id": "P2-SETUP", "kind": "setup", "quantity": 1, "unit": "plan", "unit_cost": 80, "currency": "CNY", "basis": "per_plan", "source": "SRC-QUOTE"},
+          {"id": "P2-ASSAY", "kind": "consumable", "quantity": 1, "unit": "run", "unit_cost": 13, "currency": "CNY", "basis": "per_run", "source": "SRC-QUOTE"}
+        ],
+        "time_items": [
+          {"id": "P2-PREP", "kind": "preparation", "hours": 3, "basis": "per_plan", "source": "SRC-BOOKING"},
+          {"id": "P2-RUN", "kind": "execution", "hours": 1, "basis": "per_run", "source": "SRC-BOOKING"},
+          {"id": "P2-QUEUE", "kind": "queue", "hours": 5, "basis": "per_plan", "source": "SRC-BOOKING"},
+          {"id": "P2-REWORK", "kind": "rework", "hours": 4, "probability": 0.5, "basis": "per_plan", "source": "SRC-RISK"}
+        ],
+        "evidence": {
+          "scientific_alignment": [{"source_id": "SRC-PILOT", "locator": "P-01 §2.2", "quote": "示例：P2 覆盖全部终点"}],
+          "risk_score": [{"source_id": "SRC-RISK", "locator": "R-01 P2", "quote": "示例：复杂路线返工概率较高"}],
+          "evidence_strength": [{"source_id": "SRC-PILOT", "locator": "P-01 §5", "quote": "示例：有一次独立重复"}]
+        },
+        "rationales": {
+          "scientific_alignment": "5/5：目标覆盖完整，但硬预算不满足",
+          "total_cost": "210 CNY=80 setup+10×13 assay，超预算",
+          "total_time_hours": "20 h=3 prep+10 execution+5 queue+4×0.5 expected rework",
+          "risk_score": "4/5：返工与复杂操作较多",
+          "evidence_strength": "4/5：一次独立重复"
+        }
+      },
+      "changes": [{"field": "coverage", "from": "P1 endpoints", "to": "expanded endpoints", "reason": "示例覆盖改进，但增加成本"}]
+    },
+    {
+      "plan_id": "P3", "version": "v1.2", "based_on": "P1",
+      "plan": {
+        "n_runs": 10,
+        "resources": {"equipment_available": true, "approval_confirmed": true},
+        "metrics": {"scientific_alignment": 5, "total_cost": 140, "total_time_hours": 16, "risk_score": 3, "evidence_strength": 5},
+        "cost_items": [
+          {"id": "P3-SETUP", "kind": "setup", "quantity": 1, "unit": "plan", "unit_cost": 60, "currency": "CNY", "basis": "per_plan", "source": "SRC-QUOTE"},
+          {"id": "P3-ASSAY", "kind": "consumable", "quantity": 1, "unit": "run", "unit_cost": 8, "currency": "CNY", "basis": "per_run", "source": "SRC-QUOTE"}
+        ],
+        "time_items": [
+          {"id": "P3-PREP", "kind": "preparation", "hours": 2, "basis": "per_plan", "source": "SRC-BOOKING"},
+          {"id": "P3-RUN", "kind": "execution", "hours": 0.8, "basis": "per_run", "source": "SRC-BOOKING"},
+          {"id": "P3-QUEUE", "kind": "queue", "hours": 4, "basis": "per_plan", "source": "SRC-BOOKING"},
+          {"id": "P3-REWORK", "kind": "rework", "hours": 4, "probability": 0.5, "basis": "per_plan", "source": "SRC-RISK"}
+        ],
+        "evidence": {
+          "scientific_alignment": [{"source_id": "SRC-PILOT", "locator": "P-01 §2.3", "quote": "示例：P3 以较少步骤覆盖全部终点"}],
+          "risk_score": [{"source_id": "SRC-RISK", "locator": "R-01 P3", "quote": "示例：返工风险中等，有明示回退"}],
+          "evidence_strength": [{"source_id": "SRC-PILOT", "locator": "P-01 §6", "quote": "示例：独立重复与设备记录可交叉核对"}, {"source_id": "SRC-MANUAL", "locator": "M-01 §3.2"}]
+        },
+        "rationales": {
+          "scientific_alignment": "5/5：目标覆盖完整且步骤较少",
+          "total_cost": "140 CNY=60 setup+10×8 assay，接受比 P1 高 40 CNY 的成本",
+          "total_time_hours": "16 h=2 prep+10×0.8 execution+4 queue+4×0.5 expected rework，接受比 P1 多 4 h",
+          "risk_score": "3/5：比 P1 风险高，但有回退触发器",
+          "evidence_strength": "5/5：示例独立重复和设备记录双来源"
+        },
+        "uncertainties": {
+          "total_cost": {"lower": 120, "upper": 160, "source": "SRC-QUOTE", "meaning": "示例价格区间"},
+          "total_time_hours": {"lower": 14, "upper": 20, "source": "SRC-BOOKING", "meaning": "示例排期区间"},
+          "evidence_strength": {"lower": 4.8, "upper": 5, "source": "SRC-PILOT", "meaning": "示例评分区间"}
+        }
+      },
+      "changes": [{"field": "evidence", "from": "single example pretest", "to": "pretest plus independent record crosscheck", "reason": "示例证据改进"}]
+    }
+  ],
+  "sensitivity": {"weight_delta": 0.2},
+  "fallback_triggers": [
+    {"trigger": "目标预约窗内 P3 设备状态变为不可用", "action": "保留原比较记录，重算全部硬门槛后切换 P1", "target_plan_id": "P1", "source": "SRC-BOOKING"},
+    {"trigger": "P3 支撑记录复核失败或证据强度低于 4.8", "action": "暂停 P3，复核 P1 当前预算/排期后启用备选", "target_plan_id": "P1", "source": "SRC-PILOT"}
+  ],
+  "pending_review": [],
+  "caller_note": "此值用于验证比较题 output_contract 的 case 携带值直通。",
+  "output_contract": {
+    "case_id": "input identifier",
+    "status": "run status",
+    "criteria": "common weights and scales",
+    "constraint_results": "per-plan hard gates",
+    "scoring_matrix": "aligned raw/normalised/weighted matrix",
+    "evidence_matrix": "per-cell evidence and rationale",
+    "ranking": "eligible plan ranking",
+    "sensitivity_analysis": "weight scenarios and thresholds",
+    "uncertainty_analysis": "declared interval corner probes",
+    "tradeoffs": "accepted advantages and disadvantages",
+    "recommendation": "selected plan and basis",
+    "fallback_plan": "runner-up and concrete switch triggers",
+    "change_records": "reproducibility and changes",
+    "run_state": "exit and handoff",
+    "caller_note": "pass through caller value",
+    "unknown_figure": "must be null with a named limit"
+  }
+}

@@ -1,0 +1,1 @@
+EXAMPLE ONLY. Write the training sentences using only seed, lr, epochs, batch_size, and dropout from the config. Percent form (50%) counts as the config value 0.5. Do not name a dataset: the config has no dataset key, so the honest result keeps it not_in_source.

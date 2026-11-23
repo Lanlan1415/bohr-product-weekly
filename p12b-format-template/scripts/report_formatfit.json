@@ -1,0 +1,116 @@
+{
+  "schema_version": "formatfit-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_real_apply",
+      "pass": true,
+      "status": "clean",
+      "fired": []
+    },
+    {
+      "scenario": "audit_existing_output",
+      "pass": true,
+      "status": "clean",
+      "fired": []
+    },
+    {
+      "scenario": "content_change_detected",
+      "pass": true,
+      "status": "blocked",
+      "fired": [
+        "fit.content_changed",
+        "fit.font_mismatch",
+        "fit.heading_style_mismatch",
+        "fit.margin_mismatch",
+        "fit.size_mismatch"
+      ]
+    },
+    {
+      "scenario": "content_unit_lost",
+      "pass": true,
+      "status": "blocked",
+      "fired": [
+        "fit.content_changed",
+        "fit.font_mismatch",
+        "fit.heading_style_mismatch",
+        "fit.margin_mismatch",
+        "fit.size_mismatch",
+        "fit.unit_lost"
+      ]
+    },
+    {
+      "scenario": "applied_margin_measured",
+      "pass": true,
+      "status": "clean",
+      "fired": []
+    },
+    {
+      "scenario": "margin_mismatch_detected",
+      "pass": true,
+      "status": "blocked",
+      "fired": [
+        "fit.font_mismatch",
+        "fit.margin_mismatch",
+        "fit.size_mismatch"
+      ]
+    },
+    {
+      "scenario": "unverifiable_caption_is_not_pass",
+      "pass": true,
+      "status": "review",
+      "fired": [
+        "fit.check_unverified"
+      ]
+    },
+    {
+      "scenario": "actual_caption_adjacency",
+      "pass": true,
+      "status": "clean",
+      "fired": []
+    },
+    {
+      "scenario": "required_declaration_missing",
+      "pass": true,
+      "status": "blocked",
+      "fired": [
+        "fit.required_text_missing"
+      ]
+    },
+    {
+      "scenario": "actual_toc_field_detected",
+      "pass": true,
+      "status": "clean",
+      "fired": []
+    },
+    {
+      "scenario": "actual_page_field_detected",
+      "pass": true,
+      "status": "clean",
+      "fired": []
+    },
+    {
+      "scenario": "docx_template_recognition",
+      "pass": true,
+      "fired": []
+    },
+    {
+      "scenario": "tex_template_recognition",
+      "pass": true,
+      "fired": []
+    },
+    {
+      "scenario": "structured_bad_docx_refusal",
+      "pass": true,
+      "fired": []
+    },
+    {
+      "scenario": "deterministic_and_engine_precedence",
+      "pass": true,
+      "fired": []
+    }
+  ],
+  "totals": {
+    "passed": 15,
+    "of": 15
+  }
+}

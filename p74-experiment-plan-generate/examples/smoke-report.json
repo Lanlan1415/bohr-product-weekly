@@ -1,0 +1,69 @@
+{
+  "round": "smoke",
+  "engine_schema": "experiment-plan-generate/v1",
+  "total": 12,
+  "passed": 12,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "cold import outside package",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "realistic nested case smoke clean outside cwd",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "all smoke artifacts present",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "smoke levels preserved per run",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "smoke full factorial and independent n",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unique run ids and contiguous run order",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "smoke cost and time arithmetic",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "independent seed shuffle reproduced",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "smoke plan is prospective and sourced",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "caller spec was not mutated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "cold realistic rerun byte deterministic",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "import and runs have no traceback",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

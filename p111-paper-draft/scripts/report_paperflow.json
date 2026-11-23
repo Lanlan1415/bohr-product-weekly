@@ -1,0 +1,125 @@
+{
+  "schema_version": "paperflow-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_full_paper",
+      "expected": [],
+      "fired": [],
+      "pass": true
+    },
+    {
+      "scenario": "real_heading_required",
+      "expected": [
+        "pf.section_heading_missing"
+      ],
+      "fired": [
+        "pd.uncited_claim",
+        "pf.section_heading_missing"
+      ],
+      "pass": true
+    },
+    {
+      "scenario": "empty_section",
+      "expected": [
+        "pf.section_empty"
+      ],
+      "fired": [
+        "pd.figure_uncited",
+        "pf.section_empty"
+      ],
+      "pass": true
+    },
+    {
+      "scenario": "chain_required",
+      "expected": [
+        "pf.argument_chain_missing"
+      ],
+      "fired": [
+        "pf.argument_chain_missing"
+      ],
+      "pass": true
+    },
+    {
+      "scenario": "chain_missing_link",
+      "expected": [
+        "pf.chain_link_missing"
+      ],
+      "fired": [
+        "pf.chain_link_missing"
+      ],
+      "pass": true
+    },
+    {
+      "scenario": "chain_quote_locator",
+      "expected": [
+        "pf.chain_quote_not_in_draft"
+      ],
+      "fired": [
+        "pf.chain_quote_not_in_draft"
+      ],
+      "pass": true
+    },
+    {
+      "scenario": "chain_unknown_evidence",
+      "expected": [
+        "pf.chain_evidence_unknown"
+      ],
+      "fired": [
+        "pf.chain_evidence_unknown"
+      ],
+      "pass": true
+    },
+    {
+      "scenario": "context_link_invalid",
+      "expected": [
+        "pf.context_link_invalid"
+      ],
+      "fired": [
+        "pf.context_link_invalid"
+      ],
+      "pass": true
+    },
+    {
+      "scenario": "placeholder_routed",
+      "expected": [
+        "pf.placeholder_unregistered"
+      ],
+      "fired": [
+        "pf.chain_quote_not_in_draft",
+        "pf.placeholder_unregistered"
+      ],
+      "pass": true
+    },
+    {
+      "scenario": "context_link_valid",
+      "expected": [],
+      "fired": [],
+      "pass": true
+    },
+    {
+      "scenario": "contract_precedence_idempotency",
+      "pass": true,
+      "expected": [
+        "engine>case>null+limits",
+        "byte-identical"
+      ],
+      "fired": [
+        "clean"
+      ]
+    },
+    {
+      "scenario": "structured_refusal",
+      "pass": true,
+      "expected": [
+        "exit5",
+        "result.json",
+        "no traceback"
+      ],
+      "fired": []
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  }
+}

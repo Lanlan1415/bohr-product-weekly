@@ -10,8 +10,11 @@ description: >
   conflicts name the adopted version, that declared page numbers are confirmed in the export,
   that the export names the template's required format with font embedding, measured page
   size, refreshed TOC and editability, and that the declared pre-conversion text survives the
-  conversion sentence by sentence. Use when a task asks for format adaptation, template
-  conformance, or journal/degree-thesis preparation.
+  conversion sentence by sentence. The formatfit primary entry reads real DOCX/TeX templates,
+  safely applies controlled OOXML settings without overwriting source, measures the delivered
+  file, and emits per-requirement pass/fail/unverified evidence; it never claims visual checking.
+  Use when a task asks for format adaptation, template conformance, or journal/degree-thesis
+  preparation. Do not use this package for scientific content rewriting or review responses.
 ---
 
 # manuscript-format
@@ -53,21 +56,20 @@ worse outcome than an ugly one that kept them.
 3. **构造 spec**：把模板规格、标题结构、内容单元计数、转换步骤、导出记录逐项填成一个 JSON
    （见 worked example）；section 取 format_template；附上 case_id，并把 output_contract
    的每个字段以同名键放进 spec（值会被逐字直通进 result.json）。
-4. **审计**：运行 python scripts/writeaudit.py --spec spec.json --section format_template
-   --out /app/output。退出码：0 clean、3 review、4 blocked、5 undetermined（输入无法审计）。
+4. **真实文件适配与审计**：运行 `python scripts/formatfit.py --spec /app/work/format-spec.json --case /input/case.json --input-root /input --out /app/output`。spec 写 `source_file`、`template_file`（真实 docx/json/tex）、`apply:true` 或已有 `output_file`，并保留案例 template.spec/headings/sections。脚本直接从模板提取要求、创建 adapted.docx 或审计既有输出、生成 compliance.json；退出码 0 clean、3 review（存在不可验证项）、4 blocked（不符合或内容受损）、5 undetermined（结构化拒绝）。`writeaudit.py --section format_template` 仅作旧的声明式兼容审计，不能替代真实文件检查。
 5. **修发现重跑**：每条 finding 按 Failure handling 表处置后重跑，直到 clean，或只剩已声明
    的 limits。high 发现不修复就直接交付等于 blocked。
-6. **合并 result.json**：确认 /app/output/result.json 含 case_id 和 output_contract 全部字段
-   （审计自动回填：审计自填的 status/section/findings 保留审计值，spec 带同名值的逐字直通，
-   两边都没有的字段写 null 并在 limits 注明）；把可编辑稿件、导出件、预览放进 /app/output；
-   在 limits 里写清材料缺口与需人工确认项。
+6. **合并 result.json**：确认 /app/output/result.json 顶层含 case_id 和 output_contract
+   全部字段，严格按“引擎实测值 > 案例/spec 值 > null+limits”回填；compliance 逐项给出
+   required/observed/status/evidence，content_preservation 比较真实文本和九类单元。把可编辑稿件、
+   导出件、预览放进 /app/output；渲染属性和人工视觉检查分开记录，不得把 OOXML 检查写成视觉通过。
 
 ## 任务措辞 → 路由决策表
 
 | 任务里的措辞 | 路由与动作 |
 |-|-|
-| 「按目标模板排版 / 适配学位论文或期刊模板 / 套模板」 | 跑 format_template：全字段 template.spec + 完整审计 |
-| 「从模板文件/格式要求中提取可逐项核对的规格」 | 把栏数、字号、行距、页边距、标题层级、题注位置、参考文献样式、导出格式逐项写进 template.spec；核对项写进 checks |
+| 「按目标模板排版 / 适配学位论文或期刊模板 / 套模板」 | 跑 formatfit：真实 source_file/template_file + apply；页边距/字体/字号/行距/栏数/标题样式可安全应用，无法安全自动化的项保持 unverified |
+| 「从模板文件/格式要求中提取可逐项核对的规格」 | formatfit 直接解析 DOCX styles/sectPr 或 TeX class/geometry/font/bibliography；再与 task.md 的显式要求合并并记录每字段来源，不凭经验补值 |
 | 「格式转换 / 迁移（Word↔LaTeX↔Markdown）且内容不能丢」 | 转换前后文本分别填 pre_conversion_text 与 text；input_units 与 output_units 两侧都填（转得全） |
 | 「导出/交稿（PDF、字体嵌入、页码目录可用）」 | export 记录六项逐项给真值；模板要求交付 docx 时 export 里必须出现 docx（交得出） |
 | 「模板有版本差异 / 前后规定冲突」 | 两条冲突规定都抄进 conflicts，adopted 写明采用哪一版 |
@@ -109,7 +111,23 @@ delivery must say which one it followed. `fmt.conflict_unresolved`.
 declared item must be recorded as set (with what) or explicitly marked not set.
 `fmt.header_footer_unverified`.
 
-## Worked example（示例，非正式案例结果）
+## Primary real-file example（示例，非正式案例结果）
+
+```bash
+python examples/run_minimal.py
+```
+
+该示例只在临时目录生成一个小型 DOCX，按模板真实修改页边距、Liberation Serif、11 pt、
+1.5 倍行距和标题样式，再重新打开 adapted.docx 审核。实跑状态为 clean，正文逐字不变、
+output_contract 缺项为 null，且 rendering.visual_inspection = not_performed；临时二进制
+不会打进 Skill。真实案例使用同一 formatfit CLI，输入原稿与模板，不运行示例生成器。
+
+借鉴 GitHub 上 anthropics/skills 项目的 DOCX 机制并落实为纯标准库实现：ZIP 内直接读 OOXML（不解包、
+不恢复符号链接）、受控修改 document.xml/styles.xml、另存而不覆盖原稿、修改前后文本与内容
+单元对照。本实现不声称完成 XSD 验证：当前包没有附带 XSD 套件，因此只报告 ZIP/XML/内容
+结构与实测受控属性，不冒称通过 Office XSD 或渲染验证。
+
+## Legacy declaration-only example（兼容接口，非真实文件验证）
 
 examples/spec.json 的完整内容（一个最小适配交付的 spec，带 case_id 与 output_contract）：
 
@@ -212,6 +230,30 @@ caption_position、参考文献样式 reference_style、导出格式 export_form
 
 ## Rules
 
+### Real-file template and output checks (formatfit.py)
+
+| rule | severity | what it proves |
+|-|-|-|
+| `fit.input_unreadable` | high | source/template/spec 缺失、坏 JSON、坏 ZIP/XML 或不支持的源格式；exit 5 |
+| `fit.processing_error` | high | 实际适配在结构化边界失败；exit 5，不泄露 traceback |
+| `fit.content_changed` | high | 格式适配前后正文不再逐字一致 |
+| `fit.unit_lost` | high | 实际 DOCX 中图、表、公式、脚注、批注、修订、域、分节或嵌入对象减少 |
+| `fit.unit_added` | medium | 适配意外新增内容单元 |
+| `fit.margin_mismatch` | high | 输出 sectPr 页边距不符合模板实测/显式要求 |
+| `fit.font_mismatch` | high | 输出 Normal/docDefaults 字体不符合要求；不代表嵌入或视觉检查 |
+| `fit.size_mismatch` | high | 输出 Normal/docDefaults 字号不符合要求 |
+| `fit.spacing_mismatch` | high | 输出样式行距不符合要求 |
+| `fit.columns_mismatch` | high | 输出栏数不符合要求 |
+| `fit.heading_style_mismatch` | high | 输出可用标题层级不符合要求 |
+| `fit.caption_position_mismatch` | high | 可解析的图表题注实际位置不符合要求 |
+| `fit.header_footer_mismatch` | high | 要求的页眉页脚文本未出现在对应 XML |
+| `fit.page_numbers_missing` | high | 模板要求页码但 footer 无 PAGE 域；只证明域存在，不证明视觉分页 |
+| `fit.toc_missing` | high | 模板要求目录但文档无 TOC 域 |
+| `fit.export_format_mismatch` | high | 实际交付扩展名不是模板要求格式 |
+| `fit.required_text_missing` | high | 摘要/关键词/声明或模板要求章节未出现在交付文本 |
+| `fit.check_unverified` | medium | 参考文献样式等当前机制不能验证，绝不记 pass |
+| `fit.requirement_mismatch` | high | 其他受控字段实测不符合；保留为通用兜底规则 |
+
 ### The format spec
 
 | rule | severity | what it proves |
@@ -311,13 +353,20 @@ undeclared, they stay silent.
 
 ## Output contract
 
-/app/output/result.json（由 writeaudit.py 写出）包含：schema_version（writeaudit/v1）、
-case_id、section、status（clean / review / blocked / undetermined）、findings 数组（每条带
-rule、severity、message 与定位字段）、severity_counts、checked（审计范围计数）、limits、
-output_contract_fields（案例声明的字段名清单），以及 output_contract 每个字段的回填值
-（spec 携带值直通，缺失为 null）。
+/app/output/result.json（主入口由 formatfit.py 写出）包含 schema_version=formatfit/v1、顶层
+case_id、status、findings、severity_counts、checked、limits、deliverable/revised_manuscript、
+template_requirements（含逐字段来源）、compliance、applied_changes/change_log、
+content_preservation、sources（真实路径与 SHA256）、export_record 和 rendering。案例
+output_contract 的每个字段也位于顶层，严格按“引擎实测值 > 案例/spec 值 > null+limits”
+回填并保留 output_contract_fields 名称清单。writeaudit.py 的 writeaudit/v1 仅用于旧声明审计。
 
 ## Limits
+
+- **Primary formatfit reads actual files.** DOCX 页边距、栏数、样式、标题绑定、文本和九类内容单元由 OOXML 实测；TeX class/geometry/font/bibliography 从模板源码提取。它不把申报值当成实测值。
+- **Safe apply is intentionally bounded.** 自动应用页边距、页面尺寸、栏数、Normal/docDefaults 字体字号行距、Heading/Caption 样式及按原句精确匹配的标题绑定；不重排图表、不改参考文献语义、不写摘要/声明、不转换 TeX 源稿。无法自动安全完成的项进入 unverified/limits，交 Agent 或作者实际处理，不伪造完成。
+- **Direct run-level formatting may override base styles.** formatfit 检查 Normal/docDefaults 与受控样式，不证明每个 run 都没有直接格式覆盖；渲染前需逐项查看并在 limits 保留此边界。
+- **Rendering is separate.** rendering.visual_inspection 永远由脚本写 not_performed。只有 Agent 真正调用渲染器并查看 PDF/PNG 后，才能在人工记录中描述所见；font embedding、页码视觉可用性和分页美观不能由 OOXML 推断。
+- **Legacy writeaudit limits (declaration-only interface):**
 
 - **Unit counts are declared, not extracted.** The audit compares the numbers you supply; it
   does not open the .docx and count footnotes. Supplying both sides is what makes the check
@@ -375,24 +424,28 @@ output_contract_fields（案例声明的字段名清单），以及 output_contr
 ## Verification
 
 ```bash
-python scripts/bench_format.py    # 44 scenarios: one per rule, each defect with an FP guard
-python scripts/bench_writing.py   # 20 scenarios: cross-section regression
+python scripts/bench_formatfit.py  # 15 scenarios: real DOCX/TeX recognition/apply/refusal/determinism
+python scripts/bench_format.py     # 44 scenarios: declaration-level rules, each defect with FP guard
+python scripts/bench_writing.py    # 20 scenarios: cross-section regression
 ```
 
-Both pass in full on this machine (44/44 and 20/20). The clean baseline in each must report
-nothing. examples/bench-report.json 是示意报告（示例，非正式案例结果）。
+All pass in full on this machine (15/15, 44/44 and 20/20). The clean baseline in each must
+report nothing. DOCX fixtures are generated in temporary directories and never shipped.
 
 ## Requirements
 
-Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。scripts/ 下 writing.py（规则引擎）、
-guard.py（数量/引用/语气提取）、redline.py（逐句对齐器）、writeaudit.py（入口与
-result.json 写出）均可独立导入。
+Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。scripts/ 下 formatfit.py（真实文件主入口）、
+writing.py（声明规则引擎）、guard.py、redline.py、writeaudit.py（旧入口）均可独立导入。
+DOCX 处理只用 zipfile + ElementTree，不要求 Word/LibreOffice；渲染预览若任务需要则使用平台
+提供的 office-renderer，并把其实际产物与人工视觉结论分开记录。
 
 ## 创新增益
 
 以下均为引擎真实具备、可复跑验证的能力（bench 与 gate 是回归证据）：
 
-1. **双轴审计**：格式符合度与内容完好性在同一次运行内分别出证。内容轴有两条互补机制——
+1. **真实模板识别与安全应用**：formatfit 从实际 DOCX/TeX 模板反推检查项，以 task.md 显式要求覆盖模板默认值并记录来源；对可安全修改的 OOXML 字段实际落盘另存，而非只把目标规格抄回结果。
+2. **逐项合规矩阵**：每个声明字段都有 required/observed/status/evidence，通过、失败、不可验证三态互不冒充；参考文献语义、视觉渲染、字体嵌入和分页无法验证时明确保留。
+3. **双轴审计**：格式符合度与内容完好性在同一次运行内分别出证。内容轴有两条互补机制——
    单元计数守恒（input_units 与 output_units 对九类单元逐一比对，转换丢了脚注/公式/批注即
    点名）与正文保真比对（声明 pre_conversion_text 后，单调 DP 对齐器逐句配对，丢句、数值
    漂移、引用装置变动、语气强度抬升各有一条规则）。通用 Agent 无法对自己的排版产物做这两项
@@ -402,20 +455,20 @@ result.json 写出）均可独立导入。
    不是口号。
 3. **确定性可复跑**：纯标准库、无随机源，同一 spec 两次运行 findings 完全一致（验收 gate
    的 determinism 断言实测通过）；重复运行不会漂移，差异只可能来自 spec 改动。
-4. **契约直通**：case_id 与 output_contract 字段自动回填 result.json，spec 携带值逐字直通，
-   拒跑路径（spec 损坏、未知 section）输出 status undetermined 的可追踪 result.json 且绝不
-   伪造契约字段——坏输入不会产生假装跑过的结构。
+4. **契约直通**：顶层 case_id 与 output_contract 全字段按“引擎实测值 > 案例/spec 值 > null+limits”
+   自动回填；拒跑路径仍保留可读取的契约字段并输出 status undetermined 的可追踪 result.json，
+   绝不伪造契约字段或泄漏 traceback。
 
 ## 生态贡献
 
 1. **SKILL.md 全量文档**：用途、适用条件、调用方式、输入输出、异常处理、限制与自查方法齐备。
-2. **纯标准库引擎**：scripts/ 四个模块无第三方依赖，可独立导入、可嵌入他人流水线。
+2. **纯标准库引擎**：formatfit + 四个兼容模块无第三方依赖，可独立导入、可嵌入他人流水线；真实文件处理不依赖作者本机路径。
 3. **规则清单与引擎一一对应**：本文件每条 rule id 都能在引擎里找到发出点（验收 gate 的规则
    奇偶校验强制），他人可直接把规则表当作模板适配检查清单复用。
-4. **最小调用示例**：examples/spec.json（带 case_id 与 output_contract 的完整输入）+
-   examples/bench-report.json（示意报告，标注为示例）。
-5. **回归套件可独立复跑**：bench_format.py 44 场景 + bench_writing.py 20 场景，每条规则一个
-   场景、每个缺陷配 FP 守卫，clean 基线必须零发现。
+4. **最小调用示例**：examples/run_minimal.py 在临时目录真实创建/适配/复核 DOCX；
+   examples/spec.json 与 examples/bench-report.json 明确只用于旧声明式兼容接口。
+5. **回归套件可独立复跑**：bench_formatfit.py 15 个真文件场景 + bench_format.py 44 场景 +
+   bench_writing.py 20 场景；真实应用、模板识别、内容守恒、敌意输入、确定性与旧接口 clean 基线均有断言。
 6. **异常处置表与 Failure handling 表**：12 类异常、16 类发现的处置动作可直接移植到其他
    格式适配任务。
 7. **稳定行为契约**：退出码 0/3/4/5 与 result.json 字段表固定，上层流水线可程序化消费。

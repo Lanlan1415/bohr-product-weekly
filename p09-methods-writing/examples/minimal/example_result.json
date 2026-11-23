@@ -1,0 +1,689 @@
+{
+  "label": "EXAMPLE ONLY. Not an official contest case and not a prepared answer.",
+  "result": {
+    "schema_version": "methodflow/v1",
+    "case_id": "example-min-methods",
+    "status": "partial",
+    "status_reason": "usable partial chapter/evidence delivered; named source or reproducibility gaps remain",
+    "sources": [
+      {
+        "source_id": "SRC-0001",
+        "parameter": "seed",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 1",
+        "quote": "seed: 7",
+        "value": 7,
+        "unit": ""
+      },
+      {
+        "source_id": "SRC-0002",
+        "parameter": "lr",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 2",
+        "quote": "lr: 0.001",
+        "value": 0.001,
+        "unit": ""
+      },
+      {
+        "source_id": "SRC-0003",
+        "parameter": "epochs",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 3",
+        "quote": "epochs: 12",
+        "value": 12,
+        "unit": ""
+      },
+      {
+        "source_id": "SRC-0004",
+        "parameter": "batch_size",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 4",
+        "quote": "batch_size: 32",
+        "value": 32,
+        "unit": ""
+      },
+      {
+        "source_id": "SRC-0005",
+        "parameter": "dropout",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 5",
+        "quote": "dropout: 0.5",
+        "value": 0.5,
+        "unit": ""
+      }
+    ],
+    "uncertainty": [
+      {
+        "item": "design",
+        "reason": "研究设计与实验流程是否明确？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "variables",
+        "reason": "自变量、因变量/结局与协变量分别是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "controls",
+        "reason": "对照/基线的名称、版本和可比条件在哪里记录？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "materials_equipment",
+        "reason": "材料、试剂、设备、 manufacturer/model 与硬件来源是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "steps",
+        "reason": "逐步操作的输入、动作、输出与判断条件是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "datasets",
+        "reason": "数据集名称、版本、规模、预处理、划分比例与各子集用途是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "sample_size_repeats",
+        "reason": "样本量、独立重复/技术重复次数分别是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "randomization_blinding",
+        "reason": "是否随机分组/随机化顺序及是否盲法？若不需要，理由在哪里？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "statistics",
+        "reason": "评价指标、统计检验、显著性/区间与多重比较策略是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "ethics_safety",
+        "reason": "伦理审批/知情同意或豁免，以及安全/危害控制信息在哪里？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "limitations",
+        "reason": "具体失效场景、适用边界与排除条件是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "dataset",
+        "reason": "dataset identity/version/split not found",
+        "needs_author": true
+      }
+    ],
+    "change_records": [
+      {
+        "id": "methods-evidence-1",
+        "action": "extract",
+        "before": 1,
+        "after": 5,
+        "reason": "files and scalar evidence processed; no experiment run"
+      },
+      {
+        "id": "methods-coverage-1",
+        "action": "audit",
+        "before": 13,
+        "after": 11,
+        "reason": "13 categories audited; missing categories are author questions"
+      }
+    ],
+    "limits": [
+      "研究设计与实验流程是否明确？",
+      "自变量、因变量/结局与协变量分别是什么？",
+      "对照/基线的名称、版本和可比条件在哪里记录？",
+      "材料、试剂、设备、 manufacturer/model 与硬件来源是什么？",
+      "逐步操作的输入、动作、输出与判断条件是什么？",
+      "数据集名称、版本、规模、预处理、划分比例与各子集用途是什么？",
+      "样本量、独立重复/技术重复次数分别是什么？",
+      "是否随机分组/随机化顺序及是否盲法？若不需要，理由在哪里？",
+      "评价指标、统计检验、显著性/区间与多重比较策略是什么？",
+      "伦理审批/知情同意或豁免，以及安全/危害控制信息在哪里？",
+      "具体失效场景、适用边界与排除条件是什么？",
+      "dataset identity/version/split not found",
+      "reproducibility anchors missing: code_version, data_version, environment",
+      "scripts inspect source text only; no experiment, code execution, statistical reanalysis, randomisation, ethics approval or dataset download was performed"
+    ],
+    "parameter_table": [
+      {
+        "name": "seed",
+        "value": 7,
+        "unit": "",
+        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "line": 1,
+        "locator": "line 1",
+        "quote": "seed: 7"
+      },
+      {
+        "name": "lr",
+        "value": 0.001,
+        "unit": "",
+        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "line": 2,
+        "locator": "line 2",
+        "quote": "lr: 0.001"
+      },
+      {
+        "name": "epochs",
+        "value": 12,
+        "unit": "",
+        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "line": 3,
+        "locator": "line 3",
+        "quote": "epochs: 12"
+      },
+      {
+        "name": "batch_size",
+        "value": 32,
+        "unit": "",
+        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "line": 4,
+        "locator": "line 4",
+        "quote": "batch_size: 32"
+      },
+      {
+        "name": "dropout",
+        "value": 0.5,
+        "unit": "",
+        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "line": 5,
+        "locator": "line 5",
+        "quote": "dropout: 0.5"
+      }
+    ],
+    "datasets": [
+      {
+        "name": null,
+        "status": "not_in_source",
+        "reason": "no dataset/version/split key in the supplied files"
+      }
+    ],
+    "steps": [],
+    "prose": "We train for 12 epochs with random seed 7. The learning rate is 0.001 and the batch size is 32. Dropout is set to 50%.\n",
+    "number_audit": {
+      "unsupported": [],
+      "known_values": [
+        "0.001",
+        "0.5",
+        "12",
+        "32",
+        "7"
+      ],
+      "summary": {
+        "numbers_total": 5,
+        "supported": 5,
+        "supported_value_only": 1,
+        "supported_percent": 1,
+        "supported_rounded": 0,
+        "unit_mismatch": 0,
+        "unsupported": 0,
+        "todo_confirm_count": 0,
+        "support_rate": 1.0
+      }
+    },
+    "reproducibility": {
+      "config_files": [
+        "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml"
+      ],
+      "parameters_extracted": 5,
+      "command": "python train.py --config config.yaml",
+      "seed_present": true,
+      "required_anchors": {
+        "code_version": false,
+        "data_version": false,
+        "environment": false,
+        "command": true,
+        "seed": true
+      },
+      "missing": [
+        "code_version",
+        "data_version",
+        "environment"
+      ]
+    },
+    "limitations": [
+      {
+        "item": "design",
+        "reason": "研究设计与实验流程是否明确？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "variables",
+        "reason": "自变量、因变量/结局与协变量分别是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "controls",
+        "reason": "对照/基线的名称、版本和可比条件在哪里记录？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "materials_equipment",
+        "reason": "材料、试剂、设备、 manufacturer/model 与硬件来源是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "steps",
+        "reason": "逐步操作的输入、动作、输出与判断条件是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "datasets",
+        "reason": "数据集名称、版本、规模、预处理、划分比例与各子集用途是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "sample_size_repeats",
+        "reason": "样本量、独立重复/技术重复次数分别是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "randomization_blinding",
+        "reason": "是否随机分组/随机化顺序及是否盲法？若不需要，理由在哪里？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "statistics",
+        "reason": "评价指标、统计检验、显著性/区间与多重比较策略是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "ethics_safety",
+        "reason": "伦理审批/知情同意或豁免，以及安全/危害控制信息在哪里？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "limitations",
+        "reason": "具体失效场景、适用边界与排除条件是什么？",
+        "needs_author": true,
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "item": "dataset",
+        "reason": "dataset identity/version/split not found",
+        "needs_author": true
+      }
+    ],
+    "coverage": [
+      {
+        "category": "design",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "研究设计与实验流程是否明确？"
+      },
+      {
+        "category": "variables",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "自变量、因变量/结局与协变量分别是什么？"
+      },
+      {
+        "category": "controls",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "对照/基线的名称、版本和可比条件在哪里记录？"
+      },
+      {
+        "category": "materials_equipment",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "材料、试剂、设备、 manufacturer/model 与硬件来源是什么？"
+      },
+      {
+        "category": "steps",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "逐步操作的输入、动作、输出与判断条件是什么？"
+      },
+      {
+        "category": "parameters",
+        "state": "reported",
+        "evidence": [
+          {
+            "kind": "parameter",
+            "name": "seed",
+            "value": 7,
+            "unit": "",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "locator": "line 1",
+            "quote": "seed: 7"
+          },
+          {
+            "kind": "parameter",
+            "name": "lr",
+            "value": 0.001,
+            "unit": "",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "locator": "line 2",
+            "quote": "lr: 0.001"
+          },
+          {
+            "kind": "parameter",
+            "name": "epochs",
+            "value": 12,
+            "unit": "",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "locator": "line 3",
+            "quote": "epochs: 12"
+          },
+          {
+            "kind": "parameter",
+            "name": "batch_size",
+            "value": 32,
+            "unit": "",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "locator": "line 4",
+            "quote": "batch_size: 32"
+          },
+          {
+            "kind": "parameter",
+            "name": "dropout",
+            "value": 0.5,
+            "unit": "",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "locator": "line 5",
+            "quote": "dropout: 0.5"
+          },
+          {
+            "kind": "source_excerpt",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "line": 2,
+            "locator": "line 2",
+            "quote": "lr: 0.001"
+          },
+          {
+            "kind": "source_excerpt",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "line": 3,
+            "locator": "line 3",
+            "quote": "epochs: 12"
+          },
+          {
+            "kind": "source_excerpt",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "line": 4,
+            "locator": "line 4",
+            "quote": "batch_size: 32"
+          }
+        ],
+        "evidence_count": 8,
+        "gap_question": null
+      },
+      {
+        "category": "datasets",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "数据集名称、版本、规模、预处理、划分比例与各子集用途是什么？"
+      },
+      {
+        "category": "sample_size_repeats",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "样本量、独立重复/技术重复次数分别是什么？"
+      },
+      {
+        "category": "randomization_blinding",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "是否随机分组/随机化顺序及是否盲法？若不需要，理由在哪里？"
+      },
+      {
+        "category": "statistics",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "评价指标、统计检验、显著性/区间与多重比较策略是什么？"
+      },
+      {
+        "category": "ethics_safety",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "伦理审批/知情同意或豁免，以及安全/危害控制信息在哪里？"
+      },
+      {
+        "category": "reproducibility",
+        "state": "reported",
+        "evidence": [
+          {
+            "kind": "parameter",
+            "name": "seed",
+            "value": 7,
+            "unit": "",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "locator": "line 1",
+            "quote": "seed: 7"
+          },
+          {
+            "kind": "source_excerpt",
+            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "line": 1,
+            "locator": "line 1",
+            "quote": "seed: 7"
+          }
+        ],
+        "evidence_count": 2,
+        "gap_question": null
+      },
+      {
+        "category": "limitations",
+        "state": "missing",
+        "evidence": [],
+        "evidence_count": 0,
+        "gap_question": "具体失效场景、适用边界与排除条件是什么？"
+      }
+    ],
+    "gap_analysis": [
+      {
+        "category": "design",
+        "question": "研究设计与实验流程是否明确？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "variables",
+        "question": "自变量、因变量/结局与协变量分别是什么？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "controls",
+        "question": "对照/基线的名称、版本和可比条件在哪里记录？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "materials_equipment",
+        "question": "材料、试剂、设备、 manufacturer/model 与硬件来源是什么？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "steps",
+        "question": "逐步操作的输入、动作、输出与判断条件是什么？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "datasets",
+        "question": "数据集名称、版本、规模、预处理、划分比例与各子集用途是什么？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "sample_size_repeats",
+        "question": "样本量、独立重复/技术重复次数分别是什么？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "randomization_blinding",
+        "question": "是否随机分组/随机化顺序及是否盲法？若不需要，理由在哪里？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "statistics",
+        "question": "评价指标、统计检验、显著性/区间与多重比较策略是什么？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "ethics_safety",
+        "question": "伦理审批/知情同意或豁免，以及安全/危害控制信息在哪里？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      },
+      {
+        "category": "limitations",
+        "question": "具体失效场景、适用边界与排除条件是什么？",
+        "action": "answer from an actual supplied source, or declare not_applicable with a case-specific rationale and source; never infer it"
+      }
+    ],
+    "evidence_map": [
+      {
+        "source_id": "SRC-0001",
+        "parameter": "seed",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 1",
+        "quote": "seed: 7",
+        "value": 7,
+        "unit": ""
+      },
+      {
+        "source_id": "SRC-0002",
+        "parameter": "lr",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 2",
+        "quote": "lr: 0.001",
+        "value": 0.001,
+        "unit": ""
+      },
+      {
+        "source_id": "SRC-0003",
+        "parameter": "epochs",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 3",
+        "quote": "epochs: 12",
+        "value": 12,
+        "unit": ""
+      },
+      {
+        "source_id": "SRC-0004",
+        "parameter": "batch_size",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 4",
+        "quote": "batch_size: 32",
+        "value": 32,
+        "unit": ""
+      },
+      {
+        "source_id": "SRC-0005",
+        "parameter": "dropout",
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "locator": "line 5",
+        "quote": "dropout: 0.5",
+        "value": 0.5,
+        "unit": ""
+      }
+    ],
+    "conflicts": [],
+    "findings": [
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "design",
+        "question": "研究设计与实验流程是否明确？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "variables",
+        "question": "自变量、因变量/结局与协变量分别是什么？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "controls",
+        "question": "对照/基线的名称、版本和可比条件在哪里记录？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "materials_equipment",
+        "question": "材料、试剂、设备、 manufacturer/model 与硬件来源是什么？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "steps",
+        "question": "逐步操作的输入、动作、输出与判断条件是什么？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "datasets",
+        "question": "数据集名称、版本、规模、预处理、划分比例与各子集用途是什么？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "sample_size_repeats",
+        "question": "样本量、独立重复/技术重复次数分别是什么？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "randomization_blinding",
+        "question": "是否随机分组/随机化顺序及是否盲法？若不需要，理由在哪里？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "statistics",
+        "question": "评价指标、统计检验、显著性/区间与多重比较策略是什么？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "ethics_safety",
+        "question": "伦理审批/知情同意或豁免，以及安全/危害控制信息在哪里？"
+      },
+      {
+        "rule": "methods.coverage_gap",
+        "severity": "medium",
+        "category": "limitations",
+        "question": "具体失效场景、适用边界与排除条件是什么？"
+      }
+    ],
+    "deliverable": {
+      "methods_file": "methods.md",
+      "parameter_table_file": "parameter_table.json",
+      "evidence_map_file": "evidence_map.json",
+      "gap_analysis_file": "gap_analysis.json",
+      "editable": true,
+      "experiments_executed": false
+    }
+  }
+}

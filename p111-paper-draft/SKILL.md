@@ -7,9 +7,12 @@ description: >
   the sample size must match the records; figure captions must agree with the figure data;
   the abstract must not contain numbers the body lacks; the glossary terminology must not
   drift; causal wording is refused for observational designs; and the required
-  declarations, change log and human-confirmation points must be present.
-  Use when a task asks for a section draft, manuscript, or results write-up built on given
-  experimental records and references, or for a fact-consistency pass over such a draft.
+  declarations, change log and human-confirmation points must be present. The paperflow
+  entry also builds editable manuscript/evidence/paragraph artefacts, verifies real
+  section headings, and checks exact-quote problem–method–evidence–conclusion links and
+  paragraph context. Use when a task asks for a section draft, manuscript, or results
+  write-up built on given experimental records and references, or for a fact-consistency
+  pass over such a draft.
 ---
 
 # paper-draft
@@ -18,7 +21,8 @@ The deliverable is a draft that can enter revision, which means a reader can che
 
 | scoring point | rule |
 |-|-|
-| a real section draft, not an outline | `pd.draft_missing`, `pd.sections_missing` |
+| a real section draft, not an outline | `pd.draft_missing`, `pd.sections_missing`, `pf.section_heading_missing`, `pf.section_empty` |
+| problem–method–evidence–conclusion consistency | `pf.argument_chain_missing`, `pf.chain_link_missing`, `pf.chain_quote_not_in_draft`, `pf.chain_evidence_unknown` |
 | facts matching the materials | `pd.value_not_in_materials`, `pd.sample_size_mismatch`, `pd.figure_caption_mismatch` |
 | every factual claim tracing to a material **and** a reference | `pd.uncited_claim`, `pd.material_no_locator`, `pd.unknown_source` |
 | template sections, figures, references, declarations | `pd.sections_missing`, `pd.declaration_missing` |
@@ -89,13 +93,25 @@ text with `{M}` material anchors and `[key]` reference keys, the material index 
 entry with a locator and its own text), the reference list, figures with captions and
 their own values, declarations, change log, and the case's declared output contract
 fields copied in as keys (such as the deliverable file descriptor) so they can be echoed
-verbatim into the result. See `examples/spec-contract.json` for the full shape.
+verbatim into the result. A full paper must also carry `argument_chain`: each row quotes
+the problem, method and conclusion **exactly as already written**, points `evidence` to
+existing `{M}` / figure / reference ids, and names their sections. This is a locatable
+cross-section index, not a request to invent an extra claim. Optional `paragraph_links`
+use the generated P001/P002 ids to record non-obvious supports/contrasts/concludes
+relations. See `examples/spec-contract.json` for the full shape.
 
 **Step 4 — audit.** Run the engine once:
 
 ```bash
-python scripts/secrun.py --spec examples/spec-contract.json --out /app/output
+python scripts/paperflow.py --spec /app/work/spec.json --case /input/case.json --out /app/output
 ```
+
+For the bundled minimal example, replace `/app/work/spec.json` with
+`examples/spec-contract.json` and omit `--case`. `paperflow.py` runs the established
+`sections.py` fact/citation audit unchanged, then adds paper-scale structure, chain,
+paragraph-context, editable-artifact and top-level contract checks. The legacy
+`secrun.py` remains available only for backwards-compatible `sections.py` audits; it is
+not the delivery entry point because its historical output nests contract echo.
 
 Exit codes: `0` clean, `3` review (only low/medium findings), `4` blocked (any high
 finding), `5` undetermined (the case could not be run as declared — unreadable spec,
@@ -110,12 +126,11 @@ human-confirmation point, and say why in the run's limits, because an honest blo
 status beats a silenced rule.
 
 **Step 6 — merge the result.** Write the deliverable files under the output directory
-(the draft itself in an editable format, plus the material-to-claim mapping). The result
-file written by the engine already carries: the case identifier, every field of the
-declared output contract (values the case carried pass through untouched; the audited
-status, findings and counts are filled by the audit; anything else is null with a limits
-note — never a fabricated value), findings, severity counts, and limits. Keep that file
-as the structured result of the case.
+(the engine itself writes `manuscript.md`, `evidence_map.json` and `paragraph_ledger.json`).
+The result file already carries top-level `case_id` and every declared contract field at
+the **top level**, with strict precedence **engine-derived value > case/spec value > null
+plus a limits note**. Findings, severity counts, paragraph/chain audits and limits remain
+beside those fields. Never replace an engine verdict with a case-provided `status`.
 
 ## The spec, field by field
 
@@ -168,7 +183,7 @@ contract with five fields, one of which (`manuscript_file`) is a deliverable des
 the case itself carries. Run:
 
 ```bash
-python scripts/secrun.py --spec examples/spec-contract.json --out /tmp/out
+python scripts/paperflow.py --spec examples/spec-contract.json --out /tmp/out
 ```
 
 Console output（示例，路径随机器不同）:
@@ -184,14 +199,17 @@ The written result（示例节选，实跑所得）:
 {
   "case_id": "demo-draft-001",
   "status": "clean",
-  "checked": {"section": "paper_draft", "items": 2},
-  "output_contract": {
-    "case_id": "demo-draft-001",
-    "status": "clean",
-    "manuscript_file": {"format": "markdown", "path": "draft.md"},
-    "findings": [],
-    "severity_counts": {}
-  }
+  "checked": {"sections": 4, "required_sections": 4, "paragraphs": 4,
+              "argument_links": 1, "materials": 2, "references": 1},
+  "manuscript_file": {"format": "markdown", "path": "draft.md"},
+  "findings": [],
+  "severity_counts": {},
+  "deliverable": {"kind": "editable_manuscript", "path": "manuscript.md"},
+  "build": {"citation_keys_resolved": true,
+            "all_required_headings_present": true,
+            "visual_or_typesetting_check": "not_performed"},
+  "output_contract_fields": ["case_id", "status", "manuscript_file",
+                             "findings", "severity_counts"]
 }
 ```
 
@@ -211,7 +229,13 @@ and the case identifier is recorded — exit 0.
 | severity_counts | findings by severity |
 | checked | items audited |
 | limits | what this run could not verify, including any contract field left null |
-| output_contract | every declared contract field: case-carried values pass through, audited keys are filled by the audit, the rest are null with a limits note |
+| output_contract_fields | names of every declared field; each named field is also a top-level result key |
+| deliverable / evidence_map / paragraph_ledger | editable manuscript descriptor, source ledger, and ordered paragraph context |
+| argument_chain_audit / build | exact-quote cross-section chain checks and citation/heading build verdicts |
+
+Contract precedence is literal: engine-derived values win; otherwise a case/spec value is
+copied unchanged; otherwise the field is `null` and named in `limits`. This applies on
+structured refusals too whenever the input contract itself was readable.
 
 ## Mapping to the required result sections
 
@@ -222,6 +246,20 @@ and the case identifier is recorded — exit 0.
 | 版本与边界 | change_log 修改留痕 + review_points 人工确认项 + limits（材料缺口与不可判定项）+ status |
 
 ## Rules
+
+### Paper-scale structure and argument chain (paperflow.py)
+
+| rule | severity | what it proves |
+|-|-|-|
+| `pf.section_heading_missing` | high | a template section exists only as a mention, not a real heading |
+| `pf.section_empty` | high | a required heading has no body text |
+| `pf.section_order_inconsistent` | medium | real headings do not follow template order |
+| `pf.argument_chain_missing` | high | a full paper has no cross-section argument index |
+| `pf.chain_link_missing` | high | problem, method, evidence or conclusion is unlinked |
+| `pf.chain_quote_not_in_draft` | high | a chain quote is absent from its assigned section |
+| `pf.chain_evidence_unknown` | high | a chain points outside the declared evidence index |
+| `pf.context_link_invalid` | medium | a paragraph relation has unknown/reversed ids or no relation |
+| `pf.placeholder_unregistered` | medium | TODO/待确认 text has no review-point or limit routing |
 
 ### Structure and declarations
 
@@ -272,7 +310,9 @@ and the case identifier is recorded — exit 0.
 
 | rule | severity | what it proves |
 |-|-|-|
-| `audit.no_section` | high | the case could not be run as declared: no or unknown section, a non-object spec, or a spec that is not readable JSON — refused with exit 5, never a crash |
+| `audit.no_section` | high | legacy `secrun.py` refusal for no/unknown section |
+| `audit.spec_unreadable` | high | primary `paperflow.py` input refusal; exit 5 with structured result |
+| `audit.section_error` | high | primary audit boundary; unexpected failure becomes exit 5, never a traceback |
 
 ## Exception handling
 
@@ -319,7 +359,9 @@ and the case identifier is recorded — exit 0.
   form is not a violation.
 - **Causal detection is a word list** (causes, leads to, due to, because of). "The results in
   Table 1" is a pointer, not causal language, and is not flagged.
-- **The audit does not judge prose.** Structure, traceability and factual agreement only.
+- **The audit does not judge prose aesthetics.** Structure, cross-section locators, traceability and factual agreement only. `argument_chain` never licenses adding results: it maps exact quotes already present.
+- **No visual/typesetting claim.** **build.visual_or_typesetting_check** is always `not_performed`; Markdown structure checks do not prove Word/PDF rendering.
+- **External mechanisms adapted:** Manubot Rootstock's citation-aware manuscript build is implemented here as resolved-key + required-heading build gates; it does not run Manubot, Pandoc, DOI retrieval or network validation.
 
 ## Failure handling
 
@@ -340,11 +382,12 @@ and the case identifier is recorded — exit 0.
 ## Verification
 
 ```bash
-python scripts/bench_draft.py     # 35 scenarios: one per rule plus false-positive guards
-python scripts/bench_sections.py  # 51 scenarios: cross-section regression plus false-positive guards
+python scripts/bench_paperflow.py  # 12 scenarios: full-paper chain, context, contract, refusal
+python scripts/bench_draft.py      # 35 scenarios: established fact/citation rules + FP guards
+python scripts/bench_sections.py   # 51 scenarios: shared-engine regression + FP guards
 ```
 
-Both pass in full on this machine. The clean baseline in each must report nothing. New
+All three pass in full on this machine. The clean baseline in each must report nothing. New
 rules are each covered by a defect scenario and a repaired-twin guard scenario, and the
 opt-in rules stay silent when their trigger (glossary, require flag) is absent.
 
@@ -356,14 +399,16 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
 
 本 Skill 相比通用 Agent 直接写作的核心新增能力（全部为引擎真实运行的机制，bench 覆盖）：
 
-1. **双锚点逐句溯源**：材料锚点与引用键是两套独立机制，数值类句子锚定数据记录、论断类句子引用文献；引用检查逐行再逐句执行，行尾引用不能为行首论断背书——通用 Agent 的整篇扫描做不到这一点。
+1. **跨章节论证链定位**：`argument_chain` 只引用成稿中已存在的原句和既有证据 id，引擎逐项回查问题、方法、证据、结论是否在指定章节汇合；引用键解析和真实标题存在性进入 `build`，借鉴 Manubot Rootstock 的“源文稿→机器构建→无效引用使构建失败”机制，而非泛泛评价逻辑。
+2. **真实结构与段落上下文账本**：独立标题解析拒绝“正文提到 Methods 就算有方法章”，空章和乱序分别报告；`paragraph_ledger` 自动生成稳定 P001…编号、前驱/后继和来源锚点，`paragraph_links` 对非显然的支撑/转折/结论关系做 id 与前向顺序校验。
+3. **双锚点逐句溯源**：材料锚点与引用键是两套独立机制，数值类句子锚定数据记录、论断类句子引用文献；引用检查逐行再逐句执行，行尾引用不能为行首论断背书——通用 Agent 的整篇扫描做不到这一点。
 2. **数值-材料同源校验**：草稿中的每个数字必须逐字出现在其锚定材料的文本里，统计量（p 值、t 值、CI）按惯例豁免、永不逼迫补造。
 3. **样本量专项核对**：统计豁免会放过 n = 12 这类错误，本引擎单独比对草稿与锚定记录的样本量——双方都给出 n 且永不一致才报，记录未给 n 时不臆测。
 4. **图注-图数据一致性**：图注必须包含图数据声明的值；图序必须连续（跳号即疑似删图后正文仍指向）。
 5. **摘要-正文数值一致**：摘要中的数字若正文无处可查即报冲突，摘要不得领先于正文。
 6. **术语与缩写统一**：声明式术语表（首选形/变体/缩写），变体漂移与缩写先用后释都可机检——这是评分创新点中"术语与缩写统一"的落地。
 7. **待核清单与修改留痕**：要求事实核对的任务必须交付人工确认点清单；change_log 缺失即报，成稿可继续编辑且未确认部分显式标注。
-8. **契约直通的 result.json**：case_id 与 output_contract 全字段回填——案例自带的值原样直通、审计派生的键由审计填写、其余置 null 并写入 limits，部分结果也保持交付契约。
+8. **契约直通的 result.json**：顶层 case_id 与 output_contract 全字段按“引擎值 > 案例值 > null+limits”回填，部分结果和结构化拒绝也保持交付契约。
 9. **引擎级崩溃免疫**：类型错位（列表槽位放字符串/数字、template 声明错型）一律降级为发现项或忽略，退出码只有 0/3/4/5 五种，绝不以 traceback 收场。
 
 ## 生态贡献
@@ -373,6 +418,7 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
 3. **examples/spec.json 与 examples/spec-contract.json**：最小调用示例与带契约回填的完整示例，示意输出标注为示例。
 4. **bench_draft.py**：35 个场景，每条规则一个缺陷场景加修复孪生守卫场景，clean 基线必须零发现；report_draft.json 为可复跑证据。
 5. **bench_sections.py**：51 个跨 section 回归场景，防误报守卫覆盖中文与类型错位输入。
+6. **bench_paperflow.py**：12 个端到端场景，覆盖完整成稿、真实标题、空章、论证链、上下文、契约优先级、幂等与坏 JSON 拒绝；共享引擎源码未改动。
 6. **锚点规范**：`{M}` 材料锚点与 `[key]` 引用键的双锚点写法可迁移到任何"材料→稿件"类写作任务，材质索引结构（id + locator + text）即开即用。
 7. **术语表模板**：glossary 的 concept → preferred/variants/abbreviation 结构可复用于其他学科的术语统一。
 8. **声明字段清单**：data availability / author contributions / competing interests / funding 四项声明与 change_log、review_points 一起构成可复用的期刊投稿完整性模板。

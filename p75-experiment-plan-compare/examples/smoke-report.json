@@ -1,0 +1,84 @@
+{
+  "round": "smoke",
+  "engine_schema": "experiment-plan-compare/v1",
+  "total": 15,
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "cold import outside package",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "realistic nested case smoke clean outside cwd",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "all smoke artifacts present",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "three candidates and two eligible",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "failed budget candidate never ranked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "independently recompute WSM P3",
+      "passed": true,
+      "detail": "66.8 vs 66.8"
+    },
+    {
+      "name": "independently recompute WSM P1",
+      "passed": true,
+      "detail": "62.24999999999999 vs 62.25"
+    },
+    {
+      "name": "all smoke evidence resolves to registry",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tradeoff and concrete fallback present",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "case value and unknown contract null handled",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "smoke recommendation has sources and no execution",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "weight and interval scenarios both nonempty",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "caller spec not mutated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "cold realistic rerun byte deterministic",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "import and runs have no traceback",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

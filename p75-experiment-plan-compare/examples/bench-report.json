@@ -1,0 +1,400 @@
+{
+  "schema": "bench-compare/v1",
+  "engine_schema": "experiment-plan-compare/v1",
+  "total": 78,
+  "passed": 78,
+  "failed": 0,
+  "clean_baseline_findings": 0,
+  "results": [
+    {
+      "name": "clean baseline zero findings",
+      "passed": true,
+      "detail": "{\"high\": 0, \"medium\": 0, \"low\": 0}"
+    },
+    {
+      "name": "three versions and fifteen evidence cells",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "cost arithmetic all candidates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "time includes preparation queue expected rework",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "over-budget P2 is eliminated despite soft values",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "only eligible plans ranked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "weighted arithmetic verified",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "every matrix cell has evidence",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tradeoffs include all three accepted disadvantages",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "weight sensitivity executed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "exact flip thresholds calculated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "uncertainty corners executed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "fallback has concrete triggers",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "contract case value passthrough",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "contract unknown null plus limit",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no experiment claimed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "deterministic in memory",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "refuse missing case_id",
+      "passed": true,
+      "detail": "case_id is required"
+    },
+    {
+      "name": "refuse missing objective",
+      "passed": true,
+      "detail": "objective is required to fix the comparison target"
+    },
+    {
+      "name": "refuse fewer than two candidates",
+      "passed": true,
+      "detail": "candidate_plans must contain at least two versioned plans"
+    },
+    {
+      "name": "refuse empty criteria",
+      "passed": true,
+      "detail": "criteria must be a non-empty list so every plan is compared on the same fields"
+    },
+    {
+      "name": "refuse duplicate criteria",
+      "passed": true,
+      "detail": "criteria[5] needs a unique non-empty name"
+    },
+    {
+      "name": "refuse negative weight",
+      "passed": true,
+      "detail": "criterion 'scientific_alignment' needs non-negative weight and min/max direction"
+    },
+    {
+      "name": "refuse zero total weight",
+      "passed": true,
+      "detail": "at least one criterion weight must be positive"
+    },
+    {
+      "name": "refuse invalid direction",
+      "passed": true,
+      "detail": "criterion 'scientific_alignment' needs non-negative weight and min/max direction"
+    },
+    {
+      "name": "refuse duplicate plan id",
+      "passed": true,
+      "detail": "candidate_plans[1] needs a unique plan_id"
+    },
+    {
+      "name": "refuse malformed candidate",
+      "passed": true,
+      "detail": "candidate_plans[3] must be an object"
+    },
+    {
+      "name": "refuse malformed constraint collection",
+      "passed": true,
+      "detail": "hard_constraints must be a list"
+    },
+    {
+      "name": "refuse invalid sensitivity delta",
+      "passed": true,
+      "detail": "sensitivity.weight_delta must be in (0,1]"
+    },
+    {
+      "name": "no hard constraints warning",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"constraint.none_declared\"]}"
+    },
+    {
+      "name": "malformed constraint never silently passes",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"compare.no_feasible_plan\", \"constraint.malformed\"]}"
+    },
+    {
+      "name": "all candidates over budget gives no recommendation",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"compare.no_feasible_plan\"]}"
+    },
+    {
+      "name": "all infeasible recommendation is null",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "caller cannot overwrite engine null recommendation",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "resource gate switches recommendation to P1",
+      "passed": true,
+      "detail": "review"
+    },
+    {
+      "name": "unknown hard gate cannot pass",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"compare.no_feasible_plan\"]}"
+    },
+    {
+      "name": "constraint interval crossing makes candidate ineligible",
+      "passed": true,
+      "detail": "review"
+    },
+    {
+      "name": "criterion missing value high",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"criterion.value_missing\", \"fallback.no_runner_up\"]}"
+    },
+    {
+      "name": "criterion missing evidence high",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"evidence.missing\"]}"
+    },
+    {
+      "name": "unknown evidence source high",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"evidence.unknown_source\"]}"
+    },
+    {
+      "name": "score rationale required",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"evidence.rationale_missing\"]}"
+    },
+    {
+      "name": "derived scale is explicit review",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"criterion.bounds_derived\"]}"
+    },
+    {
+      "name": "derived minmax still discriminates",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "outside scale clipped and named",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"criterion.outside_scale\"]}"
+    },
+    {
+      "name": "declared cost mismatch corrected by arithmetic",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"cost.total_mismatch\"]}"
+    },
+    {
+      "name": "engine cost has precedence over fake declared total",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "negative cost item rejected",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"cost.invalid_item\", \"evidence.missing\"]}"
+    },
+    {
+      "name": "mixed currencies rejected",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"cost.currency_mixed\"]}"
+    },
+    {
+      "name": "per-run cost requires n_runs",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"cost.multiplier_missing\", \"time.invalid_multiplier\"]}"
+    },
+    {
+      "name": "unitemised cost is a visible limit",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"cost.not_itemised\"]}"
+    },
+    {
+      "name": "declared time mismatch corrected",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"time.total_mismatch\"]}"
+    },
+    {
+      "name": "negative time item rejected",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"evidence.missing\", \"time.invalid_item\"]}"
+    },
+    {
+      "name": "unitemised time is a visible limit",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"time.not_itemised\"]}"
+    },
+    {
+      "name": "invalid uncertainty interval",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"uncertainty.invalid_interval\"]}"
+    },
+    {
+      "name": "malformed uncertainty collection",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"uncertainty.malformed\"]}"
+    },
+    {
+      "name": "winner instability under interval is reported",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"uncertainty.winner_unstable\"]}"
+    },
+    {
+      "name": "unstable uncertainty is recorded in recommendation",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "large weight probe exposes instability",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"sensitivity.winner_unstable\"]}"
+    },
+    {
+      "name": "unstable weight is recorded in recommendation",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "fallback triggers required",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"fallback.triggers_missing\"]}"
+    },
+    {
+      "name": "fallback target validated",
+      "passed": true,
+      "detail": "{\"status\": \"blocked\", \"rules\": [\"fallback.malformed\"]}"
+    },
+    {
+      "name": "one eligible plan means no validated runner-up",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"fallback.no_runner_up\"]}"
+    },
+    {
+      "name": "top tie is not hidden",
+      "passed": true,
+      "detail": "{\"status\": \"review\", \"rules\": [\"recommendation.tie\", \"uncertainty.winner_unstable\"]}"
+    },
+    {
+      "name": "tie flag propagated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "list contract and engine precedence",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unregistered evidence allowed only when no registry declared",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no intervals is explicit not fabricated",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "high finding blocks execution status",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI clean exit 0",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI structured refusal: malformed JSON",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI structured refusal: JSON array",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI structured refusal: empty object",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI structured refusal: NaN weight",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI missing file refusal",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI invalid UTF-8 refusal",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI review exit 3",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI blocked exit 4",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "CLI original case wrapper",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

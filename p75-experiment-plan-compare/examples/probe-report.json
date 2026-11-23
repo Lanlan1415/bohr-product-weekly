@@ -1,0 +1,114 @@
+{
+  "round": "probe",
+  "engine_schema": "experiment-plan-compare/v1",
+  "total": 21,
+  "passed": 21,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "baseline exit 0 without traceback",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "hostile syntax structured exit 5",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "hostile array structured exit 5",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "hostile nan structured exit 5",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "missing file structured refusal",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "bad UTF-8 structured refusal",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed contract integer refused",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed contract null refused",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed contract bad-list-entry refused",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "one-candidate comparison structured refusal",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "contract keys preserved exactly",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "case id top level",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "engine status beats fake case status",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "engine null recommendation cannot be replaced",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "case carried field and unknown null plus limits",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "all infeasible blocked exit 4",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "review exit 3 and findings retained",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "same output directory rerun idempotent",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "different output directories byte identical",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "all artifacts UTF-8 regular nonsymlink files",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "stdout is machine-readable summary",
+      "passed": true,
+      "detail": ""
+    }
+  ]
+}

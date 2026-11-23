@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p111-paper-draft
+https://github.com/Lanlan1415/bohr-product-weekly
+p111-paper-draft/

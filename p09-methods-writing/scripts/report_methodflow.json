@@ -1,0 +1,101 @@
+{
+  "schema_version": "methodflow-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "complete_evidence_clean",
+      "pass": true,
+      "status": "success",
+      "exit": 0,
+      "fired": []
+    },
+    {
+      "scenario": "unsupported_number_blocked",
+      "pass": true,
+      "status": "partial",
+      "exit": 4,
+      "fired": [
+        "methods.unsupported_prose_number"
+      ]
+    },
+    {
+      "scenario": "parameters_are_not_steps",
+      "pass": true,
+      "status": "partial",
+      "exit": 3,
+      "fired": [
+        "methods.coverage_gap"
+      ]
+    },
+    {
+      "scenario": "rng_seed_not_allocation",
+      "pass": true,
+      "status": "partial",
+      "exit": 3,
+      "fired": [
+        "methods.coverage_gap"
+      ]
+    },
+    {
+      "scenario": "not_applicable_requires_source",
+      "pass": true,
+      "status": "success",
+      "exit": 0,
+      "fired": []
+    },
+    {
+      "scenario": "unjustified_na_rejected",
+      "pass": true,
+      "status": "partial",
+      "exit": 3,
+      "fired": [
+        "methods.coverage_gap"
+      ]
+    },
+    {
+      "scenario": "same_key_conflict",
+      "pass": true,
+      "status": "partial",
+      "exit": 4,
+      "fired": [
+        "methods.parameter_conflict"
+      ]
+    },
+    {
+      "scenario": "missing_prose_partial",
+      "pass": true,
+      "status": "partial",
+      "exit": 3,
+      "fired": [
+        "methods.prose_missing"
+      ]
+    },
+    {
+      "scenario": "missing_declared_config_refused",
+      "pass": true,
+      "status": "refused",
+      "exit": 5,
+      "fired": [
+        "methods.input_unreadable"
+      ]
+    },
+    {
+      "scenario": "nested_config_with_locator",
+      "pass": true,
+      "fired": []
+    },
+    {
+      "scenario": "malformed_case_structured_refusal",
+      "pass": true,
+      "fired": []
+    },
+    {
+      "scenario": "cli_idempotency_engine_precedence",
+      "pass": true,
+      "fired": []
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  }
+}

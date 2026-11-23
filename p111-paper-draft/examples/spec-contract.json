@@ -1,10 +1,10 @@
 {
   "case_id": "demo-draft-001",
   "section": "paper_draft",
-  "draft": "1 Introduction\nThe coating raises uptake [doe2020] {M1}.\n2 Methods\nWe measured 3 mM samples with n = 6 {M2}.\n3 Results\nUptake rose three-fold [doe2020] {M1} (Fig 1).\n",
-  "abstract": "The coating raised uptake three-fold.",
+  "draft": "# Introduction\nWe investigate coating uptake [doe2020] {M1}.\n\n# Methods\nWe measured 3 mM samples with n = 6 {M2}.\n\n# Results\nUptake rose three-fold {M1} (Fig 1).\n\n# Conclusion\nThe coating supports a bounded uptake conclusion {M1}.\n",
+  "abstract": "Uptake rose three-fold.",
   "design": "experimental",
-  "template": {"sections": ["introduction", "methods", "results"]},
+  "template": {"sections": ["introduction", "methods", "results", "conclusion"]},
   "materials": [
     {"id": "M1", "locator": "run01.csv row 4",
      "text": "uptake rose three-fold with the coating"},
@@ -12,10 +12,18 @@
   ],
   "references": [
     {"key": "doe2020", "authors": "Doe J", "year": 2020, "journal": "J Uptake",
-     "topic": "coating raises uptake", "doi": "10.1000/x"}
+     "topic": "coating uptake", "doi": "10.1000/x"}
   ],
-  "figures": [{"id": "Fig 1", "caption": "Uptake rose three-fold with the coating",
-               "values": ["three-fold"]}],
+  "figures": [{"id": "Fig 1", "caption": "Uptake rose three-fold", "values": ["three-fold"]}],
+  "argument_chain": [{
+    "id": "Q1",
+    "problem": "We investigate coating uptake",
+    "method": "We measured 3 mM samples with n = 6",
+    "evidence": ["M1"],
+    "conclusion": "The coating supports a bounded uptake conclusion",
+    "sections": {"problem": "Introduction", "method": "Methods", "conclusion": "Conclusion"}
+  }],
+  "paragraph_links": [{"from": "P001", "to": "P002", "relation": "method answers problem"}],
   "declarations": {"data_availability": "on request", "author_contributions": "all authors",
                    "competing_interests": "none", "funding": "grant 123"},
   "change_log": ["v1 initial", "v2 anchored methods to records"],

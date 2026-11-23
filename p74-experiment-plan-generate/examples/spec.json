@@ -1,0 +1,155 @@
+{
+  "case_id": "demo-plan-generation-001",
+  "objective": "示例：比较两种处理与两个温度下的相对产率，并形成可排期的前瞻性 2×2 方案；不是正式案例或实测结果。",
+  "sources": [
+    {"id": "SRC-MANUAL", "kind": "example_device_record", "locator": "示例温控器规格表 rev1（虚构演示资源）"},
+    {"id": "SRC-PILOT", "kind": "example_historical_record", "locator": "示例预实验记录 P-01（虚构演示资源）"}
+  ],
+  "assumptions": ["示例材料齐全；实际执行前仍须由实验负责人复核。"],
+  "factors": [
+    {"name": "treatment", "unit": "categorical", "levels": [
+      {"value": "control", "source": "SRC-PILOT", "rationale": "同一基质的阴性处理"},
+      {"value": "active", "source": "SRC-PILOT", "rationale": "研究假设指定的处理"}
+    ]},
+    {"name": "temperature", "unit": "C", "equipment_id": "EQ-TEMP", "levels": [
+      {"value": 20, "source": "SRC-MANUAL", "rationale": "设备允许区间内的低水平"},
+      {"value": 30, "source": "SRC-MANUAL", "rationale": "设备允许区间内的高水平"}
+    ]}
+  ],
+  "resources": {
+    "budget": {"amount": 200, "currency": "CNY", "source": "SRC-PILOT"},
+    "time_window_hours": 24,
+    "sample_limit": 20,
+    "source": "SRC-PILOT"
+  },
+  "sample_size": {
+    "experimental_unit": "独立培养批次",
+    "n_per_cell": 3,
+    "technical_replicates": 2,
+    "basis": "SRC-PILOT：资源约束的示例 pilot，每细胞 3 个独立批次；不声称验证性检验效能"
+  },
+  "design": {"control_runs_per_replication": 0, "center_points": 0},
+  "randomization": {"method": "seeded_complete_run_order", "seed": 2026, "allocation": "12 个独立批次随机运行顺序"},
+  "blinding": {"status": "outcome_assessor", "procedure": "样本以 run_id 编码，检测者不见处理标签", "unblinding": "数据库锁定后由第二人解码"},
+  "plan_template": {
+    "hypotheses": [
+      {"id": "H1", "statement": "active 相对 control 改变相对产率，且温度可能修饰该效应", "primary_outcome": "yield_ratio", "falsification": "处理主效应及交互的置信区间均覆盖预设无效区且技术复核无缺陷"}
+    ],
+    "variables": [
+      {"name": "treatment", "role": "independent", "operational_definition": "按 design_matrix 的 treatment 列分配", "unit": "categorical"},
+      {"name": "temperature", "role": "independent", "operational_definition": "反应器设定温度", "unit": "C", "measurement": "校准温度计每 5 min 记录"},
+      {"name": "yield_ratio", "role": "dependent", "operational_definition": "active 与同批 control 的产率比", "unit": "ratio", "measurement": "EQ-ASSAY 按示例 SOP 测定"},
+      {"name": "batch", "role": "confounder", "operational_definition": "独立培养批次编号", "control_strategy": "随机顺序并将批次作为阻断因子"}
+    ],
+    "controls": [
+      {"type": "negative", "purpose": "估计无 active 时的基线产率", "excludes_confounder": "基质与操作背景", "condition": "treatment=control；其余条件一致"},
+      {"type": "process", "purpose": "识别检测漂移", "excludes_confounder": "仪器随时间漂移", "condition": "每批插入同一过程参照样"}
+    ],
+    "steps": [
+      {"id": "S1", "action": "按 run_id 准备并编码 12 个独立培养批次", "depends_on": [], "duration_minutes": 30, "material_ids": ["MAT-1"], "equipment_ids": [], "acceptance_criteria": "标签、批次和 run_id 一一对应", "failure_action": "停止分配并重做编码核对"},
+      {"id": "S2", "action": "按 design_matrix.csv 分配 treatment 与 temperature 并执行反应", "depends_on": ["S1"], "duration_minutes": 120, "parameter_bindings": [{"factor": "treatment"}, {"factor": "temperature", "unit": "C"}], "material_ids": ["MAT-1"], "equipment_ids": ["EQ-TEMP"], "acceptance_criteria": "温度记录 20/30 C 且无越界报警", "failure_action": "隔离该 run，记录偏差，按风险 R1 决定是否补做"},
+      {"id": "S3", "action": "盲法检测相对产率并保存原始读数", "depends_on": ["S2"], "duration_minutes": 45, "material_ids": ["MAT-2"], "equipment_ids": ["EQ-ASSAY"], "acceptance_criteria": "过程参照在预设控制界限内且原始文件完整", "failure_action": "不重写原值；检测失效则同批重新测量并新增记录"}
+    ],
+    "materials": [
+      {"id": "MAT-1", "name": "示例培养基质", "spec": "10 mL/批", "state": "present", "source": "SRC-PILOT"},
+      {"id": "MAT-2", "name": "示例检测试剂", "spec": "双技术复测用量", "state": "present", "source": "SRC-PILOT"}
+    ],
+    "equipment": [
+      {"id": "EQ-TEMP", "name": "示例温控反应器", "model": "DEMO-T100", "state": "present", "source": "SRC-MANUAL", "parameter_ranges": {"temperature": [15, 40]}},
+      {"id": "EQ-ASSAY", "name": "示例产率检测仪", "model": "DEMO-A200", "state": "present", "source": "SRC-MANUAL"}
+    ],
+    "statistical_plan": {
+      "primary_outcome": "yield_ratio",
+      "test": "two-way ANOVA with treatment, temperature and interaction; batch blocking sensitivity analysis",
+      "alpha": 0.05,
+      "multiple_comparisons": "Tukey HSD for prespecified cell contrasts; report 95% CI and effect sizes",
+      "missing_data": "保留缺失原因；完整案例主分析，缺失机制敏感性分析，不插补为零",
+      "exclusion_criteria": "仅排除预先定义的技术失败；保留原记录并同时给出含/不含敏感性结果",
+      "software": "分析时记录 Python/statsmodels 实际版本与命令；本生成器不执行统计分析"
+    },
+    "decision_thresholds": [
+      {"metric": "yield_ratio", "op": ">=", "value": 1.2, "unit": "ratio", "source": "SRC-PILOT", "action_if_met": "进入扩大样本的确认性方案评审", "action_if_not_met": "检查温度/处理效应与不确定度，不宣称验证成功"}
+    ],
+    "risks": [
+      {"id": "R1", "trigger": "任一 run 温度越界超过 2 min", "consequence": "该 run 与目标条件不一致", "mitigation": "连续记录并设置报警", "fallback": "保留偏差记录并在资源允许时新增同条件独立批次", "stop_rule": "超过 2 个 run 越界则暂停整批并检修设备"},
+      {"id": "R2", "trigger": "过程参照超出控制界限", "consequence": "检测批次不可直接比较", "mitigation": "每批插入参照并盲法检测", "fallback": "排查仪器后重测原样本并保留两版记录", "stop_rule": "连续两批失控则停止检测"}
+    ],
+    "safety": {"status": "example_reviewed_only", "source": "SRC-PILOT", "boundary": "仅演示字段；真实执行前须由实验室安全负责人审核"},
+    "ethics": {"status": "not_required", "rationale": "示例不涉及人、动物或个人数据；真实课题须重新判定"}
+  },
+  "candidate_plans": [
+    {
+      "plan_id": "P1", "version": "v1.0", "based_on": null, "source": "SRC-PILOT",
+      "changes": [{"field": "initial_version", "from": null, "to": "2×2 pilot", "reason": "示例初始方案"}],
+      "metrics": {"evidence_strength": 4},
+      "evidence": {"evidence_strength": ["SRC-PILOT"]},
+      "rationales": {"evidence_strength": "有一份示例预实验记录，未进行独立复现"},
+      "cost_items": [
+        {"id": "P1-SETUP", "kind": "setup", "quantity": 1, "unit": "plan", "unit_cost": 50, "currency": "CNY", "basis": "per_plan", "source": "SRC-PILOT"},
+        {"id": "P1-ASSAY", "kind": "consumable", "quantity": 1, "unit": "run", "unit_cost": 5, "currency": "CNY", "basis": "per_run", "source": "SRC-PILOT"}
+      ],
+      "time_items": [
+        {"id": "P1-PREP", "kind": "preparation", "hours": 1, "basis": "per_plan", "source": "SRC-PILOT"},
+        {"id": "P1-RUN", "kind": "execution", "hours": 0.5, "basis": "per_run", "source": "SRC-PILOT"},
+        {"id": "P1-QUEUE", "kind": "queue", "hours": 2, "basis": "per_plan", "source": "SRC-PILOT"}
+      ]
+    },
+    {
+      "plan_id": "P2", "version": "v1.1", "based_on": "P1", "source": "SRC-PILOT",
+      "changes": [{"field": "cost_items", "from": "P1 setup 50", "to": "setup 40", "reason": "示例共享前处理；不是实测节省"}],
+      "metrics": {"evidence_strength": 3},
+      "evidence": {"evidence_strength": ["SRC-PILOT"]},
+      "rationales": {"evidence_strength": "共享前处理的证据较弱，需核对跨批效应"},
+      "cost_items": [
+        {"id": "P2-SETUP", "kind": "setup", "quantity": 1, "unit": "plan", "unit_cost": 40, "currency": "CNY", "basis": "per_plan", "source": "SRC-PILOT"},
+        {"id": "P2-ASSAY", "kind": "consumable", "quantity": 1, "unit": "run", "unit_cost": 4, "currency": "CNY", "basis": "per_run", "source": "SRC-PILOT"}
+      ],
+      "time_items": [
+        {"id": "P2-PREP", "kind": "preparation", "hours": 1, "basis": "per_plan", "source": "SRC-PILOT"},
+        {"id": "P2-RUN", "kind": "execution", "hours": 0.6, "basis": "per_run", "source": "SRC-PILOT"},
+        {"id": "P2-QUEUE", "kind": "queue", "hours": 1, "basis": "per_plan", "source": "SRC-PILOT"}
+      ]
+    },
+    {
+      "plan_id": "P3", "version": "v1.2", "based_on": "P1", "source": "SRC-PILOT",
+      "changes": [{"field": "evidence", "from": "single example record", "to": "example record plus independent process check", "reason": "提高示例证据强度评分"}],
+      "metrics": {"evidence_strength": 5},
+      "evidence": {"evidence_strength": ["SRC-PILOT", "SRC-MANUAL"]},
+      "rationales": {"evidence_strength": "示例记录与设备规格可交叉核对；仍不是实测未来响应"},
+      "cost_items": [
+        {"id": "P3-SETUP", "kind": "setup", "quantity": 1, "unit": "plan", "unit_cost": 80, "currency": "CNY", "basis": "per_plan", "source": "SRC-PILOT"},
+        {"id": "P3-ASSAY", "kind": "consumable", "quantity": 1, "unit": "run", "unit_cost": 6, "currency": "CNY", "basis": "per_run", "source": "SRC-PILOT"}
+      ],
+      "time_items": [
+        {"id": "P3-PREP", "kind": "preparation", "hours": 2, "basis": "per_plan", "source": "SRC-PILOT"},
+        {"id": "P3-RUN", "kind": "execution", "hours": 0.5, "basis": "per_run", "source": "SRC-PILOT"},
+        {"id": "P3-QUEUE", "kind": "queue", "hours": 4, "basis": "per_plan", "source": "SRC-PILOT"}
+      ]
+    }
+  ],
+  "optimization": {
+    "max_combinations": 16,
+    "criteria": [
+      {"name": "total_cost", "weight": 0.2, "direction": "min", "scale_bounds": [0, 200], "unit": "CNY", "rationale": "统一含 setup 与每 run 耗材"},
+      {"name": "total_time_hours", "weight": 0.2, "direction": "min", "scale_bounds": [0, 24], "unit": "h", "rationale": "统一含准备、执行、排队"},
+      {"name": "evidence_strength", "weight": 0.6, "direction": "max", "scale_bounds": [0, 5], "unit": "declared ordinal score", "rationale": "优先可独立复核的证据，但仍需权重敏感性"}
+    ]
+  },
+  "pending_review": [],
+  "uncertainties": ["示例 evidence_strength 是有来源的序数评分，不是效应量或实测成功率。"],
+  "caller_note": "此值用于验证 output_contract 的 case 携带值直通。",
+  "output_contract": {
+    "case_id": "input identifier",
+    "status": "run status",
+    "selected_plan": "complete prospective plan",
+    "plan_versions": "three source versions",
+    "design_matrix": "run-level full factorial and random order",
+    "optimization_loop": "generation and revision loop",
+    "evidence_and_boundaries": "sources and limits",
+    "pending_review": "expert confirmation items",
+    "change_records": "versioned changes",
+    "run_state": "exit and handoff",
+    "caller_note": "pass through caller value",
+    "nonexistent_attachment": "must be null with a named limit"
+  }
+}
