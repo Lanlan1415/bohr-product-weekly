@@ -1,62 +1,54 @@
-# Fonts and export: the failure that looks like success
+# Fonts, layout and export verification
 
-## Why this needs its own document
+## Glyph coverage before rendering
 
-A figure with unreadable labels passes every check that only looks at the file: it
-opens, it has the right page size, the shapes are placed, the SVG is valid. The one
-thing wrong with it is that the reader cannot read it.
+Matplotlib commonly defaults to DejaVu Sans, which lacks CJK glyphs. A valid PNG
+can therefore contain rows of empty boxes without raising an exception.
 
-matplotlib's default is **DejaVu Sans, which has no CJK glyphs**. A Chinese label
-renders as empty boxes and matplotlib emits only a warning:
+The resolver checks every character the figure will actually draw: node labels,
+core message, role/result labels, steps, visual values, n/uncertainty notes, edges,
+caption and limitations. It prefers Microsoft YaHei, Noto Sans SC, SimHei, Source
+Han Sans, SimSun/DengXian/WenQuanYi, then DejaVu Sans. A font covering Chinese can
+still miss µ, λ or a symbol; the exact missing characters are reported.
 
-```
-UserWarning: Glyph 27979 (CJK UNIFIED IDEOGRAPH-6D4B) missing from font(s) DejaVu Sans.
-```
+`font.family/path` and `missing_glyphs` are written to result.json. The CLI never
+silently claims that an unresolved character was rendered correctly.
 
-That warning goes to a console nobody is reading in an automated run. So the skill
-checks coverage itself, before and after drawing.
+## Physical layout checks
 
-## Resolution, in order
+The narrative is a single-page, left-to-right chain: question/input → method →
+result/mechanism → bounded conclusion, with source scope beneath it. Main labels
+are wrapped to fit their cards without changing tokens. Auxiliary labels are also
+checked for canvas bounds and font floor. Long result notes are kept on one line
+and checked against card width; move extended detail to caption instead of
+stacking tiny text.
 
-| preference | family | covers |
-|-|-|-|
-| 1 | Microsoft YaHei | CJK + Latin + Greek |
-| 2 | Noto Sans SC | CJK + Latin + Greek |
-| 3 | SimHei | CJK + Latin |
-| 4 | Source Han Sans SC | CJK + Latin + Greek |
-| 5 | SimSun / DengXian / WenQuanYi | CJK + Latin |
-| 6 | DejaVu Sans | Latin + Greek, **no CJK** |
+Result values sit outside error bars, bars share a zero baseline, and direct
+labels/hatches/role text make colour a redundant channel. Conclusion arrows are
+above the card layer so connectors cannot disappear behind a white box.
 
-The first candidate that covers **every character the figure will draw** wins. If none
-does, the best (fewest missing characters) is used and `font.missing_glyphs` lists
-what will print as a box.
+## Artifact checks
 
-Coverage is computed from the labels, title, caption and group names in the spec — the
-characters actually used, not "does this look like a Chinese font". A font can cover
-`实验装置` and still lack `µ` or `θ`.
-
-## Export requirements
-
-| requirement | check |
+| Artifact | Actual check |
 |-|-|
-| vector, editable | `export.no_live_text` — SVG must contain `<text>`, not outlines |
-| no rasterised content | `export.embedded_raster` — an embedded `<image>` will not scale |
-| print resolution | `export.low_dpi` — preview below 300 dpi |
-| font declared | the SVG carries a `font-family`; the family is echoed in `result.json` |
+| `figure.svg` | XML parsing; live `<text>`; no embedded raster; title/desc; role=img; font-family |
+| `figure.png` | non-empty PNG signature, declared dpi >= 300 and physical pHYs dpi >= 299 |
+| `figure.pdf` | non-empty `%PDF` output from the same rendered canvas |
+| `caption.txt` | declared caption plus source scope/limitations |
+| `resolved_spec.json` | all actual declarative content needed to regenerate the figure |
+| `change_records.json` | present for edits: field-level before/after values |
 
-The live-text rule exists because matplotlib's own `svg.fonttype` default is `path`,
-which converts every label to outlines. That produces a perfect-looking, entirely
-un-editable figure — and it was found in this engine by its own audit.
+Empty/short artifacts, malformed XML, outlined labels and invalid PNG/PDF are
+findings; a file extension by itself proves nothing.
 
-## Reproducibility
+## Determinism
 
-The third judging criterion is that re-running gives the same figure. Two renders are
-compared on:
+Two renders compare text and geometry. In addition, wall-clock SVG/PDF metadata
+is removed, PNG software metadata is fixed, and Matplotlib's generated definition
+ids are canonicalised while preserving references. Runtime probes therefore can
+and do compare the actual result.json/SVG/PNG/PDF/caption/spec/change records
+byte-for-byte across repeated runs.
 
-- the drawn strings, sorted
-- the path geometry, sorted
-- group transforms, sorted
-
-Timestamps and generated ids are excluded: they differ between runs and say nothing
-about the figure. A `repro.nondeterministic` finding means the layout changed, which
-for a reader means the reproducibility claim is false.
+If matplotlib/numpy/Pillow cannot be imported, the standard-library JSON path
+writes `undetermined`, `audit.no_section`, exit 5 and an explicit limit: no
+SVG/PNG/PDF is claimed. It does not fabricate an artifact in a no-render runtime.

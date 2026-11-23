@@ -1,122 +1,42 @@
 {
-  "schema_version": "ga2-bench/v1",
-  "scenarios": [
+  "schema_version": "ga-bench-suite/v2",
+  "note": "Example regression evidence only; not official case answers.",
+  "suites": [
     {
-      "scenario": "clean",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "clean"
+      "name": "claim_narrative",
+      "totals": {
+        "passed": 9,
+        "of": 9
+      },
+      "report_schema": "ga-bench/v1"
     },
     {
-      "scenario": "takeaway_missing",
-      "expected": [
-        "ga.missing_takeaway"
-      ],
-      "fired": [
-        "ga.missing_takeaway"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
+      "name": "render_provenance",
+      "totals": {
+        "passed": 9,
+        "of": 9
+      },
+      "report_schema": "ga2-bench/v1"
     },
     {
-      "scenario": "value_not_in_source",
-      "expected": [
-        "ga.value_not_in_source"
-      ],
-      "fired": [
-        "ga.value_not_in_source",
-        "legend.entry_unmatched"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
+      "name": "contract_narrative",
+      "totals": {
+        "passed": 26,
+        "of": 26
+      },
+      "report_schema": "ga3-bench/v1"
     },
     {
-      "scenario": "size_out_of_spec",
-      "expected": [
-        "ga.size_out_of_spec"
-      ],
-      "fired": [
-        "ga.size_out_of_spec"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "review"
-    },
-    {
-      "scenario": "untraceable",
-      "expected": [
-        "trace.entity_untraceable"
-      ],
-      "fired": [
-        "trace.entity_untraceable",
-        "trace.material_not_drawn"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "bad_evidence",
-      "expected": [
-        "trace.evidence_not_in_materials"
-      ],
-      "fired": [
-        "trace.evidence_not_in_materials",
-        "trace.material_not_drawn"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "material_unused",
-      "expected": [
-        "trace.material_not_drawn"
-      ],
-      "fired": [
-        "trace.material_not_drawn"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "review"
-    },
-    {
-      "scenario": "missing_glyphs",
-      "expected": [
-        "export.missing_glyphs"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "injected": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "nondeterministic",
-      "expected": [
-        "repro.nondeterministic"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "injected": true,
-      "status": "blocked"
+      "name": "schematic_regression",
+      "totals": {
+        "passed": 8,
+        "of": 8
+      },
+      "report_schema": "schematic-bench/v1"
     }
   ],
   "totals": {
-    "passed": 9,
-    "of": 9
-  },
-  "note": "Claim rules plus provenance, glyph coverage and determinism. Two scenarios inject a defect by patching a font resolver and the determinism check, because those cannot be expressed in a spec."
+    "passed": 52,
+    "of": 52
+  }
 }

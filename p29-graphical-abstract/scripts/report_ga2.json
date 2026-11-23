@@ -29,8 +29,11 @@
         "ga.value_not_in_source"
       ],
       "fired": [
+        "ga.reading_order_unknown_node",
+        "ga.takeaway_not_placed",
         "ga.value_not_in_source",
-        "legend.entry_unmatched"
+        "legend.entry_unmatched",
+        "trace.material_not_drawn"
       ],
       "missing": [],
       "spurious": [],
@@ -56,6 +59,9 @@
         "trace.entity_untraceable"
       ],
       "fired": [
+        "ga.reading_order_unknown_node",
+        "ga.takeaway_not_placed",
+        "legend.entry_unmatched",
         "trace.entity_untraceable",
         "trace.material_not_drawn"
       ],
@@ -70,6 +76,9 @@
         "trace.evidence_not_in_materials"
       ],
       "fired": [
+        "ga.reading_order_unknown_node",
+        "ga.takeaway_not_placed",
+        "legend.entry_unmatched",
         "trace.evidence_not_in_materials",
         "trace.material_not_drawn"
       ],

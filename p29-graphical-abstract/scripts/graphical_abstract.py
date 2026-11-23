@@ -1,8 +1,8 @@
 """Audit for a graphical abstract.
 
-A graphical abstract is not a decoration on the paper; it is a three-part claim
-(what was asked, what was done, what was found) compressed into one panel that
-readers will see before the paper. So the audit checks the things a reader would
+A graphical abstract is a four-part claim (question/input, method, finding and
+bounded conclusion) with one explicit core message, compressed into a single
+visual narrative that readers see before the paper. So the audit checks the things a reader would
 otherwise have to take on trust:
 
   does it actually state all three parts
@@ -26,7 +26,7 @@ import re
 NUMBER_RE = re.compile(r"[-−–+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?")
 
 DEFAULT_MAX_WORDS = 60
-DEFAULT_TAKEAWAY_KEYS = ("problem", "method", "finding")
+DEFAULT_TAKEAWAY_KEYS = ("problem", "method", "finding", "conclusion")
 
 # The renderer's default colour when a node declares none; used here so the
 # legend audit counts the same colours the drawn figure will actually carry.
@@ -98,8 +98,22 @@ def audit_graphical_abstract(spec: dict, source_values=None) -> dict:
                 takeaway=key, declared=str(want))
     if missing:
         add("ga.missing_takeaway", "high",
-            "the graphical abstract does not declare all three of problem, method and finding, "
-            "so a reader cannot recover the paper's claim from it", missing=missing)
+            "the graphical abstract must declare problem/input, method, finding and conclusion, "
+            "so a reader cannot recover the paper's bounded claim from it", missing=missing)
+
+    core = spec.get("core_message")
+    core_text = str(core.get("text") or "") if isinstance(core, dict) else str(core or "")
+    if not core_text.strip():
+        add("ga.core_message_missing", "high",
+            "no single explicit core message leads the graphical abstract")
+    elif isinstance(spec.get("materials"), list):
+        known = {str(m.get("id") or m) for m in spec["materials"] if isinstance(m, dict) or isinstance(m, str)}
+        evidence = str(core.get("evidence") or spec.get("core_message_evidence") or "") if isinstance(core, dict) \
+            else str(spec.get("core_message_evidence") or "")
+        if not evidence or evidence not in known:
+            add("ga.core_message_untraceable", "high",
+                "the single core message is not tied to a declared source material",
+                evidence=evidence or None)
 
     # --- 1b. every panel must carry readable text --------------------------
     empty = [n.get("id") for n in nodes if not str(n.get("label") or "").strip()]
@@ -116,8 +130,26 @@ def audit_graphical_abstract(spec: dict, source_values=None) -> dict:
     elif source_values is not None:
         allowed = {_normalise_num(v) for v in source_values}
         texts = [(l, "label") for l in labels]
+        if core_text:
+            texts.append((core_text, "core_message"))
         if caption:
             texts.append((caption, "caption"))
+        for item in spec.get("limitations") or []:
+            text = str(item.get("text") or "") if isinstance(item, dict) else str(item)
+            if text:
+                texts.append((text, "limitation"))
+        for node in nodes:
+            data = node.get("visual_data") or {}
+            if not isinstance(data, dict):
+                continue
+            for item in data.get("items") or []:
+                if isinstance(item, dict):
+                    texts.append((str(item.get("label") or item.get("id") or ""), "visual_label"))
+                    for field in ("value", "lower", "upper", "n"):
+                        if item.get(field) is not None:
+                            texts.append((str(item[field]), f"visual_{field}"))
+            if data.get("n") is not None:
+                texts.append((str(data["n"]), "visual_n"))
         for text, where in texts:
             for num in _numbers_in(text):
                 if _normalise_num(num) not in allowed:
@@ -160,11 +192,12 @@ def audit_graphical_abstract(spec: dict, source_values=None) -> dict:
         present = [w for w in want_ids if w in node_ids]
         if len(present) >= 2:
             pairs = {(e.get("from"), e.get("to")) for e in edges}
-            linked = any((present[i], present[i + 1]) in pairs for i in range(len(present) - 1))
-            if not linked:
+            required_links = [(present[i], present[i + 1]) for i in range(len(present) - 1)]
+            missing_links = [list(pair) for pair in required_links if pair not in pairs]
+            if missing_links:
                 add("ga.takeaway_panels_unlinked", "medium",
-                    "the takeaway panels are not connected, so the abstract does not read as a "
-                    "progression from question to finding")
+                    "the four takeaways must form an unbroken question/input to conclusion flow",
+                    missing_links=missing_links)
 
     # --- 4b. colour coding needs a legend ----------------------------------
     # A graphical abstract encodes meaning in colour (problem / method / finding are
@@ -180,13 +213,97 @@ def audit_graphical_abstract(spec: dict, source_values=None) -> dict:
             "coding is unexplained for a reader (and for grey-scale printing)",
             colours=sorted(colours)[:6])
 
+    # --- 4c. source scope and actual quantitative visual encoding -----------
+    limitations = spec.get("limitations")
+    limitation_records = limitations if _is_seq(limitations) else []
+    limit_texts = [str(item.get("text") or "").strip() if isinstance(item, dict) else str(item).strip()
+                   for item in limitation_records]
+    if not any(limit_texts):
+        add("ga.limitations_missing", "medium",
+            "no source-supported scope or limitation is shown beside the conclusion")
+    known_materials = {str(m.get("id") or m) for m in spec.get("materials") or [] if isinstance(m, dict) or isinstance(m, str)}
+    for item in limitation_records:
+        evidence = str(item.get("evidence") or "") if isinstance(item, dict) else ""
+        if known_materials and (not evidence or evidence not in known_materials):
+            add("ga.limitation_untraceable", "medium",
+                "a scope/limitation statement lacks a declared material reference", evidence=evidence or None)
+
+    allowed_source_values = None
+    if _is_seq(source_values):
+        allowed_source_values = {_normalise_num(v) for v in source_values}
+    visual_nodes = []
+    for node in nodes:
+        data = node.get("visual_data")
+        if data is None:
+            continue
+        visual_nodes.append(node.get("id"))
+        if not isinstance(data, dict) or data.get("kind", "bar") != "bar" or not _is_seq(data.get("items")):
+            add("ga.visual_data_invalid", "high", "visual_data must be kind=bar with an items list", node=node.get("id"))
+            continue
+        items = data.get("items")
+        if not 1 <= len(items) <= 4:
+            add("ga.visual_data_invalid", "high", "a single-message result chart needs one to four items", node=node.get("id"))
+        if not str(data.get("unit") or "").strip():
+            add("ga.visual_unit_missing", "medium",
+                "the result chart has no unit or explicit dimensionless declaration", node=node.get("id"))
+        try:
+            baseline = float(data.get("baseline", 0))
+        except (TypeError, ValueError):
+            baseline = 0
+        if baseline != 0:
+            add("ga.misleading_baseline", "high", "result bars must start at zero", node=node.get("id"), baseline=baseline)
+        for index, item in enumerate(items):
+            if not isinstance(item, dict):
+                add("ga.visual_data_invalid", "high", "result items must be objects", node=node.get("id"), item=index)
+                continue
+            try:
+                value = float(item["value"])
+                if value != value or abs(value) == float("inf"):
+                    raise ValueError("non-finite")
+            except (KeyError, TypeError, ValueError):
+                add("ga.visual_data_invalid", "high", "a result item has no finite numeric value", node=node.get("id"), item=index)
+                continue
+            if allowed_source_values is not None and _normalise_num(value) not in allowed_source_values:
+                add("ga.visual_value_not_in_source", "high", "a plotted result value is absent from source_values",
+                    node=node.get("id"), item=index, value=value)
+            evidence = str(item.get("evidence") or node.get("evidence") or "")
+            if known_materials and evidence not in known_materials:
+                add("ga.visual_value_untraceable", "high", "a plotted result value is not tied to source material",
+                    node=node.get("id"), item=index, evidence=evidence or None)
+            try:
+                if item.get("lower") is not None and item.get("upper") is not None \
+                        and not float(item["lower"]) <= value <= float(item["upper"]):
+                    add("ga.visual_interval_invalid", "high", "result uncertainty does not bracket its value",
+                        node=node.get("id"), item=index)
+            except (TypeError, ValueError):
+                add("ga.visual_interval_invalid", "high", "result uncertainty is not numeric", node=node.get("id"), item=index)
+
+    modality = str(spec.get("result_modality") or "quantitative")
+    finding_id = str((takeaways or {}).get("finding") or "")
+    finding_node = next((node for node in nodes if str(node.get("id")) == finding_id), None)
+    if modality == "quantitative" and finding_node is not None and not finding_node.get("visual_data"):
+        add("ga.quantitative_visual_missing", "high",
+            "the declared key result is quantitative but has no real data-to-mark encoding; "
+            "use visual_data or explicitly declare result_modality=qualitative",
+            node=finding_id)
+    elif modality not in ("quantitative", "qualitative"):
+        add("ga.visual_data_invalid", "high", "result_modality must be quantitative or qualitative", value=modality)
+
     # --- 5. publisher word limit ------------------------------------------
     max_words_raw = spec.get("max_words", DEFAULT_MAX_WORDS)
     try:
         max_words = int(max_words_raw)
     except (TypeError, ValueError):
         max_words = DEFAULT_MAX_WORDS
-    total_words = sum(len(l.split()) for l in labels) + len(caption.split())
+    counted_texts = labels + ([core_text] if core_text else []) + limit_texts + ([caption] if caption else [])
+    for node in nodes:
+        data = node.get("visual_data") or {}
+        if isinstance(data, dict):
+            counted_texts.extend([str(data.get("unit") or ""), str(data.get("uncertainty") or ""),
+                                  str(data.get("n_caption") or "")])
+            counted_texts.extend(str(item.get("label") or item.get("id") or "")
+                                 for item in data.get("items") or [] if isinstance(item, dict))
+    total_words = sum(len(text.split()) for text in counted_texts)
     if total_words > max_words:
         add("ga.text_too_long", "medium",
             "the abstract carries more text than the declared limit, so it will be shrunk or "
@@ -214,6 +331,9 @@ def audit_graphical_abstract(spec: dict, source_values=None) -> dict:
         "checked": {"nodes": len(nodes), "edges": len(edges), "words": total_words,
                     "takeaways_declared": sorted(k for k in DEFAULT_TAKEAWAY_KEYS
                                                  if takeaways.get(k)),
-                    "colours": len(colours), "legend_declared": bool(legend_ok)},
+                    "colours": len(colours), "legend_declared": bool(legend_ok),
+                    "core_message_declared": bool(core_text.strip()),
+                    "result_modality": modality, "visual_data_nodes": visual_nodes,
+                    "limitations_declared": sum(bool(text) for text in limit_texts)},
         "status": ("clean" if not findings else "blocked" if counts.get("high") else "review"),
     }

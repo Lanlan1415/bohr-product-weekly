@@ -16,14 +16,21 @@ BASE = {
     "canvas_mm": [170, 70],
     "size_limit_mm": [180, 80],
     "max_words": 60,
-    "takeaways": {"problem": "p1", "method": "m1", "finding": "f1"},
-    "reading_order": ["p1", "m1", "f1"],
+    "core_message": "Coating restores uptake",
+    "limitations": ["In vitro only"],
+    "result_modality": "quantitative",
+    "takeaways": {"problem": "p1", "method": "m1", "finding": "f1", "conclusion": "c1"},
+    "reading_order": ["p1", "m1", "f1", "c1"],
     "nodes": [
         {"id": "p1", "label": "Uptake is slow", "layer": 0},
         {"id": "m1", "label": "Porous coating, 42 nm", "layer": 1},
-        {"id": "f1", "label": "3x faster uptake", "layer": 2},
+        {"id": "f1", "label": "3x faster uptake", "layer": 2,
+         "visual_data": {"kind": "bar", "unit": "uptake (a.u.)",
+                         "items": [{"label": "Before", "value": 0.42},
+                                   {"label": "Coated", "value": 1.8}]}},
+        {"id": "c1", "label": "Coating aids uptake", "layer": 3},
     ],
-    "edges": [{"from": "p1", "to": "m1"}, {"from": "m1", "to": "f1"}],
+    "edges": [{"from": "p1", "to": "m1"}, {"from": "m1", "to": "f1"}, {"from": "f1", "to": "c1"}],
 }
 SOURCE = ["42", "3", "0.42", "1.8"]
 

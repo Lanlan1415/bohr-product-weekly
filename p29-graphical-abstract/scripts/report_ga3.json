@@ -17,12 +17,15 @@
       ],
       "fired": [
         "ga.empty_label",
-        "legend.entry_unmatched"
+        "ga.reading_order_unknown_node",
+        "ga.takeaway_not_placed",
+        "legend.entry_unmatched",
+        "trace.material_not_drawn"
       ],
       "missing": [],
       "spurious": [],
       "pass": true,
-      "status": "review"
+      "status": "blocked"
     },
     {
       "scenario": "legend_missing",
@@ -117,6 +120,134 @@
       "status": "clean"
     },
     {
+      "scenario": "core_message_missing",
+      "expected": [
+        "ga.core_message_missing"
+      ],
+      "fired": [
+        "ga.core_message_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "core_message_untraceable",
+      "expected": [
+        "ga.core_message_untraceable"
+      ],
+      "fired": [
+        "ga.core_message_untraceable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "quantitative_visual_missing",
+      "expected": [
+        "ga.quantitative_visual_missing"
+      ],
+      "fired": [
+        "ga.quantitative_visual_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "visual_value_not_in_source",
+      "expected": [
+        "ga.visual_value_not_in_source"
+      ],
+      "fired": [
+        "ga.value_not_in_source",
+        "ga.visual_value_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "visual_unit_missing",
+      "expected": [
+        "ga.visual_unit_missing"
+      ],
+      "fired": [
+        "ga.visual_unit_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "misleading_baseline",
+      "expected": [
+        "ga.misleading_baseline"
+      ],
+      "fired": [
+        "ga.misleading_baseline"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "visual_interval_invalid",
+      "expected": [
+        "ga.visual_interval_invalid"
+      ],
+      "fired": [
+        "ga.value_not_in_source",
+        "ga.visual_interval_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "limitations_missing",
+      "expected": [
+        "ga.limitations_missing"
+      ],
+      "fired": [
+        "ga.limitations_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "broken_final_link",
+      "expected": [
+        "ga.takeaway_panels_unlinked"
+      ],
+      "fired": [
+        "ga.takeaway_panels_unlinked"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "qualitative_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
       "scenario": "contract_passthrough",
       "expected": [
         "case_id + contract fields"
@@ -184,8 +315,8 @@
     }
   ],
   "totals": {
-    "passed": 16,
-    "of": 16
+    "passed": 26,
+    "of": 26
   },
   "note": "Polish-pass rules (empty label, undeclared legend, unknown reading-order node, mistyped source values, caption numbers) with false-positive guards, the output_contract echo, and the refusal path (exit 5, no traceback)."
 }

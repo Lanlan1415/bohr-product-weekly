@@ -1,115 +1,42 @@
 {
-  "schema_version": "ga-bench/v1",
-  "scenarios": [
+  "schema_version": "ga-bench-suite/v2",
+  "note": "Example regression evidence only; not official case answers.",
+  "suites": [
     {
-      "scenario": "clean",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true
+      "name": "claim_narrative",
+      "totals": {
+        "passed": 9,
+        "of": 9
+      },
+      "report_schema": "ga-bench/v1"
     },
     {
-      "scenario": "missing_takeaway",
-      "expected": [
-        "ga.missing_takeaway"
-      ],
-      "fired": [
-        "ga.missing_takeaway"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true
+      "name": "render_provenance",
+      "totals": {
+        "passed": 9,
+        "of": 9
+      },
+      "report_schema": "ga2-bench/v1"
     },
     {
-      "scenario": "takeaway_not_placed",
-      "expected": [
-        "ga.takeaway_not_placed"
-      ],
-      "fired": [
-        "ga.takeaway_not_placed",
-        "ga.takeaway_panels_unlinked"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true
+      "name": "contract_narrative",
+      "totals": {
+        "passed": 26,
+        "of": 26
+      },
+      "report_schema": "ga3-bench/v1"
     },
     {
-      "scenario": "number_not_in_source",
-      "expected": [
-        "ga.value_not_in_source"
-      ],
-      "fired": [
-        "ga.value_not_in_source"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true
-    },
-    {
-      "scenario": "too_many_words",
-      "expected": [
-        "ga.text_too_long"
-      ],
-      "fired": [
-        "ga.text_too_long"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true
-    },
-    {
-      "scenario": "size_out_of_spec",
-      "expected": [
-        "ga.size_out_of_spec"
-      ],
-      "fired": [
-        "ga.size_out_of_spec"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true
-    },
-    {
-      "scenario": "unlinked_takeaways",
-      "expected": [
-        "ga.takeaway_panels_unlinked"
-      ],
-      "fired": [
-        "ga.takeaway_panels_unlinked"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true
-    },
-    {
-      "scenario": "reading_order",
-      "expected": [
-        "ga.reading_order"
-      ],
-      "fired": [
-        "ga.reading_order"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true
-    },
-    {
-      "scenario": "no_source_values",
-      "expected": [
-        "ga.source_values_unavailable"
-      ],
-      "fired": [
-        "ga.source_values_unavailable"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true
+      "name": "schematic_regression",
+      "totals": {
+        "passed": 8,
+        "of": 8
+      },
+      "report_schema": "schematic-bench/v1"
     }
   ],
   "totals": {
-    "passed": 9,
-    "of": 9
-  },
-  "note": "One planted defect per scenario; the clean baseline must stay silent."
+    "passed": 52,
+    "of": 52
+  }
 }

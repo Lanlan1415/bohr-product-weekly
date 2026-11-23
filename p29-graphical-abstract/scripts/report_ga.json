@@ -15,7 +15,8 @@
         "ga.missing_takeaway"
       ],
       "fired": [
-        "ga.missing_takeaway"
+        "ga.missing_takeaway",
+        "ga.takeaway_panels_unlinked"
       ],
       "missing": [],
       "spurious": [],

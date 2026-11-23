@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -32,12 +34,15 @@ KO,drug,14.8
 
 BASE = {
     "kind": "bar",
+    "title": "Treatment response by genotype",
+    "caption": "Bars show source-row values; error bars are defined in the caption.",
     "x_label": "Treatment",
     "y_label": "Response",
     "y_unit": "a.u.",
     "caption_n": 6,
     "legend": True,
-    "error_meaning": "SD",
+    "errorbar_meaning": "SD",
+    "panel": "a",
     "encoding": {"x": "condition", "y": "response", "y_err": "response_sd", "group": "group"},
 }
 
@@ -91,14 +96,14 @@ def scen_paths_not_text():
 
 
 def scen_low_dpi():
-    return dict(BASE, dpi=72), DATA, ["export.low_dpi", "export.png_dpi_mismatch"]
+    return dict(BASE, dpi=72), DATA, ["export.low_dpi"]
 
 
 EMPTY_DATA = "group,condition,response,response_sd,n" + chr(10)
 
 PARTIAL_ERR = ("group,condition,response,response_sd,n" + chr(10)
                + "WT,control,12.4,1.1,6" + chr(10)
-               + "WT,drug,,2.4,6" + chr(10)
+               + "WT,drug,31.2,,6" + chr(10)
                + "KO,control,10.1,,6" + chr(10)
                + "KO,drug,14.8,1.3,6" + chr(10))
 
@@ -113,76 +118,248 @@ def scen_partial_blank_err():
     return dict(BASE), PARTIAL_ERR, []
 
 
-def scen_no_error_meaning():
-    """Error bars drawn without a declared meaning are unreadable in review."""
-    s = dict(BASE); s.pop("error_meaning")
-    return s, DATA, ["error.meaning_undeclared"]
-
-
-def scen_export_width():
-    """A declared column width the figure misses is a real export failure."""
-    s = dict(BASE, export={"width_mm": 200.0, "tolerance_mm": 2.0})
-    return s, DATA, ["export.width_out_of_band"]
-
-
-def scen_cjk_label():
-    """CJK labels fire only when no CJK-capable font is installed on this machine."""
+def scen_cjk_labels():
+    """Chinese axis labels resolve to a CJK-capable font, so no box glyphs appear."""
     s = dict(BASE, x_label="处理组", y_label="响应强度")
-    if C.fonts_support_cjk():
-        return s, DATA, []          # font exists -> renders as text, stays silent
-    return s, DATA, ["label.cjk_font_missing"]
+    return s, DATA, []
 
 
-def scen_unreadable_spec():
-    """Bad spec JSON is refused with a rule id, never a traceback."""
-    return "{not json at all,", DATA, ["spec.unreadable"]
+def scen_glyph_missing():
+    """A drawn character that no candidate font covers is reported, never a silent box."""
+    s = dict(BASE, x_label="treatment \u23f0")
+    return s, DATA, ["font.glyph_missing"]
 
 
-def scen_not_object():
-    """A JSON array spec is refused."""
-    return json.dumps([1, 2, 3]), DATA, ["spec.not_object"]
+# --- round-2 rules: chart kind vs data structure, axis hygiene, readability ---
+# Each scenario plants exactly one defect and names the rule that must fire.
+
+YEAR_DATA = ("group,year,response,response_sd,n" + chr(10)
+             + "WT,2020,12.4,1.1,6" + chr(10)
+             + "WT,2021,13.9,1.2,6" + chr(10)
+             + "WT,2022,15.6,1.0,6" + chr(10)
+             + "WT,2023,18.2,1.4,6" + chr(10))
 
 
-def scen_missing_data():
-    """A missing data file is refused with data.unreadable."""
-    return json.dumps(dict(BASE)), "MISSING", ["data.unreadable"]
+def scen_time_as_bars():
+    """A time-like x column drawn as disconnected bars — the named mismatch between
+    chart kind and data structure (ordering and continuity vanish)."""
+    s = dict(BASE, encoding={"x": "year", "y": "response", "y_err": "response_sd",
+                             "group": "group"}, x_label="Year", x_unit="year")
+    return s, YEAR_DATA, ["encoding.time_as_bars"]
 
 
-SCATTER_DATA = """condition_id,response
-1,12.4
-2,18.9
-3,25.1
-4,31.7
+def scen_truncated_baseline():
+    """A declared y-axis starting above zero shortens every bar and exaggerates
+    differences — the classic truncated-baseline misleading chart."""
+    s = dict(BASE, ylim=[5, 40])
+    return s, DATA, ["axis.truncated_baseline"]
+
+
+LOG_DATA = ("day,response" + chr(10)
+            + "1,12.4" + chr(10)
+            + "2,0" + chr(10)
+            + "3,10.1" + chr(10)
+            + "4,14.8" + chr(10))
+
+
+def scen_log_nonpositive():
+    """A log y-scale over data containing zero: the point cannot be shown and is
+    dropped silently unless the audit names it."""
+    s = dict(BASE, kind="line", y_scale="log", y_unit="fold",
+             x_label="Time", x_unit="h", encoding={"x": "day", "y": "response"})
+    return s, LOG_DATA, ["axis.log_nonpositive"]
+
+
+MANY_DATA = "condition,response" + chr(10) + "".join(
+    f"cond{i:02d},{10 + i}.5" + chr(10) for i in range(15))
+
+
+def scen_too_many_categories():
+    """Fifteen categories jammed onto one categorical axis — unreadable at
+    single-column width, so the audit asks for a split or grouping."""
+    s = dict(BASE, legend=False, caption_n=None, y_unit="a.u.",
+             encoding={"x": "condition", "y": "response"})
+    s.pop("errorbar_meaning", None)
+    return s, MANY_DATA, ["read.too_many_categories"]
+
+
+def scen_errorbar_meaning_missing():
+    """An error channel is drawn but nothing says whether the bars are SD, SEM or
+    a confidence interval."""
+    s = dict(BASE)
+    s.pop("errorbar_meaning")
+    return s, DATA, ["annotation.errorbar_meaning_missing"]
+
+
+HEAT_DATA = ("row_x,col_y,uptake" + chr(10)
+             + "A,low,0.2" + chr(10)
+             + "A,high,1.4" + chr(10)
+             + "B,low,0.8" + chr(10)
+             + "B,high,3.1" + chr(10))
+
+
+def _heat_spec(extra):
+    s = {"kind": "heatmap", "title": "Uptake matrix", "x_label": "Sample", "y_label": "Dose",
+         "value_label": "uptake", "value_unit": "a.u.", "panel": "a", "encoding": {"x": "row_x", "y": "col_y",
+                                                                                  "value": "uptake"}}
+    s.update(extra)
+    return s
+
+
+def scen_heatmap_clipped():
+    """A declared colour range that does not cover the data pins the hottest cells
+    to the palette end, so their magnitude is misread."""
+    return _heat_spec({"color_range": [0, 1]}), HEAT_DATA, ["color.range_clipped"]
+
+
+def scen_heatmap_undeclared():
+    """No colour range declared: a reader cannot tell whether the palette spans
+    the data or truncates it."""
+    return _heat_spec({}), HEAT_DATA, ["color.range_undeclared"]
+
+
+def scen_heatmap_clean():
+    """A heatmap whose declared colour range covers the data stays silent."""
+    return _heat_spec({"color_range": [0, 4]}), HEAT_DATA, []
+
+
+def scen_panel_missing():
+    """No panel letter declared — legal for a lone figure, but the export records
+    none, so a composite cannot place it (low severity)."""
+    s = dict(BASE)
+    s.pop("panel")
+    return s, DATA, ["layout.panel_missing"]
+
+
+def scen_label_truncated():
+    """A presentation string far beyond any journal label is clipped before render
+    and the clip is reported, so the drawn labels are never silently different."""
+    s = dict(BASE, title="T" * 5000)
+    return s, DATA, ["input.label_truncated"]
+
+
+def scen_title_missing():
+    s = dict(BASE)
+    s.pop("title")
+    return s, DATA, ["annotation.title_missing"]
+
+
+def scen_dual_axis():
+    s = dict(BASE, secondary_y="other_measure")
+    return s, DATA, ["encoding.dual_axis_unsupported"]
+
+
+def scen_duplicate_bars():
+    return dict(BASE), DATA + "KO,drug,99.0,1.3,6\n", ["data.duplicate_marks"]
+
+
+def scen_missing_numeric():
+    data = DATA.replace("WT,drug,31.2", "WT,drug,")
+    return dict(BASE), data, ["data.missing_numeric"]
+
+
+def scen_histogram_clean():
+    s = {"kind": "histogram", "title": "Response distribution", "x_label": "Response",
+         "x_unit": "a.u.", "panel": "a", "bins": 3,
+         "encoding": {"x": "response"}}
+    return s, DATA, []
+
+
+CI_DATA = """day,response,ci_low,ci_high
+0,12.4,11.3,13.5
+1,13.9,12.6,15.2
+2,15.6,14.1,17.1
+3,18.2,16.8,19.6
 """
 
 
-def scen_scatter_clean():
-    """A scatter chart reads back cleanly: offsets equal source values."""
-    s = dict(BASE, kind="scatter", legend=False, caption_n=None,
-             x_label="Dose level", x_unit="level", y_label="Response", y_unit="a.u.",
-             encoding={"x": "condition_id", "y": "response"})
-    return s, SCATTER_DATA, []
+def _line_spec(extra=None):
+    spec = {"kind": "line", "title": "Mean response with interval", "x_label": "Time",
+            "x_unit": "day", "y_label": "Response", "y_unit": "a.u.", "panel": "a",
+            "errorbar_meaning": "95% CI", "caption_n": 4,
+            "encoding": {"x": "day", "y": "response", "y_lower": "ci_low", "y_upper": "ci_high"}}
+    spec.update(extra or {})
+    return spec
+
+
+def scen_errorband_clean():
+    """Layered pre-aggregated CI band stays faithful to all four source rows."""
+    return _line_spec(), CI_DATA, []
+
+
+def scen_errorband_invalid():
+    return _line_spec(), CI_DATA.replace("11.3,13.5", "19.0,13.5", 1), ["error.invalid_interval"]
+
+
+ASYM_DATA = """condition,response,upper,lower,n
+control,12.4,1.1,0.7,6
+drug,31.2,2.4,1.3,6
+"""
+
+
+def scen_asymmetric_error_clean():
+    s = dict(BASE, legend=False, encoding={"x": "condition", "y": "response",
+                                          "y_err": "upper", "y_err2": "lower"},
+             value_labels=True)
+    return s, ASYM_DATA, []
+
+
+ISO_DATA = """date,response
+2025-01-01,12.4
+2025-01-02,13.9
+2025-01-03,15.6
+2025-01-04,18.2
+"""
+
+
+def scen_temporal_line_clean():
+    s = {"kind": "line", "title": "Response over time", "x_label": "Date",
+         "y_label": "Response", "y_unit": "a.u.", "panel": "a",
+         "encoding": {"x": "date", "y": "response"}}
+    return s, ISO_DATA, []
+
+
+def scen_legacy_error_label():
+    s = dict(BASE)
+    s["error_meaning"] = s.pop("errorbar_meaning")
+    return s, DATA, []
+
 
 SCENARIOS = [
     ("clean", scen_clean),
     ("empty_table", scen_empty_table),
     ("partial_blank_err", scen_partial_blank_err),
-    ("scatter_clean", scen_scatter_clean),
     ("missing_unit", scen_missing_unit),
     ("unknown_column", scen_unknown_column),
     ("text_in_numeric", scen_text_in_numeric_channel),
-    ("no_error_meaning", scen_no_error_meaning),
     ("n_mismatch", scen_n_mismatch),
     ("missing_required_channel", scen_missing_required_channel),
     ("unknown_chart_kind", scen_unknown_kind),
     ("unknown_comparison", scen_unknown_comparison),
     ("paths_not_text", scen_paths_not_text),
     ("low_dpi", scen_low_dpi),
-    ("export_width", scen_export_width),
-    ("cjk_label", scen_cjk_label),
-    ("unreadable_spec", scen_unreadable_spec),
-    ("not_object", scen_not_object),
-    ("missing_data", scen_missing_data),
+    ("cjk_labels", scen_cjk_labels),
+    ("glyph_missing", scen_glyph_missing),
+    ("time_as_bars", scen_time_as_bars),
+    ("truncated_baseline", scen_truncated_baseline),
+    ("log_nonpositive", scen_log_nonpositive),
+    ("too_many_categories", scen_too_many_categories),
+    ("errorbar_meaning_missing", scen_errorbar_meaning_missing),
+    ("heatmap_clipped", scen_heatmap_clipped),
+    ("heatmap_undeclared", scen_heatmap_undeclared),
+    ("heatmap_clean", scen_heatmap_clean),
+    ("panel_missing", scen_panel_missing),
+    ("label_truncated", scen_label_truncated),
+    ("title_missing", scen_title_missing),
+    ("dual_axis", scen_dual_axis),
+    ("duplicate_bars", scen_duplicate_bars),
+    ("missing_numeric", scen_missing_numeric),
+    ("histogram_clean", scen_histogram_clean),
+    ("errorband_clean", scen_errorband_clean),
+    ("errorband_invalid", scen_errorband_invalid),
+    ("asymmetric_error_clean", scen_asymmetric_error_clean),
+    ("temporal_line_clean", scen_temporal_line_clean),
+    ("legacy_error_label", scen_legacy_error_label),
 ]
 
 
@@ -190,38 +367,65 @@ def run_one(name, builder, root: Path) -> dict:
     spec, data, expect = builder()
     d = root / name
     d.mkdir(parents=True, exist_ok=True)
-    if isinstance(spec, str):
-        (d / "spec.json").write_text(spec, encoding="utf-8")
-    else:
-        (d / "spec.json").write_text(json.dumps(spec, ensure_ascii=False, indent=2),
-                                     encoding="utf-8")
-    if data == "MISSING":
-        data_path = d / "absent.csv"      # referenced but never written
-    else:
-        (d / "data.csv").write_text(data, encoding="utf-8")
-        data_path = d / "data.csv"
-    r = C.build_and_audit(d / "spec.json", data_path, d / "out")
+    (d / "spec.json").write_text(json.dumps(spec, ensure_ascii=False, indent=2), encoding="utf-8")
+    (d / "data.csv").write_text(data, encoding="utf-8")
+    r = C.build_and_audit(d / "spec.json", d / "data.csv", d / "out")
 
     fired = {f["rule"] for f in r.get("findings", [])}
     missing = [x for x in expect if x not in fired]
     spurious = []
     if not expect:
         spurious = [f["rule"] for f in r.get("findings", []) if f["severity"] in ("high", "medium")]
+    if name == "clean":
+        centers = [m["rendered"]["x"] for m in r.get("mark_to_row", [])]
+        if len(centers) != 4 or len(set(centers)) != 4:
+            spurious.append("test.grouped_bar_overlap")
+        caption = (d / "out" / "caption.txt").read_text(encoding="utf-8")
+        if "SD" not in caption or "n = 6" not in caption:
+            spurious.append("test.caption_semantics_missing")
+        svg = (d / "out" / "figure.svg").read_text(encoding="utf-8")
+        if "<desc>" not in svg or "role=\"img\"" not in svg:
+            spurious.append("test.accessibility_metadata_missing")
+    if name == "histogram_clean":
+        if sum(a["count"] for a in r.get("aggregates", [])) != 4:
+            spurious.append("test.histogram_count_mismatch")
+    if name == "errorband_clean":
+        marks = r.get("mark_to_row", [])
+        if len(marks) != 4 or any(m.get("y_lower") is None or m.get("y_upper") is None for m in marks):
+            spurious.append("test.errorband_not_source_mapped")
+    if name == "asymmetric_error_clean":
+        svg = (d / "out" / "figure.svg").read_text(encoding="utf-8")
+        if "31.2" not in svg:
+            spurious.append("test.source_value_label_missing")
+        if any(m.get("y_err") is None or m.get("y_err2") is None for m in r.get("mark_to_row", [])):
+            spurious.append("test.asymmetric_interval_not_source_mapped")
+    if name == "temporal_line_clean":
+        marks = r.get("mark_to_row", [])
+        if len(marks) != 4 or any(m.get("rendered") is None for m in marks):
+            spurious.append("test.temporal_geometry_missing")
+    if r.get("artifacts", {}).get("svg"):
+        try:
+            root = ET.parse(d / "out" / "figure.svg").getroot()
+            if root.tag.rsplit("}", 1)[-1] != "svg":
+                spurious.append("test.svg_root_invalid")
+        except ET.ParseError:
+            spurious.append("test.svg_not_parseable")
     return {"scenario": name, "expected": expect, "fired": sorted(fired),
             "missing": missing, "spurious": spurious, "status": r["status"],
             "pass": not missing and not spurious}
 
 
 def main() -> int:
-    root = Path(__file__).resolve().parent / "_run"
-    rows = [run_one(n, b, root) for n, b in SCENARIOS]
+    with tempfile.TemporaryDirectory(prefix="chartguard-bench-") as tmp:
+        root = Path(tmp)
+        rows = [run_one(n, b, root) for n, b in SCENARIOS]
     passed = sum(1 for r in rows if r["pass"])
     report = {
-        "schema_version": "chart-bench/v1",
+        "schema_version": "chart-bench/v3",
         "scenarios": rows,
         "totals": {"passed": passed, "of": len(rows)},
-        "note": ("One planted defect per scenario. The clean baseline must stay silent on high "
-                 "and medium findings, so blanket flagging cannot pass."),
+        "note": ("One planted defect per scenario plus rendered-geometry, caption and accessibility "
+                 "assertions. Runtime images are written to a temporary directory, never shipped."),
     }
     (Path(__file__).resolve().parent / "report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

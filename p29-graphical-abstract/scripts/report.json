@@ -98,7 +98,8 @@
         "export.low_dpi"
       ],
       "fired": [
-        "export.low_dpi"
+        "export.low_dpi",
+        "export.png_dpi_mismatch"
       ],
       "missing": [],
       "spurious": [],

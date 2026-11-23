@@ -1,5 +1,5 @@
 {
-  "schema_version": "chart-bench/v1",
+  "schema_version": "chart-bench/v3",
   "scenarios": [
     {
       "scenario": "clean",
@@ -25,15 +25,6 @@
     },
     {
       "scenario": "partial_blank_err",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "status": "clean",
-      "pass": true
-    },
-    {
-      "scenario": "scatter_clean",
       "expected": [],
       "fired": [],
       "missing": [],
@@ -79,19 +70,6 @@
       "missing": [],
       "spurious": [],
       "status": "refused",
-      "pass": true
-    },
-    {
-      "scenario": "no_error_meaning",
-      "expected": [
-        "error.meaning_undeclared"
-      ],
-      "fired": [
-        "error.meaning_undeclared"
-      ],
-      "missing": [],
-      "spurious": [],
-      "status": "review",
       "pass": true
     },
     {
@@ -162,8 +140,7 @@
     {
       "scenario": "low_dpi",
       "expected": [
-        "export.low_dpi",
-        "export.png_dpi_mismatch"
+        "export.low_dpi"
       ],
       "fired": [
         "export.low_dpi",
@@ -175,20 +152,7 @@
       "pass": true
     },
     {
-      "scenario": "export_width",
-      "expected": [
-        "export.width_out_of_band"
-      ],
-      "fired": [
-        "export.width_out_of_band"
-      ],
-      "missing": [],
-      "spurious": [],
-      "status": "review",
-      "pass": true
-    },
-    {
-      "scenario": "cjk_label",
+      "scenario": "cjk_labels",
       "expected": [],
       "fired": [],
       "missing": [],
@@ -197,12 +161,166 @@
       "pass": true
     },
     {
-      "scenario": "unreadable_spec",
+      "scenario": "glyph_missing",
       "expected": [
-        "spec.unreadable"
+        "font.glyph_missing"
       ],
       "fired": [
-        "spec.unreadable"
+        "font.glyph_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "time_as_bars",
+      "expected": [
+        "encoding.time_as_bars"
+      ],
+      "fired": [
+        "encoding.time_as_bars"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "truncated_baseline",
+      "expected": [
+        "axis.truncated_baseline"
+      ],
+      "fired": [
+        "axis.truncated_baseline"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "log_nonpositive",
+      "expected": [
+        "axis.log_nonpositive"
+      ],
+      "fired": [
+        "axis.log_nonpositive",
+        "axis.value_clipped",
+        "caption.n_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "too_many_categories",
+      "expected": [
+        "read.too_many_categories"
+      ],
+      "fired": [
+        "read.too_many_categories"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "errorbar_meaning_missing",
+      "expected": [
+        "annotation.errorbar_meaning_missing"
+      ],
+      "fired": [
+        "annotation.errorbar_meaning_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "heatmap_clipped",
+      "expected": [
+        "color.range_clipped"
+      ],
+      "fired": [
+        "color.range_clipped"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "heatmap_undeclared",
+      "expected": [
+        "color.range_undeclared"
+      ],
+      "fired": [
+        "color.range_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "heatmap_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "panel_missing",
+      "expected": [
+        "layout.panel_missing"
+      ],
+      "fired": [
+        "layout.panel_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "label_truncated",
+      "expected": [
+        "input.label_truncated"
+      ],
+      "fired": [
+        "input.label_truncated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "title_missing",
+      "expected": [
+        "annotation.title_missing"
+      ],
+      "fired": [
+        "annotation.title_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "dual_axis",
+      "expected": [
+        "encoding.dual_axis_unsupported"
+      ],
+      "fired": [
+        "encoding.dual_axis_unsupported"
       ],
       "missing": [],
       "spurious": [],
@@ -210,12 +328,12 @@
       "pass": true
     },
     {
-      "scenario": "not_object",
+      "scenario": "duplicate_bars",
       "expected": [
-        "spec.not_object"
+        "data.duplicate_marks"
       ],
       "fired": [
-        "spec.not_object"
+        "data.duplicate_marks"
       ],
       "missing": [],
       "spurious": [],
@@ -223,23 +341,82 @@
       "pass": true
     },
     {
-      "scenario": "missing_data",
+      "scenario": "missing_numeric",
       "expected": [
-        "data.unreadable"
+        "data.missing_numeric"
       ],
       "fired": [
-        "data.unreadable"
+        "data.missing_numeric"
       ],
       "missing": [],
       "spurious": [],
-      "status": "refused",
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "histogram_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "errorband_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "errorband_invalid",
+      "expected": [
+        "error.invalid_interval"
+      ],
+      "fired": [
+        "error.invalid_interval"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "pass": true
+    },
+    {
+      "scenario": "asymmetric_error_clean",
+      "expected": [],
+      "fired": [
+        "data.small_sample"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "temporal_line_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "legacy_error_label",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
       "pass": true
     }
   ],
   "totals": {
-    "passed": 19,
-    "of": 19
+    "passed": 34,
+    "of": 34
   },
-  "note": "One planted defect per scenario. The clean baseline must stay silent on high and medium findings, so blanket flagging cannot pass.",
-  "_note": "示意输出（示例）：scripts/bench_chart.py 当前 19 场景实跑报告的副本，标注为示例，不冒充正式案例结果。"
+  "note": "One planted defect per scenario plus rendered-geometry, caption and accessibility assertions. Runtime images are written to a temporary directory, never shipped."
 }

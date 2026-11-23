@@ -15,6 +15,8 @@ and a base agent cannot check it about its own output.
 from __future__ import annotations
 
 import json
+import struct
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import matplotlib
@@ -188,6 +190,22 @@ def _overlap(a, b, tol: float = 1.0) -> bool:
                 or a.y1 - tol <= b.y0 or b.y1 - tol <= a.y0)
 
 
+def _png_dpi(path: Path):
+    try:
+        data = path.read_bytes()
+        position = 8
+        while position + 12 <= len(data):
+            length = struct.unpack(">I", data[position:position + 4])[0]
+            kind = data[position + 4:position + 8]
+            if kind == b"pHYs" and length == 9:
+                x, y, unit = struct.unpack(">IIB", data[position + 8:position + 17])
+                return (x * 0.0254, y * 0.0254) if unit == 1 else None
+            position += length + 12
+    except (OSError, struct.error):
+        pass
+    return None
+
+
 def audit(spec: dict, built: dict) -> dict:
     """Check the rendered figure against the spec and against drawing hygiene."""
     import numpy as np
@@ -206,8 +224,11 @@ def audit(spec: dict, built: dict) -> dict:
     # 1. every node must carry its label as live text
     for a in built["artists"]:
         node = next(n for n in spec["nodes"] if n["id"] == a["node"])
-        want = node.get("label", node["id"])
-        if a["text"].get_text() != want:
+        want = str(node.get("label", node["id"]))
+        # Narrative layout may insert line breaks for physical fit; compare the
+        # words, while still detecting any changed scientific token or number.
+        flatten = lambda value: " ".join(str(value).split())
+        if flatten(a["text"].get_text()) != flatten(want):
             add("label.mismatch", "high", "node label differs from the spec",
                 node=a["node"], spec_label=want, drawn=a["text"].get_text())
 
@@ -224,6 +245,19 @@ def audit(spec: dict, built: dict) -> dict:
     for nid, bb in boxes:
         if bb.x0 < canvas.x0 - 1 or bb.x1 > canvas.x1 + 1 or bb.y0 < canvas.y0 - 1 or bb.y1 > canvas.y1 + 1:
             add("label.outside_canvas", "high", "a label is clipped by the figure edge", node=nid)
+    for auxiliary in built.get("aux_artists", []):
+        bb = auxiliary["text"].get_window_extent(renderer)
+        if bb.x0 < canvas.x0 - 1 or bb.x1 > canvas.x1 + 1 or bb.y0 < canvas.y0 - 1 or bb.y1 > canvas.y1 + 1:
+            add("label.outside_canvas", "high", "a narrative label is clipped by the figure edge",
+                node=auxiliary.get("id"))
+        if auxiliary.get("patch") is not None:
+            pb = auxiliary["patch"].get_window_extent(renderer)
+            if bb.width > pb.width * 0.94:
+                add("label.wider_than_box", "medium", "a result note is too wide for its narrative card",
+                    node=auxiliary.get("id"), label_px=round(bb.width, 1), box_px=round(pb.width, 1))
+        if auxiliary["text"].get_fontsize() < float(spec.get("min_font_pt", 6.0)):
+            add("font.too_small", "medium", "a narrative label is below the legibility floor",
+                node=auxiliary.get("id"), size=auxiliary["text"].get_fontsize())
 
     # 3b. labels must fit inside their own shape. A label wider than its box
     # reads as belonging to whatever is next to it, which is worse than no label.
@@ -320,21 +354,37 @@ def audit(spec: dict, built: dict) -> dict:
                     "a drawn label has no legend entry while the legend is required, so part "
                     "of the figure is unexplained", labels=missing[:6])
 
-    # 8. export hygiene: what a journal will ask for
+    # 8. export hygiene: validate the real files, not merely their suffixes.
     svg_text = built["svg"].read_text(encoding="utf-8", errors="replace")
-    if "<text" not in svg_text:
-        add("export.no_live_text", "high",
-            "the SVG contains no <text> elements, so labels are paths and cannot be edited")
-    if "<image" in svg_text:
-        add("export.embedded_raster", "medium",
-            "the SVG embeds a raster image; it will not scale cleanly for print")
+    for artifact in (built["svg"], built["png"]):
+        if not artifact.exists() or artifact.stat().st_size < 500:
+            add("export.empty_artifact", "high", "an exported figure is missing or unexpectedly empty",
+                artifact=str(artifact))
+    try:
+        root = ET.fromstring(svg_text)
+        element_names = [element.tag.rsplit("}", 1)[-1] for element in root.iter()]
+        if "text" not in element_names:
+            add("export.no_live_text", "high",
+                "the SVG contains no <text> elements, so labels are paths and cannot be edited")
+        if "image" in element_names:
+            add("export.embedded_raster", "medium",
+                "the SVG embeds a raster image; it will not scale cleanly for print")
+    except ET.ParseError as exc:
+        add("export.svg_invalid", "high", "the SVG is not well-formed XML", error=str(exc))
+    if not built["png"].read_bytes().startswith(b"\x89PNG\r\n\x1a\n"):
+        add("export.png_invalid", "high", "the raster preview is not a valid PNG stream")
+    if built.get("pdf") and not built["pdf"].read_bytes().startswith(b"%PDF"):
+        add("export.pdf_invalid", "high", "the PDF export is invalid")
     if built["dpi"] < 300:
         add("export.low_dpi", "medium",
             f"preview rendered at {built['dpi']} dpi; journals normally require 300 or more")
-    for fam in ("font-family",):
-        if fam not in svg_text:
-            add("export.no_font_family", "low",
-                "the SVG does not declare a font-family, so substitution may change metrics")
+    physical = _png_dpi(built["png"])
+    if physical and min(physical) < 299:
+        add("export.png_dpi_mismatch", "medium", "the PNG pHYs metadata declares less than 300 dpi",
+            png_dpi=[round(value, 2) for value in physical])
+    if "font-family" not in svg_text:
+        add("export.no_font_family", "low",
+            "the SVG does not declare a font-family, so substitution may change metrics")
 
     counts: dict[str, int] = {}
     for f in findings:
@@ -351,7 +401,11 @@ def audit(spec: dict, built: dict) -> dict:
             "edges": len(want_edges),
             "labels_overlapping": sum(1 for f in findings if f["rule"] == "label.overlap"),
             "dpi": built["dpi"],
-            "artifacts": {"svg": str(built["svg"]), "png": str(built["png"])},
+            "narrative_aux_labels": len(built.get("aux_artists", [])),
+            "artifacts": {"svg": str(built["svg"]), "png": str(built["png"]),
+                          **({"pdf": str(built["pdf"])} if built.get("pdf") else {}),
+                          **({"caption": str(built["svg"].parent / "caption.txt")}
+                             if (built["svg"].parent / "caption.txt").exists() else {})},
         },
     }
 

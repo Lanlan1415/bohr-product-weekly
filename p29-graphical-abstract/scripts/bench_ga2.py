@@ -31,25 +31,34 @@ OUT = Path(__file__).resolve().parent / "_run_ga2"
 # A clean abstract: Chinese labels, three declared takeaways, every number in source,
 # every panel traced to a material item.
 BASE = {
-    "canvas_mm": [170, 70],
-    "size_limit_mm": [180, 80],
-    "max_words": 60,
-    "font_size": 9,
-    "source_values": ["42", "3"],
-    "takeaways": {"problem": "p1", "method": "m1", "finding": "f1"},
-    "reading_order": ["p1", "m1", "f1"],
+    "canvas_mm": [180, 90],
+    "size_limit_mm": [185, 95],
+    "max_words": 80,
+    "font_size": 8.4,
+    "core_message": {"text": "多孔涂层恢复快速吸收", "evidence": "mat3"},
+    "source_values": ["42", "3", "0.6", "1.8", "6"],
+    "limitations": [{"text": "体外实验；耐久性未评估", "evidence": "mat4"}],
+    "result_modality": "quantitative",
+    "takeaways": {"problem": "p1", "method": "m1", "finding": "f1", "conclusion": "c1"},
+    "reading_order": ["p1", "m1", "f1", "c1"],
     "materials": [{"id": "mat1", "name": "缓慢吸收"},
                   {"id": "mat2", "name": "多孔涂层"},
-                  {"id": "mat3", "name": "吸收速率"}],
-    "legend": ["吸收缓慢", "多孔涂层", "吸收快 3 倍"],
+                  {"id": "mat3", "name": "吸收速率"},
+                  {"id": "mat4", "name": "范围与结论"}],
+    "legend": ["吸收缓慢", "多孔涂层 42 nm", "吸收快 3 倍", "体外吸收改善"],
     "nodes": [
         {"id": "p1", "label": "吸收缓慢", "evidence": "mat1", "layer": 0, "color": "#D55E00"},
         {"id": "m1", "label": "多孔涂层 42 nm", "evidence": "mat2", "layer": 1, "color": "#0072B2"},
-        {"id": "f1", "label": "吸收快 3 倍", "evidence": "mat3", "layer": 2, "color": "#009E73"},
+        {"id": "f1", "label": "吸收快 3 倍", "evidence": "mat3", "layer": 2, "color": "#009E73",
+         "visual_data": {"kind": "bar", "unit": "吸收速率（a.u.）", "n_caption": "每组 n = 6", "uncertainty": "95% CI",
+                         "items": [{"label": "未处理", "value": 0.6, "evidence": "mat1"},
+                                   {"label": "涂层", "value": 1.8, "evidence": "mat3"}]}},
+        {"id": "c1", "label": "体外吸收改善", "evidence": "mat4", "layer": 3, "color": "#CC79A7"},
     ],
     "edges": [
         {"from": "p1", "to": "m1", "type": "activate"},
         {"from": "m1", "to": "f1", "type": "activate"},
+        {"from": "f1", "to": "c1", "type": "activate"},
     ],
 }
 
@@ -103,7 +112,7 @@ def scen_bad_evidence():
 
 
 def scen_material_unused():
-    s = d(materials=BASE["materials"] + [{"id": "mat4", "name": "未使用的材料"}])
+    s = d(materials=BASE["materials"] + [{"id": "mat5", "name": "未使用的材料"}])
     return s, ["trace.material_not_drawn"]
 
 

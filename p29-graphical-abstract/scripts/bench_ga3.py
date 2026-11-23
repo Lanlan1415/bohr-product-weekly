@@ -38,30 +38,9 @@ import ga_figure  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "_run_ga3"
 
-# A clean abstract: three declared takeaways, three traced panels, distinct
-# colours WITH a declared legend, every number in source, order names real ids.
-BASE = {
-    "canvas_mm": [170, 70],
-    "size_limit_mm": [180, 80],
-    "max_words": 60,
-    "font_size": 9,
-    "source_values": ["42", "3"],
-    "takeaways": {"problem": "p1", "method": "m1", "finding": "f1"},
-    "reading_order": ["p1", "m1", "f1"],
-    "legend": ["吸收缓慢", "多孔涂层 42 nm", "吸收快 3 倍"],
-    "materials": [{"id": "mat1", "name": "缓慢吸收"},
-                  {"id": "mat2", "name": "多孔涂层"},
-                  {"id": "mat3", "name": "吸收速率"}],
-    "nodes": [
-        {"id": "p1", "label": "吸收缓慢", "evidence": "mat1", "layer": 0, "color": "#D55E00"},
-        {"id": "m1", "label": "多孔涂层 42 nm", "evidence": "mat2", "layer": 1, "color": "#0072B2"},
-        {"id": "f1", "label": "吸收快 3 倍", "evidence": "mat3", "layer": 2, "color": "#009E73"},
-    ],
-    "edges": [
-        {"from": "p1", "to": "m1", "type": "activate"},
-        {"from": "m1", "to": "f1", "type": "activate"},
-    ],
-}
+# The shared clean abstract has four source-backed takeaways, one core message,
+# a real quantitative result layer and an explicit scope limitation.
+from bench_ga2 import BASE
 
 
 def d(**over):
@@ -133,6 +112,58 @@ def scen_caption_number():
 
 def scen_caption_clean_fp():
     s = d(caption="速率对比见正文图 3")
+    return s, []
+
+
+# --- four-stage narrative and source-bound result marks -------------------------
+
+def scen_core_message_missing():
+    s = d(); s.pop("core_message")
+    return s, ["ga.core_message_missing"]
+
+
+def scen_core_message_untraceable():
+    return d(core_message={"text": "多孔涂层恢复快速吸收", "evidence": "matX"}), ["ga.core_message_untraceable"]
+
+
+def scen_quantitative_visual_missing():
+    s = d(); s["nodes"][2].pop("visual_data")
+    return s, ["ga.quantitative_visual_missing"]
+
+
+def scen_visual_value_not_in_source():
+    s = d(); s["nodes"][2]["visual_data"]["items"][1]["value"] = 9.9
+    return s, ["ga.visual_value_not_in_source"]
+
+
+def scen_visual_unit_missing():
+    s = d(); s["nodes"][2]["visual_data"].pop("unit")
+    return s, ["ga.visual_unit_missing"]
+
+
+def scen_misleading_baseline():
+    s = d(); s["nodes"][2]["visual_data"]["baseline"] = 0.5
+    return s, ["ga.misleading_baseline"]
+
+
+def scen_visual_interval_invalid():
+    s = d(); item = s["nodes"][2]["visual_data"]["items"][0]; item["lower"] = 0.8; item["upper"] = 0.4
+    return s, ["ga.visual_interval_invalid"]
+
+
+def scen_limitations_missing():
+    s = d(); s.pop("limitations")
+    return s, ["ga.limitations_missing"]
+
+
+def scen_broken_final_link():
+    s = d(); s["edges"] = s["edges"][:2]
+    return s, ["ga.takeaway_panels_unlinked"]
+
+
+def scen_qualitative_guard():
+    s = d(result_modality="qualitative")
+    s["nodes"][2].pop("visual_data")
     return s, []
 
 
@@ -217,6 +248,16 @@ SCEN = [
     ("takeaways_type", scen_takeaways_type),
     ("caption_number", scen_caption_number),
     ("caption_clean_fp", scen_caption_clean_fp),
+    ("core_message_missing", scen_core_message_missing),
+    ("core_message_untraceable", scen_core_message_untraceable),
+    ("quantitative_visual_missing", scen_quantitative_visual_missing),
+    ("visual_value_not_in_source", scen_visual_value_not_in_source),
+    ("visual_unit_missing", scen_visual_unit_missing),
+    ("misleading_baseline", scen_misleading_baseline),
+    ("visual_interval_invalid", scen_visual_interval_invalid),
+    ("limitations_missing", scen_limitations_missing),
+    ("broken_final_link", scen_broken_final_link),
+    ("qualitative_guard", scen_qualitative_guard),
 ]
 
 

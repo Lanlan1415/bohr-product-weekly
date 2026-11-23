@@ -1,19 +1,23 @@
 {
+  "case_id": "source-chart-demo-001",
+  "output_contract": ["status", "sources", "uncertainty", "change_records", "custom_tail"],
   "kind": "bar",
-  "figsize": [
-    3.5,
-    2.8
-  ],
-  "x_label": "Genotype / treatment",
+  "title": "Treatment response by genotype",
+  "caption": "Source-row values; colour and hatch redundantly encode genotype.",
+  "figsize": [3.5, 2.8],
+  "x_label": "Treatment",
   "y_label": "Response",
   "y_unit": "a.u.",
   "caption_n": 6,
+  "n_semantics": "biological replicates per group",
   "legend": true,
+  "panel": "a",
+  "value_labels": true,
   "encoding": {
     "x": "condition",
     "y": "response",
     "y_err": "response_sd",
     "group": "group"
   },
-  "error_meaning": "SD"
+  "errorbar_meaning": "SD"
 }

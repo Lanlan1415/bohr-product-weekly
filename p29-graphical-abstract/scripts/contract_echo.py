@@ -8,11 +8,8 @@ helper carries each declared field into the result:
   excluded -- a contract field is an assertion about the deliverable, not a
   place to dump the whole material list);
   a field neither can fill becomes null with a note in limits, so a reviewer
-  finds the key and an honest gap instead of a silent omission.
-
-The case identifier is echoed at the top level. The refusal path never calls
-into this module: a refusal runs before any audit exists and keeps only what
-the command line explicitly carried.
+  finds the key and an honest gap instead of a silent omission. Dict, field-list
+  and {"fields": ...} contracts are supported, including structured refusals.
 """
 from __future__ import annotations
 
@@ -33,10 +30,31 @@ def apply(result: dict, spec: dict) -> dict:
     if cid is not None and "case_id" not in result:
         result["case_id"] = str(cid)
     contract = spec.get("output_contract")
-    if not isinstance(contract, dict):
+    if isinstance(contract, dict) and isinstance(contract.get("fields"), (list, tuple, dict, str)):
+        contract = contract["fields"]
+    if isinstance(contract, dict):
+        keys = list(contract)
+    elif isinstance(contract, str):
+        keys = [contract]
+    elif isinstance(contract, (list, tuple)):
+        keys = []
+        for item in contract:
+            if isinstance(item, str) and item.strip():
+                keys.append(item)
+            elif isinstance(item, dict):
+                key = item.get("name") or item.get("field") or item.get("key")
+                if isinstance(key, str) and key.strip():
+                    keys.append(key)
+                else:
+                    result.setdefault("limits", []).append(f"output_contract entry has no usable name: {item!r}")
+            else:
+                result.setdefault("limits", []).append(f"output_contract entry is not a field: {item!r}")
+    else:
+        if contract is not None:
+            result.setdefault("limits", []).append("output_contract is not a supported field list")
         return result
     limits = result.setdefault("limits", [])
-    for key in contract:
+    for key in keys:
         k = str(key)
         if k in result:
             continue

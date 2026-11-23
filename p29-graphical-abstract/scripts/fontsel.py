@@ -139,11 +139,35 @@ def resolve(text: str = "") -> Resolved:
 
 def labels_text(spec: dict) -> str:
     """Every character the figure will draw, gathered from the spec."""
-    parts = []
+    parts = ["INPUT QUESTION METHOD RESULT MECHANISM CONCLUSION Source observation Scope limitation"]
     for n in spec.get("nodes") or []:
+        if not isinstance(n, dict):
+            continue
         parts.append(str(n.get("label") or ""))
+        parts.append(str(n.get("visual_caption") or ""))
+        parts.extend(str(step) for step in (n.get("steps") or []))
+        data = n.get("visual_data") or {}
+        if isinstance(data, dict):
+            parts.append(str(data.get("unit") or ""))
+            parts.append(str(data.get("uncertainty") or ""))
+            parts.append(str(data.get("n_caption") or ""))
+            if data.get("n") is not None:
+                parts.append(f"n = {data['n']}")
+            for item in data.get("items") or []:
+                if isinstance(item, dict):
+                    parts.append(str(item.get("label") or item.get("id") or ""))
+                    if item.get("value") is not None:
+                        try:
+                            parts.append(f"{float(item['value']):g}")
+                        except (TypeError, ValueError):
+                            parts.append(str(item.get("value")))
     for e in spec.get("edges") or []:
-        parts.append(str(e.get("label") or ""))
+        if isinstance(e, dict):
+            parts.append(str(e.get("label") or ""))
+    core = spec.get("core_message")
+    parts.append(str(core.get("text") or "") if isinstance(core, dict) else str(core or ""))
+    for item in spec.get("limitations") or []:
+        parts.append(str(item.get("text") or "") if isinstance(item, dict) else str(item))
     parts.append(str(spec.get("title") or ""))
     parts.append(str(spec.get("caption") or ""))
     for g in spec.get("groups") or []:
