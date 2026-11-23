@@ -1,0 +1,68 @@
+{
+  "scenarios": [
+    {
+      "name": "clean_basic",
+      "pass": true,
+      "why": "outline=1, backend=pymupdf"
+    },
+    {
+      "name": "case_unreadable",
+      "pass": true,
+      "why": "exit 5"
+    },
+    {
+      "name": "case_not_object",
+      "pass": true,
+      "why": "exit 4"
+    },
+    {
+      "name": "pdf_path_missing",
+      "pass": true,
+      "why": "exit 5"
+    },
+    {
+      "name": "no_pdf_path_field",
+      "pass": true,
+      "why": "exit 4"
+    },
+    {
+      "name": "garbage_pdf",
+      "pass": true,
+      "why": "reason=all_backends_failed"
+    },
+    {
+      "name": "plaintext_pdf",
+      "pass": true,
+      "why": "exit 5"
+    },
+    {
+      "name": "encrypted_pdf",
+      "pass": true,
+      "why": "exit 5, reason=all_backends_failed"
+    },
+    {
+      "name": "chinese_pdf",
+      "pass": true,
+      "why": "status=review, backend=pdftotext"
+    },
+    {
+      "name": "bom_case_spec",
+      "pass": true,
+      "why": "exit 3, status=review"
+    },
+    {
+      "name": "dict_output_contract",
+      "pass": true,
+      "why": "status=review"
+    },
+    {
+      "name": "long_form_pdf",
+      "pass": true,
+      "why": "pages=20"
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  }
+}
