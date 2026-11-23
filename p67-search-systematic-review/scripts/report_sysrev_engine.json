@@ -1,0 +1,140 @@
+{
+  "schema_version": "sysrev-engine-bench/v2",
+  "synthetic_only": true,
+  "scenarios": [
+    {
+      "scenario": "clean_baseline",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "artifacts_and_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "exact_meta_parameters",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "prospective_all_null",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "prospective_fake_hits",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "executed_export_mismatch",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "malformed_rows_arithmetic",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ta_reason_required",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reviewer_conflict_detected",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reviewer_adjudication_replays",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "not_retrieved_reason",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "quality_domain_required",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "quality_overall_mismatch",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "quality_unweighted_summary",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "quote_tamper",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cross_report_reference",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "incomplete_effect_is_narrative",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_selective_subset_pool",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "risk_sensitivity",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "conflict_must_be_two_sided",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "multi_report_study_not_double_counted",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "included_coverage_audit",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "fixed_empty_blocked",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "refusal_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "idempotent_bytes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cold_import",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 26,
+    "of": 26
+  }
+}

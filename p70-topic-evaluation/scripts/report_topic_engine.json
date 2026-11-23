@@ -1,0 +1,100 @@
+{
+  "schema_version": "topic-engine-bench/v2",
+  "synthetic_only": true,
+  "scenarios": [
+    {
+      "scenario": "clean_baseline",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "artifacts_and_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "prospective_not_executed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "prospective_fake_count",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "executed_requires_real_count",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "direct_collision",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "transfer_not_method_first",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "counterevidence",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "quote_tamper",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "incomparable_reason",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "single_source_no_clear_gate",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "assumption_needs_validation",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_critical_prestudy",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_evidence_ref",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_work_id",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "refusal_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "idempotent_bytes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cold_import",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 18,
+    "of": 18
+  }
+}

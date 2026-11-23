@@ -1,0 +1,16 @@
+{
+  "case_id": "synthetic-review-contract-001",
+  "output_contract": [
+    "research_product",
+    {"field": "screening"},
+    {"name": "themes"},
+    {"key": "comparison_matrix"},
+    "synthesis_claims",
+    "research_gaps",
+    "evidence_matrix",
+    "citation_coverage",
+    "uncertainties",
+    "change_records",
+    "deliverables"
+  ]
+}

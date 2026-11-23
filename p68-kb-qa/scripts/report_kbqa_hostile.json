@@ -1,0 +1,77 @@
+{
+  "schema_version": "kbqa-hostile-bench/v1",
+  "probes": [
+    {
+      "probe": "malformed_case_exit5",
+      "pass": true
+    },
+    {
+      "probe": "case_not_object_exit5",
+      "pass": true
+    },
+    {
+      "probe": "missing_case_exit5",
+      "pass": true
+    },
+    {
+      "probe": "case_required_exit5",
+      "pass": true
+    },
+    {
+      "probe": "empty_library_explicit_unknown",
+      "pass": true
+    },
+    {
+      "probe": "no_questions_exit5",
+      "pass": true
+    },
+    {
+      "probe": "hostile_document_shapes_partial",
+      "pass": true
+    },
+    {
+      "probe": "mixed_unreadable_and_good_partial",
+      "pass": true
+    },
+    {
+      "probe": "nonobject_contract_degrades",
+      "pass": true
+    },
+    {
+      "probe": "deterministic_all_outputs",
+      "pass": true
+    },
+    {
+      "probe": "multi_and_unknown_answer_coverage",
+      "pass": true
+    },
+    {
+      "probe": "cold_verify_exit0",
+      "pass": true
+    },
+    {
+      "probe": "tampered_claim_verify_exit5",
+      "pass": true
+    },
+    {
+      "probe": "verify_missing_export_exit5",
+      "pass": true
+    },
+    {
+      "probe": "broken_workorder_partial_not_crash",
+      "pass": true
+    },
+    {
+      "probe": "nested_output_created",
+      "pass": true
+    },
+    {
+      "probe": "unwritable_output_structured_refusal",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 17,
+    "of": 17
+  }
+}

@@ -1,8 +1,12 @@
 [
   {"quote": "three-fold", "page": 1, "type": "highlight", "color": "yellow",
-   "note": "结果：涂层使吸收速率提高三倍"},
-  {"quote": "six replicates", "page": 2, "type": "underline",
-   "note": "方法：每组六个重复"},
+   "note": "结果：涂层使吸收速率提高三倍", "tags": ["吸收率", "uptake"],
+   "topics": ["涂层"], "key_concepts": ["吸收速率"], "entities": ["coating"],
+   "source_time": "2024-05-02"},
+  {"quote": "six replicates", "page": 2, "type": "underline", "color": "blue",
+   "note": "方法：每组六个重复", "tags": ["重复性"], "topics": ["实验设计"],
+   "key_concepts": ["重复"], "entities": ["replicate"], "source_time": "2024-06-03"},
   {"quote": "does not generalise", "page": 3, "type": "margin", "color": "red",
-   "note": "局限：只测了一种厚度"}
+   "kind": "doubt", "note": "存疑：单一厚度能否外推", "tags": ["待验证"],
+   "topics": ["外推边界"], "key_concepts": ["外推"]}
 ]

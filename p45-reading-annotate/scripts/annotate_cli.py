@@ -3,11 +3,11 @@ retrieve, export, and finish with a contract-carrying result.json.
 
     python annotate_cli.py --store ws.json load --doc-id paper --doc-file extracted.txt
     python annotate_cli.py --store ws.json ingest --doc-id paper --annotations ann.json
-    python annotate_cli.py --store ws.json retrieve --question "为什么用高温退火" [--kind method] [--doc-id paper] [--tag 温度]
+    python annotate_cli.py --store ws.json retrieve --question "为什么用高温退火" [--kind method] [--doc-id paper] [--tag 温度] [--topic 涂层] [--concept uptake] [--entity sample] [--since 2024-01-01] [--until 2024-12-31]
     python annotate_cli.py --store ws.json export --out ./out
     python annotate_cli.py --store ws.json result --out /app/output [--case case.json]
 
-Exit codes: 0 ok / done, 2 usage, 4 refused or failed, 5 undetermined (store or
+Exit codes: 0 ok / done, 2 usage, 3 partial, 4 refused or failed, 5 undetermined (store or
 case file unreadable — an honest refusal, never a traceback).
 """
 
@@ -25,19 +25,27 @@ import annotate  # noqa: E402
 # Contract fields whose VALUES are bulky material inputs, not deliverable
 # metadata: they are echoed as null (and named in limits), never copied wholesale.
 _BULKY = ("output_contract", "task", "materials", "documents", "annotations",
-          "text", "files")
+          "text", "files", "questions", "cards")
+_CONTRACT_ALIASES = {
+    "annotations": "notes", "knowledge_cards": "cards", "knowledge_links": "links",
+    "backlinks": "links", "version_relations": "version_siblings",
+    "follow_up": "follow_up_actions", "review_actions": "follow_up_actions",
+    "files": "documents", "sources": "documents", "verification": "verify",
+    "changes": "change_records", "logs": "operation_trace",
+    "uncertainties": "uncertainty",
+}
 
 
 def _print(payload: dict) -> None:
     print(json.dumps(payload, ensure_ascii=False))
 
 
-def _refused_result(out_dir: Path, reason: str) -> int:
+def _refused_result(out_dir: Path, reason: str, rule: str = "ann.store_unreadable") -> int:
     """Undetermined refusal for the result command: writes the honest minimal
     result.json (exit 5). The contract is NOT echoed on the refusal path — the
     broken file may be the case file itself."""
-    result = {"schema_version": "annotate/v2", "status": "undetermined",
-              "findings": [{"rule": "ann.store_unreadable", "severity": "high",
+    result = {"schema_version": "annotate/v3", "status": "undetermined",
+              "findings": [{"rule": rule, "severity": "high",
                             "message": reason}],
               "limits": ["the run could not be completed as declared"]}
     out_dir = Path(out_dir)
@@ -73,6 +81,10 @@ def _echo_contract(result: dict, case: dict, limits: list) -> None:
             if isinstance(v, (str, int, float, bool)) and \
                     (not isinstance(v, str) or len(v) <= 500):
                 result[key] = v
+                continue
+            alias = _CONTRACT_ALIASES.get(key) or _CONTRACT_ALIASES.get(key.lower())
+            if alias and alias in result:
+                result[key] = result[alias]
                 continue
             result[key] = None
             limits.append(f"output_contract field '{key}' was not derivable by this audit")
@@ -129,6 +141,8 @@ def run_result(ws, ann, out_dir: Path, case_path: str | None) -> int:
     notes = ann.structured_notes()
     links = ann.links(notes)
     siblings = ann.version_siblings(notes)
+    cards = ann.knowledge_cards(notes, links, siblings)
+    followups = ann.follow_up_actions(cards)
     vres = reader.verify_all(ws)
     refusals = ws.data.get("refusals", [])
     status, reason = _derive_status(notes, refusals, vres)
@@ -173,36 +187,46 @@ def run_result(ws, ann, out_dir: Path, case_path: str | None) -> int:
                                    "record the version"})
 
     result = {
-        "schema_version": "annotate/v2",
+        "schema_version": "annotate/v3",
         "status": status,
         "status_reason": reason,
-        # 资料结果: documents, structured notes, links, version siblings
+        # 资料结果: documents, structured notes/cards, reciprocal links, versions
         "documents": docs,
         "notes": notes,
+        "cards": cards,
         "links": links,
         "version_siblings": siblings,
-        # 操作证据: hashes, verify report, event trail
+        "follow_up_actions": followups,
+        "retrieval": {"filters": ["question", "kind", "doc_id", "tag", "topic",
+                                   "concept", "entity", "since", "until"],
+                      "time_filter_uses_only_declared_source_time": True},
+        # 操作证据: hashes, verify report, idempotent event trail, edit diffs
         "verify": {"anchors": vres.get("anchors"), "invalid": invalid,
                    "ok": vres.get("ok")},
         "operation_trace": ws.data.get("events", [])[-30:],
+        "change_records": ws.data.get("changes", []),
         # 失败与恢复: refusals with recovery actions, uncertainty, limits
         "failure_recovery": failure_recovery,
         "uncertainty": uncertainty,
         "limits": limits,
+        "exports": ["notes.md", "cards.md", "review.csv", "index.json"],
     }
+    # Finalisation always writes the editable/exportable artifacts as well as
+    # result.json; one command cannot accidentally produce JSON without cards.
+    ann.export(out_dir)
     if case is not None:
         _echo_contract(result, case, limits)
     (out_dir / "result.json").write_text(
-        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
     _print({"ok": True, "status": status, "case_id": result.get("case_id"),
-            "notes": len(notes), "links": len(links),
-            "version_siblings": len(siblings),
+            "notes": len(notes), "cards": len(cards), "links": len(links),
+            "version_siblings": len(siblings), "follow_up_actions": len(followups),
             "refusals": len(refusals),
             "wrote": str(out_dir / "result.json")})
     return {"done": 0, "partial": 3, "failed": 4}.get(status, 1)
 
 
-def main(argv=None) -> int:
+def _main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="annotate", description=__doc__)
     ap.add_argument("--store", required=True)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -221,8 +245,13 @@ def main(argv=None) -> int:
     q.add_argument("--kind", help="restrict to one note kind")
     q.add_argument("--doc-id", help="restrict to one source document")
     q.add_argument("--tag", help="restrict to notes carrying this tag")
+    q.add_argument("--topic", help="declared topic/theme filter")
+    q.add_argument("--concept", help="declared or lexical key-concept filter")
+    q.add_argument("--entity", help="declared entity filter")
+    q.add_argument("--since", help="inclusive ISO source_time lower bound (YYYY-MM-DD)")
+    q.add_argument("--until", help="inclusive ISO source_time upper bound (YYYY-MM-DD)")
 
-    e = sub.add_parser("export", help="write notes.md + index.json")
+    e = sub.add_parser("export", help="write notes.md + cards.md + review.csv + index.json")
     e.add_argument("--out", required=True)
 
     sub.add_parser("verify", help="re-check every stored anchor")
@@ -237,6 +266,16 @@ def main(argv=None) -> int:
         _print({"ok": False, "reason": f"unknown kind '{a.kind}'; valid kinds: "
                                        f"{list(annotate.NOTE_KINDS)}"})
         return 2
+    if a.cmd == "retrieve":
+        if any(value is not None and not annotate.valid_iso_date(value)
+               for value in (a.since, a.until)):
+            _print({"ok": False, "rule": "ann.invalid_time_filter",
+                    "reason": "since/until must be ISO dates (YYYY-MM-DD)"})
+            return 2
+        if a.since and a.until and a.since[:10] > a.until[:10]:
+            _print({"ok": False, "rule": "ann.invalid_time_filter",
+                    "reason": "since must not be later than until"})
+            return 2
 
     try:
         ws = reader.Workspace(a.store)
@@ -272,9 +311,8 @@ def main(argv=None) -> int:
         # silently merged or split into two unrelated batches.
         dups = ann.duplicate_doc_ids(a.doc_id)
         if dups:
-            ws.data["events"].append({"kind": "duplicate-document",
-                                      "doc_id": a.doc_id, "duplicate_of": dups,
-                                      "at": annotate._now()})
+            annotate._event_once(ws, {"kind": "duplicate-document",
+                                      "doc_id": a.doc_id, "duplicate_of": dups})
         try:
             ws.save()
         except OSError as exc:
@@ -308,8 +346,23 @@ def main(argv=None) -> int:
 
     if a.cmd == "retrieve":
         notes = ann.structured_notes()
-        hits = ann.retrieve(a.question, notes, kind=a.kind, doc_id=a.doc_id, tag=a.tag)
-        _print({"ok": True, "question": a.question, "hits": hits})
+        filters = {"kind": a.kind, "doc_id": a.doc_id, "tag": a.tag, "topic": a.topic,
+                   "concept": a.concept, "entity": a.entity, "since": a.since, "until": a.until}
+        filters = {k: v for k, v in filters.items() if v is not None}
+        hits = ann.retrieve(a.question, notes, kind=a.kind, doc_id=a.doc_id, tag=a.tag,
+                            topic=a.topic, concept=a.concept, entity=a.entity,
+                            since=a.since, until=a.until)
+        event = {"kind": "retrieve", "question": a.question, "filters": filters,
+                 "hit_card_ids": [h["card_id"] for h in hits]}
+        annotate._event_once(ws, event)
+        try:
+            ws.save()
+        except OSError as exc:
+            _print({"ok": False, "status": "undetermined", "rule": "ann.store_unwritable",
+                    "reason": f"workspace store could not be written: {exc}"})
+            return 5
+        _print({"ok": True, "question": a.question, "filters": filters, "hits": hits,
+                "empty_reason": None if hits else "no note/card matched the question and filters; no result was invented"})
         return 0
 
     if a.cmd == "verify":
@@ -331,6 +384,25 @@ def main(argv=None) -> int:
     if a.cmd == "result":
         return run_result(ws, ann, Path(a.out), a.case)
     return 2
+
+
+def main(argv=None) -> int:
+    """Last-resort structured boundary for valid-but-hostile store shapes."""
+    try:
+        return _main(argv)
+    except Exception as exc:
+        reason = "annotation pipeline refused invalid input: " + \
+                 (type(exc).__name__ + ": " + str(exc))[:500]
+        args = list(argv) if argv is not None else sys.argv[1:]
+        if "--out" in args:
+            try:
+                out = Path(args[args.index("--out") + 1])
+                return _refused_result(out, reason, rule="ann.invalid_input")
+            except (ValueError, IndexError, OSError):
+                pass
+        _print({"ok": False, "status": "undetermined", "rule": "ann.invalid_input",
+                "reason": reason})
+        return 5
 
 
 if __name__ == "__main__":

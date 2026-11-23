@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p68-kb-qa
+https://github.com/Lanlan1415/bohr-product-weekly
+p68-kb-qa/

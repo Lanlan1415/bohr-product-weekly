@@ -1,0 +1,90 @@
+{
+  "schema_version": "sysrev-hostile-probes/v2",
+  "synthetic_only": true,
+  "totals": {
+    "passed": 16,
+    "of": 16
+  },
+  "probes": [
+    {
+      "probe": "missing_spec_exit5_contract",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "malformed_spec_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "nonobject_spec_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "malformed_case_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "nonobject_case_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "empty_fixed_blocked_with_artifacts",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "malformed_rows_no_crash",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "output_path_conflict_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "usage_exit2",
+      "pass": true,
+      "detail": " SPEC [--case CASE] [--case-id CASE_ID] --out OUT\nsysrevrun: error: the following arguments are required: --spec, --out\n"
+    },
+    {
+      "probe": "contract_types_and_engine_priority",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "cjk_realistic_smoke",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "separate_process_determinism",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "cold_import_no_side_effect",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "prospective_no_fake_zero_counts",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "real_smoke_contains_full_chain",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "export_mismatch_exit4_no_traceback",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

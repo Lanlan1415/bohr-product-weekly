@@ -1,0 +1,19 @@
+{
+  "case_id": "case-demo-kbqa",
+  "documents": [
+    {"document_id": "protocol-v2", "version": "v2", "path": "protocol-v2.txt"},
+    {"document_id": "notes", "text": "每组使用六个重复。"}
+  ],
+  "aliases": {"sample": ["样品", "specimen"]},
+  "questions": [
+    {"question_id": "q1", "question": "请分别回答样品的保存温度，以及每组的重复数量。"},
+    {"question_id": "q2", "question": "知识库没有记载的量子引力常数是多少？"}
+  ],
+  "output_contract": {
+    "answers": [],
+    "evidence": [],
+    "conflicts": [],
+    "deliverable": "grounded answers",
+    "unavailable_structured_field": {"required": true}
+  }
+}

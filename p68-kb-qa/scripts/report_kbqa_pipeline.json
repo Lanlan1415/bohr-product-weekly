@@ -1,0 +1,125 @@
+{
+  "schema_version": "kbqa-pipeline-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_pure_chinese",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "chinese_query_english_source",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "no_answer_abstains",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "multihop_complete_coverage",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "explicit_subquestions",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "version_numeric_conflict",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "exact_sentence_locator_no_fake_page",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "formfeed_real_page_coordinate",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "duplicates_kept_search_deduplicated",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "directory_metadata_hash_permissions",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "output_contract_all_fields",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "empty_corpus_honest_undetermined",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "no_questions_honest_undetermined",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "missing_file_partial_recovery",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "malformed_records_do_not_abort",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "declared_alias_query_variant",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "byte_deterministic_rerun",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "cold_export_verification",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "tampered_claim_detected",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "declared_workorder_loaded",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "multi_document_list_coverage",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "all_answer_claims_verbatim_source",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "duplicate_ids_preserve_both_evidence_sets",
+      "pass": true,
+      "error": ""
+    }
+  ],
+  "totals": {
+    "passed": 23,
+    "of": 23
+  },
+  "note": "Synthetic functional cases only; clean claims are source-extractive and independently verified."
+}

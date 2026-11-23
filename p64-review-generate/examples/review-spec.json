@@ -1,0 +1,201 @@
+{
+  "case_id": "spec-id-must-not-override-case",
+  "review_question": "在慢性疼痛成人中，运动与数字化居家支持对疼痛和功能结局的证据如何一致或分歧？",
+  "corpus": {
+    "id": "synthetic-exercise-corpus",
+    "version": "v1-synthetic-interface-test",
+    "snapshot_date": "2026-11-24",
+    "sources": [
+      {"name": "synthetic source A", "locator": "examples/review-spec.json#records[R1,R2,R3]", "snapshot_date": "2026-11-24"},
+      {"name": "synthetic source B", "locator": "examples/review-spec.json#records[R4,R1D,X1]", "snapshot_date": "2026-11-24"}
+    ]
+  },
+  "screening_protocol": {
+    "version": "screening-v1-frozen-before-writing",
+    "frozen_before_review": true,
+    "inclusion_criteria": ["成人慢性疼痛运动或数字居家干预原始对照研究", "方法、数据、评价与结论均有可定位原文"],
+    "exclusion_criteria": ["非慢性疼痛人群", "综述、方案或无可用结果"]
+  },
+  "themes": [
+    {"id": "T1", "label": "运动剂量与疼痛结局", "boundary": "只比较运动对常规照护的12周疼痛结局；数字递送方式本身不是本主题的纳入理由"},
+    {"id": "T2", "label": "数字化支持的居家运动", "boundary": "远程或数字工具支持居家运动；允许疼痛和功能等不同比较组分面综合，不跨组直接合并数值"}
+  ],
+  "records": [
+    {
+      "id": "R1",
+      "title": "Synthetic Supervised Exercise Trial A",
+      "doi": "synthetic-r1",
+      "year": 2022,
+      "source": "synthetic full text A",
+      "decision": "include",
+      "inclusion_reason": "符合成人慢性疼痛与对照运动研究条款",
+      "full_text_status": "full_text",
+      "comparison_key": "exercise_vs_care_pain_12w",
+      "direction": "positive",
+      "method": "12周监督下个体化力量与有氧训练，对照为常规照护",
+      "data": "86名慢性腰痛成人，同一中心随机分组",
+      "metric": "12周0-10疼痛数字评分变化与95%置信区间",
+      "conclusion": "运动组疼痛下降幅度大于常规照护组",
+      "limitations": "单中心且样本量小",
+      "field_evidence": {"method": ["R1:M"], "data": ["R1:D"], "metric": ["R1:O"], "conclusion": ["R1:R"]},
+      "theme_assignments": [{"theme_id": "T1", "rationale": "原始研究直接比较监督运动与常规照护的12周疼痛", "evidence_refs": ["R1:M", "R1:R"]}],
+      "evidence": [
+        {"id": "R1:M", "fields": ["method", "theme"], "quote": "Participants received individualized strength and aerobic exercise for 12 weeks.", "locator": "synthetic-A p.3 Methods ¶1"},
+        {"id": "R1:D", "fields": ["data"], "quote": "Eighty-six adults with chronic low back pain were randomized at one centre.", "locator": "synthetic-A p.3 Methods ¶2"},
+        {"id": "R1:O", "fields": ["metric"], "quote": "The primary outcome was change in 0-10 numeric pain at 12 weeks with a 95% confidence interval.", "locator": "synthetic-A p.4 Outcomes ¶1"},
+        {"id": "R1:R", "fields": ["conclusion", "theme"], "quote": "Pain decreased more in the exercise group than in usual care at 12 weeks.", "locator": "synthetic-A p.5 Results ¶1"}
+      ],
+      "source_excerpt": "Participants received individualized strength and aerobic exercise for 12 weeks.\nEighty-six adults with chronic low back pain were randomized at one centre.\nThe primary outcome was change in 0-10 numeric pain at 12 weeks with a 95% confidence interval.\nPain decreased more in the exercise group than in usual care at 12 weeks."
+    },
+    {
+      "id": "R2",
+      "title": "Synthetic App Supported Exercise Trial B",
+      "doi": "synthetic-r2",
+      "year": 2023,
+      "source": "synthetic full text B",
+      "decision": "include",
+      "inclusion_reason": "数字居家运动与疼痛结局符合两条主题边界",
+      "full_text_status": "full_text",
+      "comparison_key": "exercise_vs_care_pain_12w",
+      "direction": "no_effect",
+      "method": "12周手机应用指导居家运动，对照为常规照护，无现场监督",
+      "data": "124名慢性腰痛成人，多中心随机分组，12周失访率18%",
+      "metric": "12周0-10疼痛数字评分变化与组间差值",
+      "conclusion": "数字居家运动与常规照护的12周疼痛差异未达到临床重要阈值",
+      "limitations": "长期依从性机制和12周以后效果未解决",
+      "field_evidence": {"method": ["R2:M"], "data": ["R2:D"], "metric": ["R2:O"], "conclusion": ["R2:R"]},
+      "theme_assignments": [
+        {"theme_id": "T1", "rationale": "比较组同为12周运动对常规照护疼痛，但方向相反，需保留冲突", "evidence_refs": ["R2:R"]},
+        {"theme_id": "T2", "rationale": "干预由手机应用支持居家完成", "evidence_refs": ["R2:M"]}
+      ],
+      "evidence": [
+        {"id": "R2:M", "fields": ["method", "theme"], "quote": "The intervention used a smartphone application to guide unsupervised home exercise for 12 weeks.", "locator": "synthetic-B p.3 Methods ¶1"},
+        {"id": "R2:D", "fields": ["data"], "quote": "A total of 124 adults were randomized across centres, and 18% were lost by week 12.", "locator": "synthetic-B p.4 Flow ¶1"},
+        {"id": "R2:O", "fields": ["metric"], "quote": "The between-group difference in 0-10 pain change was estimated at 12 weeks.", "locator": "synthetic-B p.4 Outcomes ¶2"},
+        {"id": "R2:R", "fields": ["conclusion", "theme"], "quote": "The pain difference did not reach the prespecified clinically important threshold.", "locator": "synthetic-B p.6 Results ¶2"},
+        {"id": "R2:L", "fields": ["limitations", "gap"], "quote": "Follow-up beyond 12 weeks and adherence mechanisms remain unresolved.", "locator": "synthetic-B p.7 Discussion ¶3"}
+      ],
+      "source_excerpt": "The intervention used a smartphone application to guide unsupervised home exercise for 12 weeks.\nA total of 124 adults were randomized across centres, and 18% were lost by week 12.\nThe between-group difference in 0-10 pain change was estimated at 12 weeks.\nThe pain difference did not reach the prespecified clinically important threshold.\nFollow-up beyond 12 weeks and adherence mechanisms remain unresolved."
+    },
+    {
+      "id": "R3",
+      "title": "Synthetic Tele-Rehabilitation Trial C",
+      "doi": "synthetic-r3",
+      "year": 2021,
+      "source": "synthetic full text C",
+      "decision": "include",
+      "inclusion_reason": "数字远程居家干预和功能结局符合主题",
+      "full_text_status": "full_text",
+      "comparison_key": "digital_home_vs_waitlist_function_8w",
+      "direction": "positive",
+      "method": "8周每周视频反馈的居家功能训练，对照为等待名单",
+      "data": "64名慢性颈痛成人，两家康复机构招募",
+      "metric": "8周功能障碍指数变化，报告组间估计与不确定性",
+      "conclusion": "视频反馈组功能改善优于等待名单组",
+      "limitations": "等待名单对照不能排除关注效应",
+      "field_evidence": {"method": ["R3:M"], "data": ["R3:D"], "metric": ["R3:O"], "conclusion": ["R3:R"]},
+      "theme_assignments": [{"theme_id": "T2", "rationale": "居家训练由每周视频反馈提供数字支持", "evidence_refs": ["R3:M"]}],
+      "evidence": [
+        {"id": "R3:M", "fields": ["method", "theme"], "quote": "Home functional training was supported by weekly video feedback for eight weeks.", "locator": "synthetic-C p.2 Methods ¶1"},
+        {"id": "R3:D", "fields": ["data"], "quote": "Sixty-four adults with chronic neck pain were recruited from two rehabilitation clinics.", "locator": "synthetic-C p.2 Methods ¶3"},
+        {"id": "R3:O", "fields": ["metric"], "quote": "Change in the disability index at eight weeks was estimated between groups with uncertainty intervals.", "locator": "synthetic-C p.3 Outcomes ¶1"},
+        {"id": "R3:R", "fields": ["conclusion"], "quote": "Function improved more with video-supported exercise than with waiting-list control.", "locator": "synthetic-C p.4 Results ¶1"}
+      ],
+      "source_excerpt": "Home functional training was supported by weekly video feedback for eight weeks.\nSixty-four adults with chronic neck pain were recruited from two rehabilitation clinics.\nChange in the disability index at eight weeks was estimated between groups with uncertainty intervals.\nFunction improved more with video-supported exercise than with waiting-list control."
+    },
+    {
+      "id": "R4",
+      "title": "Synthetic Wearable Supported Trial D",
+      "doi": "synthetic-r4",
+      "year": 2024,
+      "source": "synthetic full text D",
+      "decision": "include",
+      "inclusion_reason": "可穿戴数字居家研究同时服务运动与数字主题比较",
+      "full_text_status": "full_text",
+      "comparison_key": "digital_home_vs_waitlist_function_8w",
+      "direction": "positive",
+      "method": "8周可穿戴活动提醒加异步消息反馈，对照为等待名单",
+      "data": "92名慢性颈痛成人，按机构分层随机",
+      "metric": "8周同一功能障碍指数和最小临床重要差异达标率",
+      "conclusion": "可穿戴支持组功能改善更多，但达标率估计精度有限",
+      "limitations": "无法分离活动提醒与反馈消息的贡献",
+      "field_evidence": {"method": ["R4:M"], "data": ["R4:D"], "metric": ["R4:O"], "conclusion": ["R4:R"]},
+      "theme_assignments": [
+        {"theme_id": "T1", "rationale": "属于身体活动训练，但功能比较组与12周疼痛组分开，不做跨结局数值合并", "evidence_refs": ["R4:M", "R4:O"]},
+        {"theme_id": "T2", "rationale": "数字提醒和异步反馈支持居家运动", "evidence_refs": ["R4:M"]}
+      ],
+      "evidence": [
+        {"id": "R4:M", "fields": ["method", "theme"], "quote": "Participants received wearable activity prompts and asynchronous message feedback for eight weeks.", "locator": "synthetic-D p.3 Methods ¶1"},
+        {"id": "R4:D", "fields": ["data"], "quote": "Ninety-two adults with chronic neck pain were randomized with stratification by clinic.", "locator": "synthetic-D p.3 Methods ¶4"},
+        {"id": "R4:O", "fields": ["metric", "theme"], "quote": "The same disability index and the proportion reaching the minimal important difference were assessed at eight weeks.", "locator": "synthetic-D p.4 Outcomes ¶1"},
+        {"id": "R4:R", "fields": ["conclusion"], "quote": "Functional improvement favoured wearable support, although the responder estimate was imprecise.", "locator": "synthetic-D p.5 Results ¶2"}
+      ],
+      "source_excerpt": "Participants received wearable activity prompts and asynchronous message feedback for eight weeks.\nNinety-two adults with chronic neck pain were randomized with stratification by clinic.\nThe same disability index and the proportion reaching the minimal important difference were assessed at eight weeks.\nFunctional improvement favoured wearable support, although the responder estimate was imprecise."
+    },
+    {
+      "id": "R1D",
+      "title": "Synthetic Supervised Exercise Trial A duplicate export",
+      "doi": "synthetic-r1",
+      "year": 2022,
+      "source": "second synthetic export",
+      "decision": "include",
+      "inclusion_reason": "重复导出不重复计数"
+    },
+    {
+      "id": "X1",
+      "title": "Synthetic Postoperative Pain Trial",
+      "doi": "synthetic-x1",
+      "year": 2023,
+      "source": "synthetic abstract X",
+      "decision": "exclude",
+      "exclusion_reason": "术后急性疼痛人群，不符合慢性疼痛纳入条款",
+      "full_text_status": "abstract_only"
+    }
+  ],
+  "synthesis_claims": [
+    {
+      "id": "C1",
+      "type": "contradiction",
+      "theme_id": "T1",
+      "comparison_key": "exercise_vs_care_pain_12w",
+      "statement": "12周运动对慢性疼痛的效果存在实质性分歧：监督个体化训练显示获益，而应用指导的无监督居家训练未达到临床重要阈值",
+      "support_evidence_refs": ["R1:R"],
+      "contradicting_evidence_refs": ["R2:R"]
+    },
+    {
+      "id": "C2",
+      "type": "consensus",
+      "theme_id": "T2",
+      "comparison_key": "digital_home_vs_waitlist_function_8w",
+      "statement": "两项8周数字支持居家研究一致提示功能改善，但等待名单对照与反馈方式差异限制了对关注和依从性机制的解释",
+      "support_evidence_refs": ["R3:R", "R4:R"],
+      "contradicting_evidence_refs": []
+    },
+    {
+      "id": "C3",
+      "type": "method_comparison",
+      "theme_id": "T2",
+      "comparison_key": "digital_home_vs_waitlist_function_8w",
+      "statement": "同属数字支持，视频同步反馈与可穿戴提醒加异步消息的人机交互剂量不同，不能把两项研究视为同一干预的简单重复",
+      "support_evidence_refs": ["R3:M", "R4:M"],
+      "contradicting_evidence_refs": []
+    }
+  ],
+  "research_gaps": [
+    {
+      "id": "G1",
+      "type": "unresolved_long_term_adherence",
+      "theme_id": "T2",
+      "statement": "数字居家运动超过12周的依从性机制与持续效果证据不足",
+      "positive_evidence_refs": ["R2:L"],
+      "scope_checks": [
+        {"source": "fixed synthetic corpus and supplied citation graph", "query": "(digital home exercise) AND (adherence OR follow-up) AND (beyond 12 weeks)", "covered_years": "2021-2024 within the supplied snapshot", "outcome": "no additional eligible longitudinal study was supplied; this is not a live database result", "status": "fixed_corpus"}
+      ],
+      "bounded_conclusion": "只可将该缺口表述为本固定语料内的长期证据不足，后续方案需测依从性过程和延长随访，不能声称全球无人研究。"
+    }
+  ],
+  "uncertainties": [
+    {"kind": "clinical_heterogeneity", "message": "R1/R2为慢性腰痛，R3/R4为慢性颈痛；不同疼痛部位和结局不跨比较组直接合并。"},
+    {"kind": "small_snapshot", "message": " example has four included synthetic records and cannot estimate publication bias or real-world coverage."}
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "synthetic-topic-contract-001",
+  "output_contract": [
+    "research_product",
+    {"field": "comparison_matrix"},
+    {"name": "evidence_matrix"},
+    {"key": "novelty_assessment"},
+    "feasibility_assessment",
+    "decision",
+    "search_protocol",
+    "uncertainties",
+    "research_gaps",
+    "change_records",
+    "deliverables"
+  ]
+}

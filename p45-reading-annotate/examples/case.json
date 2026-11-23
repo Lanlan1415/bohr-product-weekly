@@ -1,0 +1,11 @@
+{
+  "case_id": "case-demo-annotate-v3",
+  "output_contract": {
+    "annotations": [],
+    "knowledge_cards": [],
+    "knowledge_links": [],
+    "follow_up": [],
+    "deliverable": "structured annotation knowledge cards",
+    "unavailable_structured_field": {"required": true}
+  }
+}

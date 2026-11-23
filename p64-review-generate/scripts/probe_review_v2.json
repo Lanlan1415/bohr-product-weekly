@@ -1,0 +1,80 @@
+{
+  "schema_version": "review-hostile-probes/v2",
+  "synthetic_only": true,
+  "totals": {
+    "passed": 14,
+    "of": 14
+  },
+  "probes": [
+    {
+      "probe": "missing_spec_exit5_contract",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "malformed_spec_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "nonobject_spec_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "malformed_case_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "nonobject_case_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "empty_corpus_blocked_outputs",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "malformed_rows_no_crash",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "output_path_conflict_exit5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "usage_exit2",
+      "pass": true,
+      "detail": "eviewrun [-h] --spec SPEC [--case CASE] [--case-id CASE_ID] --out OUT\nreviewrun: error: the following arguments are required: --spec, --out\n"
+    },
+    {
+      "probe": "contract_types_and_engine_priority",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "cjk_realistic_smoke",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "separate_process_determinism",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "cold_import_no_side_effect",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "probe": "real_smoke_contains_synthesis",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

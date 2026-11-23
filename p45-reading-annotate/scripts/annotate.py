@@ -12,12 +12,15 @@ guessing.
 
 from __future__ import annotations
 
+import csv
+import datetime
 import difflib
 import hashlib
 import json
 import re
-import time
 from pathlib import Path
+
+SCHEMA = "annotate/v3"
 
 NOTE_KINDS = ("question", "method", "result", "reusable", "doubt", "context")
 ANN_TYPES = ("highlight", "underline", "margin", "handwriting", "web-clip")
@@ -64,8 +67,39 @@ def file_hash(text: str) -> str:
     return hashlib.sha256(str(text or "").encode("utf-8")).hexdigest()[:16]
 
 
-def _now() -> str:
-    return time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
+def _string_list(value) -> list[str]:
+    """Declared tags/topics/concepts/entities; no inference from filenames."""
+    if value is None:
+        return []
+    values = value if isinstance(value, list) else [value]
+    out = []
+    for value in values:
+        if isinstance(value, (str, int, float)) and str(value).strip():
+            item = str(value).strip()
+            if item not in out:
+                out.append(item)
+    return out
+
+
+def _source_time(record: dict):
+    value = next((record.get(k) for k in ("source_time", "date", "created_at", "timestamp")
+                  if isinstance(record.get(k), str) and record.get(k).strip()), None)
+    return value.strip() if value else None
+
+
+def valid_iso_date(value: str) -> bool:
+    try:
+        datetime.date.fromisoformat(str(value)[:10])
+        return bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:[T ].*)?", str(value)))
+    except (ValueError, TypeError):
+        return False
+
+
+def _event_once(ws, event: dict) -> None:
+    """Idempotent operation log: identical retries do not grow the workspace."""
+    events = ws.data.setdefault("events", [])
+    if event not in events:
+        events.append(event)
 
 
 class Annotator:
@@ -118,6 +152,7 @@ class Annotator:
         refused: list[dict] = []
         accepted: list[dict] = []
         newly: list[str] = []
+        updated: list[str] = []
         if not isinstance(annotations, list):
             self._refuse(refused, -1, "ann.annotations_not_list",
                          "the annotations file must be a JSON list of records")
@@ -228,20 +263,26 @@ class Annotator:
                 "color": str(a.get("color") or "").strip() or None,
                 "note_text": str(a.get("note") or a.get("text") or "").strip(),
                 "note_kind": note_kind(a.get("note") or a.get("text"), a.get("kind")),
-                "tags": [str(t).strip() for t in (a.get("tags") or [])
-                         if str(t).strip()],
+                "tags": _string_list(a.get("tags")),
+                "topics": _string_list(a.get("topics") or a.get("topic")),
+                "key_concepts": _string_list(a.get("key_concepts") or a.get("concepts")),
+                "entities": _string_list(a.get("entities") or a.get("entity")),
+                "source_time": _source_time(a),
                 "source_sha": doc["sha256"][:16],
-                "ingested_at": _now(),
+                # Runtime wall clock is deliberately excluded: exported notes,
+                # cards, indexes and result.json must be deterministic.  This
+                # nullable field remains only for backward schema compatibility.
+                "ingested_at": None,
             }
             key = hashlib.sha256(json.dumps(
                 {k: rec[k] for k in ("doc_id", "quote", "type", "page", "paragraph")},
                 sort_keys=True).encode("utf-8")).hexdigest()[:12]
             rec["annotation_id"] = key
             first_time = key not in store
+            accepted_rec = rec
             if first_time:
                 newly.append(key)
-            store.setdefault(key, rec)
-            if first_time:
+                store[key] = rec
                 # Register the anchor once, so re-ingesting the same file never
                 # inflates the workspace's anchor list. The anchor carries the
                 # RESOLVED page, so a page-less ingest still verifies.
@@ -251,24 +292,42 @@ class Annotator:
                     "start": located["start"], "end": located["end"],
                     "quote": quote,
                 }, {"annotation_id": key})
-            accepted.append(rec)
-        self.ws.data["events"].append({
-            "kind": "ingest", "doc_id": doc_id,
-            "accepted": len(accepted), "refused": len(refused),
-            "newly_stored": len(newly), "at": _now(),
-            "refusal_rules": [r.get("rule") for r in refused][:10],
-        })
+            else:
+                existing = store[key]
+                editable = ("color", "note_text", "note_kind", "tags", "topics",
+                            "key_concepts", "entities", "source_time", "source_sha")
+                delta = {k: {"old": existing.get(k), "new": rec.get(k)}
+                         for k in editable if existing.get(k) != rec.get(k)}
+                if delta:
+                    updated.append(key)
+                    store[key] = rec
+                    change = {"kind": "annotation-update", "annotation_id": key,
+                              "doc_id": doc_id, "fields": delta}
+                    _event_once(self.ws, change)
+                    changes = self.ws.data.setdefault("changes", [])
+                    if change not in changes:
+                        changes.append(change)
+                else:
+                    accepted_rec = existing
+            accepted.append(accepted_rec)
+        if newly or updated or refused:
+            _event_once(self.ws, {
+                "kind": "ingest", "doc_id": doc_id,
+                "accepted": len(accepted), "refused": len(refused),
+                "newly_stored": len(newly), "updated": len(updated),
+                "refusal_rules": [r.get("rule") for r in refused][:10],
+            })
         self._persist_refusals(doc_id, refused)
-        return {"ok": bool(accepted), "accepted": accepted, "refused": refused}
+        return {"ok": bool(accepted), "accepted": accepted, "refused": refused,
+                "newly_stored": len(newly), "updated": len(updated)}
 
     def _trace_command_refusal(self, doc_id: str, refused: list) -> None:
         """Command-level refusals (nothing was ingested, so there is nothing to
         recover into the deliverable): recorded in the event trail and returned
         to the caller, not parked in the per-document refusal bag."""
-        self.ws.data["events"].append({
+        _event_once(self.ws, {
             "kind": "ingest", "doc_id": doc_id,
-            "accepted": 0, "refused": len(refused), "newly_stored": 0,
-            "at": _now(),
+            "accepted": 0, "refused": len(refused), "newly_stored": 0, "updated": 0,
             "refusal_rules": [r.get("rule") for r in refused][:10],
         })
 
@@ -299,7 +358,8 @@ class Annotator:
     def structured_notes(self, doc_id: str | None = None) -> list[dict]:
         """Every annotation as a structured note with its source anchor."""
         out = []
-        for rec in self.ws.data.get("annotations", {}).values():
+        records = list(self.ws.data.get("annotations", {}).values())
+        for rec in sorted(records, key=lambda r: r["annotation_id"]):
             if doc_id and rec["doc_id"] != doc_id:
                 continue
             out.append({
@@ -313,6 +373,10 @@ class Annotator:
                 "type": rec["type"],
                 "color": rec["color"],
                 "tags": rec.get("tags", []),
+                "topics": rec.get("topics", []),
+                "key_concepts": rec.get("key_concepts", []),
+                "entities": rec.get("entities", []),
+                "source_time": rec.get("source_time"),
                 "note_text": rec["note_text"],
                 "source_sha": rec["source_sha"],
                 "ingested_at": rec.get("ingested_at"),
@@ -327,6 +391,10 @@ class Annotator:
         keeps a method note from being chained to a result note on a shared word.
         The shared terms ARE the link's stated evidence — 可解释, not a black box.
         """
+        try:
+            min_shared = max(2, int(min_shared))
+        except (TypeError, ValueError):
+            min_shared = 2
         out = []
         for i in range(len(notes)):
             for j in range(i + 1, len(notes)):
@@ -359,14 +427,102 @@ class Annotator:
                                 "docs": [a["doc_id"], b["doc_id"]]})
         return out
 
+    def card_for_note(self, note: dict) -> dict:
+        """One stable, source-grounded knowledge card per structured note."""
+        declared = set(note.get("key_concepts", [])) | set(note.get("entities", []))
+        lexical = set(note.get("tags", [])) | set(note.get("terms", [])[:6])
+        # Declared concepts/entities suppress noisy lexical fallback; declared
+        # tags remain meaningful concepts without rewriting their source values.
+        concepts = sorted(declared | set(note.get("tags", []))) if declared else sorted(lexical)
+        comment = bool(note.get("note_text"))
+        return {
+            "card_id": "card-" + note["annotation_id"],
+            "annotation_ids": [note["annotation_id"]],
+            "doc_id": note["doc_id"],
+            "note_kind": note["note_kind"],
+            "title": (note.get("key_concepts") or note.get("tags") or
+                      [note["note_kind"] + ": " + note["quote"][:32]])[0],
+            "topics": sorted(note.get("topics", [])),
+            "tags": sorted(note.get("tags", [])),
+            "key_concepts": concepts,
+            "concepts_origin": "declared+lexical" if declared else "lexical-fallback",
+            "entities": sorted(note.get("entities", [])),
+            "source_excerpt": note["quote"],
+            "reader_comment": note.get("note_text") or None,
+            "summary": note.get("note_text") or note["quote"],
+            "summary_kind": "reader_comment" if comment else "source_excerpt",
+            "anchor": note["anchor"],
+            "source_sha": note["source_sha"],
+            "source_time": note.get("source_time"),
+            "type": note["type"], "color": note.get("color"),
+            "review_schedule": {"interval_days": [1, 3, 7, 16], "state": "not_started",
+                                "due_date": None,
+                                "note": "relative offsets only; no review was performed or dated"},
+            "related_card_ids": [], "backlinks": [],
+        }
+
+    def knowledge_cards(self, notes: list[dict], links: list[dict] | None = None,
+                        siblings: list[dict] | None = None) -> list[dict]:
+        """Cards plus explicit reciprocal links and backlinks.
+
+        Hypothesis-style selectors remain on the source annotation; cards reuse
+        that one anchor rather than inventing a second locator.  All associations
+        are explainable shared terms or version-sibling evidence.
+        """
+        cards = [self.card_for_note(n) for n in notes]
+        by_ann = {c["annotation_ids"][0]: c for c in cards}
+        links = self.links(notes) if links is None else links
+        siblings = self.version_siblings(notes) if siblings is None else siblings
+        for edge in list(links) + list(siblings):
+            a, b = edge["between"]
+            if a not in by_ann or b not in by_ann:
+                continue
+            ca, cb = by_ann[a]["card_id"], by_ann[b]["card_id"]
+            edge["between_cards"] = [ca, cb]
+            edge["directions"] = [[ca, cb], [cb, ca]]
+            edge["bidirectional"] = True
+            by_ann[a]["related_card_ids"].append(cb)
+            by_ann[b]["related_card_ids"].append(ca)
+            by_ann[a]["backlinks"].append(cb)
+            by_ann[b]["backlinks"].append(ca)
+        for card in cards:
+            card["related_card_ids"] = sorted(set(card["related_card_ids"]))
+            card["backlinks"] = sorted(set(card["backlinks"]))
+            card["wikilinks"] = ["[[" + c + "]]" for c in card["related_card_ids"]]
+        return cards
+
+    def follow_up_actions(self, cards: list[dict]) -> list[dict]:
+        out = []
+        for card in cards:
+            verify = card["note_kind"] in {"doubt", "question"}
+            out.append({
+                "card_id": card["card_id"],
+                "action": "verify-against-source" if verify else "scheduled-retrieval-review",
+                "reason": "reader marked a question/doubt" if verify else
+                          "review the anchored excerpt and retrieve related cards",
+                "anchor": card["anchor"],
+                "related_card_ids": card["related_card_ids"],
+                "review_schedule": card["review_schedule"],
+            })
+        return out
+
     def retrieve(self, question: str, notes: list[dict], top: int = 8,
                  kind: str | None = None, doc_id: str | None = None,
-                 tag: str | None = None) -> list[dict]:
+                 tag: str | None = None, topic: str | None = None,
+                 concept: str | None = None, entity: str | None = None,
+                 since: str | None = None, until: str | None = None) -> list[dict]:
         """Rank notes against a question by shared terms; honest about misses.
 
         Filters (kind / doc_id / tag) narrow the searched pool; an empty result
         after filtering is a miss and is returned as an empty list, never padded.
         """
+        for label, value in (("since", since), ("until", until)):
+            if value is not None and not valid_iso_date(value):
+                raise ValueError(f"{label} must be an ISO date (YYYY-MM-DD)")
+        try:
+            top = max(1, int(top))
+        except (TypeError, ValueError):
+            top = 8
         pool = notes
         if kind:
             pool = [n for n in pool if n["note_kind"] == kind]
@@ -374,38 +530,64 @@ class Annotator:
             pool = [n for n in pool if n["doc_id"] == doc_id]
         if tag:
             pool = [n for n in pool if tag in n.get("tags", [])]
+        if topic:
+            pool = [n for n in pool if topic in n.get("topics", [])]
+        if concept:
+            pool = [n for n in pool if concept in self.card_for_note(n)["key_concepts"]]
+        if entity:
+            pool = [n for n in pool if entity in n.get("entities", [])]
+        if since:
+            pool = [n for n in pool if n.get("source_time") and
+                    valid_iso_date(n["source_time"]) and n["source_time"][:10] >= since[:10]]
+        if until:
+            pool = [n for n in pool if n.get("source_time") and
+                    valid_iso_date(n["source_time"]) and n["source_time"][:10] <= until[:10]]
         q_terms = set(key_terms(question))
         if not q_terms:
             return []
         scored = []
         for n in pool:
-            shared = sorted(q_terms & set(n["terms"]))
+            card = self.card_for_note(n)
+            search_terms = set(n["terms"]) | set(key_terms(" ".join(
+                card["tags"] + card["topics"] + card["key_concepts"] + card["entities"])))
+            shared = sorted(q_terms & search_terms)
             if shared:
-                scored.append({"annotation_id": n["annotation_id"], "score": len(shared),
-                               "shared": shared[:6], "note_kind": n["note_kind"],
-                               "quote": n["quote"][:80],
-                               "anchor": n["anchor"]})
-        scored.sort(key=lambda x: -x["score"])
+                scored.append({"annotation_id": n["annotation_id"], "card_id": card["card_id"],
+                               "score": len(shared), "shared": shared[:6],
+                               "note_kind": n["note_kind"], "doc_id": n["doc_id"],
+                               "topics": card["topics"], "tags": card["tags"],
+                               "key_concepts": card["key_concepts"], "entities": card["entities"],
+                               "source_time": card["source_time"],
+                               "note_text": n.get("note_text"),
+                               "quote": n["quote"][:80], "anchor": n["anchor"]})
+        scored.sort(key=lambda x: (-x["score"], x["card_id"]))
         return scored[:top]
 
     def export(self, out_dir: Path) -> dict:
-        """notes.md (human view) + index.json (retrievable record)."""
+        """Export notes, linked knowledge cards, a review sheet and one index."""
         notes = self.structured_notes()
         links = self.links(notes)
         siblings = self.version_siblings(notes)
+        cards = self.knowledge_cards(notes, links, siblings)
+        followups = self.follow_up_actions(cards)
+        by_ann = {c["annotation_ids"][0]: c for c in cards}
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         lines = ["# Reading annotations — structured notes", ""]
         for n in notes:
             a = n["anchor"]
-            lines.append(f"## [{n['note_kind']}] {n['quote'][:60]}")
-            lines.append(f"*anchor*: `{n['doc_id']}` p.{a['page']}, ¶{a['paragraph']}, "
-                         f"chars {a['start']}–{a['end']} · type={n['type']}"
+            card = by_ann[n["annotation_id"]]
+            where = f"`{n['doc_id']}` " + (f"p.{a['page']}, " if a["page"] is not None else "page=unprovided, ")
+            where += f"¶{a['paragraph']}, chars {a['start']}–{a['end']}"
+            lines.append(f"## [[{card['card_id']}]] [{n['note_kind']}] {n['quote'][:60]}")
+            lines.append(f"*anchor*: {where} · type={n['type']}"
                          + (f" colour={n['color']}" if n["color"] else "")
                          + (f" · tags={','.join(n['tags'])}" if n.get("tags") else ""))
             if n["note_text"]:
-                lines.append(f"note: {n['note_text']}")
+                lines.append(f"reader comment (not source text): {n['note_text']}")
             lines.append(f"terms: {', '.join(n['terms'][:8])}")
+            lines.append("forward: " + (", ".join("[[" + c + "]]" for c in card["related_card_ids"]) or "none"))
+            lines.append("backlinks: " + (", ".join("[[" + c + "]]" for c in card["backlinks"]) or "none"))
             lines.append("")
         if siblings:
             lines.append("## Version siblings", "")
@@ -415,10 +597,45 @@ class Annotator:
                              f"source files, records stay separate")
             lines.append("")
         (out_dir / "notes.md").write_text("\n".join(lines), encoding="utf-8")
+
+        card_lines = ["# Knowledge cards", "",
+                      "Reader comments are explicitly separated from verbatim source excerpts.", ""]
+        for c in cards:
+            a = c["anchor"]
+            where = f"`{a['doc_id']}` " + (f"p.{a['page']}, " if a["page"] is not None else "page=unprovided, ")
+            where += f"¶{a['paragraph']}, chars {a['start']}–{a['end']}"
+            card_lines.extend([f"## [[{c['card_id']}]] {c['title']}", "",
+                               f"kind={c['note_kind']} · topics={','.join(c['topics']) or 'none'} · "
+                               f"tags={','.join(c['tags']) or 'none'}",
+                               f"key concepts: {', '.join(c['key_concepts']) or 'none'} ({c['concepts_origin']})",
+                               f"entities: {', '.join(c['entities']) or 'none'}",
+                               f"source: {where} · sha={c['source_sha']}", "",
+                               "> " + c["source_excerpt"], ""])
+            if c["reader_comment"]:
+                card_lines.extend(["reader comment (not source text): " + c["reader_comment"], ""])
+            card_lines.extend([
+                "forward links: " + (", ".join("[[" + x + "]]" for x in c["related_card_ids"]) or "none"),
+                "backlinks: " + (", ".join("[[" + x + "]]" for x in c["backlinks"]) or "none"),
+                "review: relative offsets 1/3/7/16 days · state=not_started · due_date=null", ""])
+        (out_dir / "cards.md").write_text("\n".join(card_lines), encoding="utf-8")
+        with (out_dir / "review.csv").open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.writer(handle, lineterminator="\n")
+            writer.writerow(["card_id", "front", "back", "back_kind", "interval_days",
+                             "state", "due_date", "source_anchor"])
+            for c in cards:
+                prompt = c["reader_comment"] or "Review the verbatim source excerpt and explain its relevance"
+                writer.writerow([c["card_id"], prompt, c["source_excerpt"], c["summary_kind"],
+                                 "1|3|7|16", "not_started", "", json.dumps(c["anchor"], ensure_ascii=False,
+                                 sort_keys=True)])
         (out_dir / "index.json").write_text(
-            json.dumps({"schema_version": "annotate/v2", "notes": notes,
-                        "links": links, "version_siblings": siblings},
-                       ensure_ascii=False, indent=2), encoding="utf-8")
-        return {"ok": True, "notes": len(notes), "links": len(links),
-                "version_siblings": len(siblings),
-                "wrote": [str(out_dir / "notes.md"), str(out_dir / "index.json")]}
+            json.dumps({"schema_version": SCHEMA, "notes": notes, "cards": cards,
+                        "links": links, "version_siblings": siblings,
+                        "follow_up_actions": followups,
+                        "retrieval": {"filters": ["question", "kind", "doc_id", "tag", "topic",
+                                                   "concept", "entity", "since", "until"],
+                                      "time_filter_uses_only_declared_source_time": True}},
+                       ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+        return {"ok": True, "notes": len(notes), "cards": len(cards), "links": len(links),
+                "version_siblings": len(siblings), "follow_up_actions": len(followups),
+                "wrote": [str(out_dir / name) for name in
+                          ("notes.md", "cards.md", "review.csv", "index.json")]}

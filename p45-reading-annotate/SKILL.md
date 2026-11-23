@@ -1,318 +1,203 @@
 ---
 name: reading-annotate
 description: >
-  Turn extracted reading annotations into structured, retrievable, verifiable
-  notes and finish with a contract-carrying result.json. Every annotation is
-  anchor-verified against the loaded document — a quote that does not exist is
-  refused by name, and an OCR-drifted quote is refused WITH its closest real
-  paragraph so the reader can re-extract. Highlight/underline/margin/handwriting
-  types and their colours survive verbatim (unknown extractor types are kept,
-  never collapsed); same-quote records from different file versions stay separate
-  with their own source hashes and are linked explicitly as version siblings;
-  duplicate downloads of one file are reported, not merged; notes are typed
-  (question / method / result / reusable / doubt / context) from cues or a
-  declared kind; notes link only within the same kind on >=2 shared content terms;
-  retrieval ranks notes against a real question with kind/doc/tag filters and
-  returns nothing when nothing matches. Echoes the platform case_id and every
-  output_contract field into result.json. Use when a task supplies already-extracted
-  annotations (from PDF highlights, margins, web clips) that must become a usable,
-  checkable, retrievable knowledge base.
+  阅读批注与知识沉淀。把 PDF/网页等工具已经抽出的真实批注变成可回链、可检索、
+  可导出的笔记与知识卡片。每条 quote 必须在已加载原文中逐字定位；页码、段落与
+  字符区间消歧，OCR 漂移拒绝并给真实候选段；highlight/underline/margin/handwriting/
+  web-clip、未知类型、颜色与标签保真。卡片区分 source_excerpt 与 reader_comment，
+  保存主题、关键概念、实体和声明的 source_time；同义内容按可解释证据建立双向链接
+  与 backlinks；生成 doubt/问题的后续行动与未开始的 1/3/7/16 天复习计划。支持按
+  问题、类型、文献、标签、主题、概念、实体和时间检索；导出 notes.md、cards.md、
+  review.csv、index.json，重放与保存幂等且全部字节确定。Echoes case_id and every
+  output_contract field into result.json. Do NOT use for invented highlights/pages,
+  unsupported card summaries, PDF annotation extraction without real source files,
+  or long-term archive governance.
 ---
 
-# reading-annotate
+# reading-annotate（阅读批注与知识沉淀）
 
-The failure this prevents is annotations that were extracted fine but are unusable:
-anchors hung on neighbouring paragraphs, OCR-drifted quotes refused with no hint,
-red highlights and yellow underlines collapsed into one pile, unknown types
-silently re-typed, notes reduced to 摘抄 with no source, duplicate downloads
-splitting one batch into two, and "knowledge links" made by sharing a single word.
+主流程为：真实原文与批注 → 锚点验证 → 类型化笔记 → 知识卡片 → 双向关联 →
+多维检索 → 导出与 result.json。输入载体是抽取后的 UTF-8 文本和真实批注导出；
+文本中 form feed 表示真实分页。本 Skill 不把压缩包内预制“答案”当作运行时材料。
 
-Four things decide whether this task is done right, and each is enforced:
+## 由开源机制落地，而非只贴链接
 
-| property | enforcement |
-|-|-|
-| 批注能逐条回到原文的具体页与位置 | every quote is located by exact match across ALL occurrences; the declared page (or character offset) picks the right one, an ambiguous quote is refused naming every occurrence, a page- or offset-contradicting declaration is refused at ingest time, and a drifted quote is refused with its closest real candidate |
-| 类型与标签不丢 | `type` is preserved verbatim (the five known values plus whatever the extractor emits — an unknown type stays itself, never re-typed), `color` and `tags` are kept as-is on every note |
-| 版本不串味、重复不分裂 | same-quote records from different files stay separate records with per-file sha256, AND the split is made explicit as a version-sibling link; a file loaded twice under two ids is reported as a duplicate |
-| 笔记可检索、可复跑 | notes carry content terms and tags; retrieval ranks by shared terms with kind/doc/tag filters and returns an honest empty list; the export is notes.md + index.json that anyone can re-check |
+- **Hypothesis annotation.py（其 GitHub 仓库路径 h/schemas/annotation.py）** 把 target URI、selector 数组和 tags 分离，
+  selector 可带 prefix/suffix 上下文。受到这一多选择器思路启发，本包同时持久化逐字
+  quote、doc_id、page、paragraph、start/end；同一 quote 多处出现时要求 page 或 offset
+  消歧，不能只靠文本相似度挂到邻近段。原 quote 与坐标在导出中共同出现。
+- **Zotero `reader.js`** 以 parent attachment 关联 annotation，分离 text/comment、color
+  和 page 表示，并通过 QuickCopy 将批注转入笔记。本包对应保留 doc_id/source_sha、
+  source_excerpt/reader_comment、type/color，再由同一结构化 note 生成 Markdown/CSV/JSON，
+  不让“读者判断”伪装成“原文事实”。页码只从已声明的真实分页获得，未提供 PDF 坐标时不猜。
 
-## 六步运行时入口（Harbor 契约）
+## 运行时六步入口（Harbor）
 
-平台运行时原始输入固定为 `/input/case.json` 与 `task.md`；工作区 `/app/work`；
-最终交付写 `/app/output`。按以下六步执行：
+平台输入：`/input/case.json` 与 `task.md`；工作区 `/app/work`；最终交付 `/app/output`。
 
-| 步 | 动作 | 要点 |
+| 步 | 动作 | 检查点 |
 |-|-|-|
-| 0 | 读 `/input/case.json` | 取 `case_id`、任务说明与 `output_contract`（原样保留，不改名）；按 `task.md` 指向的路径读**实际材料**——PDF 用平台工具抽文本（form feed 分页），批注导出用真实导出文件；标签与文件名不是内容来源 |
-| 1 | 判形态路由 | 按下方「任务措辞 → 路由」表决定 Stage 0 谁做、批注从哪来；扫描件无文本层、加密损坏文件在路由阶段就 Declared，不硬做 |
-| 2 | 先产出目标产物 | 先 `load` 文档再 `ingest` 已有批注——即使后续步骤中断，已验证的批注与锚点已在 store 里（尽早写出诚实的部分结果） |
-| 3 | 构造输入 | 批注记录装进 JSON 列表（quote/page/type/color/note/kind/tags）；不确定的锚点先 `verify`，别把猜测写进 store |
-| 4 | 审计 | `verify` 复核每个锚点；`retrieve` 用真实问题验证笔记可检索；`export` 产出 notes.md + index.json |
-| 5 | 修发现重跑 | 被拒绝的记录逐条按 failure_recovery 的 recovery 动作处理（OCR 漂移→按建议段落重抽；页码冲突→改声明；歧义→补 page 或 start），重跑 ingest 直到零拒绝或材料本身不允许 |
-| 6 | 合并 result.json | 跑 `result --out /app/output --case /input/case.json`：case_id 与 output_contract 逐字段直通，status 按映射写成 done/partial/failed，refusals/uncertainty/limits 随附 |
+| 0 | 读取 case_id、output_contract 与 task.md 指向的实际材料 | 文件名/领域标签不是正文；PDF 必须先使用环境真实 PDF/批注工具得到文本、页码与批注记录 |
+| 1 | 选择路由：PDF+批注导出、已抽取 JSON、扫描 OCR、重复副本、多版本 | 扫描件无文本层、加密/损坏/权限失败明确列入 limits/failure_recovery；可处理的文档继续 |
+| 2 | `load` 文档，`ingest` 批注 | 尽早保存已验证部分；quote 不存在、页码/offset 冲突、歧义、未知 kind 都逐条拒绝，不吞记录 |
+| 3 | `verify` 复核锚点，补齐材料里真实存在的 topics、key_concepts、entities、source_time | 不确定的主题/概念/时间留空；reader comment 与源文不能混写为 source_excerpt |
+| 4 | 用真实问题 `retrieve`，按需要加 kind/doc/tag/topic/concept/entity/since/until，再 `export` | 检索无命中就是 hits=[]+empty_reason；复习计划保持 not_started，不虚构已复习或到期日 |
+| 5 | `result --case /input/case.json --out /app/output` | 自动导出四个附件并写 result.json；case_id 与 contract 全字段直通，状态/拒绝/不确定性随附 |
 
-引擎已实现契约直通：`result --case case.json` 把 `case_id` 与 `output_contract` 的
-每个字段写进 result.json 顶层——结果里已有的字段保留，case 顶层携带的小体积值
-原样拷贝，契约里的字面量（短字符串/数值/布尔）直接回填，推导不出的填 null 并在
-limits 里写明。拒绝路径（store/case 不可读）不回填契约，只写 undetermined
-result.json。
-
-## 任务措辞 → 路由
-
-| 任务措辞 / 输入形态 | 路由 |
-|-|-|
-| 给了 PDF + 高亮导出（JSON/CSV） | Stage 0 自己做：pdftotext（或平台 pdf 工具）抽文本成 extracted.txt，高亮导出转成批注记录列表 → load → ingest |
-| 给了已抽取的批注 JSON | 直接 ingest；quote 必须逐字存在于已加载文档 |
-| 扫描件无文本层 | 先 OCR；OCR 漂移的批注会被 ann.anchor_ocr_drift 点名并附最接近的真实段落——按建议重抽，不许模糊匹配放行 |
-| 加密 / 损坏文件 | load 拒绝（exit 4）并写明原因；可处理的其余文件照常走完，不把未完成写成完成 |
-| 同一文献多版本（v1/v2） | 分开 load（各自 sha256），同 quote 批注保持独立记录 + version-sibling 显式连接 |
-| 重复下载同一文件 | load 报 duplicate_of；保留一个 id 或在笔记里记录别名，不拆成两批 |
-| 批注引用旧版本文本 | verify 会点名失效锚点：重锚到当前版本，或保留旧版本文件并注明 |
-| 要求「按主题/实体/标签检索」 | retrieve --question 配 --kind/--doc-id/--tag 过滤；词法检索召回不足如实返回空，不硬凑 |
-| 要求「待验证疑点单独归类」 | 批注 note 写「存疑/待验证…」或声明 kind 为 doubt；疑点不与结论混类 |
-| 只要摘抄不要结构 | 不适用——本 Skill 的最小交付就是带锚点与类型的结构化笔记；纯摘抄请直接复制原文 |
-| 目录级归档治理 / 长期档案制度 | 不适用（题目边界），只做本批材料的抽取—结构化—关联—入库闭环 |
-
-## Workflow
+### 最小实际调用
 
 ```bash
-# 1. load the document (UTF-8 text; form feeds mark page boundaries)
-python scripts/annotate_cli.py --store ws.json load --doc-id paper --doc-file extracted.txt
-
-# 2. ingest annotations (refused ones are named WITH rule id and recovery, never dropped)
-python scripts/annotate_cli.py --store ws.json ingest --doc-id paper --annotations ann.json
-
-# 3. re-check every anchor still resolves
-python scripts/annotate_cli.py --store ws.json verify
-
-# 4. ask the notes a real question (filters optional)
-python scripts/annotate_cli.py --store ws.json retrieve --question "uptake 提高了多少倍" --kind result
-
-# 5. export the structured notes and the machine-readable index
-python scripts/annotate_cli.py --store ws.json export --out ./out
-
-# 6. finish: result.json with case contract passthrough
-python scripts/annotate_cli.py --store ws.json result --out /app/output --case /input/case.json
+python scripts/annotate_cli.py --store /app/work/ws.json load \
+  --doc-id paper --doc-file examples/extracted.txt
+python scripts/annotate_cli.py --store /app/work/ws.json ingest \
+  --doc-id paper --annotations examples/annotations.json
+python scripts/annotate_cli.py --store /app/work/ws.json verify
+python scripts/annotate_cli.py --store /app/work/ws.json retrieve \
+  --question "涂层吸收速率提高了多少" --topic 涂层 --concept 吸收速率 \
+  --entity coating --since 2024-01-01 --until 2024-12-31
+python scripts/annotate_cli.py --store /app/work/ws.json export --out /app/output
+python scripts/annotate_cli.py --store /app/work/ws.json result \
+  --case examples/case.json --out /app/output
 ```
 
-批注记录形状（一个 JSON 列表）：
+示例均为自拟材料，不是平台正式案例。`result` 本身也会导出附件，因此重复执行
+export/result 不会生成额外副本。
+
+### 输入批注 schema
 
 ```json
 [
-  {"quote": "three-fold", "page": 1, "type": "highlight", "color": "yellow",
-   "note": "结果：涂层使吸收速率提高三倍", "tags": ["uptake"]},
-  {"quote": "six replicates", "page": 2, "type": "underline",
-   "note": "方法：每组六个重复"},
-  {"quote": "存疑的结论句", "type": "margin", "kind": "doubt", "note": "存疑：单一厚度能否外推"}
+  {"quote": "three-fold", "page": 1, "start": 38,
+   "type": "highlight", "color": "yellow",
+   "note": "结果：涂层使吸收速率提高三倍", "kind": "result",
+   "tags": ["吸收率"], "topics": ["涂层"],
+   "key_concepts": ["吸收速率"], "entities": ["coating"],
+   "source_time": "2024-05-02"}
 ]
 ```
 
-`quote` 是锚点，必须逐字存在于已加载文档；`page`/`start` 可省略（由文本解析），
-声明了就参与消歧；`type` 原样保留（未知类型不折叠）；`kind` 声明合法值
-（question/method/result/reusable/doubt/context）否则拒绝；`tags` 原样保留并可用于
-检索过滤。
+- `quote` 必填且逐字存在；`page`/`start` 可省略，声明后必须与实际位置一致。quote
+  多处出现且不唯一时 `ann.anchor_ambiguous` 拒绝，要求补 page 或 start，不选第一个碰运气。
+- `type` 保留五个常见值和未知 extractor 类型（统一小写），不静默折叠；`color`、tags
+  原顺序保留。kind 限 question/method/result/reusable/doubt/context，缺省才按文本 cues。
+- topics/themes、key_concepts/concepts、entities/entity 均为声明字段；概念已有声明时不
+  混入噪声二字词。若概念完全未声明，卡片才使用 lexical-fallback，并明确 concepts_origin。
+- source_time 只接受批注里的 `source_time`、`date`、`created_at`、`timestamp`；日期过滤仅处理
+  YYYY-MM-DD（可带时间后缀）。没有时间的卡不参与 since/until 命中，绝不拿运行时刻充当来源时间。
+- 普通单页文本的 page=1 是该逻辑文本页坐标，不是 PDF 印刷页码。跨 form feed 才解析
+  多个实际页。无页标签/版面坐标/扫描框时，相关字段保持 null 或未提供，不能补造。
 
-退出码：`0` ok / done；`2` usage（未知 kind 等）；`4` refused 或 failed（锚点拒绝、
-verify 失败、文件不可读、result 判 failed）；`5` undetermined（store/case 文件不可读
-——仍写 result.json，绝不 traceback）。
+## 卡片、关联、检索与复习的真实行为
 
-## Rules
+每条 annotation 形成一条 note 和一张稳定 `card-{annotation_id}`：
+- `source_excerpt` 永远来自锚定 quote；`reader_comment` 来自 note/text；summary_kind
+  区分 source_excerpt 或 reader_comment。卡片不能脱离原文哈希与 anchor 独立存在。
+- cards 含 title、topics、tags、key_concepts、entities、source_time、annotation_ids、
+  doc_id、note_kind、type/color、source_sha、review_schedule。
+- 同 kind 且共享至少两个 content terms 才形成知识关联，shared_terms 即证据，避免“只共享
+  一个词就全部互连”。每个 edge 有 between、between_cards、directions 与 bidirectional=true。
+- 每张卡的 related_card_ids、backlinks 和 Markdown `[[card-id]]` 同步生成；跨版本同 quote
+  仍保留独立哈希，并以 version-sibling 证据形成双向关联。
+- retrieve 会同时检索原文/评论和标签/主题/概念/实体词元；再施加 doc、kind、tag、topic、
+  concept、entity 和 ISO source_time 过滤，按 score+card_id 稳定排序，宁缺毋滥。
+- doubt/question 卡收到 `verify-against-source`；其他卡收到 `scheduled-retrieval-review`。
+  相对复习间隔为 [1,3,7,16]，state=not_started、due_date=null；这是可执行后续计划，
+  不声称已经接入后台调度器或完成真实复习。
 
-| rule | severity | what it proves |
+## 导出与 result.json
+
+每个 result 命令保证写出五个文件：
+- `notes.md`：带锚点的结构化笔记、原文、评论、forward links 与 backlinks。
+- `cards.md`：知识卡片、主题/概念/实体、来源、双向 Wiki 链接与复习计划。
+- `review.csv`：card_id、front、back/back_kind、interval_days、state、due_date、source_anchor，
+  可导入后续复习工具；空 due_date 是刻意保留，不是遗漏。
+- `index.json`：annotate/v3 的 notes、cards、links、version_siblings、follow_up_actions
+  与检索 schema，机器可复用。
+- `result.json`：状态、documents、notes、cards、links、version_siblings、follow_up_actions、
+  verify、operation_trace、change_records、failure_recovery、uncertainty、limits、exports，
+  以及 case_id 和 output_contract 的每个原字段。
+
+| rubric 三段 | 本 Skill 落点 | 可复核标准 |
 |-|-|-|
-| `ann.doc_not_loaded` | refusal | 批注要挂到的文档没有加载——先 load，store 存文档不存假设 |
-| `ann.no_quote` | refusal | 记录没有 quote——空锚点一律拒绝 |
-| `ann.record_not_object` | refusal | 一条记录不是 JSON 对象——点名行号 |
-| `ann.annotations_not_list` | refusal | 批注文件不是 JSON 列表 |
-| `ann.declared_kind_unknown` | refusal | 声明的 kind 不在六类之内——拒绝而不是静默改类型 |
-| `ann.anchor_mismatch` | refusal | quote 不存在于文档——点名并拒绝，绝不静默改挂相邻段 |
-| `ann.anchor_ocr_drift` | refusal | 错位像 OCR 漂移/重排：拒绝并附最接近的真实段落（suggestion：paragraph、similarity、candidate） |
-| `ann.anchor_page_conflict` | refusal | 声明页码与文档矛盾——点名 quote 实际所在页 |
-| `ann.anchor_offset_conflict` | refusal | 声明字符偏移与所有出现位置不符 |
-| `ann.anchor_ambiguous` | refusal | quote 出现多次且无法消歧——点名全部出现段落，要求补 page 或 start |
-| `ann.duplicate_document` | info | 同一内容文件被加载两次（哈希相同）——报告 duplicate_of，不静默合并 |
-| `ann.doc_file_missing` / `ann.doc_file_unreadable` | refusal | load 的文件缺失/非 UTF-8/不可读 |
-| `ann.annotations_unreadable` | refusal | 批注文件不是可读 JSON |
-| `ann.store_unreadable` / `ann.store_unwritable` | refusal | store 损坏或不可写——exit 5 诚实拒绝，不 traceback |
+| 资料结果 | documents + notes/cards + links/version_siblings + index.json | 每条批注回到真实页/段/字符区间；评论与原文分开；关联有 shared_terms 或版本证据 |
+| 操作证据 | source_sha + verify + operation_trace + change_records + 五个确定性产物 | 重跑锚点不增长；编辑含字段级 before/after diff；同 store/case 五文件字节一致 |
+| 失败与恢复 | failure_recovery + uncertainty + limits + done/partial/failed/undetermined | OCR 漂移给真实候选段但不模糊放行；不可读/无权限/版本错位均不当完成 |
 
-## Output contract 与 rubric 三段映射
+契约直通规则：结果已有的同名字段优先；case 顶层可交付小体积值原样直通；契约里的
+短字符串/数值/布尔字面量直通；annotations/knowledge_cards/knowledge_links/follow_up
+等标准字段在描述性对象/列表下映射真实 notes/cards/links/follow_up_actions；不可推导
+对象为 null+limits。拒绝执行时不从损坏 case 回声契约，也不伪造成功结果。
 
-`result` 命令写 `result.json`，顶层字段：`schema_version`、`status`、
-`status_reason`、`case_id`、…output_contract 的每个原始字段…、`documents[]`
-（doc_id、paragraphs、sha256_12、duplicate_of）、`notes[]`（每条含 anchor、type、
-color、tags、note_kind、source_sha、ingested_at、terms）、`links[]`（shared_terms
-即关联依据）、`version_siblings[]`、`verify`（anchors、invalid、ok）、
-`operation_trace[]`（事件流水）、`failure_recovery[]`（每条失败的接管动作）、
-`uncertainty[]`、`limits[]`。`export` 另写 `notes.md`（人读视图）与 `index.json`
-（机器视图：notes + links + version_siblings）。
+## 运行状态与异常索引
 
-对应题目「Skill 运行后的输出要求」的三段：
+退出码：`0 done/ok`；`2 usage`（未知 kind、非法/倒序时间过滤、CLI 参数错误）；
+`3 partial`（有可交付笔记但仍有 record refusal 或失效锚点）；`4 refused/failed`
+（命令拒绝或零条可接受批注）；`5 undetermined`（store/case/导出不可读不可写、
+有效 JSON 但容器形状不安全、内部无法判定）。结构化边界把异常变成 JSON 和 result.json，
+不显示 traceback。查询无命中不是错误：exit 0 + hits=[] + empty_reason。
 
-| rubric 要求的输出 | result.json 承载 | 完成标准 |
-|-|-|-|
-| 资料结果（清单、元数据、版本关系或知识结构） | `documents` + `notes` + `links` + `version_siblings` | 与输入文件一一对应：每条笔记有锚点（doc/page/paragraph/chars）与原文哈希 |
-| 操作证据（哈希、来源、权限、变更和日志） | `documents[].sha256_12` + `notes[].source_sha/ingested_at` + `verify` + `operation_trace` | 他人可复跑并核对：同 store 同输入重跑，notes/links 逐条一致 |
-| 失败与恢复（跳过、冲突、无权限、重复和恢复记录） | `failure_recovery`（rule + reason + recovery）+ `uncertainty` + refusals | 不把未完成写成完成：status failed/partial 时 status_reason 写明差什么 |
+| rule | 触发与恢复 |
+|-|-|
+| `ann.doc_not_loaded` | 先 load 真实文档；不能接受挂到未知文件的批注 |
+| `ann.no_quote` / `ann.record_not_object` / `ann.annotations_not_list` | 修正记录形状/空锚点；其余可用记录继续 |
+| `ann.declared_kind_unknown` | 使用六类合法 kind，或省略让 cues 分类 |
+| `ann.anchor_mismatch` | quote 不存在；重新精确抽取，不能挂邻居段 |
+| `ann.anchor_ocr_drift` | 附候选真实段、similarity、candidate；人工重抽后再 ingest |
+| `ann.anchor_page_conflict` / `ann.anchor_offset_conflict` | 修正声明页码/偏移，或删除声明后重新定位 |
+| `ann.anchor_ambiguous` | quote 多处出现；补 page/start，不能猜第一个 |
+| `ann.duplicate_document` | 同哈希副本报告 duplicate_of；不静默合并，不拆研究关系 |
+| `ann.doc_file_missing` / `ann.doc_file_unreadable` | 检查路径/权限/UTF-8；exit 4 且其他文件可继续 |
+| `ann.annotations_unreadable` | 批注导出不是可读 JSON；exit 4 结构化说明 |
+| `ann.store_unreadable` / `ann.store_unwritable` | store 损坏/不可写；exit 5，无 traceback |
+| `ann.invalid_time_filter` | since/until 非 ISO 或顺序倒置；exit 2，不用运行时间替代 |
+| `ann.invalid_input` | 合法 JSON 但 documents/annotations 等容器形状不安全；exit 5，结构化拒绝 |
 
-refusals 袋按文档保留**最近一次 ingest** 的记录级拒绝（读者修复后重跑即清除，
-历史计数仍在 operation_trace 的事件流水里）；命令级拒绝（文档未加载、批注文件
-不是列表）发生在没有任何记录入库之前，只进事件流水与当次返回，不滞留在
-failure_recovery 里——status 反映的是当前可交付状态，不是过期状态。
+## 幂等与版本边界
 
-status 映射：`done`（有笔记、verify 全过、零拒绝）→ exit 0；`partial`（有拒绝记录
-或 verify 失效锚点，可复核部分照常交付）→ exit 3；`failed`（零条批注被接受——
-材料不允许或全部被拒）→ exit 4；store/case 不可读 → undetermined → exit 5。
-
-## Minimal worked example（示意）
-
-输入 `examples/extracted.txt`（3 页文本，form feed 分页）与
-`examples/annotations.json`（3 条批注），实际运行：
-
-```bash
-python scripts/annotate_cli.py --store ws.json load --doc-id paper --doc-file examples/extracted.txt
-python scripts/annotate_cli.py --store ws.json ingest --doc-id paper --annotations examples/annotations.json
-python scripts/annotate_cli.py --store ws.json retrieve --question "uptake 提高了多少倍"
-python scripts/annotate_cli.py --store ws.json result --out out --case case.json
-```
-
-示意输出（节选自一次实跑，标注为示例——不是正式案例结果）：
-
-```json
-{"ok": true, "accepted": [
-  {"doc_id": "paper", "page": 1, "paragraph": 1, "start": 38, "end": 48,
-   "quote": "three-fold", "type": "highlight", "color": "yellow",
-   "note_kind": "result", "tags": [], "source_sha": "7616814fa13afbe0",
-   "annotation_id": "063ddced7703"}],
- "refused": []}
-```
-
-result.json（同一实跑，`--case` 带 case_id 与 output_contract）：
-
-```json
-{"schema_version": "annotate/v2", "status": "done", "status_reason": "",
- "case_id": "case-demo-annotate",
- "deliverable": "structured annotation notes + index",
- "documents": [{"doc_id": "paper", "paragraphs": 6, "sha256_12": "7616814fa13a"}],
- "notes": [{"annotation_id": "063ddced7703", "quote": "three-fold",
-            "anchor": {"page": 1, "paragraph": 1, "start": 38, "end": 48},
-            "type": "highlight", "color": "yellow", "note_kind": "result"}],
- "verify": {"anchors": 3, "invalid": [], "ok": true},
- "failure_recovery": [], "uncertainty": [], "limits": []}
-```
-
-一个 quote 出现两次且未声明页码会被拒绝并点名两个段落；声明页码与文档矛盾在
-ingest 时被拒；OCR 漂移的 quote 被拒时附带最接近的真实段落；重复 ingest 同一文件
-不产生重复锚点；同一 quote 出现在两个版本文件中保持两条独立记录并生成
-version-sibling 连接。
+- save 不再制造无意义 save 事件；同内容重 ingest 不新增 anchor/event/card。重复 retrieve
+  也不增加相同操作日志；同 store 同 case 重跑 result/export 五文件逐字节一致。
+- 同一锚点的评论、颜色、kind、tags、topics、concepts、entities、source_time 被编辑时，
+  更新原记录并在 change_records 记录字段级 old/new；重复同一修改不重复制造 diff。
+- 同 doc_id 重新 load 不同文本会使旧锚点接受 verify 检查。没有 manufacturer 版本关系时
+  不自动猜哪个文件更新；请加载两个独立 doc_id 或补真实版本文件。
 
 ## Limits
 
-- **The document enters as text.** A PDF's highlights must be extracted first (any
-  extractor that yields page + quote records); this skill is the half that makes
-  extracted annotations usable — anchor-verified, typed, linked, retrievable.
-- **Anchors are exact substring matches.** An OCR'd quote with drifted characters
-  is refused WITH a suggested paragraph, but fixing the text stays the reader's
-  step — the skill never loosens the match on its own.
-- **Linking is term-based and kind-constrained.** Two notes link when they share
-  >=2 content terms AND the same kind; the shared terms are recorded as the link's
-  evidence. A causal or contradiction relation between notes is not inferred —
-  that is analysis, not bookkeeping.
-- **Retrieval is lexical.** It ranks shared content terms within the filtered pool;
-  a paraphrased question that shares no terms returns an honest empty list. 召回
-  不足时如实返回空并提示换词/去过滤，不硬凑结果。
-- **One store, one reader.** Concurrent writers overwrite each other; no lock.
-- **`ingested_at` 是墙钟时间.** 除时间戳外同一 store 重跑 notes/links 逐条一致；
-  幂等性按 notes/links 比对，不按整文件字节比对。
-
-## 异常处置表
-
-| 形态 / 故障 | 处置 |
-|-|-|
-| 文档文件缺失 / 目录 / 无权限 | load 拒绝（exit 4），写明 ann.doc_file_missing 或不可读原因；其余文件照常 |
-| 文档非 UTF-8 | load 拒绝并附解码错误；先转码再 load |
-| store 损坏 / 路径是目录 | exit 5 undetermined（ann.store_unreadable），result 命令仍写 undetermined result.json |
-| store 不可写（盘满/权限） | exit 5 undetermined（ann.store_unwritable），不丢已内存状态但如实报告 |
-| 批注文件坏 JSON / 非 list | ingest 拒绝（exit 4），不崩溃 |
-| 批注针对未加载文档 | ann.doc_not_loaded 拒绝——先 load |
-| quote 不存在（普通错位） | ann.anchor_mismatch：修 quote 或重抽；绝不模糊放行 |
-| quote 不存在（OCR 漂移样） | ann.anchor_ocr_drift：按 suggestion 的段落与相似度重抽精确文本 |
-| quote 重复出现 | ann.anchor_ambiguous：补 page 或 start 消歧；声明 start 与位置不符则 ann.anchor_offset_conflict |
-| 声明页码矛盾 | ann.anchor_page_conflict：改声明或省略由文本解析 |
-| 加密/损坏/无文本层扫描件 | Stage 0 处理不了：如实写进 limits；可处理文件照常走完闭环 |
-| 同文件重复加载 | duplicate_of 报告：保留一个 id 或记别名，不拆批 |
-| 跨版本 quote 相同 | 两条独立记录 + version-sibling 连接，各带 source_sha |
-| 重复运行 | store 幂等：同记录不重复入库、锚点不膨胀；比对 notes/links 而非文件字节 |
-| 检索无命中 | 空列表即答案；换词或去过滤重试——不编造结果 |
+- 文档与批注必须先由真实 extractor 提供；本 Skill 不假装自己已经读取 PDF 注释层、扫描
+  手写图或网页历史。环境 PDF/OCR 输出可以接入，但失败时只交付可读部分。
+- quote 是精确锚；OCR 相似度只用于定位候选段，不能替代人工核对。知识关联是同 kind 的
+  词汇证据，不是因果、矛盾或语义蕴含证明。
+- 检索是词法检索；复杂同义 paraphrase 可能召回不足。此时返回空并建议调整 query/filter，
+  不用热门卡片填充。
+- 复习导出是静态后续行动和相对间隔，不伪造调度后台、学习记录或时间。一个 store 同时
+  应只有一个写入者；并行写没有分布式锁。
 
 ## Verification
 
 ```bash
-python scripts/bench_annotate.py   # 29 scenarios: anchors, OCR-drift suggestion,
-                                   # typed preservation, doubt kind, duplicates,
-                                   # version siblings, filters, contract passthrough,
-                                   # honest failed status, corrupt-store refusal
+python scripts/bench_annotate.py             # 29 个锚点/类型/版本/检索/契约原回归
+python scripts/bench_knowledge_cards.py      # 12 个卡片/回链/多维过滤/复习/导出/编辑场景
+python scripts/bench_annotate_hostile_v3.py  # 12 个敌意结构/时间/退出码/确定性探针
 ```
 
-All 29 pass on this machine. The FP guards pin the behaviour that matters: a
-mismatched anchor is refused by name, a drifted quote gets a suggestion but a
-gibberish quote does not, an unknown type survives verbatim, two same-kind notes
-sharing exactly one term do not link while a positive link carries its shared
-terms, the same file loaded twice is reported symmetrically, and an empty store
-reports failed instead of pretending success.
+当前版本 53/53 全过。clean baseline 要求正确锚点与正常 card 不误报；无答案查询为空；
+重复 ingest/export/result 不增长。测试 fixture 均在临时目录生成，不是正式答案。
 
-## Requirements
+## 创新增益（与真实实现一致）
 
-Python 3.9+ (3.14 verified); standard library only — no packages to install, no
-network calls.
+1. **多坐标硬锚定**：全出现枚举 + page/start 消歧 + OCR 候选恢复，比“搜到一句就挂”可复核。
+2. **批注到卡片不丢语义层次**：source excerpt 与 reader comment 分离，类型/颜色/标签/
+   主题/概念/实体不丢失，输出 schema 可进入后续写作而非只剩摘抄。
+3. **关联正反两向可查**：共享词证据与版本证据驱动 between_cards/directions/backlinks，
+   不再是不可解释的关键词团块。
+4. **沉淀后仍有行动入口**：真实多维检索、后续验证动作、静态间隔计划与 CSV 导出贯通；
+   未执行行为保持 not_started。
+5. **工程幂等性可证明**：无墙钟时间，store/save/ingest/result/export 都处理重复运行，
+   编辑可追踪 diff，五类交付产物可冷校验哈希一致。
 
-## 创新增益
+## Requirements / 生态贡献
 
-本 Skill 相比通用 Agent 的新增能力（每条附能力边界与增益证据形式）：
-
-1. **扫描件批注锚点校正建议**：漂移 quote 不是裸拒绝——引擎滑窗比对全文，给出
-   最接近的真实段落、相似度与候选文本，OCR 置信度低场景从「人工大海捞针」变成
-   「按建议段落重抽」。
-   *边界*：建议不是改写——放行与否仍由精确匹配决定。
-   *证据形式*：ocr_drift_suggested / ocr_drift_no_suggestion 场景。
-2. **跨版本批注归并的第三条路**：既不静默合并（版本串味）也不放任分裂（找不到
-   同源批注）——独立记录 + version-sibling 显式连接，证据是同 quote 同类型跨文件，
-   双方各带 source_sha。重复下载的同文件用哈希对称报告 duplicate_of。
-   *证据形式*：version_siblings_linked / versions_separate / duplicate_document 场景。
-3. **锚点消歧的完整闭环**：全量定位 → 页码消歧 → 字符偏移消歧 → 歧义点名全部
-   出现位置——同段重复 quote 也能精确挂锚，这是「锚点错位」失败的机械根治。
-   *证据形式*：offset_disambiguation / ambiguous_refused / page_mismatch_refused 场景。
-4. **类型语义零损耗**：五类已知批注类型 + 未知类型原样保留（不折叠成 highlight），
-   color 与 tags 逐字随行；声明的非法 kind 拒绝而不是静默改写——类型不丢从承诺
-   变成规则。
-   *证据形式*：types_preserved / type_unknown_preserved / declared_kind_unknown 场景。
-5. **契约直通与诚实状态**：result.json 逐字段回填 output_contract 与 case_id；
-   status 由 verify + refusals 推导（done/partial/failed），空库如实 failed，损坏
-   store 如实 exit 5——不把未完成写成完成。
-   *证据形式*：result_contract_passthrough / result_failed_honest / store_corrupt_refused 场景。
-
-## 生态贡献
-
-- **使用说明**：本文件包含用途、适用条件、六步调用入口、任务路由表、输入输出、
-  关键方法、异常处置表、限制和自查方法；按 Workflow 可独立完成一次「抽取—
-  结构化—关联—入库—检索」闭环。
-- **依赖与安装**：Python 3.9+（3.14 实测），纯标准库零依赖、零安装、零网络调用；
-  annotate.py / reader.py 可独立导入复用（锚点定位器、笔记结构器、关联与检索器）。
-- **输入目录约定**：文本 + form feed 分页（pdftotext 同款约定）；批注是
-  {quote, page, type, color, note, kind, tags} 记录列表——任何抽取器产出该形状即可
-  接入，约定写在 Data shapes 与 Stage 0 一节。
-- **输出 schema**：notes/links/version_siblings/anchors 的字段结构稳定且带
-  schema_version，下游（综述、卡片、图谱）可直接消费；notes.md 人读、index.json
-  机器读，双视图同源。
-- **示例（标注为示例）**：`examples/extracted.txt` + `examples/annotations.json`
-  是最小调用示例；本文档 worked example 是一次实跑的节选——均为示意，不冒充
-  正式案例结果。
-- **关联规则可复用**：同 kind + ≥2 共享词的关联判定与 shared_terms 依据格式、
-  version-sibling 判定均可独立复用；阈值 min_shared 是参数不是硬编码。
-- **回归题集**：`scripts/bench_annotate.py` 29 场景是可独立复跑的回归门（含误报
-  护栏与 CLI 级探针），任何改动必须全过。
-- **维护**：改任何规则后必跑 bench（自查方法：29/29 + FP 护栏全过）；规则 id
-  变更须同步本文档规则表（引擎与文档逐 id 对齐，strict gate 自动核对）。
-
-引擎已实现该契约：case.json 顶层的可推导值与 output_contract 字面量经
-`result --case` 直通最终 result.json，推导不出的填 null 并在 limits 写明；拒绝
-路径不回填契约，只写 undetermined result.json。
+Python 3.10+，仅标准库，无网络、无账号、无第三方依赖。`annotate.py` 的 Annotator、
+`reader.py` 的 Workspace 可独立导入；批注 schema、卡片 schema、关联规则、CSV/JSON/Markdown
+导出与 53 个回归均可复用。维护时新增字段必须同时实现真实 CLI 行为、契约直通、冷导入、
+中文无命中、敌意结构与字节确定性测试，并同步本文档；不得用自述替代产物。

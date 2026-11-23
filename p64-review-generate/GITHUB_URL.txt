@@ -1,2 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly
+https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p64-review-generate
 p64-review-generate/

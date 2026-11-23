@@ -1,0 +1,154 @@
+{
+  "case_id": "spec-id-must-not-override-case",
+  "research_question": {
+    "statement": "在固定 500 条标注预算和同一公开数据集划分下，置信度校准伪标签是否比强监督基线提高宏平均 F1？",
+    "object": "同一公开文本分类数据集的固定训练、验证和测试划分",
+    "variables": ["校准伪标签策略", "宏平均 F1", "500 条标注预算"],
+    "comparator": "同骨干网络、同训练步数和同数据划分的强监督 Transformer 基线",
+    "outcome": "三次固定种子测试集宏平均 F1 及均值差；同时报告校准误差",
+    "expected_conclusion": "若校准策略有效，宏平均 F1 改善且校准误差不升高；该预期不是既有实验结果",
+    "falsification_condition": "若三次种子均值不高于强基线，或收益仅来自额外未标注数据/训练预算，则拒绝所述创新假设",
+    "scope": "单数据集、固定预算的 prospective 方法评估，不外推到其他语言或真实部署"
+  },
+  "search_protocol": {
+    "status": "fixed_corpus",
+    "start_date": "2019-01-01",
+    "end_date": "2026-11-24",
+    "languages": ["English", "Chinese"],
+    "inclusion_criteria": ["报告文本分类伪标签、校准或匹配强监督基线的方法与评价", "有可定位的原始方法或结果段落"],
+    "exclusion_criteria": ["仅涉及图像分割且无文本分类实验", "只有二手综述转述而无原文证据"],
+    "sources": [
+      {
+        "name": "OpenAlex snapshot",
+        "database": "OpenAlex",
+        "interface": "case-provided export",
+        "query": "TITLE_ABSTRACT:(pseudo label*) AND TITLE_ABSTRACT:(calibrat* OR confidence) AND YEAR:2019-2026",
+        "fields": ["title", "abstract", "publication_year"],
+        "coverage": "2019-2026 case snapshot",
+        "snapshot_date": "2026-11-24",
+        "filters": {"language": ["en", "zh"]}
+      },
+      {
+        "name": "Semantic Scholar snapshot",
+        "database": "Semantic Scholar",
+        "interface": "case-provided export",
+        "query": "(\"pseudo-labeling\" OR \"pseudo labels\") AND (calibration OR \"strong supervised baseline\")",
+        "fields": ["title", "abstract", "fieldsOfStudy"],
+        "coverage": "same frozen corpus, source used for synonym and citation cross-check",
+        "snapshot_date": "2026-11-24",
+        "filters": {"year": "2019-2026"}
+      },
+      {
+        "name": "Backward and forward citation set",
+        "database": "case bibliography graph",
+        "interface": " supplied references and citing records",
+        "query": "CITES:(W001 OR W002) AND (calibration OR pseudo-label*)",
+        "fields": ["reference", "citation", "full_text"],
+        "coverage": "all supplied links through snapshot date",
+        "snapshot_date": "2026-11-24"
+      }
+    ]
+  },
+  "works": [
+    {
+      "id": "W001",
+      "title": "Synthetic Strong Supervised Transformer Baseline",
+      "doi": "synthetic-w001-no-real-doi",
+      "year": 2023,
+      "source": "synthetic-paper-A",
+      "decision": "include",
+      "inclusion_reason": "匹配任务、基线和评价维度",
+      "closest": true,
+      "closest_reason": "同任务同骨干网络，但不含伪标签校准",
+      "verification": "P",
+      "comparable": true,
+      "task": "低资源文本分类",
+      "method": "仅使用 500 条标注数据微调 Transformer，不使用伪标签",
+      "data": "同一公开数据集固定划分，500 条标注训练样本",
+      "metric": "三次种子宏平均 F1 与标准差",
+      "conclusion": "强监督训练是拟议方法必须超过的原始基线；示例不预设胜负",
+      "evidence": [
+        {"aspect": "task", "quote": "We study low-resource text classification.", "locator": "synthetic-A p.1 Abstract"},
+        {"aspect": "method", "quote": "The transformer is fine-tuned on 500 labeled examples without pseudo-labels.", "locator": "synthetic-A p.3 Sec.2"},
+        {"aspect": "data", "quote": "We use the fixed public split with 500 labeled training examples.", "locator": "synthetic-A p.4 Sec.3"},
+        {"aspect": "metric", "quote": "Macro-F1 is averaged over three fixed seeds with standard deviations.", "locator": "synthetic-A p.5 Sec.4"},
+        {"aspect": "conclusion", "quote": "The supervised model is the reference baseline for later comparisons.", "locator": "synthetic-A p.6 Sec.5"}
+      ],
+      "source_excerpt": "We study low-resource text classification.\nThe transformer is fine-tuned on 500 labeled examples without pseudo-labels.\nWe use the fixed public split with 500 labeled training examples.\nMacro-F1 is averaged over three fixed seeds with standard deviations.\nThe supervised model is the reference baseline for later comparisons."
+    },
+    {
+      "id": "W002",
+      "title": "Synthetic Confidence Pseudo-Labeling Study",
+      "doi": "synthetic-w002-no-real-doi",
+      "year": 2024,
+      "source": "synthetic-paper-B",
+      "decision": "include",
+      "inclusion_reason": "最近伪标签方法并提供方法差异的反证入口",
+      "closest": true,
+      "closest_reason": "包含置信度伪标签，但未做校准误差约束",
+      "verification": "P",
+      "comparable": false,
+      "incomparable_reasons": {"metric": "原文只报告准确率，不能与宏平均 F1 数值直接对齐；只比较方法设计和评价差异"},
+      "task": "半监督文本分类",
+      "method": "按固定置信度阈值生成伪标签，未校准置信度也未控制校准误差",
+      "data": "500 条标注样本加同一未标注池，但测试集划分不同",
+      "metric": "准确率与单次运行结果，没有宏平均 F1",
+      "conclusion": "固定阈值伪标签有效，但作者指出高置信错误标签仍是失败来源",
+      "evidence": [
+        {"aspect": "task", "quote": "We evaluate semi-supervised text classification.", "locator": "synthetic-B p.1 Abstract"},
+        {"aspect": "method", "quote": "Pseudo-labels use a fixed confidence threshold without calibration or an ECE constraint.", "locator": "synthetic-B p.3 Sec.2"},
+        {"aspect": "data", "quote": "The experiment uses 500 labels and a shared unlabeled pool but a different test split.", "locator": "synthetic-B p.4 Sec.3"},
+        {"aspect": "metric", "quote": "Only accuracy from one run is reported; macro-F1 is not available.", "locator": "synthetic-B p.5 Table 1"},
+        {"aspect": "conclusion", "quote": "Highly confident incorrect pseudo-labels remain a major failure mode.", "locator": "synthetic-B p.6 Sec.6"}
+      ],
+      "source_excerpt": "We evaluate semi-supervised text classification.\nPseudo-labels use a fixed confidence threshold without calibration or an ECE constraint.\nThe experiment uses 500 labels and a shared unlabeled pool but a different test split.\nOnly accuracy from one run is reported; macro-F1 is not available.\nHighly confident incorrect pseudo-labels remain a major failure mode."
+    }
+  ],
+  "innovation_claims": [
+    {
+      "id": "I01",
+      "type": "method",
+      "statement": "在同标注预算下，将置信度校准误差作为伪标签筛选的显式约束，并与同预算强监督基线比较",
+      "difference_evidence_refs": ["W002:method", "W002:conclusion", "W001:metric"],
+      "nearest_comparisons": [
+        {
+          "work_id": "W001",
+          "collision": "strong_baseline",
+          "same_constraints": true,
+          "remaining_difference": "W001 不含伪标签；拟议增量是校准约束而不是更换骨干或增加预算",
+          "evidence_refs": ["W001:method", "W001:data", "W001:metric"],
+          "counterevidence_refs": []
+        },
+        {
+          "work_id": "W002",
+          "collision": "none",
+          "same_constraints": false,
+          "remaining_difference": "W002 使用固定阈值且无 ECE 约束；拟议差异仅限校准约束和同预算强基线，仍需检索后续同法工作",
+          "evidence_refs": ["W002:method", "W002:conclusion"],
+          "counterevidence_refs": []
+        }
+      ]
+    }
+  ],
+  "feasibility": {
+    "prerequisites": [
+      {"id": "P01", "category": "data", "requirement": "固定数据划分和未标注池可用于三次种子复跑", "status": "verified", "critical": true, "source": "case data inventory", "locator": "inventory.csv rows 2-4", "impact_if_false": "不能归因于方法差异"},
+      {"id": "P02", "category": "compute", "requirement": "六次微调总计不超过 24 GPU 小时", "status": "verified", "critical": true, "source": "local pilot resource log", "locator": "pilot.log run 0, aggregate only", "impact_if_false": "缩短训练或换小骨干并重新界定问题"},
+      {"id": "P03", "category": "experiment", "requirement": "可固定种子、训练步数并同时计算 Macro-F1 和 ECE", "status": "verified", "critical": true, "source": "evaluation config", "locator": "eval.yaml metrics and seeds", "impact_if_false": "主要终点不可检验"},
+      {"id": "P04", "category": "time", "requirement": "基线复现、校准实现和三次种子评估可在两周内完成", "status": "verified", "critical": false, "source": "project schedule", "locator": "schedule.md weeks 1-2", "impact_if_false": "先完成单次种子预研究"},
+      {"id": "P05", "category": "personnel", "requirement": "一名熟悉 PyTorch 和评价统计的研究者负责实现与复核", "status": "verified", "critical": true, "source": "team capability statement", "locator": "team.md role R1", "impact_if_false": "需要外部代码复核"}
+    ],
+    "route": [
+      {"id": "R1", "input": "冻结数据划分、W001 配置与公开代码", "output": "通过预设容差的强监督基线复现表", "cost": "2 人日；12 GPU 小时", "risk": "基线复现偏差", "fallback": "使用作者检查点并公开偏差，禁止夸大胜负", "validates": ["P01", "P03"]},
+      {"id": "R2", "input": "通过复核的基线与未标注池", "output": "校准伪标签方法及三次种子 Macro-F1/ECE 对照", "cost": "5 人日；12 GPU 小时", "risk": "校准约束无收益或高置信错误仍存在", "fallback": "转为报告否定结果和失败边界，不改换弱基线", "validates": ["P02", "P04", "P05"]}
+    ]
+  },
+  "impact": {
+    "scientific": "检验校准误差约束是否解释伪标签质量，而非仅增加一个模块；否定结果同样界定适用条件",
+    "practical": "若成立，可在固定标注预算下减少人工标注；未验证前不宣称部署收益"
+  },
+  "gaps": ["固定阈值方法的高置信错误有原文直接证据，但校准约束是否在后续工作中已解决仍需持续引文检索。"],
+  "uncertainties": [
+    {"kind": "scope", "message": "W002 的评价指标与划分不同，只能比较设计和证据，不能直接比较数值优劣。", "work_id": "W002"}
+  ]
+}

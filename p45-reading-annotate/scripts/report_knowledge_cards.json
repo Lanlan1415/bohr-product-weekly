@@ -1,0 +1,69 @@
+{
+  "schema_version": "knowledge-cards-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "card_separates_source_and_reader_comment",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "topics_concepts_entities_preserved",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "forward_links_and_backlinks_symmetric",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "version_siblings_have_backlinks",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "tag_topic_concept_entity_time_filters",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "missing_source_time_not_invented",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "followup_and_unstarted_review_schedule",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "cards_notes_index_review_export",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "workspace_byte_idempotent_reingest",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "annotation_edit_field_diff_idempotent",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "all_exports_byte_deterministic",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "scenario": "result_auto_export_and_contract_aliases",
+      "pass": true,
+      "error": ""
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "annotation-hostile-v3/v1",
+  "probes": [
+    {
+      "probe": "valid_fixture_load_and_ingest",
+      "pass": true
+    },
+    {
+      "probe": "valid_json_array_store_refused",
+      "pass": true
+    },
+    {
+      "probe": "empty_object_store_result_refusal",
+      "pass": true
+    },
+    {
+      "probe": "wrong_annotation_container_no_traceback",
+      "pass": true
+    },
+    {
+      "probe": "invalid_time_filter_usage_exit2",
+      "pass": true
+    },
+    {
+      "probe": "reverse_time_range_usage_exit2",
+      "pass": true
+    },
+    {
+      "probe": "all_metadata_filters_real_hit",
+      "pass": true
+    },
+    {
+      "probe": "chinese_unknown_query_honest_empty",
+      "pass": true
+    },
+    {
+      "probe": "nonobject_output_contract_degrades",
+      "pass": true
+    },
+    {
+      "probe": "finalise_all_five_files_deterministic",
+      "pass": true
+    },
+    {
+      "probe": "export_unwritable_structured_exit5",
+      "pass": true
+    },
+    {
+      "probe": "result_unwritable_structured_exit5",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  }
+}

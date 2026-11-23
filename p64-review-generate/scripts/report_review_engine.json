@@ -1,0 +1,115 @@
+{
+  "schema_version": "review-engine-bench/v2",
+  "synthetic_only": true,
+  "scenarios": [
+    {
+      "scenario": "clean_baseline",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "artifacts_and_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_and_screening_counts",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "excluded_evidence_citation",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "quote_tamper",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "theme_rationale_required",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "record_unclustered",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "conflict_unaddressed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "claim_omits_conflict",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "consensus_single_source",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "abstract_strength_downgrade",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "gap_needs_positive_evidence",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "gap_needs_scope_check",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "criteria_frozen",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "malformed_arithmetic",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "undetermined_not_silently_included",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cross_record_field_reference",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_source_locator",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "refusal_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "idempotent_bytes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cold_import",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 21,
+    "of": 21
+  }
+}

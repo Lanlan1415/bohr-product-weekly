@@ -37,7 +37,8 @@ class Workspace:
 
     # --- persistence ------------------------------------------------------
     def save(self) -> None:
-        self.data["events"].append({"kind": "save"})
+        # Saving is persistence, not a semantic operation.  Repeated saves must
+        # not manufacture event-log or export differences.
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps(self.data, ensure_ascii=False, indent=2), encoding="utf-8")
 

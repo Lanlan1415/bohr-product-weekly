@@ -1,0 +1,24 @@
+{
+  "case_id": "synthetic-sysrev-contract-001",
+  "output_contract": [
+    "research_product",
+    {
+      "field": "search_protocol"
+    },
+    {
+      "name": "prisma_flow"
+    },
+    {
+      "key": "screening_log"
+    },
+    "quality_appraisals",
+    "quality_summary",
+    "evidence_matrix",
+    "synthesis_claims",
+    "heterogeneity",
+    "meta_analysis",
+    "research_gaps",
+    "uncertainties",
+    "deliverables"
+  ]
+}
