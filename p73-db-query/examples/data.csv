@@ -1,0 +1,13 @@
+sample_id,group,dose,response
+S01,control,0,10
+S02,control,1,11
+S03,control,2,12
+S04,control,3,13
+S05,control,4,14
+S06,control,5,15
+S07,treatment,0,14
+S08,treatment,1,15
+S09,treatment,2,16
+S10,treatment,3,17
+S11,treatment,4,18
+S12,treatment,5,19

@@ -1,205 +1,227 @@
 {
-  "schema_version": "dbquery-bench/v1",
+  "schema_version": "scicode-bench/v1",
+  "synthetic_inputs": true,
+  "totals": {
+    "passed": 24,
+    "of": 24
+  },
   "scenarios": [
     {
-      "scenario": "clean",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
+      "scenario": "clean_baseline",
       "pass": true,
-      "extra": ""
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
     },
     {
-      "scenario": "missing_named",
-      "expected": [
-        "clean.missing_values"
-      ],
+      "scenario": "generate_only_never_claims_execution",
+      "pass": true,
+      "status": "generated",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "missing_is_not_zero",
+      "pass": true,
+      "status": "review",
+      "exit_code": 3,
       "fired": [
-        "clean.missing_values"
+        "data.missing_values"
       ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
+      "errors": []
     },
     {
-      "scenario": "type_inconsistent",
-      "expected": [
-        "clean.unparsed_values"
-      ],
+      "scenario": "unparsed_numeric_named",
+      "pass": true,
+      "status": "review",
+      "exit_code": 3,
       "fired": [
-        "clean.unparsed_values"
+        "data.unparsed_values"
       ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
+      "errors": []
     },
     {
-      "scenario": "missing_not_zero",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
+      "scenario": "duplicates_kept_by_default",
       "pass": true,
-      "extra": ""
-    },
-    {
-      "scenario": "unit_convert",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
-    },
-    {
-      "scenario": "unit_refused",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
-    },
-    {
-      "scenario": "outlier_flagged",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
-    },
-    {
-      "scenario": "outlier_fp_guard",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
-    },
-    {
-      "scenario": "join_key_inflation",
-      "expected": [
-        "clean.duplicate_experiments"
-      ],
+      "status": "review",
+      "exit_code": 3,
       "fired": [
-        "clean.duplicate_experiments"
+        "data.duplicate_rows"
       ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
+      "errors": []
     },
     {
-      "scenario": "null_sentinels",
-      "expected": [
-        "clean.missing_values"
-      ],
+      "scenario": "duplicates_explicitly_dropped",
+      "pass": true,
+      "status": "review",
+      "exit_code": 3,
       "fired": [
-        "clean.missing_values",
-        "clean.unparsed_values"
+        "data.duplicate_rows"
       ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
+      "errors": []
     },
     {
-      "scenario": "duplicate_rows",
-      "expected": [
-        "clean.duplicate_records"
-      ],
-      "fired": [
-        "clean.duplicate_records"
-      ],
-      "missing": [],
-      "spurious": [],
+      "scenario": "group_summaries",
       "pass": true,
-      "extra": ""
-    },
-    {
-      "scenario": "custom_missing_token",
-      "expected": [
-        "clean.missing_values"
-      ],
-      "fired": [
-        "clean.missing_values"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
-    },
-    {
-      "scenario": "no_key_columns",
-      "expected": [],
+      "status": "clean",
+      "exit_code": 0,
       "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
+      "errors": []
     },
     {
-      "scenario": "dates_normalised",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
+      "scenario": "welch_small_sample_advisory",
       "pass": true,
-      "extra": "dates={'2023年6月1日': '2023-06-01', '2023/06/14': '2023-06-14'}"
-    },
-    {
-      "scenario": "date_garbage",
-      "expected": [
-        "clean.unparsed_values"
-      ],
+      "status": "review",
+      "exit_code": 3,
       "fired": [
-        "clean.unparsed_values"
+        "stats.small_sample"
       ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
+      "errors": []
     },
     {
-      "scenario": "report_consistent",
-      "expected": [],
+      "scenario": "welch_numeric_anchor",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
       "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
+      "errors": []
     },
     {
-      "scenario": "report_inconsistent",
-      "expected": [
-        "clean.report_inconsistent"
-      ],
+      "scenario": "welch_zero_variance_refused",
+      "pass": true,
+      "status": "blocked",
+      "exit_code": 4,
       "fired": [
-        "clean.report_inconsistent"
+        "stats.zero_variance"
       ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "extra": ""
+      "errors": []
     },
     {
-      "scenario": "idempotent_second_pass",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
+      "scenario": "paired_correlation",
       "pass": true,
-      "extra": "idempotent=True"
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "golden_mismatch_blocks",
+      "pass": true,
+      "status": "blocked",
+      "exit_code": 4,
+      "fired": [
+        "validation.golden.0"
+      ],
+      "errors": []
+    },
+    {
+      "scenario": "expected_rows_mismatch_blocks",
+      "pass": true,
+      "status": "blocked",
+      "exit_code": 4,
+      "fired": [
+        "validation.expected_rows"
+      ],
+      "errors": []
+    },
+    {
+      "scenario": "histogram_svg",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "scatter_svg_row_trace",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "json_rows",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "tsv_rows",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "sqlite_read_only_query",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "sqlite_empty_query",
+      "pass": true,
+      "status": "undetermined",
+      "exit_code": 5,
+      "fired": [
+        "input.no_rows",
+        "validation.expected_rows",
+        "validation.golden.0",
+        "validation.input_sha256"
+      ],
+      "errors": []
+    },
+    {
+      "scenario": "sqlite_write_refused_before_execution",
+      "pass": true,
+      "status": "undetermined",
+      "exit_code": 5,
+      "fired": [
+        "query.not_read_only"
+      ],
+      "errors": []
+    },
+    {
+      "scenario": "cjk_end_to_end",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "exact_row_cap_not_truncated",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
+    },
+    {
+      "scenario": "row_cap_truncation_blocks",
+      "pass": true,
+      "status": "blocked",
+      "exit_code": 4,
+      "fired": [
+        "input.row_limit"
+      ],
+      "errors": []
+    },
+    {
+      "scenario": "engine_wins_case_values_pass",
+      "pass": true,
+      "status": "clean",
+      "exit_code": 0,
+      "fired": [],
+      "errors": []
     }
-  ],
-  "totals": {
-    "passed": 18,
-    "of": 18
-  },
-  "note": "Each scenario plants one defect or proves one FP guard. The clean baseline must report no high or medium finding."
+  ]
 }

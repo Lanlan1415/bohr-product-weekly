@@ -1,0 +1,16 @@
+{
+  "case_id": "demo-scicode-001",
+  "case_note": "value supplied by the case and preserved verbatim",
+  "output_contract": {
+    "code": "generated source code",
+    "analysis_result": "computed analysis",
+    "execution_result": "real child-process execution",
+    "validation": "independent checks",
+    "environment": "runtime and versions",
+    "artifacts": "artifact paths",
+    "sources": "input provenance",
+    "uncertainty": "known limits",
+    "case_note": "case payload pass-through",
+    "unavailable_field": "must be null with a limit"
+  }
+}

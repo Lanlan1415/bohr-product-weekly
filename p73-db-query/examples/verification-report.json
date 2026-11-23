@@ -1,0 +1,67 @@
+{
+  "schema_version": "scicode-independent-verification/v1",
+  "passed": true,
+  "checks": {
+    "first_exit_clean": true,
+    "second_exit_clean": true,
+    "cold_imports": true,
+    "deterministic_result_and_analysis": true,
+    "really_executed": true,
+    "no_shell": true,
+    "independent_validation_passed": true,
+    "all_contract_fields": true,
+    "engine_beats_case": true,
+    "case_value_preserved": true,
+    "unknown_null_and_limited": true,
+    "golden_mean": true,
+    "welch_anchor": true,
+    "artifacts_exist": true,
+    "svg_traceable": true,
+    "generate_only_honest": true,
+    "execution_duration_logged_separately": true,
+    "package_text_budget": true
+  },
+  "cold_imports": [
+    {
+      "module": "codegen.py",
+      "exit_code": 0,
+      "passed": true,
+      "stderr": ""
+    },
+    {
+      "module": "runner.py",
+      "exit_code": 0,
+      "passed": true,
+      "stderr": ""
+    },
+    {
+      "module": "validator.py",
+      "exit_code": 0,
+      "passed": true,
+      "stderr": ""
+    },
+    {
+      "module": "scicode.py",
+      "exit_code": 0,
+      "passed": true,
+      "stderr": ""
+    }
+  ],
+  "evidence": {
+    "result_sha256": "6280625161f6b3fde50cbeec7f39f6b50c87f4437df2ff7dc19c50a283e8988d",
+    "analysis_sha256": "3a005968a9514c06481f49b4e2fbc1c6f1480c9074e5623690c9a8b91af49d9d",
+    "code_sha256": "4e30148de68f977505b31c046b5a13914fd841e19444cab0f63f2c3c9b6a3924",
+    "validation": {
+      "passed": 13,
+      "failed": 0
+    },
+    "missing_contract_fields": [],
+    "missing_artifacts": []
+  },
+  "package": {
+    "files": 14,
+    "bytes": 168748,
+    "issues": [],
+    "passed": true
+  }
+}

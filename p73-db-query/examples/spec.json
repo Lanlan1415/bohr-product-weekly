@@ -1,50 +1,39 @@
 {
-  "rows": [
-    {
-      "sample_id": "S1",
-      "absorbance": "0.32 AU",
-      "n_replicates": "6",
-      "measured": "2023-05-14"
-    },
-    {
-      "sample_id": "S2",
-      "absorbance": "not reported",
-      "n_replicates": "6",
-      "measured": "2023年6月1日"
-    }
-  ],
+  "case_id": "demo-scicode-001",
+  "section": "scicode",
+  "input": {
+    "path": "data.csv",
+    "format": "csv",
+    "max_rows": 1000
+  },
   "columns": [
-    {
-      "name": "sample_id",
-      "semantic": "id"
-    },
-    {
-      "name": "absorbance",
-      "target_unit": "AU",
-      "plausible": [
-        0,
-        2
-      ],
-      "semantic": "numeric"
-    },
-    {
-      "name": "n_replicates",
-      "semantic": "numeric"
-    },
-    {
-      "name": "measured",
-      "semantic": "date"
-    }
+    {"name": "sample_id", "type": "id", "required": true},
+    {"name": "group", "type": "categorical", "required": true},
+    {"name": "dose", "type": "numeric", "unit": "mg", "required": true},
+    {"name": "response", "type": "numeric", "unit": "a.u.", "required": true}
   ],
-  "key_columns": [
-    "sample_id"
+  "metrics": ["dose", "response"],
+  "group_by": "group",
+  "correlations": [["dose", "response"]],
+  "welch_t": [
+    {"column": "response", "group_by": "group", "group_a": "control", "group_b": "treatment"}
   ],
-  "value_columns": [
-    "absorbance"
-  ],
-  "missing_tokens": [
-    "NULL",
-    "-999",
-    "n.d."
-  ]
+  "chart": {
+    "kind": "histogram",
+    "column": "response",
+    "bins": 5,
+    "title": "Observed response distribution",
+    "x_label": "Response",
+    "y_label": "Frequency",
+    "unit": "a.u."
+  },
+  "parameters": {"seed": 2026, "float_precision": 10},
+  "validation": {
+    "expected_rows": 12,
+    "expected_columns": ["sample_id", "group", "dose", "response"],
+    "golden": [
+      {"path": "statistics.response.mean", "value": 14.5, "atol": 1e-9, "rtol": 1e-9},
+      {"path": "groups.metrics.response.0.mean", "value": 12.5, "atol": 1e-9, "rtol": 1e-9}
+    ]
+  }
 }
