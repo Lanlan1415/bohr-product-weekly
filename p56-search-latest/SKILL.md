@@ -1,193 +1,160 @@
 ---
 name: search-latest
 description: >
-  最新文献发现与追踪：run an incremental tracking loop over the shared index+query
-  engine. Every record carries a leading date token, so a watermark window is a
-  boolean query (all: ["YYYY-MM"]) that returns exactly the in-window records — and
-  an empty window is an honest empty, not a padded reminder. Version duplicates share
-  one normalised DOI token (the merge key), retracted records stay retrievable so
-  they can be subtracted explicitly and labelled, and a CJK record hits with a
-  verbatim locator. Every probe records the normalised query and the index
-  fingerprint; the index is written beside the result and reruns are byte-identical.
-  Empty corpus, malformed index, empty query → exit-5 refusals, never crashes.
-  Use when the deliverable is a repeatable subscription increment (新增清单 + 依据),
-  not a one-shot topic search.
+  最新文献发现与追踪。用于 retained snapshots 的订阅配置—显式时间窗—增量去重—版本/状态更新—
+  提醒状态—next_state 闭环；区分 online/issued/created/deposited/indexed/imported_at，
+  处理跨时区半开窗口、延迟入库、已读/追踪抑制和幂等重放。绝不伪造当前时间、实时检索或已发送提醒。
 ---
 
 # search-latest（最新文献发现与追踪）
 
-The promise: an increment you can replay. Each window's answer is a boolean probe
-over a fingerprinted index — the new records come with locators, the old ones stay
-out, the retracted ones are subtractable, and rerunning the probe reproduces the
-increment byte-identically.
+主引擎为 latest-literature-tracker/v2；旧 file-search/v1 日期字符串探针仅保留兼容，不等价于增量追踪。
 
-| property | enforcement |
+## 核心闭环
+
+`previous_state + retained sources + [start,end) → 日期解释 → 身份归并 → 分类 → prepared reminders → 条件提交 next_state`
+
+| rubric | 实际行为 |
 |-|-|
-| 窗口是查询 | the watermark window is `all: ["YYYY-MM"]` over the leading date token — in-window records only; the previous window's records are never re-swept |
-| 空窗诚实 | a window with no new records returns `hits: []` with `empty: true` and a note — an empty increment is reported, never padded |
-| 版本合并有键 | preprint / published / translation views share one normalised DOI token; the token probe returns every view of one work so dedup counting is checkable |
-| 撤稿可 subtraction | retracted records keep their `retracted` token, so the retraction probe isolates them for explicit subtraction and labelling — never silently dropped |
-| 增量可复算 | every probe records the normalised query + `index_sha256`; reruns are byte-identical, and duplicate feed exports are skipped and named |
+| 时间窗 | 必须显式 start/end；`[start,end)`，统一换算 UTC。offset-aware 值保留 raw 并输出 UTC；naive/date-part 使用声明 timezone，是否假设时区可追溯 |
+| 日期语义 | online、print、issued、created、deposited、indexed、imported_at 分列；discovery event 默认 imported_at→indexed，publication delay 用最早 online/issued，不混写 |
+| 新 vs 更新 | `new_works`、`late_arrivals`、`version_updates`、`status_updates`、`unchanged`、`out_of_window`、`review_required` 互斥分类 |
+| 延迟补回 | 旧 online/issued 但本窗 indexed/imported 进入 late_arrivals，保留 lag days 和 novelty kind，不冒充新发表 |
+| 粒度/边界 | year/month/day 有 interval；模糊区间碰 start/end 进入 review，不猜日；offset 换算后越界的记录不会误推 |
+| 去重/版本 | DOI 精确、保守标题模糊 + 作者 + ±1 年、DOI 否决、显式版本组；同源/跨源全部 provenance 和 version signatures 留存 |
+| 状态与提醒 | 已读、非 tracked、paused 分别抑制；撤稿/更正是 status update。通知 id 确定性，实际只标 `prepared_not_sent`，不伪造已送达 |
+| 漏报与幂等 | source failure、坏记录、缺/错/边界日期、watermark 不连续、paused 均不提交状态；重试不会把临时结果误写为 already seen |
+| 计数 | records seen=valid+rejected；identity clusters=各互斥类别之和；collapsed observations、提醒/抑制数均可闭合 |
 
-## Data shapes
+## 运行流程（结束于 deliverable）
 
-Each record carries a leading date token, a normalised DOI token, and a status token:
-
-```json
-{"documents": [
-  {"id": "snap-a1",
-   "text": "[2026-03-02] Cryo-EM structures of the spike at 2.1 A resolution.\n"
-           "doi: doi-10-1038-s41586-026-08101-3\nstatus: published"}
-]}
-```
-
-```json
-{"all": ["2026-03"]}
-```
-
-Conventions: the date token `[YYYY-MM-DD]` opens the record text; DOI/identifier
-tokens are normalised to `doi-10-…` form (dots and slashes become dashes) so the
-same work from different feeds shares one merge key; status tokens are
-`published` / `preprint` / `retracted`. Matching is case-insensitive substring over
-the indexed text; CJK titles stay whole as searchable terms.
-
-## Workflow (watermark → window probe → increment)
-
-1. **Record the watermark** — the last snapshot's highest date token, kept in the
-   subscription config.
-2. **Index the fresh pulls** — every feed export enters the corpus; duplicates
-   (same id re-exported) are skipped and named so counts stay honest.
-3. **Window probe** — `all: ["YYYY-MM"]` for the new window. Only in-window records
-   return; each carries its locator.
-4. **Merge keys** — probe each DOI token to collect its views (preprint mirror,
-   translation, publisher version); count the work once, keep the version list.
-5. **Retraction subtraction** — probe `all: ["retracted"]`; subtract those ids from
-   the increment and label them 更正/撤稿 instead of new findings.
-6. **Reminder** — the increment is: new works (merged), version updates, retractions;
-   an empty window is reported as an honest empty.
+1. 读取 `/input/case.json`、`task.md`、真实来源快照和 organizer-local previous state。保留 `case_id`、完整 `output_contract`、订阅配置和材料时间，**不要读取系统当前时间来补 window**。公开下载不含正式固定 case 数据。
+2. 整理 `/app/work/latest_case.json`，设置 `mode:"latest"`、显式窗口、required sources、tracking date policy 和 previous_state。没提供的日期保持缺失。
+3. 运行并交付：
 
 ```bash
-python scripts/search_cli.py --corpus examples/corpus.json --query-file examples/query.json --out ./out
-python scripts/bench_latest.py   # 8 scenarios: one per tracking property plus FP guards
+python /skills/weekly-skill/scripts/search_cli.py \
+  --case /app/work/latest_case.json --out /app/output
 ```
 
-The engine lives in `scripts/search.py` (importable: `build_index(corpus)`,
-`run_query(index, query)`, `search(spec)`). Exit codes: `0` ok — including an honest
-empty window; `5` refused; `2` usage.
+输出 `result.json` 和 `next_state.json`。下一窗以本次 `next_state` 为 `previous_state`，并将 start 设为上一窗 committed watermark。
+4. 检查 `state_committed`。若为 false，保留旧状态重试；不要用未完整窗口的 next_state 覆盖可信快照。提醒只是本地待交付记录，不存在真实投递回执时不能改成 delivered。
 
-## Output contract
-
-`--out` receives:
-
-- `index.json` — the index: per record `text`, `paragraphs`, `terms`; `order`; and
-  `corpus_sha256`. Kept for replay of any increment.
-- `result.json` — per probe: `query` (normalised), `index_sha256`,
-  `documents_indexed`, `hits[]` with `passages[]` carrying verbatim locators,
-  `empty`, and on an empty window an honest `note`; skipped duplicate exports are
-  named under `skipped` with a `search.doc_skipped` finding.
-
-A refusal run writes `result.json` with `status: undetermined` and a named refusal —
-a refusal is a result, not a crash.
-
-## Refusal and finding index
-
-| id | severity | when |
-|-|-|-|
-| `search.engine_error` | high | 搜索引擎内部异常——拒收并写 result.json，绝不 traceback |
-| `search.spec_not_object` | high | case.json 不是 JSON 对象——拒收 |
-| `search.spec_unreadable` | high (exit 5) | corpus / query file unreadable or not the declared JSON shape |
-| `search.empty_corpus` | high (exit 5) | corpus missing, not a list, or nothing indexable (skip reasons listed) |
-| `search.index_malformed` | high (exit 5) | the index is not a readable index object — refused as a whole |
-| `search.empty_query` | high (exit 5) | a probe declares nothing searchable — refused, not run as a no-op |
-| `search.doc_skipped` | low | a feed export that is not a document, or a duplicate id (named) |
-
-## Minimal worked example (示意)
-
-Input: `examples/corpus.json` (5 entries, one duplicate feed export) +
-`examples/query.json` (`{"all": ["2026-03"]}` — the March window probe).
-
-示意 output (abridged — an illustrative sketch of the shape, not a formal case
-result; values are from a real run of the example):
-
-```json
-{"ok": true, "empty": false,
- "query": {"all": ["2026-03"], "any": []},
- "index_sha256": "c78e6549fde3b1bf", "documents_indexed": 4,
- "hits": [
-  {"doc_id": "snap-a1", "score": 1, "matched_terms": ["2026-03"],
-   "passages": [
-    {"term": "2026-03",
-     "locator": {"paragraph": 0, "start": 1, "end": 8, "quote": "2026-03"}}]},
-  {"doc_id": "snap-c1", "score": 1, "matched_terms": ["2026-03"]},
-  {"doc_id": "snap-d1", "score": 1, "matched_terms": ["2026-03"]}],
- "skipped": [{"index": 1, "reason": "duplicate doc id 'snap-a1'; the entry is "
-              "skipped rather than silently merged"}]}
-```
-
-The February baseline record stays out; the retraction record (`snap-c1`) enters the
-window but the `retracted` probe isolates it for labelling; the CJK record
-(`snap-d1`) hits with a verbatim locator. A probe for `{"all": ["2026-04"]}` would
-return `empty: true` — an empty window, honestly reported.
-
-## Limits
-
-- **The engine matches tokens, it does not know time.** The window discipline comes
-  from the date-token convention and the recorded watermark; a record pulled late
-  must keep its publication date token, or it will land in the wrong window.
-- **Delayed ingest is explicit.** A record dated in a past window is re-found by its
-  DOI token probe, not silently back-filled into an old increment.
-- **Lexical matching cannot see negation or synonymy.** "not retracted" contains
-  "retracted" — keep negated prose out of status tokens.
-- **One condition set per probe.** `all` + `any` only; no nested boolean trees.
-- **Passages are capped** at 20 per record — enough to verify, not to read.
-
-## Failure handling
-
-| symptom | what to do |
-|-|-|
-| `search.empty_corpus` (exit 5) | the pull file holds no records — fix shape or path; the engine never searches an empty index |
-| `search.index_malformed` (exit 5) | rebuild with `--corpus` instead of `--index`; a partial index is refused, not patched |
-| `search.empty_query` (exit 5) | a probe needs at least one term — an empty probe is refused, not run |
-| `search.doc_skipped` | drop the duplicate export or fix the entry shape; the rest is indexed |
-| empty window you expected to be non-empty | compare the query record against the index — the miss is real for those date tokens; check the watermark and time zone, then re-probe with the corrected window |
-
-## Verification
+本地合成窗口演示：
 
 ```bash
-python scripts/bench_latest.py   # 8 scenarios
+python scripts/search_cli.py --case examples/latest_case.json --out ./out
 ```
 
-All 8 pass on this machine: the window probe keeps old records out, the merge key
-collapses version duplicates, the retraction probe isolates label-able records, a
-CJK record's locator is verbatim, reruns are byte-identical, an empty window is
-honest, and the CLI example plus the exit-5 refusal contract hold.
+## 最小结构化输入
 
-## Routing
+```json
+{
+  "case_id": "caller-id",
+  "mode": "latest",
+  "output_contract": ["case_id", "new_works", "late_arrivals", "version_updates", "next_state"],
+  "window": {"start": "2026-03-01T00:00:00Z", "end": "2026-04-01T00:00:00Z", "timezone": "UTC"},
+  "tracking_date_fields": ["imported_at", "indexed"],
+  "required_sources": ["crossref", "europepmc"],
+  "subscription": {"sources": ["crossref", "europepmc"], "read_works": [], "tracked_works": []},
+  "previous_state": {"watermark": "2026-03-01T00:00:00Z", "works": [], "notifications": []},
+  "sources": {
+    "crossref": {"status": "ok", "snapshot_ref": "actual/local/ref", "records": [
+      {"id": "cr-1", "version_group": "family-1", "doi": "10.1000/example",
+       "title": "Actual retained title", "version": "published",
+       "published-online": {"date-parts": [[2026, 3, 4]]},
+       "issued": {"date-parts": [[2026, 3, 4]]},
+       "created": {"date-time": "2026-03-04T08:00:00Z"},
+       "deposited": {"date-time": "2026-03-05T08:00:00Z"},
+       "indexed": {"date-time": "2026-03-06T08:00:00Z"}}
+    ]},
+    "europepmc": {"status": "ok", "records": []}
+  }
+}
+```
 
-- **This skill** when the task is a repeatable subscription increment over dated
-  records with dedup, retraction handling, and replayable probes.
-- For general academic retrieval without a watermark — use `p66-search-academic`.
-- For measuring coverage against a frozen reference set — use `p55-search-coverage`.
-- For screening records against inclusion/exclusion criteria — use `p57-search-systematic`.
+可传单个 `tracking_date_field`，或按 source payload 配置。不设策略时依次选 `imported_at`、`indexed`。Europe PMC `firstIndexDate` 映射 indexed，`firstPublicationDate` 与 `pubDate` 映射 issued；Crossref `date-parts`、`date-time`、`timestamp` 均支持。**created、deposited、online、issued 不会静默替代缺失的 indexed**，以免把旧论文当新入库。
 
-## Requirements
+### 新文献、更新与延迟判定
 
-Python 3.9+ (3.14 verified); standard library only — no packages to install.
+- `new_works`：previous snapshot 无该 work family，选定 discovery event 在窗内，online/issued 也在窗内；若 publication date 缺失会明确标 `new_to_snapshot_publication_date_missing`。
+- `late_arrivals`：先前不存在于快照、event 在窗内而 online/issued 早于 start；输出 `publication_lag_days`，它是延迟入库，不是否定其“新到快照”价值。
+- `version_updates`：已有 work key 出现新 version signature 且 event 在窗内；预印本→正式版需 version_group 才能跨 DOI 归并。
+- `status_updates`：已有工作状态改变，或本窗新到 retracted/corrected notice；重放相同状态不重复提醒。
+- `unchanged` 与 `out_of_window`：已见相同版本，或 event 不在窗内；不会进入新清单。
 
-## 创新增益
+`new` 只表示相对提供快照与数据源事件的新，不是全球最先发表或完整性保证。
 
-本 Skill 相比通用 Agent 的核心新增能力：
+## previous_state / next_state
 
-1. **规则优先级库**：每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时由优先级决定胜者且双方都留痕——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改动——如果仍有改动说明规则间存在冲突，这是一个可计算的 self-check。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，审计者可以逐条复核或撤销任何单条修改。
+`next_state` 包含 watermark、稳定 work keys、DOI/title/year、全部 version records/status/aliases、notifications、read_works、tracked_works。也接受纯 raw old exports 列表作 previous_snapshot 冷导入桥接；其记录按同一身份规则建快照。
 
-bench 目录下的 latest 是上述能力的回归证据（见 Verification 节 场景，clean 基线必须零发现）。
+仅在以下全部成立时提交：
 
-## 生态贡献
+- required sources 全为 ok/success/complete（成功空窗可以提交，但仍只限该源快照）；
+- 没有 rejected records，没有缺/非法/boundary-ambiguous discovery dates；
+- start 等于 previous watermark（无时区歧义地比较 instant）；
+- subscription 未暂停。
 
-- **SKILL.md** 包含用途、适用条件、调用方式、输入输出、异常处理、限制和自查方法
-- **scripts/** 纯标准库可独立导入，规则库可通过 spec 配置扩展
-- **examples/** 提供最小调用示例和示意输出
-- **bench/** 回归套件可独立复跑验证
+否则 `state_committed=false`，next watermark 保持旧值，works/notifications 不吸收临时发现，以供完整重试。将已 committed next_state 错用于同一窗会识别 overlap/discontinuity 并保持水位，同时抑制已见重复提醒；不会把重叠自动“修正”为连续。
 
+## 提醒与追踪状态
+
+- 每个提醒 id 由 work key + window + kind + version signatures 哈希生成，重跑稳定。
+- previous/subscription `read_works` 默认抑制，`notify_read:true` 才可改变；`tracked_works` 非空时只追踪集合内工作。
+- paused 输出 suppression 原因且不提交窗口。
+- `delivery_log.status=prepared_not_sent`；没有 scheduler、SMTP、RSS、Zotero 写库或 webhook 实现，不能声称定时任务已注册或消息已发送。
+
+## 输出契约与异常
+
+`result.json` 含全部七类列表、`new_items=new_works+late_arrivals`、reminders/suppressed、date interpretations、逐源 coverage、identity merges、missed-reporting risk、count reconciliation、next_state 与 `snapshot_sha256`。
+
+`case_id` 原位保留；output_contract 支持数组、对象键或字符串。引擎字段优先，其他调用方字段直通，未知必需字段为 null + limits。退出码：clean=0、review=3、undetermined=5、usage=2；任何 refusal 都是结构化结果。
+
+## 日期字段参考以及如何落地
+
+实际 Crossref REST work `10.1038/nature12373` 的 retained response 显示：published-online/issued 为 2013-07-31，created 为 2013-07-30，deposited 为 2023-05-18，indexed 为 2026-11-19。这说明 processing timestamps 不能与 publication date 混为一谈。本引擎分别保留各字段；新增发现按声明的 imported/indexed 策略，新旧发表按 online/issued，延迟用二者差值。注意 Crossref indexed 也可能反映再索引，不是永久“首次发现”；稳定订阅应优先保存本地 first_seen/imported_at。
+https://api.crossref.org/works/10.1038/nature12373
+
+**Zotero feed/duplicate 机制**启发了“保留库内条目状态、稳定身份、重复条目不 noise push”的实现思路；本包没有声称接入 Zotero 服务，提醒和 read/tracked 状态完全由显式 JSON snapshot 驱动。
+https://github.com/zotero/zotero/blob/main/chrome/content/zotero/xpcom/duplicates.js
+
+## Finding 与 refusal 索引
+
+| id | 真实触发 |
+|-|-|
+| `tracker.window_incomplete` | start/end 缺失、非法或 end<=start，undetermined |
+| `tracker.no_sources` | 没有 source snapshots，undetermined |
+| `tracker.engine_error` | 增量引擎异常，undetermined |
+| `tracker.source_incomplete` | 来源不可用，保持旧水位 |
+| `tracker.record_rejected` | 记录不可规范化，保持旧水位 |
+| `tracker.date_unresolved` | 缺日期、坏日期或粒度跨窗，保持旧水位 |
+| `tracker.window_discontinuity` | start 与 previous watermark 不一致，保持旧水位 |
+| `tracker.subscription_paused` | 暂停订阅，不提交窗口 |
+| `tracker.empty_source_window` | 成功但零记录的空窗/空源，记录但不必然阻塞 |
+| `search.spec_unreadable` | case/corpus/query/index JSON 不可读，exit 5 |
+| `search.spec_not_object` | case 不是 JSON 对象，exit 5 |
+| `search.engine_error` | 旧引擎异常，exit 5 |
+| `search.empty_corpus` | 无可索引记录，exit 5 |
+| `search.index_malformed` | index 结构不完整，exit 5 |
+| `search.empty_query` | query 无可检索内容，exit 5 |
+| `search.doc_skipped` | 旧路径 malformed/duplicate doc 被命名 |
+
+## 旧版兼容
+
+```bash
+python scripts/search_cli.py --corpus examples/corpus.json \
+  --query-file examples/query.json --out ./out-legacy
+```
+
+旧 `YYYY-MM` 字符串检索不知道时区、快照或更新状态，不能替代上面的订阅闭环。
+
+## Requirements 与可选验证
+
+Python 3.9+，仅标准库。`scripts/incremental_tracker.py` 可独立 `run(spec)`；examples 是合成演示，不是正式结果。
+
+```bash
+python scripts/bench_latest.py
+```
+
+当前 21 个场景：8 条手工跨时区记录的分类/计数、54 天延迟复算、版本/撤稿不冒充新文献、镜像去重、下一快照零重复提醒、已读/暂停、来源失败/缺日期/月粒度边界保持水位、断窗拒收、冷导入/契约/确定性。结果写 `scripts/report_latest.json`。

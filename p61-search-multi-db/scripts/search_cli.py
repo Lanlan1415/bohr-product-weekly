@@ -22,6 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import search  # noqa: E402
+import federated_search  # noqa: E402
 
 
 def _write_result(out_dir: Path, result: dict) -> None:
@@ -132,10 +133,31 @@ def _echo_contract(result: dict, case: dict) -> dict:
     cid = case.get("case_id")
     if cid is not None:
         result["case_id"] = cid
-    for key in (case.get("output_contract") or []):
+    contract = case.get("output_contract") or []
+    if isinstance(contract, dict):
+        fields = list(contract)
+    elif isinstance(contract, str):
+        fields = [contract]
+    elif isinstance(contract, list):
+        fields = contract
+    else:
+        fields = []
+        limits.append("output_contract must be a field list, object, or string")
+    aliases = {"results": "merged_records", "papers": "merged_records",
+               "retrieval_results": "merged_records", "queries": "query_translations",
+               "evidence": "evidence_records", "deduplication": "merge_decisions",
+               "source_lineage": "evidence_records", "counts": "count_reconciliation",
+               "status_explanation": "limits"}
+    for key in fields:
+        if not isinstance(key, str) or not key:
+            limits.append("output_contract contains a non-string or empty field name")
+            continue
         if key in result:
             continue
-        if key in case and key not in _BULKY:
+        if aliases.get(key) in result:
+            result[key] = result[aliases[key]]
+            continue
+        if key in case:
             result[key] = case[key]
             continue
         result[key] = None
@@ -152,6 +174,16 @@ def _run_case(case_path: Path, out_dir: Path) -> dict:
         return _refused(out_dir, "search.spec_unreadable", f"case file not readable: {exc}")
     if not isinstance(case, dict):
         return _refused(out_dir, "search.spec_not_object", "case file is not a JSON object")
+    if federated_search.is_multidb_spec(case):
+        try:
+            result = _echo_contract(federated_search.run(case), case)
+        except Exception as exc:
+            result = _echo_contract({"schema_version": federated_search.SCHEMA_VERSION,
+                                     "status": "undetermined", "refusal": {
+                                         "rule": "multidb.engine_error", "message": str(exc)[:240]},
+                                     "limits": ["no federated result was completed"]}, case)
+        _write_result(out_dir, result)
+        return result
     spec: dict = {}
     cf = case.get("index") or case.get("corpus") or case.get("documents")
     if cf is not None:
@@ -169,8 +201,8 @@ def _run_case(case_path: Path, out_dir: Path) -> dict:
             json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
     if isinstance(result, dict):
         result = _echo_contract(result, case)
-        # preserve engine status; refine to 'clean' if it ran without refusals
-        if result.get("status") == "undetermined":
+        # A successful legacy search has no status; never turn a refusal into clean.
+        if "status" not in result:
             result["status"] = "clean"
     _write_result(out_dir, result)
     return result

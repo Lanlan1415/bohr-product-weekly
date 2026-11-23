@@ -7,6 +7,71 @@
       "why": ""
     },
     {
+      "scenario": "graph_forward_backward_sets",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_multihop_path_exact",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_co_citation_and_coupling",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_edge_context_and_sources",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_version_group_merge",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_distinct_doi_veto",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_fuzzy_title_merge",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_budget_stop_honest",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_no_edge_clean_empty",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_seed_refusal",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_source_gap_not_zero_citations",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_case_contract_cold_deterministic",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "graph_refusal_exit_and_no_traceback",
+      "pass": true,
+      "why": ""
+    },
+    {
       "scenario": "forward_cites_edge",
       "pass": true,
       "why": ""
@@ -43,7 +108,7 @@
     }
   ],
   "totals": {
-    "passed": 8,
-    "of": 8
+    "passed": 21,
+    "of": 21
   }
 }

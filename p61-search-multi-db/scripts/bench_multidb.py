@@ -17,10 +17,12 @@ import json
 import subprocess
 import sys
 import tempfile
+import shutil
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import search  # noqa: E402
+import federated_search  # noqa: E402
 
 CORPUS = [
     {"id": "xref-001",
@@ -133,8 +135,209 @@ def scen_cli_refusal_exit5(tmp, name):
         and res["refusal"]["rule"] == "search.spec_unreadable"
 
 
+def federation_spec(**overrides):
+    """Hand-reconciled fixture: 10 raw = 9 valid + 1 rejected; 9 valid -> 6 works.
+
+    A has three observations, the V version family has two, and B/Vpre/C/X/Y
+    provide four singleton clusters.  X and Y deliberately share title/author
+    but have distinct DOIs and therefore remain separate works.
+    """
+    spec = {
+        "mode": "multi_db", "required_sources": ["crossref", "europepmc", "openalex"],
+        "query": {"title": "reproducible detection system", "author": "Jane Doe",
+                  "from_date": "2024-01-01", "until_date": "2026-12-31"},
+        "required_fields": ["title", "doi", "authors", "year", "journal"],
+        "sources": {
+            "crossref": {"status": "ok", "query": {"filter": "from-pub-date:2024-01-01"},
+                         "raw_response_ref": "input/crossref.json", "records": [
+                {"id": "cr-a", "DOI": "https://doi.org/10.1000/ALPHA",
+                 "title": "Reproducible Detection System", "author": [{"given": "Jane", "family": "Doe"}],
+                 "issued": {"date-parts": [[2025, 4, 1]]}, "container-title": ["Journal A"]},
+                {"id": "cr-b", "DOI": "10.1000/beta", "title": "Crossref only benchmark",
+                 "author": [{"given": "Alan", "family": "Turing"}], "year": 2025},
+                {"id": "cr-v", "DOI": "10.1000/version-journal", "title": "Versioned assay",
+                 "version_group": "family-v", "version": "published", "year": 2026},
+                {"id": "cr-x", "DOI": "10.1000/x", "title": "Same named paper", "year": 2025,
+                 "authors": ["Jane Doe"]},
+                42,
+            ]},
+            "europepmc": {"status": "ok", "query": "TITLE:reproducible", "records": [
+                {"id": "ep-a", "pmid": "123", "doi": "10.1000/alpha",
+                 "title": "Reproducible detection system", "authors": ["J. Doe"], "year": 2024},
+                {"id": "ep-v", "DOI": "10.48550/arxiv.v", "title": "Versioned assay",
+                 "version_group": "family-v", "version": "v1", "year": 2025},
+                {"id": "ep-c", "doi": "10.1000/unique-europe", "title": "Europe PMC only cohort",
+                 "year": 2024},
+            ]},
+            "openalex": {"status": "ok", "query": {"search": "reproducible detection system"}, "records": [
+                {"id": "oa-a", "title": "Reproducible Detection Systems", "display_name": "Reproducible Detection Systems",
+                 "authors": [{"display_name": "Jane Doe"}], "publication_year": 2025},
+                {"id": "oa-y", "doi": "10.1000/y", "title": "Same named paper!", "year": 2025,
+                 "authors": ["J. Doe"]},
+            ]},
+        },
+    }
+    spec.update(overrides)
+    return spec
+
+
+def _work_for_doi(result, doi):
+    return next((w for w in result["merged_records"] if doi in w["identifiers"]["doi"]), None)
+
+
+def scen_federated_closed_counts(tmp, name):
+    """10 raw -> 9 valid -> 6 unique; single=4/multi=2; duplicate source observations=3."""
+    result = federated_search.run(federation_spec())
+    counts = result["count_reconciliation"]
+    return counts["identified_records"] == 10 and counts["valid_records"] == 9 and \
+        counts["unique_works"] == 6 and counts["duplicate_observations"] == 3 and \
+        counts["single_source_works"] == 4 and counts["multi_source_works"] == 2 and counts["closed"]
+
+
+def scen_federated_native_query_translation(tmp, name):
+    """Each source gets native fields rather than a copied Crossref query."""
+    translations = {q["source"]: q for q in federated_search.run(federation_spec())["query_translations"]}
+    crossref = translations["crossref"]["translated_query"]["parameters"]
+    europe = translations["europepmc"]["translated_query"]["parameters"]["query"]
+    openalex = translations["openalex"]["translated_query"]["parameters"]
+    return "query.bibliographic" in crossref and "query.author" in crossref and \
+        'TITLE:"reproducible detection system"' in europe and 'AUTH:"Jane Doe"' in europe and \
+        "title.search:reproducible detection system" in openalex["filter"] and \
+        all(q["execution_claim"] == "retained_export_only" for q in translations.values())
+
+
+def scen_federated_exact_and_fuzzy_dedup(tmp, name):
+    """DOI and fuzzy title+author+±1 year observations form one three-view A cluster."""
+    result = federated_search.run(federation_spec())
+    work = _work_for_doi(result, "10.1000/alpha")
+    rules = {d["rule"] for d in result["merge_decisions"] if d.get("merged")}
+    return work is not None and len(work["source_records"]) == 3 and \
+        set(work["sources"]) == {"crossref", "europepmc", "openalex"} and \
+        "doi_exact" in rules and "title_fuzzy_author" in rules
+
+
+def scen_federated_distinct_doi_and_transitive_veto(tmp, name):
+    """X/Y never merge; a missing-DOI fuzzy record cannot bridge two DOI clusters."""
+    result = federated_search.run(federation_spec())
+    x = _work_for_doi(result, "10.1000/x")
+    y = _work_for_doi(result, "10.1000/y")
+    rows = [{"source": "crossref", "records": [
+        {"id": "a", "doi": "10.10/a", "title": "Triplet work", "year": 2020, "authors": ["J. Doe"]},
+        {"id": "b", "title": "Triplet work", "year": 2020, "authors": ["J. Doe"]},
+        {"id": "c", "doi": "10.10/c", "title": "Triplet work", "year": 2020, "authors": ["J. Doe"]},
+    ]}]
+    triple = federated_search.run({"mode": "multi_db", "sources": rows if False else {
+        "crossref": {"status": "ok", "records": rows[0]["records"]}},
+        "required_sources": ["crossref"]})
+    return x["work_id"] != y["work_id"] and triple["unique_work_count"] == 2 and \
+        any(d["rule"] == "transitive_identity_veto" for d in triple["merge_decisions"])
+
+
+def scen_federated_version_merge_lineage(tmp, name):
+    """Different preprint/journal DOIs merge only in declared family and both survive."""
+    result = federated_search.run(federation_spec())
+    work = _work_for_doi(result, "10.1000/version-journal")
+    return len(work["version_records"]) == 2 and work["doi"] == "10.1000/version-journal" and \
+        set(work["identifiers"]["doi"]) == {"10.1000/version-journal", "10.48550/arxiv.v"} and \
+        any(d["rule"] == "declared_version_group" for d in result["merge_decisions"])
+
+
+def scen_federated_conflicts_preserved(tmp, name):
+    """A's 2024/2025 disagreement retains both values and per-record field provenance."""
+    result = federated_search.run(federation_spec())
+    work = _work_for_doi(result, "10.1000/alpha")
+    conflict = next(c for c in work["metadata_conflicts"] if c["field"] == "year")
+    return set(conflict["alternative_values_retained"]) == {2024, 2025} and \
+        len(work["field_provenance"]["year"]) == 3 and \
+        all("raw_record" in r for r in work["source_records"])
+
+
+def scen_federated_unique_overlap_and_fields(tmp, name):
+    """Europe-only C appears in unique coverage and missing journal counts remain visible."""
+    result = federated_search.run(federation_spec())
+    coverage = result["coverage"]
+    unique_ids = coverage["unique_to_source"]["europepmc"]
+    return len(unique_ids) == 1 and "10.1000/unique-europe" in \
+        _work_for_doi(result, "10.1000/unique-europe")["identifiers"]["doi"] and \
+        coverage["field_coverage"]["journal"]["missing"] >= 4 and coverage["pairwise_overlap"]
+
+
+def scen_federated_source_failure_degrades(tmp, name):
+    """Adding an unavailable required source gives a partial review with closed counts, not fake coverage."""
+    spec = federation_spec(required_sources=["crossref", "europepmc", "openalex", "semantic_scholar"])
+    spec["sources"]["semantic_scholar"] = {"status": "timeout", "error": "deadline exceeded", "records": []}
+    result = federated_search.run(spec)
+    summary = next(s for s in result["source_coverage"] if s["source"] == "semantic_scholar")
+    return result["status"] == "review" and summary["status"] == "timeout" and \
+        "semantic_scholar" in result["coverage"]["sources_with_gaps"] and result["count_reconciliation"]["closed"]
+
+
+def scen_federated_record_rejection_and_filter(tmp, name):
+    """Malformed rows and declared exclusions close counts and retain named reasons."""
+    spec = federation_spec(exclude_terms=["crossref only"])
+    result = federated_search.run(spec)
+    counts = result["count_reconciliation"]
+    return len(result["rejected_records"]) == 1 and len(result["filtered_records"]) == 1 and \
+        counts["filtered_records"] == 1 and counts["unique_works"] == 5 and counts["closed"]
+
+
+def scen_federated_clean_single_source(tmp, name):
+    """A clean one-source export has one work and zero duplicates; no mandatory multi-source padding."""
+    result = federated_search.run({"mode": "multi_db", "required_sources": ["crossref"],
+        "sources": {"crossref": {"status": "ok", "records": [
+            {"id": "one", "doi": "10.1000/one", "title": "One work"}]}}})
+    return result["status"] == "clean" and result["unique_work_count"] == 1 and \
+        result["duplicate_observations"] == 0 and result["count_reconciliation"]["closed"]
+
+
+def scen_federated_no_sources_refusal(tmp, name):
+    """No source data is an explicit refusal, not a falsely clean empty union."""
+    result = federated_search.run({"mode": "multi_db"})
+    return result["status"] == "undetermined" and result["refusal"]["rule"] == "multidb.no_sources"
+
+
+def scen_federated_case_contract_cold_deterministic(tmp, name):
+    """Cold import + arbitrary contract fields + byte-identical repeat + no traceback."""
+    case = federation_spec(case_id="multi-smoke-001", output_contract={
+        "case_id": {}, "results": {}, "query_translations": {}, "source_coverage": {},
+        "count_reconciliation": {}, "owner_note": {}, "unavailable": {}}, owner_note="kept")
+    # A realistic clean smoke input; malformed rows are covered separately above.
+    case["sources"]["crossref"]["records"] = [
+        r for r in case["sources"]["crossref"]["records"] if isinstance(r, dict)]
+    path = tmp / "case.json"
+    path.write_text(json.dumps(case, ensure_ascii=False), encoding="utf-8")
+    cold = tmp / "cold"
+    shutil.copytree(Path(__file__).resolve().parent.parent, cold)
+    blobs, results = [], []
+    for label in ("a", "b"):
+        out = tmp / label
+        proc = subprocess.run([sys.executable, "-I", str(cold / "scripts" / "search_cli.py"),
+                               "--case", str(path), "--out", str(out)], capture_output=True,
+                              text=True, cwd=str(tmp), timeout=120)
+        if proc.returncode != 0 or "Traceback" in proc.stderr:
+            return False
+        blobs.append((out / "result.json").read_bytes())
+        results.append(json.loads(blobs[-1]))
+    result = results[0]
+    return blobs[0] == blobs[1] and result["case_id"] == "multi-smoke-001" and \
+        result["owner_note"] == "kept" and result["unavailable"] is None and \
+        len(result["results"]) == 6 and any("unavailable" in x for x in result["limits"])
+
+
 SCENARIOS = [
     ("doi_merge_key", scen_doi_merge_key),
+    ("federated_closed_counts", scen_federated_closed_counts),
+    ("federated_native_query_translation", scen_federated_native_query_translation),
+    ("federated_exact_and_fuzzy_dedup", scen_federated_exact_and_fuzzy_dedup),
+    ("federated_distinct_doi_and_transitive_veto", scen_federated_distinct_doi_and_transitive_veto),
+    ("federated_version_merge_lineage", scen_federated_version_merge_lineage),
+    ("federated_conflicts_preserved", scen_federated_conflicts_preserved),
+    ("federated_unique_overlap_and_fields", scen_federated_unique_overlap_and_fields),
+    ("federated_source_failure_degrades", scen_federated_source_failure_degrades),
+    ("federated_record_rejection_and_filter", scen_federated_record_rejection_and_filter),
+    ("federated_clean_single_source", scen_federated_clean_single_source),
+    ("federated_no_sources_refusal", scen_federated_no_sources_refusal),
+    ("federated_case_contract_cold_deterministic", scen_federated_case_contract_cold_deterministic),
     ("source_coverage", scen_source_coverage),
     ("source_gap_honest", scen_source_gap_honest),
     ("field_gap_honest", scen_field_gap_honest),

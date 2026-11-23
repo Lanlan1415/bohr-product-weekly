@@ -1,0 +1,37 @@
+{
+  "case_id": "demo-latest-window-not-a-formal-case",
+  "mode": "latest",
+  "output_contract": ["case_id", "new_works", "late_arrivals", "version_updates", "status_updates", "reminders", "next_watermark", "next_state", "status", "uncertainty"],
+  "window": {"start": "2026-03-01T00:00:00Z", "end": "2026-04-01T00:00:00Z", "timezone": "UTC"},
+  "tracking_date_fields": ["imported_at", "indexed"],
+  "required_sources": ["crossref", "europepmc"],
+  "subscription": {"sources": ["crossref", "europepmc"], "read_works": [], "tracked_works": []},
+  "previous_state": {
+    "watermark": "2026-03-01T00:00:00Z",
+    "works": [
+      {"work_key": "family:demo-version", "title": "Versioned demonstration assay", "version_records": [{"signature": "v1", "version": "v1", "source": "arxiv", "record_id": "demo-v1"}], "status": ["preprint"]}
+    ],
+    "notifications": [],
+    "read_works": [],
+    "tracked_works": []
+  },
+  "sources": {
+    "crossref": {
+      "status": "ok",
+      "snapshot_ref": "demo/crossref-march.json",
+      "records": [
+        {"id": "cr-new", "version_group": "demo-new", "doi": "10.1000/demo-new", "title": "March demonstration assay", "authors": ["J. Doe"], "published-online": {"date-parts": [[2026, 3, 4]]}, "issued": {"date-parts": [[2026, 3, 4]]}, "created": {"date-time": "2026-03-04T08:00:00Z"}, "deposited": {"date-time": "2026-03-05T08:00:00Z"}, "indexed": {"date-time": "2026-03-06T08:00:00Z"}},
+        {"id": "cr-late", "version_group": "demo-late", "doi": "10.1000/demo-late", "title": "January assay indexed in March", "published-online": {"date-parts": [[2026, 1, 12]]}, "issued": {"date-parts": [[2026, 1, 12]]}, "indexed": {"date-time": "2026-03-09T08:00:00Z"}},
+        {"id": "cr-version", "version_group": "demo-version", "version": "published", "doi": "10.1000/demo-version", "title": "Versioned demonstration assay", "status": "published", "issued": {"date-parts": [[2026, 3, 11]]}, "indexed": {"date-time": "2026-03-12T08:00:00Z"}},
+        {"id": "cr-outside", "version_group": "demo-outside", "doi": "10.1000/demo-outside", "title": "Next-window assay", "issued": {"date-parts": [[2026, 4, 1]]}, "indexed": {"date-time": "2026-03-31T23:30:00-02:00"}}
+      ]
+    },
+    "europepmc": {
+      "status": "ok",
+      "snapshot_ref": "demo/europepmc-march.json",
+      "records": [
+        {"id": "ep-new", "version_group": "demo-new", "doi": "10.1000/demo-new", "title": "March demonstration assay", "authors": ["Jane Doe"], "firstPublicationDate": "2026-03-04", "firstIndexDate": "2026-03-07T00:00:00Z"}
+      ]
+    }
+  }
+}

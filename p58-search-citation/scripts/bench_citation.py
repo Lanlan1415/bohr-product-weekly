@@ -17,10 +17,12 @@ import json
 import subprocess
 import sys
 import tempfile
+import shutil
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import search  # noqa: E402
+import citation_graph  # noqa: E402
 
 CORPUS = [
     {"id": "seed-2019",
@@ -149,8 +151,211 @@ def scen_cli_refusal_exit5(tmp, name):
         and res["refusal"]["rule"] == "search.spec_unreadable"
 
 
+def graph_spec(**overrides):
+    """Small independently auditable graph: arrows below mean citing -> cited.
+
+    F->S, C->S, L->{S,P}, G->F, S->{M,D}, P->{M,D}.  P therefore
+    co-cites with S through L and is bibliographically coupled through M,D.
+    """
+    works = [
+        {"id": "S", "doi": "10.1000/seed", "title": "Seed method", "year": 2019,
+         "version_group": "family-s", "version": "published",
+         "authors": ["Ada Lovelace"], "source": "crossref"},
+        {"id": "S-preprint", "version_group": "family-s", "version": "v1",
+         "doi": "10.48550/arxiv.seed", "title": "Seed method", "year": 2018,
+         "authors": ["A. Lovelace"], "source": "arxiv"},
+        {"id": "F", "doi": "10.1000/follow", "title": "Improved seed", "year": 2021,
+         "authors": ["Bernie Smith"], "source": "openalex"},
+        {"id": "C", "doi": "10.1000/critique", "title": "Seed caveats", "year": 2023,
+         "source": "openalex"},
+        {"id": "P", "doi": "10.1000/parallel", "title": "Parallel method", "year": 2022,
+         "source": "semantic_scholar"},
+        {"id": "L", "doi": "10.1000/later", "title": "Joint evaluation", "year": 2024,
+         "source": "crossref"},
+        {"id": "G", "doi": "10.1000/grandchild", "title": "Next generation", "year": 2025,
+         "source": "crossref"},
+        {"id": "M", "doi": "10.1000/method", "title": "Method origin", "year": 2014,
+         "source": "crossref"},
+        {"id": "D", "doi": "10.1000/data", "title": "Data origin", "year": 2016,
+         "source": "crossref"},
+    ]
+    triples = [("F", "S", "opalex-f-s", "Improves the seed"),
+               ("C", "S", "openalex-c-s", "Reports limitations"),
+               ("L", "S", "openalex-l-s", "Compares against seed"),
+               ("L", "P", "openalex-l-p", "Compares against parallel"),
+               ("G", "F", "crossref-g-f", "Extends the improvement"),
+               ("S", "M", "crossref-s-m", "We use the descriptor"),
+               ("S", "D", "crossref-s-d", "We evaluate on the dataset"),
+               ("P", "M", "europepmc-p-m", "Uses the descriptor"),
+               ("P", "D", "europepmc-p-d", "Evaluates the dataset")]
+    edges = [{"citing_id": a, "cited_id": b, "source_record_id": rid,
+              "source": "openalex" if rid.startswith("openalex") or rid.startswith("opalex")
+                         else ("crossref" if rid.startswith("crossref") else "europepmc"),
+              "context": context, "context_locator": {"record": rid, "field": "reference"}}
+             for a, b, rid, context in triples]
+    # An exact duplicate export must collapse without losing provenance.
+    edges.append(dict(edges[0]))
+    spec = {"mode": "citation", "seed_id": "10.1000/seed", "works": works,
+            "edges": edges, "max_depth": 2, "direction": "both", "max_nodes": 50,
+            "source_status": {"openalex": {"status": "ok"},
+                              "crossref": {"status": "ok"}, "europepmc": {"status": "ok"}}}
+    spec.update(overrides)
+    return spec
+
+
+def scen_graph_forward_backward_sets(tmp, name):
+    """Forward depth two = F,C,L,G; backward depth one = M,D (independent hand count)."""
+    forward = citation_graph.run(graph_spec(direction="forward"))
+    backward = citation_graph.run(graph_spec(direction="backward", max_depth=1))
+    fids = {c["work_id"] for c in forward["candidates"]}
+    bids = {c["work_id"] for c in backward["candidates"]}
+    return fids == {"10.1000/follow", "10.1000/critique", "10.1000/later", "10.1000/grandchild"} and \
+        bids == {"10.1000/method", "10.1000/data"} and \
+        all(c["depth"] <= 2 for c in forward["candidates"])
+
+
+def scen_graph_multihop_path_exact(tmp, name):
+    """G's shortest path has two real hops F->S and G->F in reverse chronological traversal."""
+    result = citation_graph.run(graph_spec(direction="forward"))
+    candidate = next(c for c in result["candidates"] if c["work_id"] == "10.1000/grandchild")
+    hops = candidate["shortest_path"]
+    return candidate["depth"] == 2 and candidate["relation"] == "indirect" and \
+        [(h["citing_id"], h["cited_id"], h["traversal_direction"]) for h in hops] == \
+        [("10.1000/follow", "10.1000/seed", "forward"),
+         ("10.1000/grandchild", "10.1000/follow", "forward")] and \
+        all(h["source"] and h["citation_context"] for h in hops)
+
+
+def scen_graph_co_citation_and_coupling(tmp, name):
+    """P is related through L and through two shared references M,D, not by invented P->S."""
+    result = citation_graph.run(graph_spec())
+    rel = next(a for a in result["associations"] if a["work_id"] == "10.1000/parallel")
+    assert rel["association"] == "co_citation+bibliographic_coupling"
+    return rel["shared_citing_works"] == ["10.1000/later"] and \
+        rel["shared_references"] == ["10.1000/data", "10.1000/method"] and \
+        not any(e["citing_id"] == "10.1000/parallel" and e["cited_id"] == "10.1000/seed"
+                for e in result["citation_edges"])
+
+
+def scen_graph_edge_context_and_sources(tmp, name):
+    """Every retained graph edge has source, endpoint direction, context and locator."""
+    result = citation_graph.run(graph_spec())
+    return len(result["citation_edges"]) == 9 and \
+        all(e["direction"] == "citing_to_cited" and e["source"] and
+            e["source_record_id"] and e["citation_context"] and e["context_locator"]
+            for e in result["citation_edges"]) and result["duplicate_edges"]
+
+
+def scen_graph_version_group_merge(tmp, name):
+    """Seed preprint and journal merge only via explicit version group; both DOIs survive."""
+    result = citation_graph.run(graph_spec())
+    seed = result["seed"]
+    return len(seed["version_records"]) == 2 and \
+        {r["doi"] for r in seed["version_records"]} == {"10.1000/seed", "10.48550/arxiv.seed"} and \
+        any(m["rule"] == "declared_version_group" for m in result["identity_merges"]) and \
+        seed["conflicting_metadata"]
+
+
+def scen_graph_distinct_doi_veto(tmp, name):
+    """Same title and author with two non-version DOIs must not merge."""
+    rows = [{"id": "a", "doi": "10.1000/a", "title": "Identical title", "year": 2020,
+             "authors": ["Jane Doe"]}, {"id": "b", "doi": "10.1000/b", "title": "Identical Title!",
+             "year": 2020, "authors": ["J. Doe"]}]
+    result = citation_graph.run({"mode": "citation", "seed_id": "a", "works": rows})
+    return not result["identity_merges"] and result["coverage"]["works_considered"] == 2
+
+
+def scen_graph_fuzzy_title_merge(tmp, name):
+    """One punctuation/subtitle variant merges with author and year guards when one DOI is absent."""
+    rows = [{"id": "a", "doi": "10.1000/same", "title": "A reproducible citation method",
+             "year": 2020, "authors": ["Jane Doe"]},
+            {"id": "b", "title": "A reproducible citation methods",
+             "year": 2021, "authors": ["J. Doe"], "source": "europepmc"}]
+    result = citation_graph.run({"mode": "citation", "seed_id": "a", "works": rows})
+    return len(result["identity_merges"]) == 1 and \
+        result["identity_merges"][0]["rule"] == "title_fuzzy_author"
+
+
+def scen_graph_budget_stop_honest(tmp, name):
+    """A one-node expansion stops honestly; no claim of complete coverage."""
+    result = citation_graph.run(graph_spec(max_nodes=1))
+    return result["candidate_count"] == 1 and result["status"] == "review" and \
+        any(f["rule"] == "citation.budget_stopped" for f in result["findings"]) and \
+        result["network_summary"]["stop_reason"] == "max_nodes"
+
+
+def scen_graph_no_edge_clean_empty(tmp, name):
+    """An isolated but valid seed yields a clean empty expansion, not padded citations."""
+    result = citation_graph.run({"mode": "citation", "seed_id": "solo", "works": [
+        {"id": "solo", "title": "A new preprint", "year": 2026}]})
+    return result["status"] == "clean" and result["candidates"] == [] and \
+        result["citation_edges"] == [] and result["associations"] == []
+
+
+def scen_graph_seed_refusal(tmp, name):
+    """An unresolved seed produces a structured refusal."""
+    result = citation_graph.run({"mode": "citation", "works": [], "max_depth": 2})
+    return result["status"] == "undetermined" and \
+        result["refusal"]["rule"] == "citation.seed_unresolved" and result["limits"]
+
+
+def scen_graph_source_gap_not_zero_citations(tmp, name):
+    """A failed source marks incomplete coverage; empty/absence is not universal zero citations."""
+    result = citation_graph.run(graph_spec(source_status={"openalex": {"status": "timeout"}}))
+    return "uncertainty" in result and "does not prove zero citations" in result["uncertainty"] and \
+        any("openalex" in x for x in result["limits"])
+
+
+def scen_graph_case_contract_cold_deterministic(tmp, name):
+    """Cold installed copy: full contract passthrough, exit 0, byte-identical repeat runs."""
+    case = graph_spec(case_id="graph-smoke-001", output_contract=[
+        "case_id", "candidates", "citation_edges", "paths", "associations", "identity_merges",
+        "status", "uncertainty", "owner_note", "unknown_required"], owner_note="verbatim")
+    case_path = tmp / "graph-case.json"
+    case_path.write_text(json.dumps(case, ensure_ascii=False), encoding="utf-8")
+    cold = tmp / "cold-skill"
+    shutil.copytree(Path(__file__).resolve().parent.parent, cold)
+    outputs = []
+    for label in ("a", "b"):
+        out = tmp / ("out-" + label)
+        proc = subprocess.run([sys.executable, "-I", str(cold / "scripts" / "search_cli.py"),
+                               "--case", str(case_path), "--out", str(out)],
+                              capture_output=True, text=True, timeout=120, cwd=str(tmp))
+        if proc.returncode != 0:
+            return False
+        outputs.append((out / "result.json").read_bytes())
+    result = json.loads(outputs[0])
+    return outputs[0] == outputs[1] and result["case_id"] == "graph-smoke-001" and \
+        result["owner_note"] == "verbatim" and result["unknown_required"] is None and \
+        len(result["candidates"]) > 0 and any("unknown_required" in x for x in result["limits"])
+
+
+def scen_graph_refusal_exit_and_no_traceback(tmp, name):
+    """Unreadable case emits result.json and exit 5, never a traceback/nonzero crash fallback."""
+    missing = tmp / "does-not-exist.json"
+    out = tmp / "missing-out"
+    proc = subprocess.run([sys.executable, "-I", str(CLI), "--case", str(missing), "--out", str(out)],
+                          capture_output=True, text=True, timeout=120)
+    result = json.loads((out / "result.json").read_text(encoding="utf-8"))
+    return proc.returncode == 5 and "Traceback" not in proc.stderr and \
+        result["status"] == "undetermined" and result["refusal"]["rule"] == "search.spec_unreadable"
+
+
 SCENARIOS = [
     ("backward_refs_line", scen_backward_refs_line),
+    ("graph_forward_backward_sets", scen_graph_forward_backward_sets),
+    ("graph_multihop_path_exact", scen_graph_multihop_path_exact),
+    ("graph_co_citation_and_coupling", scen_graph_co_citation_and_coupling),
+    ("graph_edge_context_and_sources", scen_graph_edge_context_and_sources),
+    ("graph_version_group_merge", scen_graph_version_group_merge),
+    ("graph_distinct_doi_veto", scen_graph_distinct_doi_veto),
+    ("graph_fuzzy_title_merge", scen_graph_fuzzy_title_merge),
+    ("graph_budget_stop_honest", scen_graph_budget_stop_honest),
+    ("graph_no_edge_clean_empty", scen_graph_no_edge_clean_empty),
+    ("graph_seed_refusal", scen_graph_seed_refusal),
+    ("graph_source_gap_not_zero_citations", scen_graph_source_gap_not_zero_citations),
+    ("graph_case_contract_cold_deterministic", scen_graph_case_contract_cold_deterministic),
+    ("graph_refusal_exit_and_no_traceback", scen_graph_refusal_exit_and_no_traceback),
     ("forward_cites_edge", scen_forward_cites_edge),
     ("method_lineage", scen_method_lineage),
     ("no_edge_honest", scen_no_edge_honest),

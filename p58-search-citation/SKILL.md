@@ -1,200 +1,144 @@
 ---
 name: search-citation
 description: >
-  引文追踪与关联文献发现：trace citation relationships over the shared index+query
-  engine. Every record lists its outgoing references as one `cites: <id>` line per
-  edge, so a forward probe (all: ["cites: <seed-id>"]) returns exactly the records
-  carrying that edge — a work nobody cites yields an honest empty, no fabricated
-  forward links. Backward tracing locates the seed's own `refs:` line verbatim; the
-  lineage probe (cites: <method-id>) surfaces follow-up and parallel work sharing
-  the method source; duplicate exports are skipped and named. Every edge hit carries
-  passages with verbatim locators (quote == text[start:end]), and every probe records
-  the normalised query + index fingerprint with byte-identical reruns.
-  Empty corpus, malformed index, empty query → exit-5 refusals, never crashes.
-  Use when expanding a seed paper along real, checkable citation edges.
+  引文追踪与关联文献发现。用于从种子论文沿真实 retained citation graph 做前向/后向、多跳、
+  共被引与文献耦合扩展，交付逐边来源、引用语境、最短路径和版本身份合并证据。
+  不适合无来源编引文、普通关键词检索、全文阅读或未授权抓取。
 ---
 
 # search-citation（引文追踪与关联文献发现）
 
-The promise: every expansion step can show its edge. Forward and backward tracing
-are boolean probes over per-edge lines in the record text, so each returned work
-quotes the exact citation edge that produced it — and an absent edge is an honest
-empty rather than an invented link.
+本包有两条互不混淆的路径：
 
-| property | enforcement |
+1. **citation-trace/v2 图追踪**：结构化 works + citing→cited edges + seed + depth，完成真正的图遍历和关联发现。
+2. **旧版 file-search/v1 布尔探针**：保留 `--corpus` 与 `--query` 兼容性；它只是文本检索，不宣称完成多跳图追踪。
+
+## 核心能力
+
+| rubric | 实际机制与输出 |
 |-|-|
-| 前向沿边 | the forward probe `all: ["cites: <id>"]` matches only records whose citation list contains the edge line — one line per edge, so the second listed reference is findable too |
-| 后向有据 | the seed's own `refs:` line is located verbatim — backward tracing reads the seed's reference list from the record, not from memory |
-| 无边诚实 | a record nobody cites returns an honest empty probe — no padded, guessed forward links |
-| 平行可解释 | the lineage probe `cites: <method-id>` returns follow-up AND parallel work that shares the method source, each quoting its own edge as the association evidence |
-| 去重留痕 | a duplicate export of a citing record is skipped and named; edge counting uses `documents_indexed`, and reruns are byte-identical |
+| 前向/后向与多层 | 对 `citing_id -> cited_id` 构建双向邻接表，BFS；`forward` 找施引文献，`backward` 找参考文献，`both` 可混合逐跳；默认深度 2、节点 200 |
+| 路径与语境 | 每个候选保留最短路径；每跳记录遍历方向、真实两端、edge id、数据源、引用语境及定位；`depth=1` 为 direct，`>1` 为 indirect |
+| 共被引/文献耦合 | 共被引要求第三方同时引用 seed 与候选；文献耦合要求共享参考节点；`associations` 单列，不伪造直接引用边 |
+| 论文身份/版本 | DOI 精确键；同版本组显式合并；标题归一/模糊比对必须同时满足作者、±1 年与 DOI 否决；保留所有版本及冲突 |
+| 网络结构 | 在该 seed-centred retained graph 内标出 bridge/foundational_in_snapshot/recent/peripheral；不是全领域中心性结论 |
+| 停止与缺口 | 深度、节点预算、循环去重、源失败、身份歧义、语境缺失都有记录；预算截断为 `review`，不冒充完整覆盖 |
+| 可复算 | `snapshot_sha256`、稳定排序、无系统时钟；同输入字节一致 |
 
-## Data shapes
+## 运行流程（结束于 deliverable）
 
-Each record carries its id, its outgoing edges (one `cites:` line per edge) and its
-backward list (`refs:`):
-
-```json
-{"documents": [
-  {"id": "follow-2021",
-   "text": "id: follow-2021\n"
-           "Follow-up: equivariant message-passing potential (2021).\n"
-           "cites: seed-2019\ncites: meth-2014\n"
-           "Improves the angular resolution of the seed."}
-]}
-```
-
-```json
-{"all": ["cites: seed-2019"]}
-```
-
-Conventions: record ids are stable short tokens (`seed-2019`, `meth-2014`) that
-appear in the record text (`id: <id>` line) and inside every edge line that cites
-them; backward edges use `refs:` on the citing record. The compound `cites: <id>`
-form is deliberate — it cannot false-match the `id:` line of the cited work itself.
-Matching is case-insensitive substring; CJK titles stay whole as searchable terms.
-
-## Workflow (seed → backward → forward → lineage → dedup)
-
-1. **Seed** — pin the seed record and its id token.
-2. **Backward** — probe `{"all": ["id: <seed>", "refs: <target>"]}` to locate and
-   quote the seed's own reference edges (the method and data sources).
-3. **Forward** — probe `{"all": ["cites: <seed>"]}` to list the records carrying a
-   citing edge; each hit quotes the edge.
-4. **Lineage / parallel work** — probe `{"all": ["cites: <method-id>"]}`: follow-ups
-   and parallel work that cite the same method source surface with their own edges
-   as the association evidence.
-5. **Dedup** — duplicate exports are skipped and named; the cleaned list is the one
-   whose every member has a quoted in-path edge.
+1. 读取 `/input/case.json`、`task.md` 和实际提供的 snapshot/source exports，保留 `case_id` 与完整 `output_contract`。公开下载的 challenge 不包含正式三套 case；不要以 examples 冒充正式答案。
+2. 把 **实际材料** 规范成 `/app/work/citation_case.json`。若原 case 已是下列结构可直接使用。缺字段保持 null/缺失，不凭记忆补文献、引文、语境或覆盖。
+3. 调用图追踪并写最终 `/app/output/result.json`：
 
 ```bash
-python scripts/search_cli.py --corpus examples/corpus.json --query-file examples/query.json --out ./out
-python scripts/bench_citation.py   # 8 scenarios: one per tracing property plus FP guards
+python /skills/weekly-skill/scripts/search_cli.py \
+  --case /app/work/citation_case.json --out /app/output
 ```
 
-The engine lives in `scripts/search.py` (importable: `build_index(corpus)`,
-`run_query(index, query)`, `search(spec)`). Exit codes: `0` ok — including an honest
-no-edge record; `5` refused; `2` usage.
+4. 核对 `seed`、逐跳 `paths`、`citation_edges`、`associations`、`identity_merges`、`source_status`、`limits`。只有结构已知时才运行；缺 seed 得到结构化 refusal，不编造结果。
 
-## Output contract
-
-`--out` receives:
-
-- `index.json` — the index: per record `text`, `paragraphs`, `terms`; `order`; and
-  `corpus_sha256`. Kept for replay.
-- `result.json` — per probe: `query` (normalised), `index_sha256`,
-  `documents_indexed`, `hits[]` whose `passages[]` quote the citation edges with
-  `{paragraph, start, end, quote}` verbatim locators, `empty`, and on a no-edge
-  probe an honest `note`; skipped duplicate exports are named under `skipped` with
-  a `search.doc_skipped` finding.
-
-A refusal run writes `result.json` with `status: undetermined` and a named refusal —
-a refusal is a result, not a crash.
-
-## Refusal and finding index
-
-| id | severity | when |
-|-|-|-|
-| `search.engine_error` | high | 搜索引擎内部异常——拒收并写 result.json，绝不 traceback |
-| `search.spec_not_object` | high | case.json 不是 JSON 对象——拒收 |
-| `search.spec_unreadable` | high (exit 5) | corpus / query file unreadable or not the declared JSON shape |
-| `search.empty_corpus` | high (exit 5) | corpus missing, not a list, or nothing indexable (skip reasons listed) |
-| `search.index_malformed` | high (exit 5) | the index is not a readable index object — refused as a whole |
-| `search.empty_query` | high (exit 5) | a probe declares nothing searchable — refused, not run as a no-op |
-| `search.doc_skipped` | low | an export that is not a document, or a duplicate id (named) |
-
-## Minimal worked example (示意)
-
-Input: `examples/corpus.json` (6 entries, one duplicate export) +
-`examples/query.json` (`{"all": ["cites: seed-2019"]}` — the forward probe).
-
-示意 output (abridged — an illustrative sketch of the shape, not a formal case
-result; values are from a real run of the example):
-
-```json
-{"ok": true, "empty": false,
- "query": {"all": ["cites: seed-2019"], "any": []},
- "index_sha256": "1055176d39603db6", "documents_indexed": 5,
- "hits": [
-  {"doc_id": "follow-2021", "score": 1,
-   "matched_terms": ["cites: seed-2019"],
-   "passages": [
-    {"term": "cites: seed-2019",
-     "locator": {"paragraph": 2, "start": 0, "end": 16,
-                 "quote": "cites: seed-2019"}}]},
-  {"doc_id": "follow-2023", "score": 1, "matched_terms": ["cites: seed-2019"]}],
- "skipped": [{"index": 5, "reason": "duplicate doc id 'follow-2021'; the entry is "
-              "skipped rather than silently merged"}]}
-```
-
-The parallel work does not appear — it cites the method, not the seed, and the
-forward probe does not relax that. The lineage probe
-(`{"all": ["cites: meth-2014"]}`) returns follow-2021 and parallel-2022, each
-quoting its own edge; the probe `{"all": ["cites: parallel-2022"]}` returns
-`empty: true` — nobody cites the parallel work in this snapshot.
-
-## Limits
-
-- **Edges are what the snapshot records.** The engine traces edges present in the
-  indexed text; a source that hides reference lists yields honest empties, not
-  inferred links.
-- **Identity is token-level.** Same-work merging across preprint/conference/journal
-  versions works through the shared id token; ambiguous name variants need a merge
-  decision recorded by the caller.
-- **Substring matching cannot see negation.** "does not cite the seed" contains
-  neither `cites:` + seed id as an edge line, but keep such prose free of edge
-  tokens anyway.
-- **One condition set per probe.** `all` + `any` only; multi-hop tracing is a
-  battery of per-hop probes, each recorded and replayable.
-- **Passages are capped** at 20 per record — enough to verify, not to read.
-
-## Failure handling
-
-| symptom | what to do |
-|-|-|
-| `search.empty_corpus` (exit 5) | the corpus file holds no records — fix shape or path; the engine never searches an empty index |
-| `search.index_malformed` (exit 5) | rebuild with `--corpus` instead of `--index`; a partial index is refused, not patched |
-| `search.empty_query` (exit 5) | a probe needs at least one term — an empty probe is refused, not run |
-| `search.doc_skipped` | drop the duplicate export or fix the entry shape; the rest is indexed |
-| a forward probe returns empty for a work you know is cited | the edge line is absent from the snapshot text — record it as a coverage gap of the source, never as "no citations" without the snapshot as evidence |
-
-## Verification
+本地最小演示（合成数据，非正式 case）：
 
 ```bash
-python scripts/bench_citation.py   # 8 scenarios
+python scripts/search_cli.py --case examples/citation_case.json --out ./out
 ```
 
-All 8 pass on this machine: backward edges quote the seed's reference line, the
-forward probe returns exactly the edge-carrying records, the lineage probe surfaces
-the parallel work, a no-edge record is an honest empty, duplicate exports are named,
-locators are verbatim, and the CLI example plus the exit-5 refusal contract hold.
+## 结构化输入约定
 
-## Routing
+```json
+{
+  "case_id": "caller-id",
+  "mode": "citation",
+  "output_contract": ["case_id", "candidates", "paths", "status", "custom_field"],
+  "custom_field": "preserved verbatim",
+  "seed_id": "10.1000/seed",
+  "works": [
+    {"id": "seed", "doi": "10.1000/seed", "title": "Seed", "year": 2024,
+     "version_group": "family-seed", "source": "crossref"},
+    {"id": "follow", "doi": "10.1000/follow", "title": "Follow-up", "source": "openalex"}
+  ],
+  "edges": [
+    {"citing_id": "follow", "cited_id": "10.1000/seed", "source": "openalex",
+     "source_record_id": "openalex-follow-ref-1",
+     "context": "verbatim retained citing passage if actually supplied",
+     "context_locator": {"record": "follow", "field": "references[0]"}}
+  ],
+  "max_depth": 2, "direction": "both", "max_nodes": 200,
+  "source_status": {"openalex": {"status": "ok"}}
+}
+```
 
-- **This skill** when expanding a seed paper along citation edges with per-edge
-  evidence and dedup.
-- For keyword-first academic retrieval — use `p66-search-academic`.
-- For screening the expanded set against criteria — use `p57-search-systematic`.
-- For synthesising the expanded set into a review — use `p64-review-generate`.
+也接受 work 内的 `references` 与 `referenced_works`（该 work 引用别人）、`citations` 与 `cited_by`（别人引用该 work）、旧记录文本中的逐行 `refs:` 与 `cites:`。显式边中的 `citing_id` 和 `cited_id` 永远按引用语义解析，**不是遍历方向**。来源不同但相同 edge 的记录会按 source、context、record id 留谱系；完全相同的导出边只计一次并命名。
 
-## Requirements
+### 身份规则与可仲裁性
 
-Python 3.9+ (3.14 verified); standard library only — no packages to install.
+- 规范化 DOI 会去掉 resolver 前缀、转小写；标题去变音符/标点、统一空白。
+- 精确 DOI 和明确 `version_group`、`work_family` 或 `canonical_work_id` 先分组；版本组允许预印本和期刊 DOI 不同，二者都保留。
+- 标题完全相同：需作者姓+名首字母重叠、双方都无作者，或显式版本组；标题模糊相似度须 `>=0.94` 且有作者重叠。两份记录有年份时间隔最多 1 年。
+- 双方都声明不同 DOI 时禁止普通模糊合并；并查集 Union 前还检查组间 DOI，防止“无 DOI 中间记录”把两个不同工作传递合并。被否决或歧义的项留在 limits/decision 中等待人工仲裁。
 
-## 创新增益
+## 主要输出
 
-本 Skill 相比通用 Agent 的核心新增能力：
+- `seed`、`candidates[]`：工作元数据、`version_records`、`conflicting_metadata`、depth、direct/indirect、推荐理由、`shortest_path`。
+- `citation_edges[]`：`edge_id`、`citing_id`、`cited_id`、`direction`、`source`、`source_record_id`、`citation_context`、`context_locator`。
+- `paths[]`：可由 edge 表逐跳复核的最短路径。
+- `associations[]`：`co_citation`、`bibliographic_coupling` 或两者，含 shared citing works/references/edge ids。
+- `network_summary`、`coverage`、`source_status`、停止原因。
+- `identity_merges`、`duplicate_edges`、`evidence_records`、`findings`、`limits`、`uncertainty`、`change_log`、`snapshot_sha256`。
+- 顶级 `case_id` 原位保留。`output_contract` 支持字段数组、对象键或单字符串；引擎字段优先，其他调用方字段保留，未知必需字段写 null 并加入 limits，不静默漏字段。
 
-1. **规则优先级库**：每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时由优先级决定胜者且双方都留痕——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改动——如果仍有改动说明规则间存在冲突，这是一个可计算的 self-check。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，审计者可以逐条复核或撤销任何单条修改。
+状态与退出码：`clean→0`；数据仍可用但有预算截断、源缺口或高严重性问题 `review→3`；不能确定 seed/读取输入等 `undetermined→5`；CLI 用法错误 `2`。refusal 也写 `result.json`，绝不把 refusal 改写为 clean。
 
-bench 目录下的 citation 是上述能力的回归证据（见 Verification 节 场景，clean 基线必须零发现）。
+## Finding 与 refusal 索引
 
-## 生态贡献
+| id | 真实触发 |
+|-|-|
+| `citation.seed_unresolved` | seed 缺失或标识歧义，undetermined |
+| `citation.engine_error` | 图引擎异常，undetermined |
+| `citation.budget_stopped` | max_nodes 截断，停止原因保留 |
+| `citation.identity_ambiguous` | 一个标识映射多个身份簇，需仲裁 |
+| `citation.context_missing` | edge 没有 retained citation context，不补造 |
+| `citation.edge_deduplicated` | 完全相同的 edge 导出只保留一次 |
+| `search.spec_unreadable` | case/corpus/query/index JSON 不可读，exit 5 |
+| `search.spec_not_object` | case 不是 JSON 对象，exit 5 |
+| `search.engine_error` | 旧引擎异常，exit 5 |
+| `search.empty_corpus` | 无可索引记录，exit 5 |
+| `search.index_malformed` | index 结构不完整，exit 5 |
+| `search.empty_query` | query 无可检索内容，exit 5 |
+| `search.doc_skipped` | 旧路径 malformed/duplicate doc 被命名 |
 
-- **SKILL.md** 包含用途、适用条件、调用方式、输入输出、异常处理、限制和自查方法
-- **scripts/** 纯标准库可独立导入，规则库可通过 spec 配置扩展
-- **examples/** 提供最小调用示例和示意输出
-- **bench/** 回归套件可独立复跑验证
+## 旧版兼容调用
 
+```bash
+python scripts/search_cli.py --corpus examples/corpus.json \
+  --query-file examples/query.json --out ./out-legacy
+```
+
+这条路径输出 hits/passages，其中 quote 可由文本偏移复核。它不替代图追踪输出。
+
+## 方法来源如何落地（不是只附链接）
+
+- **OpenAlex work.py（ourresearch/openalex-guts）** 将 `referenced_works`、`cited_by_api_url` 和 `related_works` 分开。这里对应实现为：真实 references/citations 进入双向 edge 表，BFS 路径只沿边；共被引/耦合依据放在 `associations`，绝不混成引用事实。
+  https://github.com/ourresearch/openalex-guts/blob/main/models/work.py
+- **Zotero duplicates.js（zotero/zotero）** 实际组合 DOI/ISBN 精确键、标题去变音符/标点、作者姓+名首字母、±1 年与 DisjointSetForest。这里在其思路上加入 DOI 冲突否决、显式版本组与组间传递冲突检查，并让所有 merge decision 可回放。
+  https://github.com/zotero/zotero/blob/main/chrome/content/zotero/xpcom/duplicates.js
+
+## 异常与限制
+
+- snapshot 没边只会得出“当前 retained graph 无记录”，不证明论文在现实中零被引。来源 timeout/permission/malformed 必须保留为覆盖缺口。
+- 缺 `citation_context` 不妨碍验证已知 edge id/来源，但会标 `citation.context_missing`；绝不从摘要或标题编造引用语境。
+- path 是 retained graph 内按确定顺序求出的最短链，不保证所有历史 API 路径、全文中的隐含关系或全域最短链。
+- 图算法不执行远程检索、绕过权限、下载全文或评价撤稿科学结论。外部 API 快照时间以材料为准。
+
+## Requirements 与可复用资源
+
+Python 3.9+，仅标准库。`scripts/citation_graph.py` 可独立 `run(spec)`；`search_cli.py` 保留旧接口；`examples/citation_case.json` 是可改写的合成输入。
+
+可选作者核验（不是 runtime 必需步骤）：
+
+```bash
+python scripts/bench_citation.py
+```
+
+当前套件 21 个场景，含旧路径回归、手工小图复算、DOI/版本否决、预算停止、契约/退出码、冷导入与确定性；结果写 `scripts/report_citation.json`。

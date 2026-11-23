@@ -7,6 +7,71 @@
       "why": ""
     },
     {
+      "scenario": "tracker_closed_classification",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_cross_timezone_exact",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_date_semantics_and_lag",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_version_and_retraction_not_new",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_version_mirror_dedup",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_idempotent_replay",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_read_tracked_pause",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_failure_holds_watermark",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_undated_holds_watermark",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_imprecise_month_boundary",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_window_discontinuity",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_missing_window_refusal",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "tracker_case_contract_cold_deterministic",
+      "pass": true,
+      "why": ""
+    },
+    {
       "scenario": "version_merge_key",
       "pass": true,
       "why": ""
@@ -43,7 +108,7 @@
     }
   ],
   "totals": {
-    "passed": 8,
-    "of": 8
+    "passed": 21,
+    "of": 21
   }
 }

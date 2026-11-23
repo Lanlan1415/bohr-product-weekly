@@ -7,6 +7,66 @@
       "why": ""
     },
     {
+      "scenario": "federated_closed_counts",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_native_query_translation",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_exact_and_fuzzy_dedup",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_distinct_doi_and_transitive_veto",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_version_merge_lineage",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_conflicts_preserved",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_unique_overlap_and_fields",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_source_failure_degrades",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_record_rejection_and_filter",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_clean_single_source",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_no_sources_refusal",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "federated_case_contract_cold_deterministic",
+      "pass": true,
+      "why": ""
+    },
+    {
       "scenario": "source_coverage",
       "pass": true,
       "why": ""
@@ -43,7 +103,7 @@
     }
   ],
   "totals": {
-    "passed": 8,
-    "of": 8
+    "passed": 20,
+    "of": 20
   }
 }

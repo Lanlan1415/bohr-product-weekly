@@ -1,0 +1,36 @@
+{
+  "case_id": "demo-multidb-not-a-formal-case",
+  "mode": "multi_db",
+  "output_contract": ["case_id", "merged_records", "query_translations", "source_coverage", "merge_decisions", "count_reconciliation", "status", "uncertainty"],
+  "required_sources": ["crossref", "europepmc", "openalex"],
+  "required_fields": ["title", "doi", "authors", "year", "journal"],
+  "query": {"title": "demonstration detection assay", "author": "J. Doe", "from_date": "2024-01-01", "until_date": "2026-12-31"},
+  "sources": {
+    "crossref": {
+      "status": "ok",
+      "query": {"query.bibliographic": "demonstration detection assay"},
+      "request": {"rows": 20},
+      "raw_response_ref": "demo/crossref-response.json",
+      "records": [
+        {"id": "cr-demo", "DOI": "10.1000/demo-assay", "title": "Demonstration Detection Assay", "author": [{"given": "Jane", "family": "Doe"}], "issued": {"date-parts": [[2025, 4, 1]]}, "container-title": ["Journal of Demonstrations"]}
+      ]
+    },
+    "europepmc": {
+      "status": "ok",
+      "query": "TITLE:demonstration AND AUTH:Doe",
+      "raw_response_ref": "demo/europepmc-response.json",
+      "records": [
+        {"id": "ep-demo", "pmid": "DEMO001", "doi": "10.1000/demo-assay", "title": "Demonstration detection assay", "authors": ["J. Doe"], "year": 2024},
+        {"id": "ep-only", "doi": "10.1000/demo-only", "title": "Europe PMC-only validation cohort", "authors": ["A. Smith"], "year": 2025}
+      ]
+    },
+    "openalex": {
+      "status": "ok",
+      "query": {"search": "demonstration detection assay"},
+      "raw_response_ref": "demo/openalex-response.json",
+      "records": [
+        {"id": "oa-demo", "title": "Demonstration Detection Assays", "authors": [{"display_name": "Jane Doe"}], "publication_year": 2025}
+      ]
+    }
+  }
+}

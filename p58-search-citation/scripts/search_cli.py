@@ -22,6 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import search  # noqa: E402
+import citation_graph  # noqa: E402
 
 
 def _write_result(out_dir: Path, result: dict) -> None:
@@ -132,10 +133,32 @@ def _echo_contract(result: dict, case: dict) -> dict:
     cid = case.get("case_id")
     if cid is not None:
         result["case_id"] = cid
-    for key in (case.get("output_contract") or []):
+    contract = case.get("output_contract") or []
+    if isinstance(contract, dict):
+        fields = list(contract)
+    elif isinstance(contract, str):
+        fields = [contract]
+    elif isinstance(contract, list):
+        fields = contract
+    else:
+        fields = []
+        limits.append("output_contract must be a field list, object, or string")
+    aliases = {
+        "results": "candidates", "papers": "candidates", "citation_results": "candidates",
+        "retrieval_results": "candidates", "evidence": "evidence_records",
+        "citation_network": "network_summary", "related_works": "associations",
+        "deduplication": "identity_merges", "status_explanation": "limits",
+    }
+    for key in fields:
+        if not isinstance(key, str) or not key:
+            limits.append("output_contract contains a non-string or empty field name")
+            continue
         if key in result:
             continue
-        if key in case and key not in _BULKY:
+        if aliases.get(key) in result:
+            result[key] = result[aliases[key]]
+            continue
+        if key in case:
             result[key] = case[key]
             continue
         result[key] = None
@@ -152,6 +175,16 @@ def _run_case(case_path: Path, out_dir: Path) -> dict:
         return _refused(out_dir, "search.spec_unreadable", f"case file not readable: {exc}")
     if not isinstance(case, dict):
         return _refused(out_dir, "search.spec_not_object", "case file is not a JSON object")
+    if citation_graph.is_citation_spec(case):
+        try:
+            result = _echo_contract(citation_graph.run(case), case)
+        except Exception as exc:
+            result = _echo_contract({"schema_version": citation_graph.SCHEMA_VERSION,
+                                     "status": "undetermined", "refusal": {
+                                         "rule": "citation.engine_error", "message": str(exc)[:240]},
+                                     "limits": ["no graph result was completed"]}, case)
+        _write_result(out_dir, result)
+        return result
     spec: dict = {}
     cf = case.get("index") or case.get("corpus") or case.get("documents")
     if cf is not None:
@@ -169,8 +202,8 @@ def _run_case(case_path: Path, out_dir: Path) -> dict:
             json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
     if isinstance(result, dict):
         result = _echo_contract(result, case)
-        # preserve engine status; refine to 'clean' if it ran without refusals
-        if result.get("status") == "undetermined":
+        # A successful legacy search has no status; never turn a refusal into clean.
+        if "status" not in result:
             result["status"] = "clean"
     _write_result(out_dir, result)
     return result

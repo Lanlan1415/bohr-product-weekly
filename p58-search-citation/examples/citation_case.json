@@ -1,0 +1,23 @@
+{
+  "case_id": "demo-citation-graph-not-a-formal-case",
+  "mode": "citation",
+  "output_contract": ["case_id", "seed", "candidates", "citation_edges", "paths", "associations", "identity_merges", "status", "uncertainty"],
+  "seed_id": "10.1000/seed-demo",
+  "max_depth": 2,
+  "direction": "both",
+  "max_nodes": 50,
+  "works": [
+    {"id": "seed", "version_group": "demo-family-seed", "doi": "10.1000/seed-demo", "title": "Demonstration graph neural potential", "authors": ["A. Researcher"], "year": 2024, "source": "crossref"},
+    {"id": "seed-v1", "version_group": "demo-family-seed", "version": "v1", "doi": "10.48550/arxiv.demo", "title": "Demonstration graph neural potential", "authors": ["A. Researcher"], "year": 2023, "source": "arxiv"},
+    {"id": "method", "doi": "10.1000/method-demo", "title": "Underlying local descriptor", "year": 2020, "source": "crossref"},
+    {"id": "follow", "doi": "10.1000/follow-demo", "title": "Equivariant improvement", "year": 2025, "source": "openalex"},
+    {"id": "parallel", "doi": "10.1000/parallel-demo", "title": "Alternative local potential", "year": 2024, "source": "europepmc"}
+  ],
+  "edges": [
+    {"citing_id": "seed", "cited_id": "method", "source": "crossref", "source_record_id": "demo-ref-1", "context": "We use the local descriptor.", "context_locator": {"record": "seed", "field": "reference[0]"}},
+    {"citing_id": "follow", "cited_id": "10.1000/seed-demo", "source": "openalex", "source_record_id": "demo-ref-2", "context": "Improves the seed potential.", "context_locator": {"record": "follow", "field": "reference[0]"}},
+    {"citing_id": "follow", "cited_id": "method", "source": "openalex", "source_record_id": "demo-ref-3", "context": "Uses the descriptor.", "context_locator": {"record": "follow", "field": "reference[1]"}},
+    {"citing_id": "parallel", "cited_id": "method", "source": "europepmc", "source_record_id": "demo-ref-4", "context": "Independent descriptor-based alternative.", "context_locator": {"record": "parallel", "field": "reference[0]"}}
+  ],
+  "source_status": {"crossref": {"status": "ok"}, "openalex": {"status": "ok"}, "europepmc": {"status": "ok"}, "arxiv": {"status": "ok"}}
+}

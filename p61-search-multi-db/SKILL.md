@@ -1,197 +1,151 @@
 ---
 name: search-multi-db
 description: >
-  多数据库联合检索：federate database exports over the shared index+query engine.
-  Every record carries a source token (`src: crossref` / `src: europepmc`), so
-  per-source probes count recall per database exactly; a source absent from the
-  snapshot is an honest empty — the coverage gap is named, never silently swallowed.
-  The normalised DOI token (`doi-10-…`, dots and slashes become dashes) is the merge
-  key present on every source record of the same work, so cross-source duplicates
-  merge on a checkable token rather than a fuzzy guess. A field a source does not
-  export (journal, year) stays honestly unmatched — no defaulted values. Every hit
-  carries passages with verbatim locators, every probe records the normalised query
-  + index fingerprint, and reruns are byte-identical.
-  Empty corpus, malformed index, empty query → exit-5 refusals, never crashes.
-  Use for per-source orchestration, field mapping, dedup and merge over an
-  organiser-provided multi-source snapshot.
+  多数据库联合检索。用于把 retained Crossref/Europe PMC/OpenAlex/Semantic Scholar/arXiv 导出
+  规范为可复算联合结果：逐库原生查询翻译、DOI/标题模糊去重、显式版本合并、字段级来源谱系、
+  冲突元数据保留、单库独有/重合覆盖及闭合计数。不执行未授权实时抓取，不把拼接记录叫去重。
 ---
 
 # search-multi-db（多数据库联合检索）
 
-The promise: one merged record set where every field can be traced back to its
-source. Source tokens, merge keys and mapped field tokens are quoted from the
-records themselves, so per-source recall, cross-source dedup and field gaps are all
-checkable probe results — not a silently concatenated pile.
+主引擎为 multi-db-search/v2；旧 file-search/v1 文本探针仍保留兼容。主引擎处理**实际 retained exports**，不做网络调用。`query_translations` 是计划/配置，`executed_query` 只记录材料里真实提供的查询，不把生成语句谎称已执行。
 
-| property | enforcement |
+## 核心能力
+
+| rubric | 实际机制 |
 |-|-|
-| 按源编排 | `src: <db>` tokens make per-source recall a probe (`all: ["src: crossref"]`); each database's yield is counted separately, not mixed |
-| 缺源即缺 | a source with no records in the snapshot returns an honest empty probe — the gap is a named result, not a silent omission |
-| 合并有键 | the normalised DOI token is present on every source record of the same work; the key probe returns all views, so the merge is token-checkable |
-| 字段缺口可见 | a field a source does not export stays unmatched (`journal: …` finds only the records that have it) — missing is never defaulted |
-| 复算一致 | every probe records the normalised query + `index_sha256`; reruns are byte-identical, and skipped malformed entries are named |
+| 多源查询翻译 | Crossref `query.bibliographic`、`query.author` 与 pub-date filter；Europe PMC `TITLE`、`AUTH`、`FIRST_PDATE`；OpenAlex `search`、`title.search`、publication_date filter；Semantic Scholar Graph 字段；arXiv `ti` 与 `au` |
+| 来源覆盖 | required sources 逐库记录 status、raw response ref、pages/request、records seen/valid/included/rejected/filtered、合并后 work ids |
+| 字段标准化 | 支持 Crossref `DOI`、`author`、`container-title`、`issued`，OpenAlex `display_name`、`publication_year`、`externalIds`，以及 Europe PMC PMID/日期等常见结构与通用字段 |
+| DOI/标题去重 | 规范 DOI/PMID/PMCID/arXiv 精确键；标题归一及 `>=0.94` 模糊匹配 + 作者重叠 + ±1 年；不同 DOI 与传递桥接均否决 |
+| 版本合并 | 仅显式 `version_group`、`work_family` 或 `canonical_work_id` 可连通不同 DOI 的预印本/期刊版本；所有版本和 DOI 都保留 |
+| 冲突与谱系 | 每个字段保存所有 source/record/value/raw locator；展示值按 source priority 稳定选择，alternative values 永不丢弃；raw record 原样附在 source_lineage |
+| 联合计数 | `identified = valid + rejected`；`valid = included + filtered`；`included = unique + duplicate observations`；`unique = single-source + multi-source`，并附逐式 closed |
+| 异常降级 | timeout/permission/missing/error、坏记录、字段缺失、identity conflict 显式输出；不静默把部分联合集合称为完整 |
 
-## Data shapes
+## 运行流程（结束于 deliverable）
 
-Each source record carries its origin, its normalised identifiers and its mapped
-fields:
-
-```json
-{"documents": [
-  {"id": "xref-001",
-   "text": "id: xref-001\nsrc: crossref\n"
-           "title: Nanopore direct RNA detection at single-molecule resolution\n"
-           "doi: doi-10-1038-s41592-026-01234-5\nyear: 2026\njournal: Nature Methods"}
-]}
-```
-
-```json
-{"all": ["doi-10-1038-s41592-026-01234-5"]}
-```
-
-Conventions: identifiers are normalised to dash form (`doi-10-1038-…`) so the same
-work from different databases shares one merge-key token; missing fields are
-omitted from the record text, never filled with placeholders. Matching is
-case-insensitive substring; CJK titles stay whole as searchable terms.
-
-## Workflow (per-source queries → map fields → merge by key → report gaps)
-
-1. **Per-source queries** — adapt the query to each database's tokens and probe
-   `src: <db>` to record what each source returned.
-2. **Field mapping** — normalise identifiers to the shared dash form and map fields
-   (author/journal/year/type) to the record's labelled lines; a source that does not
-   export a field leaves it out.
-3. **Merge** — probe each DOI token to collect the source records of one work; merge
-   field values by the documented priority and keep each value's source line.
-4. **Gap report** — probe the sources and fields the task required; every honest
-   empty is a named gap (source missing, field missing), not a swallowed one.
-5. **Audit** — every merged record traces back: source → probe → quoted field line.
+1. 读取 `/input/case.json`、`task.md` 与所有实际源响应，固定 required sources、字段和原始请求。保留 `case_id` 与完整 `output_contract`；正式固定 cases 未随公开 challenge 下载，不使用示例代替。
+2. 将真实快照整理成 `/app/work/multidb_case.json`，`mode` 设为 `multi_db`。没有的值留空；不要把另一个库的字段猜填进来。
+3. 运行并交付 `/app/output/result.json`：
 
 ```bash
-python scripts/search_cli.py --corpus examples/corpus.json --query-file examples/query.json --out ./out
-python scripts/bench_multidb.py   # 8 scenarios: one per federation property plus FP guards
+python /skills/weekly-skill/scripts/search_cli.py \
+  --case /app/work/multidb_case.json --out /app/output
 ```
 
-The engine lives in `scripts/search.py` (importable: `build_index(corpus)`,
-`run_query(index, query)`, `search(spec)`). Exit codes: `0` ok — including an honest
-gap record; `5` refused; `2` usage.
+4. 核对每条记录的 `source_records → field_provenance → merge_decisions → metadata_conflicts`，以及 `count_reconciliation.closed=true`。缺源仍可交付带缺口的 `review` 结果，但不能声称全域完整。
 
-## Output contract
-
-`--out` receives:
-
-- `index.json` — the index: per record `text`, `paragraphs`, `terms`; `order`; and
-  `corpus_sha256`. Kept for replay.
-- `result.json` — per probe: `query` (normalised), `index_sha256`,
-  `documents_indexed`, `hits[]` with `matched_terms` and `passages[]` quoting the
-  source / DOI / field lines verbatim, `empty`, and on a gap an honest `note`;
-  skipped entries are named under `skipped` with a `search.doc_skipped` finding.
-
-A refusal run writes `result.json` with `status: undetermined` and a named refusal —
-a refusal is a result, not a crash.
-
-## Refusal and finding index
-
-| id | severity | when |
-|-|-|-|
-| `search.engine_error` | high | 搜索引擎内部异常——拒收并写 result.json，绝不 traceback |
-| `search.spec_not_object` | high | case.json 不是 JSON 对象——拒收 |
-| `search.spec_unreadable` | high (exit 5) | corpus / query file unreadable or not the declared JSON shape |
-| `search.empty_corpus` | high (exit 5) | corpus missing, not a list, or nothing indexable (skip reasons listed) |
-| `search.index_malformed` | high (exit 5) | the index is not a readable index object — refused as a whole |
-| `search.empty_query` | high (exit 5) | a probe declares nothing searchable — refused, not run as a no-op |
-| `search.doc_skipped` | low | an export that is not a document, or a duplicate id (named) |
-
-## Minimal worked example (示意)
-
-Input: `examples/corpus.json` (4 source records) + `examples/query.json`
-(`{"all": ["doi-10-1038-s41592-026-01234-5"]}` — the merge-key probe).
-
-示意 output (abridged — an illustrative sketch of the shape, not a formal case
-result; values are from a real run of the example):
-
-```json
-{"ok": true, "empty": false,
- "query": {"all": ["doi-10-1038-s41592-026-01234-5"], "any": []},
- "index_sha256": "3d500c26974d9783", "documents_indexed": 4,
- "hits": [
-  {"doc_id": "xref-001", "score": 1,
-   "matched_terms": ["doi-10-1038-s41592-026-01234-5"],
-   "passages": [
-    {"term": "doi-10-1038-s41592-026-01234-5",
-     "locator": {"paragraph": 3, "start": 5, "end": 35,
-                 "quote": "doi-10-1038-s41592-026-01234-5"}}]},
-  {"doc_id": "epmc-001", "score": 1,
-   "matched_terms": ["doi-10-1038-s41592-026-01234-5"]}]}
-```
-
-The merge key hits both source records of the same work — two views, one work, and
-the merge is checkable token by token. The source gap probe
-(`{"all": ["src: semanticscholar"]}`) returns `empty: true` with a note: the missing
-database is named, not silently swallowed. The journal probe finds only the record
-that actually exports a journal line.
-
-## Limits
-
-- **Federation is token-level.** The engine merges on the normalised identifier
-  token; fuzzy title/author merging needs a human arbitration step recorded with its
-  evidence quotes.
-- **Field semantics come from the mapping.** `year:` means the mapped year token as
-  recorded per source; conflicting values across sources are resolved by the
-  documented priority, with both source lines quotable.
-- **Substring matching cannot see negation.** Keep "no journal" prose out of
-  records — absence is expressed by omitting the field line.
-- **One condition set per probe.** `all` + `any` only; a cross-source query is a
-  battery of per-source and per-key probes.
-- **Passages are capped** at 20 per record — enough to verify, not to read.
-
-## Failure handling
-
-| symptom | what to do |
-|-|-|
-| `search.empty_corpus` (exit 5) | the export file holds no records — fix shape or path; the engine never searches an empty index |
-| `search.index_malformed` (exit 5) | rebuild with `--corpus` instead of `--index`; a partial index is refused, not patched |
-| `search.empty_query` (exit 5) | a probe needs at least one term — an empty probe is refused, not run |
-| `search.doc_skipped` | fix the entry shape; the rest is indexed |
-| a source or field you required returns empty | that is the gap — report it with the probe record; do not loosen the query to manufacture coverage |
-
-## Verification
+本地合成演示（不是正式答案）：
 
 ```bash
-python scripts/bench_multidb.py   # 8 scenarios
+python scripts/search_cli.py --case examples/multidb_case.json --out ./out
 ```
 
-All 8 pass on this machine: the merge key collects both source records, per-source
-probes count recall exactly, a missing source and a missing field are honest
-empties, the mapped year token answers across records, locators are verbatim, and
-the CLI example plus the exit-5 refusal contract hold.
+## 输入结构
 
-## Routing
+```json
+{
+  "case_id": "caller-id",
+  "mode": "multi_db",
+  "output_contract": ["case_id", "merged_records", "count_reconciliation", "custom_field"],
+  "custom_field": {"preserved": true},
+  "required_sources": ["crossref", "europepmc", "openalex"],
+  "required_fields": ["title", "doi", "authors", "year", "journal"],
+  "query": {"title": "assay title", "author": "J. Doe",
+            "from_date": "2024-01-01", "until_date": "2026-12-31"},
+  "sources": {
+    "crossref": {
+      "status": "ok",
+      "query": {"query.bibliographic": "actually recorded request"},
+      "request": {"rows": 20},
+      "raw_response_ref": "materials/crossref.json",
+      "pages_retained": [1],
+      "records": [
+        {"id": "cr-1", "DOI": "10.1000/example", "title": "Example",
+         "author": [{"given": "Jane", "family": "Doe"}],
+         "issued": {"date-parts": [[2025, 4, 1]]}, "container-title": ["Journal A"]}
+      ]
+    },
+    "europepmc": {"status": "timeout", "error": "actual deadline error", "records": []}
+  }
+}
+```
 
-- **This skill** when several database exports must be orchestrated, mapped, deduped
-  and merged with per-field provenance.
-- For single-source keyword retrieval — use `p66-search-academic`.
-- For tracing citations across the merged set — use `p58-search-citation`.
-- For screening the merged set against criteria — use `p57-search-systematic`.
+也可用扁平 `records` 或 `documents`，每条带 `source` 或 `database`。`exclude_terms` 或记录 `include:false` 会产生有姓名的 filtered record；否则源响应记录视为已由 source-native query 命中，原因明写 `screening_reason`，不再假装进行了全文纳排。
 
-## Requirements
+## 去重、版本与合并的边界
 
-Python 3.9+ (3.14 verified); standard library only — no packages to install.
+1. DOI 去 resolver/小写规范化后精确分组；PMID/PMCID/arXiv 可作为次级精确键，但不能推翻冲突 DOI。
+2. 标题变音符和标点归一。完全相同标题需作者姓+名首字母重叠、双方无作者，或明确版本组；模糊标题阈值 `0.94`，并要求作者重叠与年份差不超过 1。
+3. 双方都声明不同 DOI 时普通模糊规则拒绝合并。Union 前检查组间所有 DOI，避免缺失 DOI 的记录成为错误桥梁。
+4. 不同 DOI 的预印本与期刊版只有显式版本关系才合并。展示 DOI 优先非 preprint，但 `identifiers.doi` 与 `version_records` 保留全部版本。
+5. 字段不是“择一后删其余”。`title`、`year`、`journal`、`type`、`authors` 的每个观察值都进入 `field_provenance`；不同值进入 `metadata_conflicts`，标明 selected value、稳定优先级和 alternatives。
 
-## 创新增益
+## 主要输出
 
-本 Skill 相比通用 Agent 的核心新增能力：
+- `merged_records[]` / `records[]`：唯一工作、所有源、原始记录谱系、标识符集合、版本、字段来源、冲突和筛选理由。
+- `query_translations[]`：库、原生翻译、材料中的 executed query、`retained_export_only`。
+- `source_coverage[]` 与 `coverage`：缺源、单库独有 work ids、pairwise overlap、required fields present/missing + work ids。
+- `merge_decisions[]`：精确/模糊/版本合并，含 similarity/shared creators/year gap；否决项也留记录。
+- `count_reconciliation`：全部计数及四条可复算等式；`duplicate_observations = included_source_records - unique_works`。
+- `evidence_records`、`rejected_records`、`filtered_records`、`findings`、`limits`、`uncertainty`、`change_log`、`snapshot_sha256`。
+- 顶级 `case_id` 原位保留。`output_contract` 数组/对象键/单字符串均可；引擎字段优先，其他调用方字段直通，未知必需字段写 null + limits。
 
-1. **规则优先级库**：每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时由优先级决定胜者且双方都留痕——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改动——如果仍有改动说明规则间存在冲突，这是一个可计算的 self-check。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，审计者可以逐条复核或撤销任何单条修改。
+退出码：`clean=0`、`review=3`、`undetermined=5`、usage=2。错误会有结构化 result，不会 traceback，也不会把 refusal 改成 clean。
 
-bench 目录下的 multidb 是上述能力的回归证据（见 Verification 节 场景，clean 基线必须零发现）。
+## Finding、refusal 与查询原语索引
 
-## 生态贡献
+| id | 真实触发/含义 |
+|-|-|
+| `multidb.no_sources` | 无源配置也无 retained 记录，undetermined |
+| `multidb.engine_error` | 联合引擎异常，undetermined |
+| `multidb.source_incomplete` | required source 缺失、timeout、permission 或 error |
+| `multidb.record_rejected` | 记录非对象或无 id/title，保留原因 |
+| `multidb.record_filtered` | 声明的 include/exclude 规则过滤，保留原因 |
+| `multidb.metadata_conflicts_retained` | 同字段多值，保留所有观察而非静默覆盖 |
+| `multidb.count_not_closed` | 任一计数恒等式未闭合，review |
+| `search.spec_unreadable` | case/corpus/query/index JSON 不可读，exit 5 |
+| `search.spec_not_object` | case 不是 JSON 对象，exit 5 |
+| `search.engine_error` | 旧引擎异常，exit 5 |
+| `search.empty_corpus` | 无可索引记录，exit 5 |
+| `search.index_malformed` | index 结构不完整，exit 5 |
+| `search.empty_query` | query 无可检索内容，exit 5 |
+| `search.doc_skipped` | 旧路径 malformed/duplicate doc 被命名 |
+| `query.bibliographic` | Crossref 的书目检索参数，不是 finding |
+| `query.author` | Crossref 的作者检索参数，不是 finding |
 
-- **SKILL.md** 包含用途、适用条件、调用方式、输入输出、异常处理、限制和自查方法
-- **scripts/** 纯标准库可独立导入，规则库可通过 spec 配置扩展
-- **examples/** 提供最小调用示例和示意输出
-- **bench/** 回归套件可独立复跑验证
+## 旧版兼容
 
+```bash
+python scripts/search_cli.py --corpus examples/corpus.json \
+  --query-file examples/query.json --out ./out-legacy
+```
+
+旧接口只是带 verbatim locators 的文本命中，不能代替多库身份归并。
+
+## 方法来源如何落地
+
+**Zotero `duplicates.js`** 的 DOI/ISBN 精确键、标题规范化、作者姓+首字母、±1 年与并查集直接启发了本地 identity pass。额外实现的不同 DOI 否决、跨组传递否决、显式版本组和字段级来源保留，针对多库联合检索，而不是复制 Zotero UI 行为。
+https://github.com/zotero/zotero/blob/main/chrome/content/zotero/xpcom/duplicates.js
+
+**OpenAlex `work.py`** 将 cited reference graph 与 related work 分开，提示本包把“同工作多观察”与“相关但不同工作”严格区分：只有证据键/版本关系进入 union；source overlap 只是计数，不会自动合并主题相似论文。
+https://github.com/ourresearch/openalex-guts/blob/main/models/work.py
+
+## 限制
+
+- API 查询字符串可构造，但本 Skill 不调度实时请求、分页抓取或限流重试；request/pages/raw response ref 只能来自实际材料。生成计划不是成功执行证据。
+- 标题模糊规则刻意保守。字幕变化大、作者全缺或版本关系未声明时可能需要人工仲裁；不会用主题相似冒充同文。
+- 某库 empty/timeout 只描述 retained snapshot；单库独有并不等于全域唯一，联合 unique count 不外推数据库总体覆盖率。
+
+## Requirements 与验证
+
+Python 3.9+，仅标准库。`scripts/federated_search.py` 支持独立 `run(spec)`；映射、去重、合并、examples 均可复用。
+
+可选作者核验（非 runtime 步骤）：
+
+```bash
+python scripts/bench_multidb.py
+```
+
+当前 20 个场景：旧接口、10 条手工跨库记录计数、原生翻译、精确/模糊/传递否决、版本谱系、冲突保留、缺源降级、坏记录、冷导入/契约/确定性。结果写 `scripts/report_multidb.json`。
