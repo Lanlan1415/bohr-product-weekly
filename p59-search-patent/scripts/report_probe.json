@@ -1,0 +1,295 @@
+{
+  "schema_version": "patent-probes/v1",
+  "probes": [
+    {
+      "probe": "example_contract_clean",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "unknown_number_clean_empty",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "inpadoc_scope_clean",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "malformed_corpus_json",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "empty_corpus",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "corpus_wrong_shape",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "missing_corpus_file",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "malformed_query_json",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "empty_query",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "unknown_query_field",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "invalid_query_date",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "number_alias_conflict",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "index_root_not_object",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "index_malformed_entry",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "index_duplicate_order",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "all_restricted_blocked_no_leak",
+      "expected_exit": 4,
+      "actual_exit": 4,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "mixed_restricted_review_no_leak",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "yellow_metadata_review_no_leak",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "current_status_unverified_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "dated_registry_verification_clean",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "claim_version_missing_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_missing_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "refusal_never_echoes_contract",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "priority_date_missing_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "invalid_document_date_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "metadata_conflict_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "source_license_unknown_review",
+      "expected_exit": 3,
+      "actual_exit": 3,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "non_object_case",
+      "expected_exit": 5,
+      "actual_exit": 5,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "cjk_source_locator_clean",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "deterministic_byte_replay",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "saved_index_replay",
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "result_json": true,
+      "traceback_free": true,
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 31,
+    "of": 31
+  },
+  "allowed_exits": [
+    0,
+    3,
+    4,
+    5
+  ],
+  "fixture_notice": "synthetic hostile probes; no official case output"
+}

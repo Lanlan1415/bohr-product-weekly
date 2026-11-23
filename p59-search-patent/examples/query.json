@@ -1,5 +1,5 @@
 {
- "all": [
-  "F101"
- ]
+  "family_of": "US 10,132,852 B2",
+  "family_scope": "simple",
+  "require_fields": ["publication_number", "priority_date", "claim_version", "source"]
 }

@@ -1,24 +1,28 @@
 {
- "documents": [
-  {
-   "id": "pat-US10132852B2",
-   "text": "id: pat-US10132852B2\nTitle: graphene coating composition.\nnumber: US10132852B2\nfamily: F101\nstatus: granted\ncpc: C09D\nmembers: US20160264451A1, EP3061620A1"
-  },
-  {
-   "id": "pat-EP3061620A1",
-   "text": "id: pat-EP3061620A1\nTitle: graphene coating composition (European application).\nnumber: EP3061620A1\nfamily: F101\nstatus: pending\ncpc: C09D"
-  },
-  {
-   "id": "pat-US9988776B2",
-   "text": "id: pat-US9988776B2\nTitle: ceramic thermal barrier coating.\nnumber: US9988776B2\nfamily: F202\nstatus: expired\ncpc: C04B"
-  },
-  {
-   "id": "pat-WO2017166469A1",
-   "text": "id: pat-WO2017166469A1\nTitle: graphene coating via spray pyrolysis (PCT application).\nnumber: WO2017166469A1\nfamily: F101\nstatus: pending\ncpc: C23C"
-  },
-  {
-   "id": "pat-EP3061620A1",
-   "text": "id: pat-EP3061620A1\nTitle: graphene coating composition (European application).\nnumber: EP3061620A1\nfamily: F101\nstatus: pending\ncpc: C09D"
-  }
- ]
+  "documents": [
+    {
+      "id": "pat-US10132852B2",
+      "text": "id: pat-US10132852B2\nTitle: graphene coating composition (synthetic fixture).\ndocument_type: patent\nnumber: US 10,132,852 B2\napplication_number: US 15/123,456\ngrant_number: US 10,132,852 B2\npriority_number: US 62/345,678\nfamily: F101\ninpadoc_family: I901\npriority_date: 2015-03-20\nfiling_date: 2016-03-17\npublication_date: 2018-11-20\nstatus: granted\nstatus_date: 2018-11-20\ncpc: C09D5/08\nmembers: US20160264451A1, EP3061620A1\nclaim_version: granted-2018-11-20\nclaims_source: synthetic USPTO facsimile fixture; claim page retained\nsource: synthetic USPTO facsimile snapshot\nsource_type: provided_facsimile\nsource_version: example-v2\nquery_date: 2026-01-15\nurl: https://example.invalid/patent/US10132852B2\nlicense: synthetic public-record fixture license\naccess: green"
+    },
+    {
+      "id": "pat-EP3061620A1",
+      "text": "id: pat-EP3061620A1\nTitle: graphene coating composition (European application fixture).\ndocument_type: patent\nnumber: EP3061620A1\napplication_number: EP16123456\nfamily: F101\ninpadoc_family: I901\npriority_date: 2015-03-20\nfiling_date: 2016-03-17\npublication_date: 2016-09-21\nstatus: pending\nstatus_date: 2026-01-15\ncpc: C09D5/08\nclaim_version: publication-2016-09-21\nclaims_source: synthetic EP publication fixture\nsource: synthetic EP publication snapshot\nsource_type: provided_snapshot\nsource_version: example-v2\nquery_date: 2026-01-15\nurl: https://example.invalid/patent/EP3061620A1\nlicense: synthetic public-record fixture license\naccess: green"
+    },
+    {
+      "id": "pat-WO2017166469A1",
+      "text": "id: pat-WO2017166469A1\nTitle: graphene coating via spray pyrolysis (PCT application fixture).\ndocument_type: patent\nnumber: WO 2017/166469 A1\napplication_number: WO2017US12345\nfamily: F103\ninpadoc_family: I901\npriority_date: 2016-03-17\nfiling_date: 2017-03-17\npublication_date: 2017-09-28\nstatus: pending\nstatus_date: 2026-01-15\ncpc: C23C16/00\nclaim_version: publication-2017-09-28\nclaims_source: WO merged OCR fixture; OCR merge boundary retained\nsource: synthetic WO merged OCR snapshot\nsource_type: provided_ocr\nsource_version: example-v2\nquery_date: 2026-01-15\nurl: https://example.invalid/patent/WO2017166469A1\nlicense: synthetic OCR fixture license; verify before display\naccess: green"
+    },
+    {
+      "id": "pat-US9988776B2",
+      "text": "id: pat-US9988776B2\nTitle: ceramic thermal barrier coating (synthetic fixture).\ndocument_type: patent\nnumber: US9988776B2\ngrant_number: US9988776B2\nfamily: F202\ninpadoc_family: I902\npriority_date: 2014-06-01\nfiling_date: 2015-05-30\npublication_date: 2018-06-05\nstatus: expired\nstatus_date: 2026-01-15\ncpc: C04B35/00\nclaim_version: granted-2018-06-05\nclaims_source: synthetic USPTO facsimile fixture\nsource: synthetic USPTO facsimile snapshot\nsource_type: provided_facsimile\nsource_version: example-v2\nquery_date: 2026-01-15\nurl: https://example.invalid/patent/US9988776B2\nlicense: synthetic public-record fixture license\naccess: green"
+    },
+    {
+      "id": "paper-graphene-comparison",
+      "text": "id: paper-graphene-comparison\nTitle: Graphene coating process: a scientific comparison paper (synthetic fixture).\ndocument_type: technical_paper\ndoi: 10.0000/example.graphene\nyear: 2021\njournal: Example Journal of Coatings\nsource: synthetic scientific comparison corpus\nsource_type: provided_paper\nsource_version: example-v2\nquery_date: 2026-01-15\nurl: https://example.invalid/paper/graphene\nlicense: synthetic paper fixture license\naccess: green"
+    },
+    {
+      "id": "pat-EP3061620A1",
+      "text": "id: pat-EP3061620A1\nTitle: graphene coating composition (European application fixture).\ndocument_type: patent\nnumber: EP3061620A1\napplication_number: EP16123456\nfamily: F101\ninpadoc_family: I901\npriority_date: 2015-03-20\nfiling_date: 2016-03-17\npublication_date: 2016-09-21\nstatus: pending\nstatus_date: 2026-01-15\ncpc: C09D5/08\nclaim_version: publication-2016-09-21\nclaims_source: synthetic EP publication fixture\nsource: synthetic EP publication snapshot\nsource_type: provided_snapshot\nsource_version: example-v2\nquery_date: 2026-01-15\nurl: https://example.invalid/patent/EP3061620A1\nlicense: synthetic public-record fixture license\naccess: green"
+    }
+  ]
 }

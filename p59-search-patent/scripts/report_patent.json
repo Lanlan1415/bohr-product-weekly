@@ -1,30 +1,45 @@
 {
-  "schema_version": "patent-bench/v1",
+  "schema_version": "patent-bench/v2",
   "scenarios": [
     {
-      "scenario": "number_lookup_exact",
+      "scenario": "example_cli_contract",
       "pass": true,
-      "why": ""
+      "why": "example must preserve case_id, contract fields, and actual change records"
+    },
+    {
+      "scenario": "inpadoc_family_expansion",
+      "pass": true,
+      "why": "INPADOC expansion must include WO but retain the non-exhaustive/claim caveat"
+    },
+    {
+      "scenario": "number_lookup_normalised_exact",
+      "pass": true,
+      "why": "formatted publication/application numbers must normalise and match exactly"
     },
     {
       "scenario": "unknown_number_honest",
       "pass": true,
-      "why": ""
+      "why": "unknown number is a clean empty over this snapshot, not a guessed record"
     },
     {
-      "scenario": "family_grouping",
+      "scenario": "number_kind_no_substitution",
       "pass": true,
-      "why": ""
+      "why": "a grant/publication number must not be reused as an application number"
     },
     {
-      "scenario": "status_and_cpc_filters",
+      "scenario": "status_cpc_and_not_filters",
       "pass": true,
-      "why": ""
+      "why": "status is exact, CPC is hierarchical, and NOT is a hard exclusion"
+    },
+    {
+      "scenario": "patent_paper_boundary",
+      "pass": true,
+      "why": "technical papers and patent records share an index but remain separately filterable"
     },
     {
       "scenario": "duplicate_export_named",
       "pass": true,
-      "why": ""
+      "why": "duplicate id is named once and low severity does not force review"
     },
     {
       "scenario": "record_locator_verbatim",
@@ -32,18 +47,220 @@
       "why": ""
     },
     {
-      "scenario": "cli_examples_run",
+      "scenario": "deterministic_rerun",
       "pass": true,
-      "why": ""
+      "why": "identical corpus+query must replay byte-equivalent JSON content"
     },
     {
       "scenario": "cli_refusal_exit5",
       "pass": true,
-      "why": ""
+      "why": "malformed JSON must write undetermined and exit 5"
+    },
+    {
+      "scenario": "refusal_no_contract_echo",
+      "pass": true,
+      "why": "refusal must not fabricate contract-shaped results"
+    },
+    {
+      "scenario": "number_collision",
+      "pass": true,
+      "why": "same normalised number on distinct ids must not be silently merged"
+    },
+    {
+      "scenario": "number_collision_fp_guard",
+      "pass": true,
+      "why": "distinct kind-coded numbers and same-document publication/grant are not collisions"
+    },
+    {
+      "scenario": "family_conflict",
+      "pass": true,
+      "why": "multiple declared family ids remain separate and reviewable"
+    },
+    {
+      "scenario": "family_conflict_fp_guard",
+      "pass": true,
+      "why": "one declared simple-family id is not a conflict"
+    },
+    {
+      "scenario": "family_missing",
+      "pass": true,
+      "why": "a members link must not substitute for a missing declared family id"
+    },
+    {
+      "scenario": "family_missing_fp_guard",
+      "pass": true,
+      "why": "declared family id supports expansion without a missing warning"
+    },
+    {
+      "scenario": "date_missing",
+      "pass": true,
+      "why": "filing date must not fill a missing priority date"
+    },
+    {
+      "scenario": "date_missing_fp_guard",
+      "pass": true,
+      "why": "present in-range priority dates produce no missing warning"
+    },
+    {
+      "scenario": "date_invalid",
+      "pass": true,
+      "why": "impossible dates are excluded and named"
+    },
+    {
+      "scenario": "date_invalid_fp_guard",
+      "pass": true,
+      "why": "year/month precision is valid and is not promoted to a fake day"
+    },
+    {
+      "scenario": "date_order",
+      "pass": true,
+      "why": "priority after filing is a metadata consistency warning"
+    },
+    {
+      "scenario": "date_order_fp_guard",
+      "pass": true,
+      "why": "priority earlier than filing is valid"
+    },
+    {
+      "scenario": "query_date_invalid",
+      "pass": true,
+      "why": "invalid query dates refuse before retrieval"
+    },
+    {
+      "scenario": "query_date_invalid_fp_guard",
+      "pass": true,
+      "why": "valid inclusive date interval runs normally"
+    },
+    {
+      "scenario": "status_unverified",
+      "pass": true,
+      "why": "a snapshot token is not current official legal status"
+    },
+    {
+      "scenario": "status_unverified_fp_guard",
+      "pass": true,
+      "why": "dated official-registry verification satisfies the declared evidence level"
+    },
+    {
+      "scenario": "status_conflict",
+      "pass": true,
+      "why": "same-number records with different status tokens require adjudication"
+    },
+    {
+      "scenario": "status_conflict_fp_guard",
+      "pass": true,
+      "why": "different family members may legitimately have different legal states"
+    },
+    {
+      "scenario": "claim_version_missing",
+      "pass": true,
+      "why": "required or filtered claim versions must identify missing provenance"
+    },
+    {
+      "scenario": "claim_version_missing_fp_guard",
+      "pass": true,
+      "why": "present claim version is returned with a source line locator"
+    },
+    {
+      "scenario": "source_restricted_all_blocked",
+      "pass": true,
+      "why": "all-restricted input blocks and no restricted text reaches either artifact"
+    },
+    {
+      "scenario": "source_restricted_mixed_degrades",
+      "pass": true,
+      "why": "mixed input returns authorised hits and explicitly marks the restricted gap"
+    },
+    {
+      "scenario": "source_restricted_fp_guard",
+      "pass": true,
+      "why": "authorised green records are searchable and quotable"
+    },
+    {
+      "scenario": "source_yellow_metadata_only",
+      "pass": true,
+      "why": "yellow source must expose only authorised metadata, never raw prose"
+    },
+    {
+      "scenario": "source_yellow_full_text_fp_guard",
+      "pass": true,
+      "why": "explicit full_text scope permits normal authorised yellow processing"
+    },
+    {
+      "scenario": "source_license_unknown",
+      "pass": true,
+      "why": "requested licence evidence cannot be inferred from access to a file"
+    },
+    {
+      "scenario": "source_license_unknown_fp_guard",
+      "pass": true,
+      "why": "explicit licence and access fields satisfy the source check"
+    },
+    {
+      "scenario": "field_missing",
+      "pass": true,
+      "why": "only the actually absent required field is named"
+    },
+    {
+      "scenario": "field_missing_fp_guard",
+      "pass": true,
+      "why": "present required metadata produces no finding"
+    },
+    {
+      "scenario": "query_field_unknown",
+      "pass": true,
+      "why": "a misspelled filter must not be silently ignored"
+    },
+    {
+      "scenario": "query_field_unknown_fp_guard",
+      "pass": true,
+      "why": "declared filters object accepts supported patent fields"
+    },
+    {
+      "scenario": "metadata_conflict",
+      "pass": true,
+      "why": "structured-vs-text conflict retains both values and uses the declared override"
+    },
+    {
+      "scenario": "metadata_conflict_fp_guard",
+      "pass": true,
+      "why": "matching structured and text metadata are not a conflict"
+    },
+    {
+      "scenario": "contract_field_missing",
+      "pass": true,
+      "why": "missing contract values become null plus a review finding, never invented content"
+    },
+    {
+      "scenario": "contract_field_missing_fp_guard",
+      "pass": true,
+      "why": "dict contract and common aliases map to actual rubric sections without a gap"
+    },
+    {
+      "scenario": "structured_record_without_text",
+      "pass": true,
+      "why": "recognised structured metadata can be indexed without a pre-extracted text layer"
+    },
+    {
+      "scenario": "cjk_applicant_and_unicode_locator",
+      "pass": true,
+      "why": "CJK applicant and title queries remain whole and locators retain UTF-8 text"
+    },
+    {
+      "scenario": "index_replay",
+      "pass": true,
+      "why": "saved index supports an equivalent independent replay"
+    },
+    {
+      "scenario": "internal_error_refusal",
+      "pass": true,
+      "why": "unexpected engine failure is contained as undetermined without contract fabrication"
     }
   ],
   "totals": {
-    "passed": 8,
-    "of": 8
-  }
+    "passed": 51,
+    "of": 51
+  },
+  "fp_guards": 17,
+  "fixture_notice": "synthetic regression fixtures; not official case answers"
 }

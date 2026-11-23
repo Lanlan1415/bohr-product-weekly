@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p59-search-patent
+https://github.com/Lanlan1415/bohr-product-weekly
+p59-search-patent/

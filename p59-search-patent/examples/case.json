@@ -1,0 +1,11 @@
+{
+  "case_id": "example-family-simple-v2",
+  "output_contract": [
+    "case_id",
+    "检索结果",
+    "证据记录",
+    "状态说明",
+    "delivery_note"
+  ],
+  "delivery_note": "Synthetic worked example; not an official case result or current legal opinion."
+}
