@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p60-search-quality
+https://github.com/Lanlan1415/bohr-product-weekly
+p60-search-quality/

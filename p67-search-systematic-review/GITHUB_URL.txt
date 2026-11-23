@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p67-search-systematic-review
+https://github.com/Lanlan1415/bohr-product-weekly
+p67-search-systematic-review/

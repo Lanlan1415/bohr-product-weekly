@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p62-search-crosslang
+https://github.com/Lanlan1415/bohr-product-weekly
+p62-search-crosslang/

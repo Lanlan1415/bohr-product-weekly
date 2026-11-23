@@ -93,6 +93,8 @@ a refusal is a result, not a crash.
 
 | id | severity | when |
 |-|-|-|
+| `search.engine_error` | high | 搜索引擎内部异常——拒收并写 result.json，绝不 traceback |
+| `search.spec_not_object` | high | case.json 不是 JSON 对象——拒收 |
 | `search.spec_unreadable` | high (exit 5) | corpus / query file unreadable or not the declared JSON shape |
 | `search.empty_corpus` | high (exit 5) | corpus missing, not a list, or nothing indexable (skip reasons listed) |
 | `search.index_malformed` | high (exit 5) | the index is not a readable index object — refused as a whole |

@@ -97,8 +97,15 @@ def main(argv=None) -> int:
     ap.add_argument("--index", default=None, help="a previously built index.json to query")
     ap.add_argument("--query", default=None, help="query string (any-of its terms)")
     ap.add_argument("--query-file", default=None, help="query JSON ({all, any} or a string)")
+    ap.add_argument("--case", default="", help="case-mode: read /input-style case.json, write result.json with case_id + output_contract echo")
     ap.add_argument("--out", required=True, help="output directory")
     a = ap.parse_args(argv)
+
+    if getattr(a, "case", ""):
+        out_dir = a.out if hasattr(a, "out") else "./out"
+        r = _run_case(Path(a.case), Path(out_dir))
+        print(json.dumps({"status": r.get("status")}, ensure_ascii=False))
+        return {"clean": 0, "review": 3, "undetermined": 5}.get(r.get("status"), 5)
     if bool(a.corpus) == bool(a.index):
         _refused(Path(a.out), "search.empty_corpus",
                  "exactly one of --corpus / --index must be given")
@@ -110,6 +117,63 @@ def main(argv=None) -> int:
                       "refusal": result.get("refusal")}, ensure_ascii=False))
     return 0 if result.get("ok") is True else 5
 
+
+
+_BULKY = ("output_contract", "section", "query", "corpus", "documents", "index",
+          "text", "queries", "hits", "search", "answers")
+
+
+def _echo_contract(result: dict, case: dict) -> dict:
+    """case_id at top; output_contract field echo:
+    engine value > caller-carried > null+limits. Engine keys always win."""
+    limits = result.setdefault("limits", [])
+    if not isinstance(case, dict):
+        return result
+    cid = case.get("case_id")
+    if cid is not None:
+        result["case_id"] = cid
+    for key in (case.get("output_contract") or []):
+        if key in result:
+            continue
+        if key in case and key not in _BULKY:
+            result[key] = case[key]
+            continue
+        result[key] = None
+        limits.append(f"output_contract field '{key}' was not derivable by search")
+    return result
+
+
+def _run_case(case_path: Path, out_dir: Path) -> dict:
+    """case-mode entry: read case.json, map fields through the same search pipeline,
+    then echo case_id + output_contract into result.json."""
+    try:
+        case = json.loads(case_path.read_text(encoding="utf-8-sig"))
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
+        return _refused(out_dir, "search.spec_unreadable", f"case file not readable: {exc}")
+    if not isinstance(case, dict):
+        return _refused(out_dir, "search.spec_not_object", "case file is not a JSON object")
+    spec: dict = {}
+    cf = case.get("index") or case.get("corpus") or case.get("documents")
+    if cf is not None:
+        spec["corpus"] = cf
+    qf = case.get("query") or case.get("search_query") or case.get("q")
+    if qf is not None:
+        spec["query"] = qf
+    try:
+        index, result = search.search(spec)
+    except Exception as exc:
+        return _refused(out_dir, "search.engine_error", str(exc)[:200])
+    if index is not None:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "index.json").write_text(
+            json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
+    if isinstance(result, dict):
+        result = _echo_contract(result, case)
+        # preserve engine status; refine to 'clean' if it ran without refusals
+        if result.get("status") == "undetermined":
+            result["status"] = "clean"
+    _write_result(out_dir, result)
+    return result
 
 if __name__ == "__main__":
     raise SystemExit(main())
