@@ -14,13 +14,16 @@ and a base agent cannot check it about its own output.
 
 from __future__ import annotations
 
+import html
 import json
+import math
+import re
 from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Polygon
 
 # Okabe-Ito: distinguishable under the common forms of colour-vision deficiency.
 # Anything outside this set is reported, because a figure whose meaning depends on
@@ -38,6 +41,63 @@ EDGE_STYLES = {
     "flow": dict(arrowstyle="-|>", color="#555555"),
     "bind": dict(arrowstyle="-", color="#009E73", linestyle="--"),
 }
+
+# Apparatus-specific channels: these describe what moves, not just that an arrow exists.
+FLOW_KIND_STYLES = {
+    "material": dict(color="#555555", linestyle="-"),
+    "energy": dict(color="#E69F00", linestyle="-"),
+    "information": dict(color="#0072B2", linestyle="--"),
+    "waste": dict(color="#D55E00", linestyle=":"),
+}
+FLOW_KIND_LEGEND = {
+    "material": "material flow / 物料流：灰色实线",
+    "energy": "energy flow / 能量流：橙色实线",
+    "information": "information flow / 信息流：蓝色虚线",
+    "waste": "waste outlet / 废物流：红色点线",
+}
+EDGE_TYPE_LEGEND = {
+    "flow": "directed connection / 有向连接",
+    "activate": "activate / 推进：蓝色箭头",
+    "inhibit": "inhibit / 阻止：红色 T 端",
+    "bind": "association / 关联：绿色虚线",
+}
+
+
+def _text_list(value) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value] if value.strip() else []
+    if isinstance(value, (list, tuple)):
+        return [str(x) for x in value if str(x).strip()]
+    return []
+
+
+def _valid_nodes(raw) -> tuple[list[dict], list]:
+    if not isinstance(raw, list):
+        return [], [raw]
+    valid, bad, seen = [], [], set()
+    for item in raw:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str) \
+                or not item["id"].strip() or item["id"] in seen:
+            bad.append(item if not isinstance(item, dict) else item.get("id"))
+            continue
+        seen.add(item["id"])
+        valid.append(item)
+    return valid, bad
+
+
+def _valid_edges(raw) -> tuple[list[dict], list]:
+    if not isinstance(raw, list):
+        return [], [raw]
+    valid, bad = [], []
+    for item in raw:
+        if not isinstance(item, dict) or not isinstance(item.get("from"), str) \
+                or not isinstance(item.get("to"), str):
+            bad.append(item)
+        else:
+            valid.append(item)
+    return valid, bad
 
 
 def _layers(nodes: list[dict], edges: list[dict]) -> dict[str, int]:
@@ -74,14 +134,9 @@ def _layers(nodes: list[dict], edges: list[dict]) -> dict[str, int]:
 
 
 def render(spec: dict, out_stem: Path, dpi: int = 300, fonttype: str = "none") -> dict:
-    """Draw the diagram and write `<stem>.svg` (editable) and `<stem>.png`.
-
-    `fonttype` defaults to "none" so labels stay live <text> with a declared
-    font-family. matplotlib's own default is "path", which converts text to
-    outlines and silently destroys editability — the audit flags that, and the
-    benchmark injects it to prove the flag works.
-    """
+    """Write editable SVG, 300-dpi PNG and embedded-font PDF from one spec."""
     matplotlib.rcParams["svg.fonttype"] = fonttype
+    matplotlib.rcParams["pdf.fonttype"] = 42
 
     # Pick a font that can draw the labels before drawing anything: matplotlib's
     # default has no CJK glyphs, so a Chinese label silently becomes empty boxes.
@@ -95,9 +150,13 @@ def render(spec: dict, out_stem: Path, dpi: int = 300, fonttype: str = "none") -
         except Exception:
             pass
 
-    nodes, edges = spec.get("nodes") or [], spec.get("edges") or []
+    nodes, malformed_nodes = _valid_nodes(spec.get("nodes") or [])
+    edges, malformed_edges = _valid_edges(spec.get("edges") or [])
     if not nodes:
-        raise ValueError("spec has no nodes")
+        raise ValueError("spec has no drawable nodes")
+    node_ids = {n["id"] for n in nodes}
+    dangling = [e for e in edges if e["from"] not in node_ids or e["to"] not in node_ids]
+    edges = [e for e in edges if e["from"] in node_ids and e["to"] in node_ids]
 
     depth = _layers(nodes, edges)
     by_layer: dict[int, list[dict]] = {}

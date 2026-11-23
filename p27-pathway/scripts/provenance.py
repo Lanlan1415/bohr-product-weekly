@@ -19,6 +19,26 @@ more honest than guessing.
 from __future__ import annotations
 
 
+_RELATION_TYPES = {
+    "activate": "activate", "activation": "activate", "activates": "activate",
+    "promote": "activate", "promotes": "activate", "促进": "activate", "激活": "activate",
+    "inhibit": "inhibit", "inhibition": "inhibit", "inhibits": "inhibit",
+    "repress": "inhibit", "represses": "inhibit", "抑制": "inhibit", "阻遏": "inhibit",
+    "bind": "bind", "binding": "bind", "binds": "bind", "结合": "bind",
+    "flow": "flow", "流向": "flow",
+    "phosphorylate": "phosphorylate", "phosphorylation": "phosphorylate", "磷酸化": "phosphorylate",
+    "ubiquitinate": "ubiquitinate", "ubiquitination": "ubiquitinate", "泛素化": "ubiquitinate",
+    "recruit": "recruit", "recruitment": "recruit", "募集": "recruit",
+    "transport": "transport", "translocation": "transport", "转运": "transport",
+}
+
+
+def _canonical_relation(value) -> str | None:
+    if value is None:
+        return None
+    return _RELATION_TYPES.get(str(value).strip().lower())
+
+
 def _add(findings, rule, severity, message, **extra):
     findings.append({"rule": rule, "severity": severity, "message": message, **extra})
 
@@ -72,6 +92,15 @@ def audit_provenance(spec: dict, nodes: list[dict] | None = None,
              "a material the source requires never appears in the figure, so the drawing does "
              "not show the full setup", unused=unused[:10], count=len(unused))
 
+    source_connections = [c for c in (spec.get("connections") or []) if isinstance(c, dict)]
+    no_locator = [f"{c.get('from')}->{c.get('to')}" for c in source_connections
+                  if not str(c.get("source") or "").strip()]
+    if no_locator:
+        _add(findings, "trace.connection_no_source", "medium",
+             "a declared entity relation has no source locator, so its direction and "
+             "semantics cannot be independently re-checked",
+             connections=no_locator[:10], count=len(no_locator))
+
     declared = {(str(c.get("from")), str(c.get("to")))
                 for c in (spec.get("connections") or []) if isinstance(c, dict)}
     if declared:
@@ -82,6 +111,26 @@ def audit_provenance(spec: dict, nodes: list[dict] | None = None,
                 _add(findings, "trace.edge_not_in_source", "high",
                      "a connection is drawn that the source material does not state",
                      edge=[e.get("from"), e.get("to")])
+        # Endpoints alone are insufficient: an inhibition drawn as activation is a
+        # reversed biological claim. Compare types only when the source extraction
+        # explicitly supplies one; prose without a type remains an honest unknown.
+        by_pair = {}
+        for c in source_connections:
+            pair = (str(c.get("from")), str(c.get("to")))
+            source_type = _canonical_relation(c.get("type", c.get("relation")))
+            if source_type:
+                by_pair.setdefault(pair, set()).add(source_type)
+        for e in edges:
+            if not isinstance(e, dict):
+                continue
+            pair = (str(e.get("from")), str(e.get("to")))
+            expected_types = by_pair.get(pair) or set()
+            drawn_type = _canonical_relation(e.get("type")) or str(e.get("type") or "flow")
+            if expected_types and drawn_type not in expected_types:
+                _add(findings, "trace.relation_type_mismatch", "high",
+                     "the drawn arrow semantics disagree with the relation type extracted "
+                     "from the source; matching endpoints do not make activation=inhibition",
+                     edge=list(pair), source_types=sorted(expected_types), drawn_type=drawn_type)
         used = {(str(e.get("from")), str(e.get("to"))) for e in edges if isinstance(e, dict)}
         absent = sorted(declared - used)
         if absent:

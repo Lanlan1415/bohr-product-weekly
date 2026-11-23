@@ -55,7 +55,11 @@ Every gene or protein node should carry an identifier plus its source:
 | `chebi` | `CHEBI:<digits>` | `CHEBI:15377` |
 
 A malformed accession is almost always a copy error, and it makes the entity
-unresolvable in exactly the way the accession was meant to prevent.
+unresolvable in exactly the way the accession was meant to prevent. An accession with a
+missing/unsupported registry fires `nomenclature.accession_source_unknown` rather than
+receiving a false pass. Two actor nodes sharing one supported registry accession fire
+`nomenclature.accession_collision`; genuine post-translational states are an explicit FP
+guard only when both nodes set `state_distinct: true` and provide different `state` values.
 
 ## Vague entities
 

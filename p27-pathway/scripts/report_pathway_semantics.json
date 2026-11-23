@@ -1,0 +1,69 @@
+{
+  "schema_version": "pathway-semantics-bench/v1",
+  "passed": 12,
+  "total": 12,
+  "all_passed": true,
+  "checks": [
+    {
+      "name": "8 relation semantics + branches + feedback + evidence styles generate clean",
+      "passed": true,
+      "detail": "{'exit': 0, 'stdout': 'status\": \"clean\", \"case_id\": \"EXAMPLE-pathway-clean\", \"findings\": [], \"artifacts\": {\"svg\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\pathway-semantics-bkg12_j7\\\\\\\\all-types\\\\\\\\figure.svg\", \"png\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\pathway-semantics-bkg12_j7\\\\\\\\all-types\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\pathway-semantics-bkg12_j7\\\\\\\\all-types\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\pathway-semantics-bkg12_j7\\\\\\\\all-types\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\pathway-semantics-bkg12_j7\\\\\\\\all-types\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\pathway-semantics-bkg12_j7\\\\\\\\all-types\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "activation/inhibition/modification/recruitment/transport/feedback all map to actual connectors",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "size=4 doubles linear dimensions exactly once (area ratio 4)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "dense multi-compartment pathway remains byte-idempotent",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "feedback uses a reserved non-crossing arc above unrelated actors",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "source inhibition drawn as activation is blocked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "endpoint direction is not silently auto-reversed",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "alias + same registry accession collision is blocked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "same accession + explicitly distinct molecular states is not a false collision",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "required confidence missing is a visible review finding",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "node colour contradicting category legend is caught",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "size channel without explanation is reported",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "note": "EXAMPLE-ONLY synthetic mechanisms"
+}

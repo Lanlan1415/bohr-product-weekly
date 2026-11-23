@@ -16,6 +16,7 @@ including on the refusal path, where there is no spec to echo from.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -80,14 +81,18 @@ def _collect_sources(spec: dict) -> list[dict]:
             out.append({"element": str(n.get("label") or n.get("id")),
                         "kind": str(n.get("kind") or "node"),
                         "material": ev,
-                        "locator": str(mats[ev].get("source") or "")})
+                        "locator": str(mats[ev].get("source") or ""),
+                        "source_version": str(mats[ev].get("version")
+                                              or spec.get("source_version") or "not supplied")})
     for c in (spec.get("connections") or []):
         if not isinstance(c, dict):
             continue
         src = str(c.get("source") or "").strip()
         if src:
             out.append({"element": f"{c.get('from')}->{c.get('to')}",
-                        "kind": "connection", "material": None, "locator": src})
+                        "kind": "connection", "material": None, "locator": src,
+                        "source_version": str(c.get("version")
+                                              or spec.get("source_version") or "not supplied")})
     return out[:40]
 
 
@@ -139,6 +144,8 @@ def _refused(out_dir: Path, message: str, case: dict | None) -> dict:
                     continue
                 result[key] = None
                 limits.append(f"output_contract field '{key}' was not derivable by this audit")
+    if "case_id" in result:
+        result = {"case_id": result.pop("case_id"), **result}
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
                                          encoding="utf-8")
@@ -167,7 +174,7 @@ def build_and_audit(spec_path: Path, out_dir: Path, checklist_path: Path | None 
     checklist_used = False
     try:
         layout = schematic.audit(spec, built)
-        nom = nomenclature.audit_nomenclature(spec, built["svg"])
+        nom = nomenclature.audit_nomenclature(spec, built["svg"], built["nodes_valid"])
         findings = layout["findings"] + nom["findings"]
     except (ValueError, TypeError, AttributeError, KeyError, IndexError) as exc:
         # The figure rendered but the audit could not finish: record an honest
@@ -176,9 +183,9 @@ def build_and_audit(spec_path: Path, out_dir: Path, checklist_path: Path | None 
 
     # Same three criteria as any source-bound figure: every entity traced, every
     # relation stated by the source, and re-running gives the same figure.
-    prov = provenance.audit_provenance(spec)
+    prov = provenance.audit_provenance(spec, nodes=built["nodes_valid"])
     findings.extend(prov["findings"])
-    findings.extend(provenance.check_numbering(spec))
+    findings.extend(provenance.check_numbering(spec, built["nodes_valid"]))
 
     det = provenance.check_deterministic(spec, schematic.render)
     if not det["deterministic"]:
@@ -212,8 +219,15 @@ def build_and_audit(spec_path: Path, out_dir: Path, checklist_path: Path | None 
 
     svg, png, pdf = str(built["svg"]), str(built["png"]), str(built["pdf"])
     font = built["font"]
+    spec_hash = hashlib.sha256(json.dumps(spec, ensure_ascii=False, sort_keys=True,
+                                          separators=(",", ":")).encode("utf-8")).hexdigest()
     result = {
-        "schema_version": "pathway/v1",
+        "schema_version": "pathway/v2",
+        "input": {"spec_path": str(spec_path), "spec_sha256": spec_hash},
+        "change_records": [{"sequence": 1, "action": "render+audit",
+                            "input_sha256": spec_hash, "engine": "pathway/v2",
+                            "outputs": ["figure.svg", "figure.png", "figure.pdf"],
+                            "human_confirmation": "see meta.sources / uncertainty when supplied"}],
         "status": ("clean" if not findings else "blocked" if counts.get("high") else "review"),
         "figure": {"svg": svg, "png": png, "pdf": pdf},
         "source": svg,
@@ -228,6 +242,8 @@ def build_and_audit(spec_path: Path, out_dir: Path, checklist_path: Path | None 
             "missing_glyphs": "".join(font.missing),
             "colour_palette": "Okabe-Ito (colour-blind-safe)",
             "live_text": True,
+            "semantic_layer_ids": layout["checked"].get("editable_groups", []),
+            "legend_items_rendered": layout["checked"].get("legend_items_rendered", 0),
         },
         "findings": findings,
         "severity_counts": counts,
@@ -264,6 +280,8 @@ def build_and_audit(spec_path: Path, out_dir: Path, checklist_path: Path | None 
         "pdf": pdf, "export_pdf": pdf,
         "font_report": result["font"], "export_check": result["export"],
     })
+    if "case_id" in result:
+        result = {"case_id": result.pop("case_id"), **result}
     (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
                                          encoding="utf-8")
     plt.close(built["fig"])

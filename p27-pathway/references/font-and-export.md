@@ -31,9 +31,9 @@ The first candidate that covers **every character the figure will draw** wins. I
 does, the best (fewest missing characters) is used and `font.missing_glyphs` lists
 what will print as a box.
 
-Coverage is computed from the labels, title, caption and group names in the spec — the
-characters actually used, not "does this look like a Chinese font". A font can cover
-`实验装置` and still lack `µ` or `θ`.
+Coverage is computed from node/edge labels, legend entries and notes, compartment names,
+title, caption and group names — the characters actually used, including auto-generated
+relation legends. A font can cover `实验装置` and still lack `µ` or `θ`.
 
 ## Export requirements
 
@@ -74,5 +74,5 @@ so a container shipping a font under an unexpected name still renders readable l
 
 The renderer also writes `figure.pdf` with `pdf.fonttype 42`: TrueType glyphs are
 embedded as a subset, so the export carries its own glyphs instead of depending on the
-reader's installed fonts. `export.record` in result.json reports formats, dpi, canvas,
+reader's installed fonts. `export` in result.json reports formats, dpi, canvas,
 font family/file, embedding mode and missing glyphs in one place.

@@ -1,381 +1,182 @@
 ---
 name: apparatus-figure
 description: >
-  Build an experimental apparatus diagram or technical roadmap from a bound workorder
-  and prove the three things this figure type is judged on: every drawn component traces
-  back to the source material, every connection and step order is stated by the source
-  rather than invented, and re-running the skill produces the same figure. Resolves a
-  CJK-capable font against the characters the figure actually uses before drawing, so
-  Chinese labels never silently render as empty boxes. Delivers a layered editable SVG
-  source plus a 300 dpi PNG export plus a structured result.json (output_contract fields
-  verbatim + case_id + audit findings + sources + uncertainty), and refuses with a
-  structured result instead of crashing when material is missing. Use when a task asks
-  for an apparatus layout, instrument schematic, experimental setup, process flowchart,
-  material flow diagram, or technical route.
+  Generate and edit experimental apparatus, material/energy/information flow diagrams and
+  technical roadmaps (实验装置、仪器连接、分流回流、工艺路线). Emits editable SVG, 300 dpi PNG
+  and vector PDF from source-bound BOM/components, named ports, stages and milestones. Implements
+  pump/valve/vessel/sensor/detector/source/sink symbols, four physical flow channels, branching,
+  non-crossing recycle/bypass arcs, S01…Sn stage labels, route entry/exit checks, provenance,
+  source-preserving SVG edits and strict case_id/output_contract passthrough. Does not invent
+  connections, physical specifications or unsupported instrument symbols.
 ---
 
-# apparatus-figure
+# Apparatus and technical-route sourcebind
 
-## 运行时入口与输出契约（Harbor runtime contract）
+主入口是 `scripts/sourcebind.py --mode apparatus`。它生成**实际装置图/技术路线图**和
+PDF/PNG，而不是只报一份检查 JSON。旧 `apparatusfig.py` / `pathway.py` 保留兼容回归。
 
-平台把本 Skill 安装在 /skills/weekly-skill，运行时输入固定为 /input/case.json 与
-/input/task.md；工作目录 /app/work，最终交付物与 result.json 必须写入 /app/output。
+## 六步运行时工作流
 
-### 从输入到调用（harness agent 按此执行）
+1. **读取事实。** 读取 `/input/case.json`、`/input/task.md`、实际 Methods/装置清单/工艺段/
+   输入图稿。保留 `case_id`、`output_contract`、真实文件版本和页/段/图号。不按“装置图”
+   标签臆造冷阱、泵、阀、回流、接口、参数或单位。
+2. **写 `/app/work/spec.json` 中间表示：**
+   - `materials[]` 为材料/设备条目（id、name、source/quote、version），节点以 evidence 溯源；
+   - `components[]` 为可选 BOM，节点缺件会是 high；nodes 写 `part_kind`、label、stage/instance；
+   - `connections[]` 逐条记录来源的 from/to/type/source，edges 是实际要画的对应管路与流；
+   - `flow_kind` 明确 material/energy/information/waste；flow_kind 不能靠布局推断；
+   - `step_order` 与 nodes.stage 一一对应（常规从 1 连续编号），`from_port/to_port` 是接口；
+   - `figure_kind:"route"` 启用技术路线的入口/出口与 stage 约束；`milestone:true` 只用于
+     来源明确声明的里程碑。未知字段留 uncertainty，而不是补成事实。
+3. **真实生成：**
 
-1. 读 /input/case.json（含 case_id 与 output_contract 原始字段约定）和 task.md。
-   实际输入文件与原论文是事实依据；不依据错误的领域标签补造数据。
-2. 从材料抽取四类要素，写成 spec JSON（放在 /app/work）：
-   **实体**（materials + components 部件清单 + nodes，每个 node 的 evidence 指向材料条目）、
-   **连接**（connections + edges，每条填 source 指向原文出处）、
-   **步骤**（step_order + nodes[].stage 编号）、
-   **流向**（edges[].type 线型语义 + nodes[].layer 分层方向）。
-   抽不出的字段留空并登记 uncertainty，不臆造。
-3. 调用引擎（matplotlib 需已安装）：
-   - 装置图 / 材料流向图：`python scripts/apparatusfig.py --spec spec.json --out /app/output`
-   - 技术路线图（阶段编号 + 命名审计）：`python scripts/pathway.py --spec spec.json --out /app/output`
-   - 路线图涉及基因/蛋白命名时再加 `--checklist checklist.json`
-4. 合成最终 /app/output/result.json（规则见下），并把 figure.svg、figure.png 一并
-   放入 /app/output；可编辑产物必须附带真实渲染出的预览件。
+   ```bash
+   python -X utf8 "$SKILL/scripts/sourcebind.py" \
+     --mode apparatus --spec /app/work/spec.json \
+     --case /input/case.json --meta /app/work/meta.json \
+     --checklist /app/work/checklist.json --out /app/output
+   ```
 
-### result.json 合成规则（顺序即覆盖优先级）
+   `--meta/--checklist` 可选，无 case 文件时用 `--case-id`。meta 支持
+   `sources/uncertainty/limits`；checklist 支持 entities/from-to relations。case 已显式
+   内嵌 `spec.nodes` 可只给 `--case`；自由文本仍由 Agent 先读材料写 spec，脚本不猜工艺。
+4. **检查实际产物。** `/app/output` 包含 `figure.svg`、`figure.png`、`figure.pdf`、
+   `mapping.json`、`spec.json`、`result.json`。SVG 保持 live text 和 compartments/nodes/
+   edges/legend 分层；mapping 给部件 bbox、stage/milestone、接口、from/to/type/flow_kind/
+   route/control_y 和 source locators。
+5. **修真实问题。** `0=clean`、`3=review/partial`、`4=blocked`、`5=undetermined`。
+   missing BOM、反向但来源不一致的管路、断头、未知 flow、route 无入口/出口、stage 重复、
+   decision 单支路、跨节点管线或重叠不可作为成功图交付。修 spec/源材料，不删检查。
+6. **复跑。** 同一输出路径下 SVG/PNG/PDF/mapping/spec/result 必须字节一致；PDF 元数据
+   固定，时间戳不作为豁免。XML/几何/magic 是自动证据；未打开预览时 visual_check 为
+   `not performed`，不声称做过视觉检查。
 
-```
-result.json =
-  1. case.json 中 output_contract 的全部原始字段 —— 逐字段原文拷贝，不改名、不遗漏
-  2. case_id —— 取自 case.json
-  3. 引擎产出映射 —— figure / source / export（见下表）
-  4. 引擎审计字段 —— status, findings, severity_counts, audits,
-     reproducibility, font, checked, coverage, provenance
-  5. sources —— 证据/来源定位：关键元素 → 材料 id + 原文出处
-  6. uncertainty —— 待复核项清单：抽取缺口、歧义取舍、默认参数、需人工确认项
-```
-
-### 题面输出字段对齐
-
-| 题面要求 | 本包落点 |
-|-|-|
-| 输入标识 | result.json 顶部 case_id（另有 schema_version 标注引擎版本） |
-| 主结果 | figure.svg（分层可编辑源文件）+ figure.png（300 dpi 导出件） |
-| 证据/来源定位 | spec 的 materials[].source、connections[].source、nodes[].evidence → result.json 的 sources 与 provenance.coverage |
-| 运行状态 | status：clean=完成；review=部分（可交付但带发现，limits 写明边界）；blocked=失败（存在未修复 high 缺陷）；failed=失败（输入侧无法建图） |
-| 不确定性 | uncertainty 列表，逐条可复核 |
-| 可编辑源文件 | figure.svg live text；完成标准：实体、关系、图例和数据映射正确（由 trace/legend/coverage 审计背书） |
-| 导出件 | figure.png + result.json 的 export 与 font 检查：目标格式（svg/png）、尺寸（canvas_mm）、分辨率（300 dpi）、字体（family 与 missing_glyphs）、色彩（Okabe-Ito 色盲安全检查） |
-| 来源与修改记录 | provenance（元素来源与覆盖计数）+ reproducibility（两遍渲染一致）+ uncertainty 中的人工确认项 |
-
-### 材料缺失时拒绝而不是崩溃
-
-材料缺失、无法判断、运行失败三种情形都必须落一份结构化 result.json（含 case_id 与
-output_contract 原文）再退出；绝不裸抛异常，也绝不交一个空白输出目录。
-
-引擎层的拒绝路径（spec 不是可读 JSON / 不是 JSON 对象 / 文件缺失）由 `_refused` 直接落
-result.json：`status: undetermined`、finding 规则 `audit.no_section`（high）、退出码 5。
-退出码全表：clean 0 / review 3 / blocked 4 / undetermined 5。
-
-| 情形 | status | 处置 |
-|-|-|-|
-| spec 不是可读 JSON / 不是对象 / 文件缺失 | undetermined（引擎 `_refused`） | 引擎直接落 result.json（`audit.no_section`），退出码 5，永不 traceback |
-| case.json 或 task.md 缺失/不可解析 | failed | reason=missing_input；uncertainty 写明缺什么 |
-| 材料抽不出任何实体 | failed | reason=empty_materials；不得凭空画框 |
-| 材料只覆盖部分要素 | review | 照常出图；limits 写明未覆盖面，uncertainty 逐条登记 |
-| 引擎依赖缺失（matplotlib/Pillow 等） | 启动失败 | Python 导入层抛 ImportError——依赖在 Requirements 声明、平台镜像已提供；CLI 无法在导入失败后写 result.json，如实说明而非谎称可落盘 |
-
-拒绝模板（**示例**，非正式案例结果）：
+## 最小装置 spec（EXAMPLE ONLY）
 
 ```json
 {
-  "case_id": "（取自 case.json）",
-  "status": "failed",
-  "reason": "empty_materials",
-  "output_contract": {"原样保留": "case.json 中 output_contract 的全部字段"},
-  "sources": [],
-  "uncertainty": ["任务材料未给出部件清单，无法开始画图；需补充装置清单或装配说明"],
-  "limits": ["拒绝执行：未产出任何图面"]
-}
-```
-
-## The failure that looks like success
-
-matplotlib draws with DejaVu Sans by default. **DejaVu Sans has no CJK glyphs.** A
-label of `激光器` therefore renders as a row of empty boxes, the SVG is written, the
-PNG is written, nothing errors — and every Chinese label in the figure is unreadable.
-This challenge names it directly: *字体未嵌入导致中文变成方框*.
-
-So the renderer resolves a font against **the characters the figure actually uses**
-before drawing anything (fontsel.py searches installed fonts per character), and the
-audit checks glyph coverage against the font that was used:
-
-```
-font: Microsoft YaHei   missing_glyphs: -        -> clean
-font: DejaVu Sans       missing_glyphs: 激光器探测器 -> export.missing_glyphs (high)
-```
-
-Coverage is per-character, not "is this a CJK font": a font that covers Chinese can
-still lack `µ`, `λ` or `θ`.
-
-## Workflow
-
-### 1. Write the structured intermediate representation first, then draw
-
-The spec is the intermediate representation: what the source *states* about the
-figure, before any layout decision.
-
-```json
-{
-  "figure_kind": "apparatus",
-  "canvas_mm": [140, 70],
-  "font_size": 9,
-  "materials": [{"id": "m1", "name": "激光器", "source": "Methods ¶1"},
-                {"id": "m2", "name": "分束器", "source": "Methods ¶1"}],
-  "components": ["激光器", "分束器", "探测器"],
-  "connections": [{"from": "n1", "to": "n2", "source": "Methods ¶1: beam enters splitter"}],
-  "nodes": [
-    {"id": "n1", "label": "激光器", "evidence": "m1", "layer": 0, "color": "#56B4E9"},
-    {"id": "n2", "label": "分束器", "evidence": "m2", "layer": 1, "color": "#009E73"}
+  "case_id":"example-apparatus",
+  "figure_kind":"apparatus",
+  "materials":[
+    {"id":"m1","name":"循环泵 P-101","source":"EXAMPLE Methods ¶2: pump P-101","version":"v1"},
+    {"id":"m2","name":"膜阀 V-102","source":"EXAMPLE Methods ¶3: valve V-102","version":"v1"}
   ],
-  "edges": [{"from": "n1", "to": "n2", "type": "flow"}],
-  "legend": ["激光器", "分束器"],
-  "legend_required": false,
-  "step_order": ["n1", "n2"]
+  "components":["循环泵 P-101","膜阀 V-102"],
+  "connections":[{"from":"pump","to":"valve","type":"flow",
+                  "source":"EXAMPLE Methods ¶2–3: material enters valve"}],
+  "nodes":[
+    {"id":"pump","label":"循环泵 P-101","part_kind":"pump","evidence":"m1","stage":1},
+    {"id":"valve","label":"膜阀 V-102","part_kind":"valve","evidence":"m2","stage":2}
+  ],
+  "edges":[{"id":"f1","from":"pump","to":"valve","type":"flow",
+            "flow_kind":"material","from_port":"E","to_port":"W"}],
+  "step_order":["pump","valve"]
 }
 ```
 
-- `materials` 是来源给出的物料/部件清单，`evidence` 把图上每个节点钉到清单条目；
-  抽不出 evidence 的部件不在来源里，正确动作是去掉它，不是画一个合理的框。
-- `connections` 是来源对连接的陈述；不在其中的箭头会被报为凭空补齐而不是被画出来。
-- `components`（可选）是装配级 BOM，用于漏件审计。
-- `step_order` + `stage` 把流程编号与正文顺序对齐（步骤编号与正文顺序错位是本题
-  点名的失败模式）。
+## 装置图元、接口和流向
 
-### 2. Run it
-
-```bash
-python scripts/apparatusfig.py --spec spec.json --out /app/output
-```
-
-Exit codes: `0` clean, `3` review, `4` blocked. Writes result.json, figure.svg
-(live text, editable) and figure.png (300 dpi).
-
-**What the reader sees is part of the trace.** Use the source's own names for parts
-(`激光器`, not a paraphrase) — the label is what a reviewer matches against the bill of
-materials. Keep one label per part, suffix instances (A/B) for repeats, and let the
-declared legend explain every colour. Before shipping, run the command twice: two runs
-producing the same text and geometry is criterion 3, and reproducibility.deterministic
-in the second result.json is the proof.
-
-### 3. Read the three numbers that matter
-
-- reproducibility.deterministic — two renders compared on text and geometry. `false`
-  means the figure cannot be reproduced, which is criterion 3.
-- export.missing_glyphs — empty means every character has a glyph.
-- findings with trace.* — the traceability of entities, connections and materials.
-
-## 六类要素检查表（逐项落点）
-
-交付前逐项核对；任何一项缺失都要么补齐、要么在 limits 里写明原因。
-
-| 六类要素 | spec/交付落点 | 引擎检查 |
-|-|-|-|
-| 科学实体 | materials[] + components[] + nodes[].evidence（每个实体可溯源） | trace.entity_untraceable, trace.evidence_not_in_materials, trace.material_not_drawn, apparatus.component_missing |
-| 空间关系 | nodes[].layer 分层、edges[].from/to、canvas_mm 画布 | label.overlap, label.outside_canvas, label.wider_than_box, edge.backward_flow, edge.zero_length, apparatus.orphan_component |
-| 数据编码 | edges[].type 四种线型语义（flow/activate/inhibit/bind）+ nodes[].color（Okabe-Ito 色盲安全色板） | colour.not_cb_safe, edge.count_mismatch, edge.zero_length |
-| 图例标注 | legend[] + legend_required | legend.entry_unmatched, legend.entity_unlisted, apparatus.legend_entry_unmatched, apparatus.legend_entity_unlisted |
-| 可编辑源文件 | figure.svg（live text，分层；SVG 字体以非内联方式写入，文字可改） | export.no_live_text, export.embedded_raster, export.no_font_family |
-| 导出格式 | figure.png（300 dpi）+ font 解析记录 | export.missing_glyphs, export.no_font, export.low_dpi, font.too_small, label.mismatch |
-
-## Rules
-
-### Traceability — criterion 1 and 2
-
-| rule | severity | what it proves |
-|-|-|-|
-| `apparatus.component_missing` | high | a part in the bill of materials is missing from the figure |
-| `route.decision_without_branches` | high | a decision node has no branches, so the route dead-ends |
-| `route.no_entry` | high | a route stage nothing leads into |
-| `route.no_exit` | high | a route stage that leads nowhere |
-| `route.stage_duplicate` | high  | the same stage label appears twice in the route |
-| `route.stage_gap` | medium | stage numbering skips a phase |
-| `trace.connection_not_drawn` | medium | a declared connection was never drawn |
-| `trace.no_connection_list` | low   | no connection list was supplied |
-| `trace.entity_untraceable` | high | a component carries no material reference |
-| `trace.evidence_not_in_materials` | high | a component points at a material that does not exist |
-| `trace.material_not_drawn` | medium | a required material never appears |
-| `trace.edge_not_in_source` | high | a drawn connection is not stated by the source |
-| `route.numbering_vs_text` | medium | a step number disagrees with the text order |
-
-### Reproducibility — criterion 3
-
-| rule | severity | what it proves |
-|-|-|-|
-| `repro.nondeterministic` | high | two renders of one spec differ |
-
-### Export and legibility
-
-| rule | severity | what it proves |
-|-|-|-|
-| `export.missing_glyphs` | high | characters have no glyph, so they render as boxes |
-| `export.no_font` | high | no font could be resolved at all |
-| `export.no_live_text` | high | the SVG has no `<text>`, so labels are outlines |
-| `export.embedded_raster` | medium | the SVG embeds a raster and will not scale |
-| `export.low_dpi` | medium | preview below 300 dpi |
-| `label.overlap` | high | two labels collide on a fixed canvas |
-| `label.wider_than_box` | medium | a label is wider than its own shape |
-| `label.outside_canvas` | high | a label is clipped |
-| `edge.backward_flow` | medium | a flow arrow points at an earlier layer |
-| `apparatus.indistinguishable_components` | medium | two instances share label and colour |
-| `apparatus.orphan_component` | medium | a drawn part is connected to nothing |
-
-### Render-vs-spec cross-check
-
-| rule | severity | what it proves |
-|-|-|-|
-| `label.mismatch` | high | a drawn label differs from the spec |
-| `font.too_small` | medium | type below the declared minimum |
-| `edge.count_mismatch` | high | drawn connector count differs from the spec |
-| `edge.zero_length` | high | two connected nodes occupy the same point |
-| `export.no_font_family` | low | export carries no explicit font family |
-| `coverage.incomplete` | high | the figure omits an entity or relation the checklist states |
-
-### Complete rule index (engine rules documented per strict acceptance)
-
-| rule | severity |
+| spec | 真实表达 |
 |-|-|
-| `colour.not_cb_safe` | low |
-| `entity.duplicate` | medium |
-| `legend.entity_unlisted` | low |
-| `legend.entry_unmatched` | medium |
+| `part_kind:pump` | 圆形泵体 + 不遮挡标签的上置方向三角 |
+| `part_kind:valve` | 双三角阀 |
+| `part_kind:vessel` | 圆角容器与内分隔线 |
+| `part_kind:sensor/detector` | 圆形检测单元与传感器线 |
+| `part_kind:source/sink` | 菱形入口/出口 |
+| `flow_kind:material` | 灰色实线物料流 |
+| `flow_kind:energy` | 橙色实线能量流 |
+| `flow_kind:information` | 蓝色 `8,5` 虚线信息流 |
+| `flow_kind:waste` | 红色 `2,5` 点线废物流/出口 |
+| 未知 flow_kind | blocked + UNRESOLVED FLOW；不静默画成物料 |
+| `milestone:true` | 蓝色粗描边 + 自动里程碑图例；仅来自显式声明 |
 
-### Legend must match the drawn parts
+圆形/检测部件使用容纳 stage+仪器标签的方形 bbox，避免“圆看着正常，文字伸出轮廓”。
+SVG 与 PNG/PDF 的色样、实际颜色、虚线和图例一致。`from_port/to_port` 支持 `N/E/S/W`，
+也支持 schemdraw 风格 `start/end/in/out`；未指定时端口由真实源/目标边框计算，不贯穿盒心。
 
-Declared legend entries are cross-checked against the drawn labels: an entry matching
-no label is a phantom part (`apparatus.legend_entry_unmatched`, medium); with
-legend_required true a drawn label no entry explains is reported
-(`apparatus.legend_entity_unlisted`, low). Without a declared legend both stay silent.
+## 技术路线、反馈与布局
 
-### Technical routes: the pathway audit
+- `figure_kind:"route"` 保留 route 子类型，不被 apparatus renderer 覆盖；至少要有入口和
+  一个终止节点。闭合流程没有入口/出口时，分别报 `route.no_entry/no_exit`。
+- stage 真实显示为 `S01 | …` 等；`step_order` 与 Methods 文本顺序不一致时报
+  `route.numbering_vs_text`。stage 重号、跳号、决策少于两条出边分别对应专用 finding。
+- `kind:"decision"` 且有两个真实出边才算分流；废料/支路有明确 sink，不产生断头箭头。
+- 显式 `feedback:true` / `recycle:true` 回路由上方预留通道绕行；**任何普通直线若穿过
+  第三方部件，也会自动改为绕行曲线**，mapping 的 `route.reason` 记录
+  `feedback/recycle` 或 `unrelated-node-bypass` 以及避让节点。
+- 曲线使用三次贝塞尔几何和真实末端 tangent；控制点 >=34，避免回流标签裁出画布。
+  Liang–Barsky 直线/bbox 检查防止边穿越无关节点；d3 风格矩形碰撞迭代最多 80 轮。
+  高密极复杂图仍可能需人工分区，不缩字伪造 clean。
 
-A technical roadmap (技术路线图) is served by the same engine's pathway entry point,
-which audits the route phases and the biological/chemical nomenclature of the entities
-the route names:
-
-```bash
-python scripts/pathway.py --spec spec.json --checklist checklist.json --out /app/output
-```
-
-| rule | severity | what it proves |
-|-|-|-|
-| `nomenclature.vague_entity` | low | a stage or entity carries a filler label ("相关因子") |
-| `nomenclature.gene_casing` | high | a gene symbol violates its species casing convention |
-| `nomenclature.gene_not_italic` | medium | a gene name that should be italic is not marked |
-| `nomenclature.protein_italic` | medium | a protein name marked italic should not be |
-| `nomenclature.missing_accession` | medium | a sequence entity carries no accession |
-| `nomenclature.accession_malformed` | medium | an accession does not match its declared database's shape |
-| `nomenclature.alias_collision` | high | two entities share a name or alias, so the route is ambiguous |
-| `nomenclature.species_ambiguous` | medium | a gene symbol is claimed by more than one declared species |
-
-## 异常处置表
-
-| 异常 | 识别 | 处置动作 |
-|-|-|-|
-| 部件参数缺失（无 canvas_mm / font_size / 颜色） | spec 预检 | 引擎取默认值（font_size=9、Okabe-Ito 轮转配色、画布自适应），并把"该参数为默认值、非来源指定"登记进 uncertainty |
-| 部件清单缺失（materials 为空） | provenance 返回 checked=false | 不臆造部件；按拒绝模板落 result.json，limits 写明"无材料清单，溯源未检查" |
-| 工艺描述歧义（同一连接两种说法） | 抽取阶段 | 不凭空补齐：按证据强度取一种，另一种写进 uncertainty；禁止两条都画 |
-| 接口信息冲突（A→B 与 B→A 并存） | 抽取阶段 + edge.backward_flow | 保留来源原始方向并标记 uncertainty；画布上出现倒流箭头引擎报 medium 发现 |
-| 字体缺失（无覆盖图面用字的字体） | export.missing_glyphs / export.no_font | fontsel.py 按"图面实际用字"逐字符搜索系统字体；仍无覆盖则保留发现并在 limits 声明，不静默替换字体 |
-| 导出失败（写盘失败/权限） | 引擎异常退出 | result.json 记 limits 与 reason；依赖缺失属导入层失败，见 Requirements |
-| 画布溢出（标签重叠/出界） | label.overlap / label.outside_canvas | 增大 canvas_mm 或缩短标签；不得低于字号下限（min_font_pt，默认 6pt） |
-| 图面元素过多不可读 | label.overlap 连发 | 拆分主图与局部放大（局部放大属图面设计，本包以分区 layer 表达），limits 写明取舍 |
-| 输入整体缺失 | harness 预检 | 按拒绝模板写结构化 result.json，不崩溃 |
-| 重复运行结果不一致 | repro.nondeterministic | 修复布图后再交付；交付前跑两遍是流程要求 |
-
-## 创新增益
-
-本 Skill 的方法链是三段式的，对应题面点名的突破方向：
-
-1. **结构化中间表示（实体—连接—步骤—流向）**：把装置清单、工艺描述、路线文字解析成
-   四张可逐条质疑的清单——实体（materials/components/nodes，带 evidence 溯源）、
-   连接（connections/edges，带 source 出处）、步骤（step_order/stage 编号）、
-   流向（edge type 语义 + layer 方向）。图面合同先于布图存在，通用 Agent 通常直接
-   从文字跳到画图，跳过这一步。
-2. **确定性布图**：最长路径分层布图（显式 layer 优先），固定边型语义
-   （flow/activate/inhibit/bind 四种箭头），固定 Okabe-Ito 色盲安全编码；同一 spec
-   渲染两遍的文本与几何签名必须一致才允许交付。
-3. **自检（audit）**：37 条规则按 rule id 输出发现（溯源/结构/编号/图例/字体/导出/
-   复现），每个发现带 severity、message、detail；审出的问题可逐条定位到元素。
-
-相对基础 Agent 的增益边界（创新证据的适用范围）：
-
-- 增益在"可证明"一侧：溯源覆盖率、连接方向、编号对齐、图例一致性、字形覆盖、
-  二次可复现——这些引擎能算出数字，对照白板可验证。
-- 不在"画得像"：本包画带标注的盒子与箭头，不做仪器象形图；不判断实验方案本身的
-  科学合理性；不做数值拟合与期刊排版适配（题面明示不属于本课题）。
-- 接口对齐按连接拓扑检查，不建模物理贴合面。
-
-## 生态贡献
-
-- **使用说明**：本 SKILL.md 即完整使用说明——用途、适用条件、调用方式、输入输出、
-  异常处理、自查方法齐全；其他人或 Agent 可按说明独立复跑。
-- **依赖**：matplotlib + numpy + Pillow，一行 pip 安装（见 Dependencies）；无网络
-  依赖、无作者个人文件依赖。
-- **配置**：全部行为由 spec JSON 配置（画布、字号、色板、图例开关、min_font_pt、
-  expect_connections），按案例调整不需要改引擎代码。
-- **示例（示例，非正式案例结果）**：examples/spec-apparatus.json 与
-  examples/spec-route.json 是最小输入示例；examples/bench-apparatus-report.json 与
-  examples/bench-report.json 是示意输出。
-- **资源可复用**：scripts/ 各模块可独立导入——provenance.py（溯源）、fontsel.py
-  （逐字符字体解析）、nomenclature.py（命名规范）为跨题共享件；references/ 下的
-  图元与导出规范文档可单独取用。
-- **适用范围**：装置结构图、带编号工艺流程图、材料流向图、技术路线图；不适用于
-  带数值轴的数据图表与期刊排版适配。
-- **限制**：见 Limits 一节，逐条写明能力边界。
-- **维护信息**：规则集以 rule id 固化，bench 回归套件即版本门槛；任何规则改动必须
-  同步本文件并重跑 bench（strict_gate 的 G4 规则一致性检查强制这一点）。
-
-## Verification
+## Source-preserving SVG 编辑
 
 ```bash
-python scripts/bench_apparatus.py     # 11/11 scenarios
-python scripts/bench_apparatus2.py    # 9/9, including two injected defects
-python scripts/bench_pathway.py       # 11/11 scenarios
-python scripts/bench_pathway2.py      # 10/10 scenarios
-python scripts/bench_schematic.py     # 8/8, layout and export
+python -X utf8 "$SKILL/scripts/sourcebind.py" \
+  --edit-svg /input/figure.svg --edits /app/work/edits.json \
+  --case /input/case.json --out /app/output
 ```
 
-All five pass in full on this machine. The font and determinism defects cannot be
-expressed in a spec, so those two scenarios inject them by patching a resolver — which
-still tests the checker against a real defect rather than a mock.
+`rename/recolour/set_relation_type` 按精确 id 定点修改；未知 target、畸形指令和缺 edits
+均 exit 5。重命名保留独立 value/unit；关系变更同步 data-type 与实际 marker；无关 body
+元素和 live text 保留并记录 before/after。编辑后须同步 spec/connections 并重跑来源审计。
 
-## Dependencies
+可附 `--spec updated-spec.json`，在 `preview_from_spec/` 生成该更新 spec 的 PNG/PDF；
+它不会冒充第三方原 SVG 的逐像素一致预览。无兼容渲染路径时，编辑后 SVG 保留并 review，
+限制写清，绝不声称渲染成功。
 
-This skill requires the following Python packages:
+## result.json、契约与证据
 
+支持平面 `output_contract` 和 `fields[]/required[]+properties{}` 两种正式形态。
+
+- `case_id` 原样回填；平面契约逐 key 解析；schema 声明原样保留，所有请求字段的实值在
+  `contract_field_values`，适合字段同时写顶层。显式 `deliverable_svg` 等案例值原样保留。
+- 实际导出/映射字段写真实运行结果；不能推导的字段为 `null` 并在 limits 说明。
+  有效 case 与可读 spec 的声明在拒绝路径同样回填。
+- `exports[]` 有格式/大小/magic/SHA-256；PNG pHYs 验 dpi；PDF 验 `%PDF` 与 `/FontFile`。
+  老版主入口没有 --case 和 PDF 的问题不适用于 sourcebind。
+- `mapping.json` 给每个节点 label/value/unit/evidence/stage/milestone/bbox 与每条边
+  from/to/type/flow_kind/ports/route/source；`change_records`、`sources`、`uncertainty`、
+  可读 `source_files` SHA-256 支撑独立复核。
+
+## 退出码与限制
+
+| 情形 | exit |
+|-|-|
+| clean 全套装置/路线图与三件套 | 0 |
+| 中低危发现、缺 matplotlib/PNG/PDF 导出失败 | 3；SVG/mapping/result 保留，partial+limits |
+| 来源缺件、未知 flow、悬空连接、无 route 入口/出口、stage 重复、设备/文字重叠 | 4；真实已有图保留，blocked |
+| 坏 JSON、非对象、空 nodes、非法 canvas/layer、无抽取 spec、编辑无 target | 5 structured refusal |
+| 目录不可写 | 5，不能在目录内谎称写了 result；stdout 结构化错误 |
+
+依赖 Python 3.10+；SVG/metadata 由标准库生成。PNG/PDF 与字形覆盖检查需要 matplotlib（Agg）。
+缺 matplotlib 不伪造位图/PDF。除已知装置图元外不做无来源仪器象形图；接口是声明+几何，
+不模拟真实螺纹/密封面/力学装配；不拟合数据、不评判实验方案是否合理、不做论文排版。
+
+## 真实验证
+
+```bash
+python -X utf8 "$SKILL/scripts/bench_sourcebind.py" --mode apparatus
+python -X utf8 "$SKILL/scripts/bench_apparatus_routes.py"
+python -X utf8 "$SKILL/scripts/bench_apparatus.py"
+python -X utf8 "$SKILL/scripts/bench_apparatus2.py"
+python -X utf8 "$SKILL/scripts/bench_pathway.py"
+python -X utf8 "$SKILL/scripts/bench_pathway2.py"
+python -X utf8 "$SKILL/scripts/bench_schematic.py"
 ```
-pip install matplotlib numpy Pillow
-```
 
-- **matplotlib** (matplotlib, numpy): figure rendering, SVG/PNG export
-- **numpy**: numerical array operations behind the layout audit
-- **Pillow (PIL)**: font measurement for text overflow detection
+- sourcebind clean/敌意/契约/fresh-case-id/编辑/重跑：**27/27**（`report_sourcebind.json`）。
+- 装置与路线专项：**18/18**（`report_apparatus_routes.json`）。真实覆盖四介质、
+  泵/阀/检测器/sink、命名端口、S01–S05、绕开废液部件、回流、里程碑、decision 分支、
+  route 无入口/出口、stage 错号/重号、缺件、未知 flow、孤立件与循环重跑。
+- 旧回归：**11+9+11+10+8 = 49/49**。
+- 另打开真实四介质+回流示例 PNG 复看：截断回流标签、圆形长标签溢出、图例色样/线型和
+  泵符号遮字均已实际修复并复看通过；没有见过或用此代替平台私有案例。
 
-If these packages are not available, the skill writes a structured result.json with
-status failed and reason dependency_missing instead of crashing — then install them and
-re-run. The audit rules that check rendering output cannot run without matplotlib.
+测试全部用临时目录和 EXAMPLE-ONLY 合成材料，不携带正式答案。
 
-## Limits
+## 方法参考
 
-- **Boxes and lines, not pictograms.** A pump is drawn as a labelled box, not a pump
-  shape. Inventing a symbol would imply mechanism the engine cannot know — and the
-  judging criteria for this task concern traceability, not realism. If a case needs a
-  recognisable instrument silhouette, that is an asset problem this skill does not
-  solve.
-- **Determinism is checked on text and geometry**, not on bytes: timestamps and
-  generated ids legitimately differ between runs.
-- **`connections` is only as complete as the extraction.** An invented arrow is caught
-  only where the source's statements were recorded.
-- **Font fallback is a search, not a guarantee.** If no installed font covers a
-  character, the audit reports it rather than substituting silently.
-- **Interface geometry is topology only.** "Interface alignment" is checked as
-  connection topology; physical mating surfaces are not modelled.
-- **`grouped: true` is a promise.** Marking two distinct parts as grouped silences a
-  real ambiguity.
+GitHub `cdelker/schemdraw/docs/usage/placement.rst` 的 `anchors / at / anchor / hold / drop`
+用于命名端口与连接状态；GitHub `d3/d3-force`、`d3/d3/docs/d3-force/{simulation,collide}.md`
+用于固定顺序碰撞松弛；本地 `p3i04` 的 parts/connections/steps→SVG 回查用于来源绑定。
+这些是方法来源，不是运行依赖，也不需要联网或安装 schemdraw/d3。

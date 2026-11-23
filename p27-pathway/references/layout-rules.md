@@ -28,15 +28,16 @@ default `svg.fonttype` is `path`, which does exactly this), `export.embedded_ras
 ## What neither audit covers
 
 - whether the biology is right
-- whether the arrow type matches the relation
+- relation types absent from the extracted source (explicit source/figure types are compared)
 - aesthetics: balance, whitespace, hierarchy
 - anything requiring a gene or pathway database
 
 ## Compartments (declared bands, constraint layout)
 
-`compartments[]` declares subcellular bands (id, label, layers, optional colour). The
-renderer draws each band behind the boxes and places nodes without an explicit `layer`
-into the band they claim — the declared biology constrains the geometry. An explicit
+`compartments[]` declares subcellular bands (id, label, layers, optional colour). Since
+layers run along x, the renderer draws vertical panels around the owned layers, behind the
+boxes; overlapping panels fire `compartment.overlap`. Nodes without an explicit `layer` are
+placed into the band they claim — the declared biology constrains the geometry. An explicit
 layer that contradicts the band fires `compartment.mismatch` (high); a node naming an
 undeclared band fires `compartment.undeclared` (medium).
 
@@ -59,3 +60,15 @@ required legend explains no size mapping (`legend_notes[]` carries mapping text)
 
 `node.malformed`, `edge.malformed`, `compart.malformed`: entries that cannot be drawn
 are skipped and reported — one dirty row must not refuse the whole case.
+
+## Relation semantics and visible legend
+
+Supported `edges[].type` values are activate, inhibit, bind, flow, phosphorylate,
+ubiquitinate, recruit and transport. Unknown values fire `edge.type_unknown` instead of
+being silently treated as flow. When the source connection explicitly declares a type,
+`trace.relation_type_mismatch` catches activation/inhibition and other semantic flips.
+
+Declared legend entries and notes are rendered as live SVG text and read back;
+`legend.mapping_not_rendered` prevents metadata-only legends. Relation semantics are also
+auto-rendered from the edge types actually used. Every node, edge, compartment and legend
+item receives a stable `layer:*` SVG group id for targeted editing.

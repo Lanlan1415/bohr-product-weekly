@@ -1,0 +1,99 @@
+{
+  "schema_version": "apparatus-routes-bench/v1",
+  "passed": 18,
+  "total": 18,
+  "all_passed": true,
+  "checks": [
+    {
+      "name": "apparatus with source, valve/diverter, detector, waste sink and recycle is clean",
+      "passed": true,
+      "detail": "{'exit': 0, 'stdout': '{\"status\": \"clean\", \"case_id\": \"EXAMPLE-apparatus-clean\", \"findings\": [], \"artifacts\": {\"svg\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\apparatus-routes-kh77nm77\\\\\\\\four-flows\\\\\\\\figure.svg\", \"png\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\apparatus-routes-kh77nm77\\\\\\\\four-flows\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\apparatus-routes-kh77nm77\\\\\\\\four-flows\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\apparatus-routes-kh77nm77\\\\\\\\four-flows\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\apparatus-routes-kh77nm77\\\\\\\\four-flows\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\apparatus-routes-kh77nm77\\\\\\\\four-flows\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "material/energy/information/waste channels have distinct real strokes and legends",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "sequential stages S01-S05 and non-crossing recycle are drawn",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "recycle ends at actual pump top anchor rather than crossing the valve",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "route labels stay on-canvas and circular parts contain their labels",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "source-declared milestone is rendered as a blue outline + legend",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "four-flow + recycle rendering is byte-idempotent",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "schemdraw-style named ports are geometrically exact",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "decision without alternate output is blocked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "decision/diverter with real alternative streams is not a false positive",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "figure_kind=route retains entry/exit and stage-sequence semantics",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "closed technical loop without an entry/exit is blocked, not hidden by apparatus mode",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unmarked backward material flow is a review finding, never auto-recycled",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "stage number contradicting Methods order is reported",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "two units at one stage position are blocked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "missing bill-of-materials component is blocked",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unknown physical flow channel is not silently displayed as material",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unconnected apparatus part cannot masquerade as a connected process",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "note": "EXAMPLE-ONLY synthetic apparatus and route bindings"
+}

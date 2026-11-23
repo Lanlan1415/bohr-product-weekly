@@ -1,0 +1,135 @@
+{
+  "schema_version": "sourcebind-bench/v1",
+  "mode": "schematic",
+  "passed": 25,
+  "total": 25,
+  "all_passed": true,
+  "checks": [
+    {
+      "name": "clean baseline generates SVG/PNG/PDF and resolves fields-schema contract",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': '\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "clean artifact semantics, XML safety, units and export magic",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "idempotent rerun exit",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': '\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\clean\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "SVG/PNG/PDF/mapping/spec/result are byte-identical on rerun",
+      "passed": true,
+      "detail": "{}"
+    },
+    {
+      "name": "case-id on a fresh output directory creates the full figure",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': 'ourcebind-schematic-nl0sbeqv\\\\\\\\fresh-case-id\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\fresh-case-id\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\fresh-case-id\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\fresh-case-id\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\fresh-case-id\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "fresh case-id is reflected in every contract surface",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "flat contract accepted without crash",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': ': \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\flat\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\flat\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\flat\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\flat\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\flat\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "flat contract every key echoed; unknown null + limit; case descriptor preserved",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed spec refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": \"EXAMPLE-schematic-clean\", \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\bad\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "malformed refusal is structured and preserves case_id + contract fields",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "non-object spec refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\array\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "unreadable case refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\badcase\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "no drawable nodes refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": \"EXAMPLE-schematic-clean\", \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\empty\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "non-finite canvas refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\badcanvas\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "dangling edge yields blocked artifact not traceback",
+      "passed": true,
+      "detail": "{'exit': 4, 'expected': 4, 'stdout': '\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\dangling\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\dangling\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\dangling\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\dangling\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\dangling\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "dangling refusal names endpoint and still leaves valid SVG",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unknown relation blocked with exit 4",
+      "passed": true,
+      "detail": "{'exit': 4, 'expected': 4, 'stdout': 'anlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\unknown\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\unknown\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\unknown\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\unknown\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\unknown\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "unknown relation is visible as unresolved, never silently restyled",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "reversed SVG ports are caught independently of the input spec",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tampered arrowhead semantics are caught",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "source-preserving SVG edit is structured",
+      "passed": true,
+      "detail": "{'exit': 3, 'expected': 3, 'stdout': '{\"status\": \"review\", \"case_id\": \"EXAMPLE-schematic-clean\", \"findings\": [], \"artifacts\": {\"svg\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\edit\\\\\\\\figure.svg\", \"png\": null, \"pdf\": null}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\edit\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "edit preserves XML/other elements and updates addressed text/marker",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unknown SVG edit target refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\bad-edit-out\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "missing SVG edit instructions refuse with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\missing-edit-out\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "case-only input without semantic extraction refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": \"EXAMPLE-schematic-clean\", \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-schematic-nl0sbeqv\\\\\\\\case-only\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    }
+  ],
+  "note": "EXAMPLE-ONLY synthetic source-bound specs; not formal test answers"
+}

@@ -20,7 +20,10 @@ for specs from which nothing at all can be drawn.
 
 from __future__ import annotations
 
+import html
 import json
+import math
+import re
 from pathlib import Path
 
 import matplotlib
@@ -38,6 +41,16 @@ def _records(value):
             yield item
 
 
+def _text_list(value) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value] if value.strip() else []
+    if isinstance(value, (list, tuple)):
+        return [str(x) for x in value if str(x).strip()]
+    return []
+
+
 OKABE_ITO = {
     "orange": "#E69F00", "sky": "#56B4E9", "green": "#009E73", "yellow": "#F0E442",
     "blue": "#0072B2", "vermillion": "#D55E00", "purple": "#CC79A7", "grey": "#999999",
@@ -50,6 +63,27 @@ EDGE_STYLES = {
     "inhibit": dict(arrowstyle="-[", color="#D55E00"),
     "flow": dict(arrowstyle="-|>", color="#555555"),
     "bind": dict(arrowstyle="-", color="#009E73", linestyle="--"),
+    # Modification/transport semantics remain visibly distinct rather than being
+    # silently coerced to a generic arrow. The short label is drawn at the edge.
+    "phosphorylate": dict(arrowstyle="-|>", color="#CC79A7"),
+    "ubiquitinate": dict(arrowstyle="-|>", color="#E69F00"),
+    "recruit": dict(arrowstyle="-|>", color="#009E73"),
+    "transport": dict(arrowstyle="-|>", color="#56B4E9"),
+}
+
+EDGE_TYPE_LABELS = {
+    "phosphorylate": "P", "ubiquitinate": "Ub",
+    "recruit": "recruit", "transport": "transport",
+}
+EDGE_TYPE_LEGEND = {
+    "activate": "activate: blue arrow / 激活：蓝色箭头",
+    "inhibit": "inhibit: red bar / 抑制：红色 T 端",
+    "bind": "bind: green dashed line / 结合：绿色虚线",
+    "flow": "flow: grey arrow / 流向：灰色箭头",
+    "phosphorylate": "phosphorylate: purple arrow + P / 磷酸化：紫色箭头 + P",
+    "ubiquitinate": "ubiquitinate: orange arrow + Ub / 泛素化：橙色箭头 + Ub",
+    "recruit": "recruit: green arrow + recruit / 募集：绿色箭头 + recruit",
+    "transport": "transport: sky arrow + transport / 转运：浅蓝箭头 + transport",
 }
 
 # Evidence strength on a relation (题面: "并标注证据强度或不确定性"). Declared
@@ -208,57 +242,105 @@ def render(spec: dict, out_stem: Path, dpi: int = 300, fonttype: str = "none") -
 
     n_layers = max(by_layer) + 1
     n_rows = max(len(g) for g in by_layer.values())
+
+    # The legend is actual ink, not merely metadata in the spec. Relation semantics
+    # are generated from the edge types used, so a reader can decode every arrow even
+    # when the caller supplies no entity legend. Declared entries/notes remain verbatim.
+    declared_legend = _text_list(spec.get("legend"))
+    declared_notes = _text_list(spec.get("legend_notes"))
+    used_types = []
+    for e in edges:
+        et = str(e.get("type") or "flow")
+        if et in EDGE_TYPE_LEGEND and et not in used_types:
+            used_types.append(et)
+    semantic_legend = [EDGE_TYPE_LEGEND[t] for t in used_types]
+    if spec.get("confidence_required") or any(e.get("confidence") for e in edges):
+        semantic_legend.append(
+            "evidence: confirmed solid / predicted dashed / hypothetical dotted；"
+            "证据：确认实线 / 预测虚线 / 假说点线")
+    legend_lines = list(dict.fromkeys(declared_legend + declared_notes + semantic_legend))
+    legend_pitch = 0.34
+    legend_height = len(legend_lines) * legend_pitch + (0.25 if legend_lines else 0.0)
+
     # A journal slot is a fixed physical width, so the canvas is a constraint and
     # not something to grow until everything fits. When `canvas_mm` is given the
     # figure is that size and the audit can legitimately find collisions.
     canvas = spec.get("canvas_mm")
     if (isinstance(canvas, (list, tuple)) and len(canvas) == 2
-            and all(isinstance(v, (int, float)) for v in canvas)):
+            and all(isinstance(v, (int, float)) and not isinstance(v, bool)
+                    and math.isfinite(v) for v in canvas)):
         w_mm, h_mm = canvas
         if w_mm <= 0 or h_mm <= 0:
             raise ValueError(f"canvas_mm must be positive, got {canvas}")
         fig_w, fig_h = w_mm / 25.4, h_mm / 25.4
+    elif canvas is not None:
+        # Do not silently accept "150x70", [150], booleans or NaN and then claim the
+        # source's canvas was used; a malformed declaration is a recorded refusal.
+        raise ValueError("canvas_mm must be a two-element finite positive numeric sequence")
     else:
         fig_w = max(4.0, n_layers * dx + 1.2)
-        fig_h = max(3.0, n_rows * dy + 0.9)
+        fig_h = max(3.0, n_rows * dy + 0.9) + len(legend_lines) * 0.16
     fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     ax.set_xlim(-1.0, (n_layers - 1) * dx + 1.0)
-    ax.set_ylim(-n_rows * dy / 2 - 0.6, n_rows * dy / 2 + 0.6)
+    base_ymin = -n_rows * dy / 2 - 0.6
+    ax.set_ylim(base_ymin - legend_height, n_rows * dy / 2 + 0.6)
     ax.axis("off")
 
     fs = spec.get("font_size", 9)
+    if not isinstance(fs, (int, float)) or isinstance(fs, bool) or not math.isfinite(fs) or fs <= 0:
+        raise ValueError("font_size must be a positive finite number")
 
-    # Compartment bands first, so boxes and arrows layer on top of them. A band
-    # is drawn only where its layers hold nodes; an empty band claims space for
-    # biology the figure does not show.
-    layer_ys: dict[int, list[float]] = {}
-    for nid, (x, y) in pos.items():
-        layer_ys.setdefault(depth[nid], []).append(y)
+    # Layers run along x, therefore compartments must be vertical panels around the
+    # layers they own. The previous horizontal full-width bands made every compartment
+    # overlap and hid exactly the location error the figure was meant to expose.
+    compartment_bounds = {}
     xlim = ax.get_xlim()
     for cid, comp in compartments.items():
-        ys = [y for L in comp["layers"] for y in layer_ys.get(L, [])]
-        if not ys:
+        members = [n for n in nodes if depth[n["id"]] in comp["layers"]]
+        if not members:
             continue
-        top, bot = max(ys) + bh / 2 + 0.18, min(ys) - bh / 2 - 0.18
-        ax.add_patch(Rectangle((xlim[0] + 0.02, bot), xlim[1] - xlim[0] - 0.04,
-                               top - bot, facecolor=comp["color"],
-                               edgecolor="#BBBBBB", linewidth=0.8, alpha=0.6, zorder=0))
-        ax.text(xlim[0] + 0.12, top - 0.06, comp["label"], ha="left", va="top",
-                fontsize=max(fs - 2.0, 4.5), color="#555555", zorder=1)
+        xs = [pos[n["id"]][0] for n in members]
+        ys = [pos[n["id"]][1] for n in members]
+        half_widths = []
+        half_heights = []
+        for n in members:
+            value = n.get("size", 1.0)
+            scale = (math.sqrt(value) if isinstance(value, (int, float))
+                     and not isinstance(value, bool) and math.isfinite(value) and value > 0
+                     else 1.0)
+            half_widths.append(bw * scale / 2)
+            half_heights.append(bh * scale / 2)
+        left = min(xs) - max(half_widths) - 0.18
+        right = max(xs) + max(half_widths) + 0.18
+        top = max(y + hh for y, hh in zip(ys, half_heights)) + 0.42
+        bot = min(y - hh for y, hh in zip(ys, half_heights)) - 0.18
+        compartment_bounds[cid] = [left, bot, right, top]
+        band = Rectangle((left, bot), right - left, top - bot,
+                         facecolor=comp["color"], edgecolor="#BBBBBB",
+                         linewidth=0.8, alpha=0.6, zorder=0)
+        band.set_gid(f"layer:compartment:{cid}:band")
+        ax.add_patch(band)
+        label = ax.text(left + 0.08, top - 0.04, comp["label"], ha="left", va="top",
+                        fontsize=max(fs - 2.0, 4.5), color="#555555", zorder=1)
+        label.set_gid(f"layer:compartment:{cid}:label")
 
     artists = []
+    node_half_extents = {}
     for n in nodes:
         x, y = pos[n["id"]]
         colour = n.get("color") or OKABE_ITO["sky"]
         # Node size encodes a datum (题面: 节点大小编码数据). Area-proportional
         # scaling keeps the mapping readable; non-positive sizes are reported.
         size = n.get("size", 1.0)
-        s = size ** 0.5 if isinstance(size, (int, float)) and size > 0 else 1.0
+        s = size ** 0.5 if (isinstance(size, (int, float)) and not isinstance(size, bool)
+                            and math.isfinite(size) and size > 0) else 1.0
         bw_i, bh_i = bw * s, bh * s
+        node_half_extents[n["id"]] = (bw_i / 2, bh_i / 2)
         box = FancyBboxPatch((x - bw_i / 2, y - bh_i / 2), bw_i, bh_i,
                              boxstyle="round,pad=0.03,rounding_size=0.08",
                              linewidth=1.2, edgecolor="#333333",
                              facecolor=colour, alpha=0.95, zorder=2)
+        box.set_gid(f"layer:node:{n['id']}:box")
         ax.add_patch(box)
         # Gene symbols must be italic and protein names roman; the style is taken
         # from the node so the nomenclature audit can verify it survived export.
@@ -271,6 +353,7 @@ def render(spec: dict, out_stem: Path, dpi: int = 300, fonttype: str = "none") -
             style = "italic" if n.get("kind") == "gene" else "normal"
         t = ax.text(x, y, n.get("label", n["id"]), ha="center", va="center",
                     fontsize=fs, zorder=3, wrap=False, style=style)
+        t.set_gid(f"layer:node:{n['id']}:label")
         artists.append({"node": n["id"], "text": t, "patch": box, "bbox_xy": (x, y)})
         n["_xy"] = (x, y)
         n["_colour"] = colour
@@ -284,13 +367,47 @@ def render(spec: dict, out_stem: Path, dpi: int = 300, fonttype: str = "none") -
             st["linestyle"] = dash
         elif dash == ":" and e.get("type", "flow") == "bind":
             st["linestyle"] = ":"
-        a = FancyArrowPatch(pos[e["from"]], pos[e["to"]],
+        sx, sy = pos[e["from"]]
+        tx, ty = pos[e["to"]]
+        vx, vy = tx - sx, ty - sy
+        start, end = (sx, sy), (tx, ty)
+        if vx or vy:
+            def boundary(nid, x, y, sign):
+                hw, hh = node_half_extents[nid]
+                tx_edge = hw / abs(vx) if vx else float("inf")
+                ty_edge = hh / abs(vy) if vy else float("inf")
+                distance = min(tx_edge, ty_edge)
+                return x + sign * vx * distance, y + sign * vy * distance
+            start = boundary(e["from"], sx, sy, 1)
+            end = boundary(e["to"], tx, ty, -1)
+        a = FancyArrowPatch(start, end,
                             connectionstyle="arc3,rad=0.0",
-                            mutation_scale=12, linewidth=1.4, zorder=1,
-                            shrinkA=26, shrinkB=26,
+                            mutation_scale=12, linewidth=1.4, zorder=2.5,
+                            shrinkA=2, shrinkB=2,
                             **{k: v for k, v in st.items() if k in ("arrowstyle", "color", "linestyle")})
+        a.set_gid(f"layer:edge:{e['from']}-to-{e['to']}:connector")
         ax.add_patch(a)
         drawn_edges.append(a)
+        edge_label = e.get("label") or EDGE_TYPE_LABELS.get(str(e.get("type") or "flow"))
+        if edge_label:
+            sx, sy = pos[e["from"]]
+            tx, ty = pos[e["to"]]
+            et = ax.text((sx + tx) / 2, (sy + ty) / 2 + 0.18, str(edge_label),
+                         ha="center", va="center", fontsize=max(fs - 1.5, 4.5),
+                         color=st.get("color", "#333333"), zorder=4,
+                         bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.6, "alpha": 0.85})
+            et.set_gid(f"layer:edge:{e['from']}-to-{e['to']}:label")
+
+    # Semantic, named groups make the SVG practical to edit: a reviewer can address
+    # node/gene/label, edge/.../connector and legend entries rather than patch_17.
+    for i, line in enumerate(legend_lines):
+        y = base_ymin - 0.12 - i * legend_pitch
+        lt = ax.text(xlim[0] + 0.12, y, line, ha="left", va="top",
+                     fontsize=max(fs - 2.0, 4.5), color="#333333", zorder=5)
+        lt.set_gid(f"layer:legend:item-{i + 1}")
+    if spec.get("title"):
+        title = ax.set_title(str(spec["title"]), fontsize=max(fs + 1, 6))
+        title.set_gid("layer:title")
 
     fig.tight_layout(pad=0.2)
 
@@ -308,7 +425,8 @@ def render(spec: dict, out_stem: Path, dpi: int = 300, fonttype: str = "none") -
             "font": font, "nodes_valid": nodes, "malformed_nodes": malformed_nodes,
             "malformed_edges": malformed_edges, "dangling_edges": dangling,
             "malformed_compartments": malformed_compartments,
-            "compartments": compartments, "compartment_of": comp_of}
+            "compartments": compartments, "compartment_of": comp_of,
+            "compartment_bounds": compartment_bounds, "legend_lines": legend_lines}
 
 
 # ---------------------------------------------------------------------------
@@ -409,6 +527,13 @@ def audit(spec: dict, built: dict) -> dict:
 
     node_ids = {n["id"]: n for n in nodes}
     for e in want_edges:
+        etype = str(e.get("type") or "flow")
+        if etype not in EDGE_STYLES:
+            add("edge.type_unknown", "high",
+                "an edge type has no declared visual semantics; refusing to treat it as "
+                "an ordinary flow arrow would misstate the mechanism",
+                edge=[e["from"], e["to"]], value=etype,
+                supported=sorted(EDGE_STYLES))
         sx, sy = built["pos"][e["from"]]
         tx, ty = built["pos"][e["to"]]
         if node_ids[e["to"]].get("_colour") == node_ids[e["from"]].get("_colour") \
@@ -475,21 +600,30 @@ def audit(spec: dict, built: dict) -> dict:
                 node=n["id"], compartment=c,
                 layer=raw_layer[n["id"]], band_layers=compartments[c]["layers"])
 
+    bounds_items = sorted(built.get("compartment_bounds", {}).items())
+    for i, (left_id, a) in enumerate(bounds_items):
+        for right_id, b in bounds_items[i + 1:]:
+            if not (a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1]):
+                add("compartment.overlap", "high",
+                    "declared compartment panels overlap; their labels and spatial claims "
+                    "cannot both be read unambiguously", compartments=[left_id, right_id])
+
     # 6d. node size is a data channel; a non-positive or non-numeric size is noise
     sizes_seen = set()
     for n in nodes:
         s = n.get("size")
         if s is None:
             continue
-        if not isinstance(s, (int, float)) or isinstance(s, bool) or s <= 0:
+        if (not isinstance(s, (int, float)) or isinstance(s, bool)
+                or not math.isfinite(s) or s <= 0):
             add("size.not_positive", "medium",
                 "node size must be a positive number: it encodes a datum, and this one "
                 "cannot be drawn to scale", node=n["id"], size=s)
         else:
             sizes_seen.add(round(float(s), 6))
     if len(sizes_seen) > 1 and spec.get("legend_required"):
-        legend_txt = " ".join(str(x) for x in (spec.get("legend") or [])
-                              + list(spec.get("legend_notes") or [])).lower()
+        legend_txt = " ".join(_text_list(spec.get("legend"))
+                              + _text_list(spec.get("legend_notes"))).lower()
         if not any(w in legend_txt for w in ("size", "大小", "尺度", "直径", "表达")):
             add("legend.size_unexplained", "low",
                 "node sizes vary but the required legend explains no size mapping, so the "
@@ -524,8 +658,8 @@ def audit(spec: dict, built: dict) -> dict:
     # a declared legend nothing fires, and legend_required gates the second direction.
     # `legend_notes` carries mapping explanations ("节点大小 = 表达量") — notes about
     # encodings rather than series, so they are exempt from label matching.
-    legend = [str(x).strip() for x in (spec.get("legend") or []) if str(x).strip()]
-    legend_notes = [str(x).strip() for x in (spec.get("legend_notes") or []) if str(x).strip()]
+    legend = _text_list(spec.get("legend"))
+    legend_notes = _text_list(spec.get("legend_notes"))
     if legend:
         node_labels = [str(n.get("label") or n.get("id") or "") for n in nodes]
         folded = {lbl.strip().lower(): lbl for lbl in node_labels if lbl.strip()}
@@ -551,6 +685,20 @@ def audit(spec: dict, built: dict) -> dict:
     if "<text" not in svg_text:
         add("export.no_live_text", "high",
             "the SVG contains no <text> elements, so labels are paths and cannot be edited")
+    declared_mapping = [line.strip() for line in
+                        _text_list(spec.get("legend")) + _text_list(spec.get("legend_notes"))]
+    if declared_mapping and "<text" in svg_text:
+        drawn_text = []
+        for content in re.findall(r"<text\b[^>]*>(.*?)</text>", svg_text, flags=re.S):
+            plain = html.unescape(re.sub(r"<[^>]+>", "", content))
+            drawn_text.append(" ".join(plain.split()))
+        missing_mapping = [line for line in declared_mapping
+                           if " ".join(line.split()) not in drawn_text]
+        if missing_mapping:
+            add("legend.mapping_not_rendered", "high",
+                "legend entries or data-mapping notes are declared but absent from the "
+                "rendered SVG; metadata must not masquerade as visible figure content",
+                entries=missing_mapping[:10])
     if "<image" in svg_text:
         add("export.embedded_raster", "medium",
             "the SVG embeds a raster image; it will not scale cleanly for print")
@@ -580,6 +728,8 @@ def audit(spec: dict, built: dict) -> dict:
             "malformed_nodes": len(built["malformed_nodes"]),
             "malformed_edges": len(built["malformed_edges"]),
             "compartments": sorted(built["compartments"]),
+            "legend_items_rendered": len(built.get("legend_lines", [])),
+            "editable_groups": re.findall(r'<g id="(layer:[^"]+)"', svg_text),
             "artifacts": {"svg": str(built["svg"]), "png": str(built["png"]),
                           "pdf": str(built["pdf"])},
         },

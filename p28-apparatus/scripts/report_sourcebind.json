@@ -1,0 +1,145 @@
+{
+  "schema_version": "sourcebind-bench/v1",
+  "mode": "apparatus",
+  "passed": 27,
+  "total": 27,
+  "all_passed": true,
+  "checks": [
+    {
+      "name": "clean baseline generates SVG/PNG/PDF and resolves fields-schema contract",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': '\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "clean artifact semantics, XML safety, units and export magic",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "idempotent rerun exit",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': '\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\clean\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "SVG/PNG/PDF/mapping/spec/result are byte-identical on rerun",
+      "passed": true,
+      "detail": "{}"
+    },
+    {
+      "name": "case-id on a fresh output directory creates the full figure",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': 'ourcebind-apparatus-tsurhw6s\\\\\\\\fresh-case-id\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\fresh-case-id\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\fresh-case-id\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\fresh-case-id\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\fresh-case-id\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "fresh case-id is reflected in every contract surface",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "flat contract accepted without crash",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': ': \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\flat\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\flat\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\flat\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\flat\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\flat\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "flat contract every key echoed; unknown null + limit; case descriptor preserved",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "malformed spec refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": \"EXAMPLE-apparatus-clean\", \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\bad\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "malformed refusal is structured and preserves case_id + contract fields",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "non-object spec refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\array\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "unreadable case refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\badcase\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "no drawable nodes refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": \"EXAMPLE-apparatus-clean\", \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\empty\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "non-finite canvas refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\badcanvas\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "dangling edge yields blocked artifact not traceback",
+      "passed": true,
+      "detail": "{'exit': 4, 'expected': 4, 'stdout': '\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\dangling\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\dangling\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\dangling\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\dangling\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\dangling\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "dangling refusal names endpoint and still leaves valid SVG",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unknown relation blocked with exit 4",
+      "passed": true,
+      "detail": "{'exit': 4, 'expected': 4, 'stdout': 'anlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\unknown\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\unknown\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\unknown\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\unknown\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\unknown\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "unknown relation is visible as unresolved, never silently restyled",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "reversed SVG ports are caught independently of the input spec",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tampered arrowhead semantics are caught",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "declared recycle + stage feedback renders without false backward-flow block",
+      "passed": true,
+      "detail": "{'exit': 0, 'expected': 0, 'stdout': 'anlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\recycle\\\\\\\\figure.png\", \"pdf\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\recycle\\\\\\\\figure.pdf\", \"spec\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\recycle\\\\\\\\spec.json\", \"mapping\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\recycle\\\\\\\\mapping.json\"}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\recycle\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "recycle and flow channels survive in mapping",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "source-preserving SVG edit is structured",
+      "passed": true,
+      "detail": "{'exit': 3, 'expected': 3, 'stdout': '{\"status\": \"review\", \"case_id\": \"EXAMPLE-apparatus-clean\", \"findings\": [], \"artifacts\": {\"svg\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\edit\\\\\\\\figure.svg\", \"png\": null, \"pdf\": null}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\edit\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "edit preserves XML/other elements and updates addressed text/marker",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unknown SVG edit target refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\bad-edit-out\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "missing SVG edit instructions refuse with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": null, \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\missing-edit-out\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    },
+    {
+      "name": "case-only input without semantic extraction refuses with exit 5",
+      "passed": true,
+      "detail": "{'exit': 5, 'expected': 5, 'stdout': '{\"status\": \"undetermined\", \"case_id\": \"EXAMPLE-apparatus-clean\", \"findings\": [\"audit.no_render\"], \"artifacts\": {}, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\sourcebind-apparatus-tsurhw6s\\\\\\\\case-only\\\\\\\\result.json\"}\\n', 'stderr': ''}"
+    }
+  ],
+  "note": "EXAMPLE-ONLY synthetic source-bound specs; not formal test answers"
+}

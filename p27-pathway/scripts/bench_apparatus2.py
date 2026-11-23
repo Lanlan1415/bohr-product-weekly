@@ -38,7 +38,8 @@ BASE = {
     "materials": [{"id": "m1", "name": "激光器", "source": "Methods ¶1"},
                   {"id": "m2", "name": "分束器", "source": "Methods ¶1"},
                   {"id": "m3", "name": "探测器", "source": "Methods ¶2"}],
-    "connections": [{"from": "n1", "to": "n2"}, {"from": "n2", "to": "n3"}],
+    "connections": [{"from": "n1", "to": "n2", "source": "Methods ¶1"},
+                    {"from": "n2", "to": "n3", "source": "Methods ¶2"}],
     "nodes": [
         {"id": "n1", "label": "激光器", "evidence": "m1", "layer": 0, "color": "#56B4E9"},
         {"id": "n2", "label": "分束器", "evidence": "m2", "layer": 1, "color": "#009E73"},
@@ -136,7 +137,7 @@ def scen_recycle():
     """A declared recycle return is an intentional back-flow, not an error."""
     s = d()
     s["edges"] = BASE["edges"] + [{"from": "n3", "to": "n1", "type": "flow", "recycle": True}]
-    s["connections"] = BASE["connections"] + [{"from": "n3", "to": "n1"}]
+    s["connections"] = BASE["connections"] + [{"from": "n3", "to": "n1", "source": "Methods ¶3"}]
     return s, []
 
 

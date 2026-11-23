@@ -124,6 +124,15 @@
       "pass": true
     },
     {
+      "scenario": "compartment_overlap",
+      "expected": [
+        "compartment.overlap"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
       "scenario": "confidence_missing",
       "expected": [
         "edge.confidence_missing"
@@ -206,6 +215,65 @@
       "pass": true
     },
     {
+      "scenario": "edge_type_unknown",
+      "expected": [
+        "edge.type_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "relation_type_mismatch",
+      "expected": [
+        "trace.relation_type_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "relation_type_clean",
+      "expected": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "connection_no_source",
+      "expected": [
+        "trace.connection_no_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "accession_collision",
+      "expected": [
+        "nomenclature.accession_collision"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "accession_state_guard",
+      "expected": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "accession_source_unknown",
+      "expected": [
+        "nomenclature.accession_source_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
       "scenario": "missing_glyphs",
       "expected": [
         "export.missing_glyphs"
@@ -236,6 +304,16 @@
       "injected": true
     },
     {
+      "scenario": "legend_mapping_not_rendered",
+      "expected": [
+        "legend.mapping_not_rendered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "injected": true
+    },
+    {
       "scenario": "refusal_contract",
       "expected": [
         "audit.no_section"
@@ -255,7 +333,7 @@
     }
   ],
   "totals": {
-    "passed": 29,
-    "of": 29
+    "passed": 38,
+    "of": 38
   }
 }

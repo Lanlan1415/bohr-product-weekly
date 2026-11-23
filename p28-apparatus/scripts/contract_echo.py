@@ -29,3 +29,32 @@ def apply(result: dict, spec: dict) -> dict:
         result[key] = None
         limits.append(f"output_contract field '{key}' was not derivable by this audit")
     return result
+
+
+def apply_case(result: dict, case: dict | None, fills: dict | None = None) -> dict:
+    """Populate the original case contract from artifacts actually written.
+
+    This helper is for successful/partial renders only. The refusal path has no
+    rendered fill map and deliberately performs its own guarded echo instead.
+    """
+    if not isinstance(case, dict):
+        return result
+    fills = fills or {}
+    if case.get("case_id") is not None:
+        result["case_id"] = case["case_id"]
+    contract = case.get("output_contract")
+    if not isinstance(contract, dict):
+        return result
+    result["output_contract"] = contract
+    limits = result.setdefault("limits", [])
+    for key in contract:
+        if key == "case_id":
+            continue
+        if key in fills and (key not in result or result[key] is None):
+            result[key] = fills[key]
+        elif key not in result:
+            result[key] = None
+            note = f"output_contract field '{key}' was not derivable by this audit"
+            if note not in limits:
+                limits.append(note)
+    return result

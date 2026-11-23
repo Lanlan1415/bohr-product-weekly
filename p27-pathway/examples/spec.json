@@ -1,5 +1,6 @@
 {
   "species": "human",
+  "source_version": "worked-example-v1",
   "canvas_mm": [150, 70],
   "font_size": 9,
   "aliases": {"TP53": ["Tp53", "p53"]},
@@ -9,8 +10,8 @@
     {"id": "m3", "name": "CDKN1A", "source": "Fig 4b"}
   ],
   "connections": [
-    {"from": "g1", "to": "p1", "source": "Results ¶2: p53 induces MDM2"},
-    {"from": "p1", "to": "g2", "source": "Fig 4b: MDM2 represses CDKN1A"}
+    {"from": "g1", "to": "p1", "type": "activate", "source": "Results ¶2: p53 induces MDM2"},
+    {"from": "p1", "to": "g2", "type": "inhibit", "source": "Fig 4b: MDM2 represses CDKN1A"}
   ],
   "compartments": [
     {"id": "cytosol", "label": "细胞质", "layers": [0, 1], "color": "#EDEDED"},

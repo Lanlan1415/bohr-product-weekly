@@ -76,8 +76,12 @@ def check_casing(symbol: str, species: str | None) -> dict:
             "message": f"'{symbol}' does not follow the {species} symbol casing convention"}
 
 
-def audit_nomenclature(spec: dict, svg_path) -> dict:
-    """Check entity labels, styling, aliases and accessions."""
+def audit_nomenclature(spec: dict, svg_path, nodes: list[dict] | None = None) -> dict:
+    """Check drawn entity labels, styling, aliases and accessions.
+
+    Passing the renderer's valid-node list keeps skipped malformed/duplicate entries
+    from leaking back into higher-level audits and producing a false blocked verdict.
+    """
     from pathlib import Path
 
     findings: list[dict] = []
@@ -87,7 +91,8 @@ def audit_nomenclature(spec: dict, svg_path) -> dict:
 
     species = spec.get("species")
     aliases = spec.get("aliases") if isinstance(spec.get("aliases"), dict) else {}
-    nodes = [n for n in (spec.get("nodes") or []) if isinstance(n, dict)]
+    nodes = nodes if nodes is not None else [n for n in (spec.get("nodes") or [])
+                                             if isinstance(n, dict)]
 
     # --- 1. styling actually present in the exported SVG ------------------
     # Reading the SVG rather than the spec is what makes this an audit: a
@@ -139,10 +144,42 @@ def audit_nomenclature(spec: dict, svg_path) -> dict:
         if not acc:
             continue
         src = (n.get("accession_source") or "").lower()
-        pat = ACCESSIONS.get(src)
-        if pat and not pat.match(str(acc)):
+        if src not in ACCESSIONS:
+            add("nomenclature.accession_source_unknown", "medium",
+                "an accession names no supported registry, so its syntax and uniqueness "
+                "cannot be resolved; use hgnc/uniprot/ensembl/ncbi_gene/chebi or leave "
+                "the accession absent and record the uncertainty",
+                node=n["id"], accession_source=src or None)
+            continue
+        pat = ACCESSIONS[src]
+        if not pat.match(str(acc)):
             add("nomenclature.accession_malformed", "medium",
                 f"accession '{acc}' does not match the {src} format", node=n["id"])
+
+    # The same registry accession on two actor nodes usually duplicates one entity.
+    # Post-translational states of one protein are a legitimate exception, but only
+    # when both nodes explicitly declare distinct states rather than silently collide.
+    by_accession: dict[tuple[str, str], list[dict]] = {}
+    for n in nodes:
+        if not n.get("accession"):
+            continue
+        src = str(n.get("accession_source") or "").lower()
+        if src in ACCESSIONS:
+            by_accession.setdefault((src, str(n["accession"])), []).append(n)
+    for (src, acc), group in by_accession.items():
+        if len(group) < 2:
+            continue
+        for i, left in enumerate(group):
+            for right in group[i + 1:]:
+                state_exception = (left.get("state_distinct") is True
+                                   and right.get("state_distinct") is True
+                                   and bool(left.get("state")) and bool(right.get("state"))
+                                   and left.get("state") != right.get("state"))
+                if not state_exception:
+                    add("nomenclature.accession_collision", "high",
+                        "two actor nodes share one registry accession; draw one entity or "
+                        "explicitly mark distinct molecular states",
+                        nodes=[left["id"], right["id"]], accession=acc, accession_source=src)
 
     # --- 4. alias collisions ----------------------------------------------
     canonical_of: dict[str, str] = {}

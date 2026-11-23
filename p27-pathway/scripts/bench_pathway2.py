@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 import fontsel  # noqa: E402
 import pathway  # noqa: E402
 import provenance  # noqa: E402
+import schematic  # noqa: E402
+import contract_echo  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "_run_pathway2"
 
@@ -25,7 +27,8 @@ BASE = {
  "materials":[{"id":"m1","name":"TP53","source":"Results ¶2"},
               {"id":"m2","name":"MDM2","source":"Results ¶2"},
               {"id":"m3","name":"CDKN1A","source":"Fig 4b"}],
- "connections":[{"from":"g1","to":"p1"},{"from":"p1","to":"g2"}],
+ "connections":[{"from":"g1","to":"p1","source":"Results ¶2","type":"activate"},
+                {"from":"p1","to":"g2","source":"Fig 4b","type":"inhibit"}],
  "nodes":[
    {"id":"g1","label":"TP53","kind":"gene","evidence":"m1","layer":0,
     "accession":"HGNC:11998","accession_source":"hgnc","color":"#56B4E9"},
@@ -90,6 +93,12 @@ def sc_compartment_clean():
     s["nodes"][0]["compartment"] = "membrane"
     s["nodes"][1]["compartment"] = "cytosol"
     return s, []
+
+
+def sc_compartment_overlap():
+    s = d(compartments=[{"id":"cytosol","label":"细胞质","layers":[0,1]},
+                        {"id":"nucleus","label":"细胞核","layers":[1,2]}])
+    return s, ["compartment.overlap"]
 def sc_confidence_missing():
     s = d(confidence_required=True)
     return s, ["edge.confidence_missing"]
@@ -105,15 +114,15 @@ def sc_confidence_clean():
     return s, []
 def sc_feedback_unlabeled():
     return (d(edges=BASE["edges"]+[{"from":"g2","to":"g1","type":"activate"}],
-              connections=BASE["connections"]+[{"from":"g2","to":"g1"}]),
+              connections=BASE["connections"]+[{"from":"g2","to":"g1","source":"Results ¶4","type":"activate"}]),
             ["edge.feedback_unlabeled"])
 def sc_feedback_clean():
     return (d(edges=BASE["edges"]+[{"from":"g2","to":"g1","type":"activate","feedback":True}],
-              connections=BASE["connections"]+[{"from":"g2","to":"g1"}]),
+              connections=BASE["connections"]+[{"from":"g2","to":"g1","source":"Results ¶4","type":"activate"}]),
             [])
 def sc_recycle_clean():
     return (d(edges=BASE["edges"]+[{"from":"g2","to":"g1","type":"flow","recycle":True}],
-              connections=BASE["connections"]+[{"from":"g2","to":"g1"}]),
+              connections=BASE["connections"]+[{"from":"g2","to":"g1","source":"Results ¶4","type":"flow"}]),
             [])
 def sc_size_not_positive():
     s = d()
@@ -134,6 +143,58 @@ def sc_size_explained():
 def sc_canvas_invalid():
     return d(canvas_mm=[0, 50]), ["audit.no_section"]
 
+
+def sc_edge_type_unknown():
+    s = d()
+    s["edges"][0]["type"] = "modulate"
+    # Keep the planted defect single: no declared source type to mismatch against.
+    for c in s["connections"]:
+        c.pop("type", None)
+    return s, ["edge.type_unknown"]
+
+
+def sc_relation_type_mismatch():
+    s = d()
+    s["edges"][0]["type"] = "inhibit"       # source explicitly says activate
+    return s, ["trace.relation_type_mismatch"]
+
+
+def sc_relation_type_clean():
+    # FP guard: explicit source types that match the visual semantics stay silent.
+    return d(), []
+
+
+def sc_connection_no_source():
+    s = d()
+    s["connections"][0].pop("source")
+    return s, ["trace.connection_no_source"]
+
+
+def sc_accession_collision():
+    s = d()
+    s["nodes"][2]["accession"] = "HGNC:11998"
+    return s, ["nomenclature.accession_collision"]
+
+
+def sc_accession_state_guard():
+    # FP guard: two explicitly distinguished states may share one protein accession.
+    s = d()
+    s["nodes"][1]["state_distinct"] = True
+    s["nodes"][1]["state"] = "unmodified"
+    s["nodes"].append({"id":"p2","label":"MDM2-pS166","kind":"protein","evidence":"m2",
+                       "layer":3,"accession":"Q00987","accession_source":"uniprot",
+                       "state_distinct":True,"state":"S166-phosphorylated","color":"#999999"})
+    s["edges"].append({"from":"g2","to":"p2","type":"activate"})
+    s["connections"].append({"from":"g2","to":"p2","source":"Fig 5a","type":"activate"})
+    return s, []
+
+
+def sc_accession_source_unknown():
+    s = d()
+    s["nodes"][1]["accession_source"] = "private-registry"
+    return s, ["nomenclature.accession_source_unknown"]
+
+
 SCEN = [
  ("clean", sc_clean),
  ("untraceable", sc_untraceable),
@@ -149,6 +210,7 @@ SCEN = [
  ("compartment_mismatch", sc_compartment_mismatch),
  ("compartment_undeclared", sc_compartment_undeclared),
  ("compartment_clean", sc_compartment_clean),
+ ("compartment_overlap", sc_compartment_overlap),
  ("confidence_missing", sc_confidence_missing),
  ("confidence_unknown", sc_confidence_unknown),
  ("confidence_clean", sc_confidence_clean),
@@ -159,6 +221,13 @@ SCEN = [
  ("size_unexplained", sc_size_unexplained),
  ("size_explained", sc_size_explained),
  ("canvas_invalid", sc_canvas_invalid),
+ ("edge_type_unknown", sc_edge_type_unknown),
+ ("relation_type_mismatch", sc_relation_type_mismatch),
+ ("relation_type_clean", sc_relation_type_clean),
+ ("connection_no_source", sc_connection_no_source),
+ ("accession_collision", sc_accession_collision),
+ ("accession_state_guard", sc_accession_state_guard),
+ ("accession_source_unknown", sc_accession_source_unknown),
 ]
 
 CHECKLIST_BAD = OUT / "_bad_checklist.json"
@@ -194,15 +263,37 @@ def sc_checklist_unreadable():
     return r, "checklist.unreadable"
 
 
+def injected_legend_mapping():
+    """Declare a legend, then remove its ink: the audit must catch the broken export."""
+    s = d(legend=["TP53 (gene)", "MDM2 (protein)", "CDKN1A (gene)"],
+          legend_notes=["节点大小 = 表达量"], legend_required=True)
+    p = OUT / "legend_mapping_not_rendered"; p.mkdir(parents=True, exist_ok=True)
+    built = schematic.render(s, p / "figure")
+    svg = built["svg"]
+    svg.write_text(svg.read_text(encoding="utf-8").replace(
+        ">TP53 (gene)</text>", "></text>"), encoding="utf-8")
+    r = schematic.audit(s, built)
+    plt.close(built["fig"])
+    return r, "legend.mapping_not_rendered"
+
+
 def sc_refusal_contract():
     """A refusal still echoes case_id + output_contract from the case file."""
     p = OUT / "refusal_contract"; p.mkdir(parents=True, exist_ok=True)
     (p/"spec.json").write_text("{ broken json", encoding="utf-8")
     (p/"case.json").write_text(json.dumps(CASE, ensure_ascii=False), encoding="utf-8")
-    r = pathway.build_and_audit(p/"spec.json", p/"o", None, p/"case.json", None)
+    saved_apply, saved_case = contract_echo.apply, contract_echo.apply_case
+    contract_echo.apply = contract_echo.apply_case = lambda *a, **k: (_ for _ in ()).throw(
+        AssertionError("refusal path must not call contract_echo"))
+    try:
+        r = pathway.build_and_audit(p/"spec.json", p/"o", None, p/"case.json", None)
+    finally:
+        contract_echo.apply, contract_echo.apply_case = saved_apply, saved_case
     ok = (r["status"] == "undetermined"
+          and next(iter(r)) == "case_id"
           and r.get("case_id") == CASE["case_id"]
           and r.get("output_contract") == CASE["output_contract"]
+          and all(k in r for k in CASE["output_contract"])
           and r.get("figure_pdf") is None)
     return r, ["audit.no_section"], ok
 
@@ -213,10 +304,15 @@ def sc_success_contract():
     (p/"spec.json").write_text(json.dumps(d(), ensure_ascii=False), encoding="utf-8")
     (p/"case.json").write_text(json.dumps(CASE, ensure_ascii=False), encoding="utf-8")
     r = pathway.build_and_audit(p/"spec.json", p/"o", None, p/"case.json", None)
-    ok = (r.get("case_id") == CASE["case_id"]
+    ok = (next(iter(r)) == "case_id"
+          and r.get("case_id") == CASE["case_id"]
+          and r.get("output_contract") == CASE["output_contract"]
+          and all(k in r for k in CASE["output_contract"])
           and isinstance(r.get("figure_svg"), str) and Path(r["figure_svg"]).suffix == ".svg"
           and isinstance(r.get("figure_pdf"), str) and Path(r["figure_pdf"]).suffix == ".pdf"
-          and r.get("font_report", {}).get("family"))
+          and r.get("font_report", {}).get("family")
+          and r.get("input", {}).get("spec_sha256")
+          and r.get("change_records"))
     return r, [], ok
 
 
@@ -234,7 +330,9 @@ def main() -> int:
         print(f"{'PASS' if ok else 'FAIL'}  {name:<24} missing={missing} spurious={spurious}")
     for name, fn, rule in (("missing_glyphs", injected_glyphs, "export.missing_glyphs"),
                            ("nondeterministic", injected_nondet, "repro.nondeterministic"),
-                           ("checklist_unreadable", sc_checklist_unreadable, "checklist.unreadable")):
+                           ("checklist_unreadable", sc_checklist_unreadable, "checklist.unreadable"),
+                           ("legend_mapping_not_rendered", injected_legend_mapping,
+                            "legend.mapping_not_rendered")):
         r, rule_id = fn()
         ok = rule_id in {f["rule"] for f in r["findings"]}
         rows.append({"scenario": name, "expected": [rule_id], "missing": [] if ok else [rule_id],

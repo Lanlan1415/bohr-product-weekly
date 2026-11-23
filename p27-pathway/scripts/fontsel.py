@@ -185,6 +185,26 @@ def labels_text(spec: dict) -> str:
     for e in spec.get("edges") or []:
         if isinstance(e, dict):
             parts.append(str(e.get("label") or ""))
+            # Auto-rendered relation legend and short modification labels are ink too.
+            rel = {
+                "activate": "激活蓝色箭头", "inhibit": "抑制红色端",
+                "bind": "结合绿色虚线", "flow": "流向灰色箭头",
+                "phosphorylate": "磷酸化紫色箭头P",
+                "ubiquitinate": "泛素化橙色箭头Ub",
+                "recruit": "募集绿色箭头recruit", "transport": "转运浅蓝箭头transport",
+            }
+            parts.append(rel.get(str(e.get("type") or "flow"), ""))
+            if e.get("confidence") or spec.get("confidence_required"):
+                parts.append("证据确认实线预测虚线假说点线")
+    for key in ("legend", "legend_notes"):
+        values = spec.get(key) or []
+        if isinstance(values, str):
+            values = [values]
+        if isinstance(values, (list, tuple)):
+            parts.extend(str(x) for x in values)
+    for c in spec.get("compartments") or []:
+        if isinstance(c, dict):
+            parts.append(str(c.get("label") or ""))
     parts.append(str(spec.get("title") or ""))
     parts.append(str(spec.get("caption") or ""))
     for g in spec.get("groups") or []:
