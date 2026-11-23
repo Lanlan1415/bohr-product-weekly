@@ -1,0 +1,71 @@
+{
+  "schema_version": "coverage-analysis-bench/v1",
+  "fixture": "synthetic_not_official",
+  "scenarios": [
+    {
+      "scenario": "exact_identifier_and_source_slices",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "recall_and_miss_are_independently_closed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "supplementary_gain_is_set_difference_not_rewrite",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_supplement_is_zero_gain",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "miss_attribution_separates_verified_window_and_lexical_clue",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_global_and_precision_are_null",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "precision_only_with_complete_labels",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "title_match_requires_corroboration",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "near_title_without_author_or_year_waits_for_adjudication",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unavailable_reference_stays_in_denominator",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cjk_and_latin_boundaries_have_verified_offsets",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_contract_and_idempotency",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  },
+  "independent_recall_check": "before=2/4, after=3/4, marginal_gain=1"
+}

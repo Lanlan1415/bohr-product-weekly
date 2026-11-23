@@ -1,0 +1,91 @@
+{
+  "schema_version": "systematic-analysis-bench/v1",
+  "fixture": "synthetic_not_official",
+  "scenarios": [
+    {
+      "scenario": "protocol_is_replayable_and_complete",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "independent_identification_and_stage_recount",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "preprint_and_duplicate_are_not_double_counted",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "similar_title_different_dois_are_not_merged",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "doi_conflict_is_not_silently_merged",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "every_final_decision_has_reason_and_source_evidence",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "disagreement_is_adjudicated_not_majority_voted",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unresolved_disagreement_stays_pending_and_closed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_votes_are_not_fabricated",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "single_reviewer_in_dual_mode_does_not_finalize",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "criteria_version_drift_triggers_rescreen",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reason_disagreement_is_retained_even_when_decision_agrees",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unverified_review_quote_invalidates_vote",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "lexical_absence_does_not_auto_exclude",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "word_boundaries_and_cjk_quotes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_contract_and_determinism",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 16,
+    "of": 16
+  },
+  "independent_flow_check": "raw=5; duplicate=1; version_link=1; clusters=3; TA=2 excluded+1 advanced; FT=1 included"
+}

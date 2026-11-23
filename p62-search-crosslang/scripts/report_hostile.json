@@ -1,0 +1,105 @@
+{
+  "schema_version": "crosslang-hostile/v1",
+  "fixture": "synthetic_not_official",
+  "scenarios": [
+    {
+      "scenario": "bad_json_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "array_case_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_section_exit5_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_documents_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "bad_document_shape_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_concepts_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "empty_concepts_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "language_cannot_be_guessed_silently",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "language_script_conflict_is_review",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "version_conflict_retains_both_views",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "translation_service_failure_no_fabrication",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "machine_translation_is_version_evidence_not_original_quote",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "abstract_only_not_promoted_to_fulltext",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "malformed_prf_settings_degrade",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "contract_mapping_full_echo",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "status_cannot_be_spoofed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unsupported_contract_limit",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unicode_cold_path_determinism",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "usage_exit2",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 19,
+    "of": 19
+  }
+}

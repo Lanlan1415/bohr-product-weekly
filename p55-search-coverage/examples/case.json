@@ -1,0 +1,114 @@
+{
+  "case_id": "coverage-synthetic-example-v2",
+  "section": "coverage",
+  "research_question": "Irreversible electroporation ablation outcomes",
+  "reference_set": [
+    {
+      "ref_id": "ref-alpha",
+      "doi": "https://doi.org/10.1000/ALPHA",
+      "title": "Irreversible electroporation for pancreatic cancer: a prospective cohort",
+      "author": "Suzuki et al.",
+      "year": 2021,
+      "reference_source": "Europe PMC",
+      "inclusion_reason": "Eligible clinical electroporation study"
+    },
+    {
+      "ref_id": "ref-beta",
+      "doi": "10.1000/beta",
+      "title": "Nanoknife ablation of the pancreas: a multicentre registry",
+      "author": "Chen et al.",
+      "year": 2022,
+      "reference_source": "Europe PMC"
+    },
+    {
+      "ref_id": "ref-gamma",
+      "doi": "10.1000/gamma",
+      "title": "Murine irreversible electroporation ablation",
+      "author": "Silva et al.",
+      "year": 2019,
+      "reference_source": "Publisher snapshot",
+      "availability": "no_full_text"
+    },
+    {
+      "ref_id": "ref-missing",
+      "doi": "10.1000/not-retrieved",
+      "title": "Electroporation dosimetry in an animal model",
+      "author": "Patel et al.",
+      "year": 2018,
+      "reference_source": "Specialist database"
+    }
+  ],
+  "documents": [
+    {
+      "id": "cand-alpha-crossref",
+      "DOI": "10.1000/alpha",
+      "title": "Irreversible electroporation for pancreatic cancer: a prospective cohort",
+      "authorString": "Suzuki et al.",
+      "year": 2021,
+      "abstract": "A prospective cohort of pancreatic electroporation.",
+      "source": "Crossref snapshot"
+    },
+    {
+      "id": "cand-beta",
+      "doi": "10.1000/beta",
+      "title": "Nanoknife ablation of the pancreas: a multicentre registry",
+      "authors": [{"family": "Chen"}],
+      "year": 2022,
+      "abstract": "Ninety pulses were delivered in this registry.",
+      "source": "Europe PMC snapshot"
+    },
+    {
+      "id": "cand-beta-duplicate-export",
+      "doi": "10.1000/beta",
+      "title": "Nanoknife ablation of the pancreas: a multicentre registry",
+      "authors": [{"family": "Chen"}],
+      "year": 2022,
+      "abstract": "Ninety pulses were delivered in this registry.",
+      "source": "Second export of the same work"
+    },
+    {
+      "id": "cand-distractor",
+      "doi": "10.1000/delta",
+      "title": "Radiofrequency ablation of liver tumours",
+      "year": 2021,
+      "abstract": "Thermal radiofrequency ablation, not electroporation."
+    }
+  ],
+  "supplementary_documents": [
+    {
+      "id": "cand-gamma-publisher",
+      "doi": "10.1000/gamma",
+      "title": "Murine irreversible electroporation ablation",
+      "author": "Silva et al.",
+      "year": 2019,
+      "abstract": "An animal study of irreversible electroporation.",
+      "source": "Publisher snapshot"
+    }
+  ],
+  "iterations": [
+    {
+      "query_id": "q-baseline",
+      "query": "electroporation AND pancreatic",
+      "source": "Europe PMC",
+      "fields": ["Title", "Abstract"],
+      "date_from": "2020-01-01",
+      "date_to": "2023-12-31",
+      "date_searched": "2025-02-01",
+      "returned_ids": ["cand-alpha-crossref", "cand-beta", "cand-distractor"]
+    },
+    {
+      "query_id": "q-supplement-doi",
+      "query": "10.1000/gamma",
+      "source": "Publisher snapshot",
+      "fields": ["DOI"],
+      "date_searched": "2025-02-02",
+      "supplementary": true,
+      "returned_ids": ["cand-gamma-publisher"]
+    }
+  ],
+  "output_contract": [
+    "case_id", "coverage_metrics", "coverage_matrix", "missed_references",
+    "supplementary_search", "candidate_set", "evidence_ledger",
+    "检索结果", "证据记录", "状态说明", "uncertainty", "change_records"
+  ]
+}

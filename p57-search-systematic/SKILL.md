@@ -1,197 +1,195 @@
 ---
 name: search-systematic
 description: >
-  系统性文献检索与纳排筛选：run a PRISMA-style screening loop on top of the shared
-  index+query engine. The protocol is a frozen boolean probe (design AND population
-  tokens) executed exactly as declared — an unsatisfiable criterion stays an honest
-  empty, never relaxed. Every exclusion keeps a located reason probe: the failing
-  criterion is re-run per record and the evidence quote is a verbatim slice of the
-  record. The audit trail closes by construction: identified (raw entries) =
-  duplicates (skipped and named) + screened (indexed count), and the whole protocol
-  battery reruns byte-identically so a third party can replay every decision.
-  Empty corpus, malformed index, empty query → exit-5 refusals, never crashes.
-  Use when inclusion/exclusion must be per-record, evidenced, and independently
-  re-runnable; not a substitute for the reviewer's final scientific judgement.
+  系统性文献检索与纳排筛选：对本地固定题录和实际查询输入，保存数据库/平台/完整检索式/
+  字段/时间范围/检索日期/语种限制，执行版本化标准、保守去重与预印本版本归并、题录及全文
+  双阶段筛选、真实双人独立判断、第三方分歧仲裁和 PRISMA-style 计数闭合。逐条理由码必须
+  指向真实题录或全文字段证据；旧标准版本自动触发重筛，缺 reviewer 或第二意见不能伪造成
+  双人完成。适用于可复跑纳排和流程审计；不用于虚构数据库检索、无证据自动排除、全文质量
+  评价、数据提取、统计合并或完整系统综述写作。
 ---
 
-# search-systematic（系统性文献检索与纳排筛选）
+# 系统性文献检索与纳排筛选：每个数字都能沿日志走回去
 
-The promise: a screening flow a third party can walk again. Criteria become tokens,
-the protocol becomes a frozen probe, every exclusion keeps a located reason, and the
-counts close — identified = duplicates + screened — with every step re-runnable
-byte-identically.
+## 1. 真实交付与核心边界
 
-| property | enforcement |
-|-|-|
-| 协议即查询 | the inclusion probe is a frozen boolean query (`design: randomised` AND the population token) — executed as declared, never relaxed to manufacture hits |
-| 排除有据 | for every excluded record the failing-criterion probe stays honestly empty, and the passing-evidence probe quotes the record's own line (reason code + located evidence) |
-| 去重留痕 | a duplicate database export is skipped and named (`search.doc_skipped`) — identified = duplicates + screened closes by construction |
-| 计数闭合 | `documents_indexed` is the screened count; per-record probes give included / excluded lists that sum back to it |
-| 复跑一致 | the protocol battery reruns byte-identical (`index_sha256` recorded, no wall-clock) — same records, same labels, every time |
+主入口 `scripts/systematic_cli.py` 对**固定输入**运行完整协议，生成：
 
-## Data shapes
+- `result.json`：顶层 `case_id`、原 `output_contract` 全字段、检索协议、逐条纳排、证据和运行状态；
+- `search_protocol.json`：数据库/平台/原查询式/字段/覆盖窗/检索日期/语种及其他限制，以及去重日志；
+- `screening_decisions.jsonl`：每个去重后研究簇一行，分别保留题录和全文阶段意见、machine suggestion、最终判断；
+- `flow_audit.json`：识别、去重/版本归并、题录、全文、最终纳入/排除/待定的闭合等式；
+- `adjudication_and_agreement.json`：双人一致性、include/exclude 分歧、理由码分歧、仲裁人及版本。
 
-Each screening record carries its criteria tokens on labelled lines:
+流程可审计不等于流程已完成。`pending` 一直保留到真实 reviewer 作出判断；自动词面建议从不冒充双人筛选。该工具不做实时数据库请求，也不生成缺失的 query、文献或 reviewer。
 
-```json
-{"documents": [
-  {"id": "rec-001",
-   "text": "Screening record rec-001.\n"
-           "Design: randomised controlled trial. Population: adults with type 2 diabetes.\n"
-           "Excerpt: HbA1c fell 0.9 percent over 24 weeks."}
-]}
-```
+## 2. 六步运行时入口
+
+### 第一步：读取真实案例并冻结契约
+
+读取 `/input/case.json`、`task.md`、环境资源清单和研究问题。确认 `output_contract`、实际题录、查询日志、标准版本、reviewer 输入与授权全文。工作文件放 `/app/work`，最终结果放 `/app/output`，先保存早期 partial。PDF 必须先用平台 PDF/OCR 工具提取实际文本，不把 PDF 文件名当全文证据。
+
+支持内联 `documents/studies/corpus/records/candidates`，以及包内相对、`/input` 相对或绝对 JSON/JSONL/CSV/TXT/MD 路径。支持 Crossref `message/items/message.items`、Europe PMC `resultList.result`。只用给定有限快照，缺失材料与无结果分别报告。
+
+### 第二步：冻结可复现检索协议
+
+协议位于 `screening_protocol` 或 `protocol`。完整查询至少包括：
 
 ```json
-{"all": ["randomised", "diabetes"]}
+{"database":"PubMed","platform":"NCBI",
+ "query_string":"(type 2 diabetes[Title/Abstract]) AND (randomized controlled trial[Publication Type])",
+ "fields":["Title","Abstract","Publication Type"],
+ "coverage_from":"2000-01-01","coverage_to":"2025-01-31",
+ "date_searched":"2025-02-01","language_limits":["en","pt"],
+ "returned_ids":["rec-001"],"hit_count":1}
 ```
 
-Conventions: design tokens (`randomised controlled trial`, `cohort study`,
-`systematic review`, `protocol`) and population tokens are quoted from the record
-itself, one labelled line each. Per-record probes prefix the record id
-(`all: ["rec-002", …]`) so a decision query touches exactly one record. Matching is
-case-insensitive substring; CJK records stay whole as searchable terms.
+数据库、完整 query_string、fields、date_searched 缺任一项时进入 review；这些字段描述调用者提供的检索事实，不证明本工具重新访问了数据库。每轮 `returned_ids` 与去重后的 record/工作簇能对接，hit_count 保留原声明而不拿来补造本工具实际扫描条数。
 
-## Workflow (protocol → screen → adjudicate → audit)
+标准中含 `inclusion_criteria` 和/或 `exclusion_criteria`。结构化判据示例：
 
-1. **协议冻结** — write the inclusion probe (`all` = design token + population token)
-   and the reason-code table (EX-DESIGN / EX-POP / EX-NO-DATA / EX-RETRACTED) before
-   looking at any record; version-stamp it.
-2. **Index the exports** — every database export enters the corpus; duplicates are
-   skipped and named; the screened count is `documents_indexed`.
-3. **Title/abstract screening** — run the inclusion probe over the corpus; every hit
-   carries the criteria passages with verbatim locators.
-4. **Per-record adjudication** — for each record not in the include list, run the
-   failing-criterion probe (expect an honest empty) and the passing-evidence probe
-   (expect a quotable reason); record the reason code with the quote.
-5. **Audit** — identified (raw entry count) = duplicates (skipped) + screened
-   (indexed); screened = included + excluded; every decision probe is replayable.
+```json
+{"id":"INC-DESIGN","field":"design",
+ "any":["randomized controlled trial","randomised controlled trial"],
+ "reason_code":"EX-DESIGN"}
+```
+
+支持 `any/all/none/equals/exists` 词面规则。同一 `criteria + searches + review_mode` 生成 `protocol_sha256`；若声明了 `criteria_version`，它写入每条票和仲裁。标准变化不能沿用旧票，必须按当前版本重筛。
+
+### 第三步：保守去重，区分记录、版本与研究簇
+
+去重不是删除一行就完事，`search_protocol.deduplication.merge_log` 保留 removed_record_id、kept_record_id、合并键和理由。允许的关系：
+
+1. DOI/PMID 精确一致，且不存在强题名冲突；
+2. 显式 `work_id/study_id` 或 `version_of/is-preprint-of` 等作品版本关系；
+3. DOI 缺失时，**规范化标题 + 第一作者 + 年份全部一致**。
+
+两个不同 DOI 不会因相似题名合并；同 DOI 但题名大幅冲突的记录保留并触发 `systematic.identifier_conflict`。预印本与正式版标成 `version_linked`，普通副本是 `duplicate_removed`，分别计数。整批以研究簇筛选，避免同一研究被重复独立纳入。
+
+### 第四步：逐条题录/全文判断并绑定原文证据
+
+机器规则只生成 `machine_suggestion`：明确排除标准命中、或结构化纳入字段明确不符时可建议排除；只有所有纳入判据均满足时建议纳入。标题摘要中单纯“没搜到某词”是 `AWAIT-EVIDENCE`，不是 `EX-NOT-RELEVANT`。
+
+人工判断使用真实输入 `reviewer_decisions/annotations/screening_decisions`：
+
+```json
+{"record_id":"rec-002","stage":"title_abstract","reviewer":"reviewer-A",
+ "criteria_version":"proto-2026-01","decision":"exclude",
+ "reason_code":"EX-DESIGN","evidence":["prospective cohort study"]}
+```
+
+`stage` 分为 `title_abstract`、`full_text`。reviewer 身份不可缺，排除必须有理由码；声明的 quote 找不到时该票无效并触发 `reviewer_evidence_unverified`。原字段证据使用 `{document_id, unit, source_field, start, end}` 或可核对的结构化 `source_field`；词面 slice 满足 `quote == source_text[start:end]`。全文的最终排除与题录排除分阶段记码。
+
+### 第五步：双人独立分歧、仲裁和流程计数
+
+默认 `dual_independent`。两位真实 reviewer 一致才形成该阶段 consensus；不同意见保留逐人判断，不能多数覆盖或简单平均：
+
+- include vs exclude → `decision_disagreement`，等待具名第三人的 `adjudications`，并保留 decision、reason_code、rationale、criteria_version 和可验证原文证据；
+- 同一 exclude 但理由码不同 → `reason_code_disagreement`，双方理由码都保留并 review，不抹平方法争议；
+- 只有一个 reviewer → `pending`；只有把 review_mode 明确改为单人才允许单人定稿；
+- 未解决分歧或缺第二全文票 → pending，不能算最终纳入/排除。
+
+协议同时计算双人 agreement_rate 和可估计时的 Cohen's kappa；每人记录不足两名 reviewer 时 metric 为 null。多于两名时用排序后的前两名进行描述性统计并明确这一口径，最终决策仍不按多数票。
+
+### 第六步：运行 CLI，闭合计数并按原契约交付
+
+平台标准命令：
 
 ```bash
-python scripts/search_cli.py --corpus examples/corpus.json --query-file examples/query.json --out ./out
-python scripts/bench_systematic.py   # 8 scenarios: one per screening property plus FP guards
+python -I -X utf8 /skills/weekly-skill/scripts/systematic_cli.py \
+  --case /input/case.json --out /app/output
 ```
 
-The engine lives in `scripts/search.py` (importable: `build_index(corpus)`,
-`run_query(index, query)`, `search(spec)`). Exit codes: `0` ok — including an honest
-exclusion record; `5` refused; `2` usage.
+包内示例（从包根）：
 
-## Output contract
+```bash
+python -I -X utf8 scripts/systematic_cli.py --case examples/case.json --out ./_run_example
+```
 
-`--out` receives:
+独立复算使用：
 
-- `index.json` — the index: per record `text`, `paragraphs`, `terms`; `order`; and
-  `corpus_sha256`. Kept for replay.
-- `result.json` — per probe: `query` (normalised), `index_sha256`,
-  `documents_indexed`, `hits[]` with `matched_terms` and `passages[]` carrying
-  verbatim locators, `empty`, and on a miss an honest `note`; skipped duplicate
-  exports are named under `skipped` with a `search.doc_skipped` finding.
+```text
+raw_records = invalid_records_named + duplicates_removed + other_versions_linked + unique_work_clusters
+ta screened = ta excluded + advanced_to_full_text + ta pending
+full_text assessed = full_text excluded + included + full_text pending
+```
 
-A refusal run writes `result.json` with `status: undetermined` and a named refusal —
-a refusal is a result, not a crash.
+这些等式允许 pending 存在并仍能闭合，但 `process_complete=false`、状态为 review。闭合不是把 pending 偷偷塞入 include/exclude。随后核对 case_id、原 output_contract 全字段、所有原证据、去重链和标准版本，再做字节确定性复核。
 
-## Refusal and finding index
+## 3. 输出契约：rubric 三段逐项对应
 
-| id | severity | when |
+| rubric 原词 | result.json 落点 | 核验方式 |
 |-|-|-|
-| `search.engine_error` | high | 搜索引擎内部异常——拒收并写 result.json，绝不 traceback |
-| `search.spec_not_object` | high | case.json 不是 JSON 对象——拒收 |
-| `search.spec_unreadable` | high (exit 5) | corpus / query file unreadable or not the declared JSON shape |
-| `search.empty_corpus` | high (exit 5) | corpus missing, not a list, or nothing indexable (skip reasons listed) |
-| `search.index_malformed` | high (exit 5) | the index is not a readable index object — refused as a whole |
-| `search.empty_query` | high (exit 5) | a probe declares nothing searchable — refused, not run as a no-op |
-| `search.doc_skipped` | low | an export that is not a document, or a duplicate id (named) |
+| `检索结果` | `候选文献`、`排序/筛选结果`、`纳入文献`、`排除文献`、`待复核`、`元数据`、`来源定位`、`流程计数` | number from record/version logs；每个工作簇恰一行 |
+| `证据记录` | `检索协议`、`标准版本`、`去重依据`、`逐条判定`、`双人一致性`、`变更日志`、`复算入口` | 查询字段日期、决策证人、原文 quote、计数等式可重跑 |
+| `状态说明` | `运行状态`、`已完成`、`未完成`、`空结果`、`冲突`、`权限或接口异常`、`不确定性` | 材料缺失、旧版本、分歧、待定分别说明 |
 
-## Minimal worked example (示意)
+并提供 `search_protocol`、`protocol_sha256`、`criteria_version`、`screening_decisions`、`included_records`、`excluded_records`、`pending_records`、`prisma_flow`、`prisma_counts_closed`、`reviewer_agreement`、`evidence_ledger`、`change_records`。支持 output_contract 的字符串、字典、列表与 `{field,name,key}` 对象列表；拒绝路径同样回填，引擎值优先，未知字段为 null+limits，case 不能伪造运行 status。
 
-Input: `examples/corpus.json` (6 entries, one duplicate export) +
-`examples/query.json` (`{"all": ["randomised", "diabetes"]}` — the frozen protocol).
+| status | exit | 含义 |
+|-|-|-|
+| `clean` | 0 | 流程完成且计数闭合；仅有正常去重/已解决分歧的低级留痕 |
+| `review` | 3 | 有待定、旧票、证据不符、协议缺项、记录无效、标识冲突或契约缺口 |
+| `undetermined` | 5 | case/协议/材料无法运行，或无记录/无可执行标准 |
+| `case_not_object` | 4 | case 不是 JSON 对象 |
+| 命令行用法错误 | 2 | argparse 用法错误，不伪造筛选结果 |
 
-示意 output (abridged — an illustrative sketch of the shape, not a formal case
-result; values are from a real run of the example):
+## 4. 最小合成示例（非组织方案例、非预置答案）
+
+`examples/case.json` 有 5 条导入：正式发表 RCT、同 DOI 重复导出、显式关联预印本、队列研究和一个人为制造双人意见分歧的错误人群 RCT。fixture 的查询、票及第三人都是**明确标注的合成输入**，不是真实人工审核或正式案例证据。
 
 ```json
-{"ok": true, "empty": false,
- "query": {"all": ["randomised", "diabetes"], "any": []},
- "index_sha256": "c78760e175c13b40", "documents_indexed": 5,
- "hits": [
-  {"doc_id": "rec-001", "score": 2,
-   "matched_terms": ["diabetes", "randomised"],
-   "passages": [
-    {"term": "diabetes",
-     "locator": {"paragraph": 1, "start": 68, "end": 76, "quote": "diabetes"}}]}],
- "skipped": [{"index": 3, "reason": "duplicate doc id 'rec-001'; the entry is "
-              "skipped rather than silently merged"}]}
+{"case_id":"systematic-synthetic-example-v2","status":"clean",
+ "flow_counts":{"identification":{"raw_records":5,"duplicates_removed":1,
+                "other_versions_linked":1,"unique_work_clusters":3},
+                "title_abstract":{"screened":3,"excluded":2,"advanced_to_full_text":1,"pending":0},
+                "full_text":{"assessed":1,"excluded":0,"included":1,"pending":0},
+                "overall":{"included":1,"excluded":2,"pending":0,"process_complete":true}},
+ "prisma_counts_closed":true}
 ```
 
-Identified 6 = duplicates 1 + screened 5. The cohort record is excluded by the
-protocol probe and keeps its reason evidence (the probe
-`{"all": ["rec-002", "cohort study"]}` quotes `cohort study`); adding a third,
-unsatisfiable criterion to the protocol probe returns an honest empty — the criteria
-are never relaxed to manufacture an inclusion.
+第三人将错误人群记录以 `EX-POP` 排除，rationale 和 quote 都保留。该例的独立复算就是 `5−1−1=3`、`3=2+1+0`、`1=0+1+0`。
 
-## Limits
+旧的 `search_cli.py + search.py` 仅是原通用布尔工具兼容层，不能完成本 Skill 的协议、双人或计数闭合；正式任务使用 `systematic_cli.py`。
 
-- **Substring matching cannot see negation.** "non-randomised" contains
-  "randomised" — phrase design tokens so they do not occur inside negated prose,
-  and adjudicate borderline records on the quoted line.
-- **Criteria are tokens, not judgements.** The probe decides design/population
-  eligibility at token level; borderline populations need a human verdict recorded
-  as the reason code.
-- **One condition set per probe.** `all` + `any` only; no nested boolean trees —
-  a multi-arm protocol is a battery of probes, each recorded.
-- **Dual screening is procedural.** The engine supports two annotators as two probe
-  batteries; disagreement marking stays with the reviewers.
-- **Passages are capped** at 20 per record — enough to verify, not to read.
+## 5. PRISMA-S 与开源评测案例的真实落地
 
-## Failure handling
+- **PRISMA-S**（Rethlefsen et al., 2021, DOI `10.1186/s13643-020-01542-z`）：按其检索报告思想，保留数据库与平台、完整逐库检索式、字段和限制、检索日期、既有检索更新、总记录与去重管理。本包实际输出这些字段，而未宣称“PRISMA 2020 全文合规”或 PRISMA 官方认证。
+- **BEIR**（https://github.com/beir-cellar/beir）：其 `qrels` 与 `results` 分离，启发本包把真实 reviewer 判定与引擎建议分开；同一输入、同一标准版本独立复跑，而非把机器词面分数当纳排真值。p55 中另有其 recall/precision 分母落地。
+- **Pyserini**（https://github.com/castorini/pyserini）：可复现 run 保留 topics/index/query 和输出；本包对应固定查询、标准哈希、输入 IDs 和双阶段 ledger。p62 还实际采用其多语种/PRF 边界，而非在本筛选题混用扩展检索。
 
-| symptom | what to do |
+## 6. 规则、异常和限制
+
+| rule | 含义与处置 |
 |-|-|
-| `search.empty_corpus` (exit 5) | the export file holds no records — fix shape or path; the engine never searches an empty index |
-| `search.index_malformed` (exit 5) | rebuild with `--corpus` instead of `--index`; a partial index is refused, not patched |
-| `search.empty_query` (exit 5) | a probe needs at least one term — an empty probe is refused, not run |
-| `search.doc_skipped` | drop the duplicate export or fix the entry shape; the rest is screened |
-| a record you expected to include returns empty | compare the query record against the record text — the miss is real for those tokens; a protocol change is a versioned new probe, never an implicit relaxation |
+| `systematic.case_unreadable` / `case_not_object` / `unknown_section` | exit 5 / 4 / 5，结构化拒绝 |
+| `systematic.protocol_invalid` / `no_criteria` / `no_records` | 协议形状错误、无标准或无记录，exit 5 |
+| `systematic.search_protocol_missing` / `search_protocol_incomplete` | 只能复跑部分流程，exit 3；不补数据库/日期 |
+| `systematic.identifier_conflict` | 同标识但强题名冲突，不合并，exit 3 |
+| `systematic.criteria_version_conflict` / `adjudication_version_conflict` | 旧票/旧仲裁不能沿用，重筛，exit 3 |
+| `systematic.reviewer_identity_missing` / `reviewer_evidence_unverified` | 无名 reviewer 或伪 quote 的票无效，exit 3 |
+| `systematic.review_version_unspecified` / `adjudication_version_unspecified` | 未声明来源版本，保留但必须复核，exit 3 |
+| `systematic.exclusion_reason_missing` / `adjudication_reason_missing` / `adjudication_rationale_missing` | 缺排除理由或仲裁依据，不定稿，exit 3 |
+| `systematic.decision_disagreement` / `reason_code_disagreement` | 分歧原样保留；无有效仲裁则 pending |
+| `systematic.review_pending` | 仍有独立复核/全文工作，exit 3，但计数可闭合 |
+| `systematic.count_not_closed` | 复算不符，exit 3，不隐藏差异 |
+| `systematic.records_omitted` / `records_consolidated` | 无效条目或去重/版本归并逐项留痕 |
+| `systematic.human_review_absent` | 只有建议，没有实际双人结论，exit 3 |
+| `systematic.internal_error` | 未预见异常封装 exit 5 + result.json，不泄漏 traceback |
 
-## Verification
+限制：text match 不等于科学语义裁决；去重不识别未声明的所有预印本关系；agreement/kappa 只描述输入票，不代表真实研究质量；无查询日志时只能复跑筛选子流程；不能证明全球召回、当前撤稿状态或数据库最新结果；不做全文偏倚评价、数据提取、统计综合或论文写作（这些也不属于本题）。
+
+## 7. Verification（作者测试，不是运行时必经步骤）
 
 ```bash
-python scripts/bench_systematic.py   # 8 scenarios
+python -I -X utf8 scripts/bench_systematic.py           # 通用布尔回归 8/8
+python -I -X utf8 scripts/bench_systematic_analysis.py  # 专项协议/纳排/去重/仲裁/闭合 16/16
+python -I -X utf8 scripts/probe_systematic.py           # 敌意/契约/退出/幂等 17/17
+python -I -X utf8 -c "import sys;sys.path.insert(0,'scripts');import systematic,systematic_cli;print(systematic.SCHEMA_VERSION)"
 ```
 
-All 8 pass on this machine: the protocol probe includes exactly the eligible record,
-every exclusion keeps a located reason probe, identified = duplicates + screened,
-criteria are never relaxed, the protocol battery reruns byte-identically, and the
-CLI example plus the exit-5 refusal contract hold.
+第三轮 smoke 使用两个冷输出目录比较 result、screening_decisions 和 flow_audit，并从 merge_log 重新数出 `5−1−1=3`，从每个簇的 title_abstract/full_text 决策独立复算阶段数。所有报告是合成回归，不是官方分数、固定案例或真实人工筛选。
 
-## Routing
+## 8. Requirements 与生态
 
-- **This skill** when records must be screened against versioned inclusion/exclusion
-  criteria with per-record reason evidence and a closing audit.
-- For the downstream full-chain review (synthesis + evidence backlinks) — use
-  `p67-search-systematic-review`.
-- For measuring coverage against a frozen reference set — use `p55-search-coverage`.
-- For triage ranking of a large candidate set — use `p65-search-filter-rank`.
-
-## Requirements
-
-Python 3.9+ (3.14 verified); standard library only — no packages to install.
-
-## 创新增益
-
-本 Skill 相比通用 Agent 的核心新增能力：
-
-1. **规则优先级库**：每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时由优先级决定胜者且双方都留痕——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改动——如果仍有改动说明规则间存在冲突，这是一个可计算的 self-check。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，审计者可以逐条复核或撤销任何单条修改。
-
-bench 目录下的 systematic 是上述能力的回归证据（见 Verification 节 场景，clean 基线必须零发现）。
-
-## 生态贡献
-
-- **SKILL.md** 包含用途、适用条件、调用方式、输入输出、异常处理、限制和自查方法
-- **scripts/** 纯标准库可独立导入，规则库可通过 spec 配置扩展
-- **examples/** 提供最小调用示例和示意输出
-- **bench/** 回归套件可独立复跑验证
-
+Python 3.9+（Python 3.14 实测），专项实现仅标准库，无 API key、数据库或网络依赖。`systematic.py` 可导入 `analyze()`；协议模板、理由码、标注表、仲裁表、去重日志、PRISMA-style 流程与复算入口可直接迁移到新综述主题。没有依赖 p59/p60/p67，也未把它们的任务范围混入本题。

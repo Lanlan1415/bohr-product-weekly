@@ -1,0 +1,96 @@
+{
+  "schema_version": "crosslang-analysis-bench/v1",
+  "fixture": "synthetic_not_official",
+  "scenarios": [
+    {
+      "scenario": "controlled_terms_queries_and_provenance",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "independent_work_recall_and_gain",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "exact_duplicate_does_not_inflate_work_or_views",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "original_translation_and_abstract_versions_remain_distinct",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "language_routes_queries_to_original_language_views",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "every_evidence_quote_is_an_original_exact_slice",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "query_translation_is_not_an_original_quote",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_variants_do_not_change_rrf_scores",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "prf_is_real_but_isolated_by_default",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "accepted_prf_changes_only_documented_ranking_branch",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cjk_token_boundaries_are_measured_not_unicode_assumed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "latin_word_boundaries_and_cjk_matching",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_translation_never_invents_query",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "declared_language_without_hits_is_not_padded",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_source_language_is_explicit_review",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_known_set_and_global_recall_not_fabricated",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cli_contract_and_determinism",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 17,
+    "of": 17
+  },
+  "independent_recall_check": "3 works; baseline=2/3; expanded=3/3; gain=1; raw views=6; dedup views=5"
+}

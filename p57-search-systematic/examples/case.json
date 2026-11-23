@@ -1,0 +1,218 @@
+{
+  "case_id": "systematic-synthetic-example-v2",
+  "section": "systematic",
+  "research_question": "Randomized studies of a prespecified intervention in adults with type 2 diabetes",
+  "screening_protocol": {
+    "criteria_version": "proto-2026-01",
+    "review_mode": "dual_independent",
+    "inclusion_criteria": [
+      {
+        "id": "INC-DESIGN",
+        "field": "design",
+        "any": ["randomized controlled trial", "randomised controlled trial"],
+        "reason_code": "EX-DESIGN",
+        "description": "Randomized controlled trial"
+      },
+      {
+        "id": "INC-POP",
+        "field": "population",
+        "any": ["type 2 diabetes", "type 2 diabetes mellitus"],
+        "reason_code": "EX-POP",
+        "description": "Adults with type 2 diabetes"
+      }
+    ],
+    "exclusion_criteria": [
+      {
+        "id": "EXC-RETRACTED",
+        "type": "exclude",
+        "field": "publication_status",
+        "any": ["retracted"],
+        "reason_code": "EX-RETRACTED"
+      }
+    ],
+    "searches": [
+      {
+        "query_id": "pubmed-01",
+        "database": "PubMed",
+        "platform": "NCBI",
+        "query_string": "(type 2 diabetes[Title/Abstract]) AND (randomized controlled trial[Publication Type])",
+        "fields": ["Title", "Abstract", "Publication Type"],
+        "coverage_from": "2000-01-01",
+        "coverage_to": "2025-01-31",
+        "date_searched": "2025-02-01",
+        "language_limits": ["en", "pt"],
+        "returned_ids": ["rec-001", "rec-002", "rec-003"],
+        "hit_count": 3
+      },
+      {
+        "query_id": "crossref-01",
+        "database": "Crossref",
+        "platform": "supplied API snapshot",
+        "query_string": "query.bibliographic=type 2 diabetes randomized controlled trial",
+        "fields": ["bibliographic"],
+        "date_searched": "2025-02-01",
+        "returned_ids": ["rec-001-duplicate", "rec-001-preprint"],
+        "hit_count": 2
+      }
+    ]
+  },
+  "documents": [
+    {
+      "id": "rec-001",
+      "work_id": "work-1",
+      "doi": "10.3000/rct-journal",
+      "title": "A randomized trial of the intervention in type 2 diabetes",
+      "authors": [{"family": "Chen"}],
+      "year": 2023,
+      "design": "randomized controlled trial",
+      "population": "adults with type 2 diabetes",
+      "publication_status": "published",
+      "language": "en",
+      "abstract": "Adults with type 2 diabetes were allocated randomly in this controlled trial.",
+      "full_text": "Methods: Random allocation was used. Results: the prespecified outcome is reported.",
+      "source": "PubMed supplied snapshot"
+    },
+    {
+      "id": "rec-001-duplicate",
+      "work_id": "work-1",
+      "doi": "10.3000/RCT-JOURNAL",
+      "title": "A randomized trial of the intervention in type 2 diabetes",
+      "authors": [{"family": "Chen"}],
+      "year": 2023,
+      "design": "randomized controlled trial",
+      "population": "adults with type 2 diabetes",
+      "publication_status": "published",
+      "abstract": "Adults with type 2 diabetes were allocated randomly in this controlled trial.",
+      "source": "Crossref duplicate export fixture"
+    },
+    {
+      "id": "rec-001-preprint",
+      "work_id": "work-1",
+      "title": "A randomized trial of the intervention in type 2 diabetes: preprint",
+      "authors": [{"family": "Chen"}],
+      "year": 2022,
+      "design": "randomized controlled trial",
+      "population": "adults with type 2 diabetes",
+      "version_of": "10.3000/rct-journal",
+      "version": "preprint",
+      "publication_status": "preprint",
+      "abstract": "Preprint version of the same declared study.",
+      "source": "Preprint supplied fixture"
+    },
+    {
+      "id": "rec-002",
+      "doi": "10.3000/cohort",
+      "title": "A cohort study of the intervention in type 2 diabetes",
+      "authors": [{"family": "Silva"}],
+      "year": 2023,
+      "design": "prospective cohort study",
+      "population": "adults with type 2 diabetes",
+      "publication_status": "published",
+      "abstract": "A prospective cohort of adults with type 2 diabetes; treatment was chosen clinically.",
+      "source": "PubMed supplied snapshot"
+    },
+    {
+      "id": "rec-003",
+      "doi": "10.3000/wrong-pop",
+      "title": "A randomized trial of the intervention in hypertension",
+      "authors": [{"family": "Suzuki"}],
+      "year": 2024,
+      "design": "randomized controlled trial",
+      "population": "adults with hypertension without diabetes",
+      "publication_status": "published",
+      "abstract": "Adults with hypertension without diabetes were randomized.",
+      "source": "PubMed supplied snapshot"
+    }
+  ],
+  "reviewer_decisions": [
+    {
+      "record_id": "rec-001",
+      "stage": "title_abstract",
+      "reviewer": "reviewer-A",
+      "criteria_version": "proto-2026-01",
+      "decision": "include",
+      "reason_code": "IN-RCT-T2D",
+      "evidence": ["randomized controlled trial", "type 2 diabetes"]
+    },
+    {
+      "record_id": "rec-001",
+      "stage": "title_abstract",
+      "reviewer": "reviewer-B",
+      "criteria_version": "proto-2026-01",
+      "decision": "include",
+      "reason_code": "IN-RCT-T2D",
+      "evidence": ["randomized controlled trial", "type 2 diabetes"]
+    },
+    {
+      "record_id": "rec-001",
+      "stage": "full_text",
+      "reviewer": "reviewer-A",
+      "criteria_version": "proto-2026-01",
+      "decision": "include",
+      "reason_code": "IN-FULLTEXT",
+      "evidence": ["Random allocation was used"]
+    },
+    {
+      "record_id": "rec-001",
+      "stage": "full_text",
+      "reviewer": "reviewer-B",
+      "criteria_version": "proto-2026-01",
+      "decision": "include",
+      "reason_code": "IN-FULLTEXT",
+      "evidence": ["Random allocation was used"]
+    },
+    {
+      "record_id": "rec-002",
+      "stage": "title_abstract",
+      "reviewer": "reviewer-A",
+      "criteria_version": "proto-2026-01",
+      "decision": "exclude",
+      "reason_code": "EX-DESIGN",
+      "evidence": ["prospective cohort study"]
+    },
+    {
+      "record_id": "rec-002",
+      "stage": "title_abstract",
+      "reviewer": "reviewer-B",
+      "criteria_version": "proto-2026-01",
+      "decision": "exclude",
+      "reason_code": "EX-DESIGN",
+      "evidence": ["prospective cohort study"]
+    },
+    {
+      "record_id": "rec-003",
+      "stage": "title_abstract",
+      "reviewer": "reviewer-A",
+      "criteria_version": "proto-2026-01",
+      "decision": "include",
+      "reason_code": "IN-RCT"
+    },
+    {
+      "record_id": "rec-003",
+      "stage": "title_abstract",
+      "reviewer": "reviewer-B",
+      "criteria_version": "proto-2026-01",
+      "decision": "exclude",
+      "reason_code": "EX-POP",
+      "evidence": ["hypertension without diabetes"]
+    }
+  ],
+  "adjudications": [
+    {
+      "record_id": "rec-003",
+      "stage": "title_abstract",
+      "reviewer": "reviewer-C",
+      "criteria_version": "proto-2026-01",
+      "decision": "exclude",
+      "reason_code": "EX-POP",
+      "rationale": "The supplied population explicitly excludes diabetes, so the current population criterion is not met.",
+      "evidence": ["hypertension without diabetes"]
+    }
+  ],
+  "output_contract": [
+    "case_id", "search_protocol", "protocol_sha256", "screening_decisions",
+    "included_records", "excluded_records", "pending_records", "prisma_flow",
+    "prisma_counts_closed", "evidence_ledger", "检索结果", "证据记录", "状态说明",
+    "uncertainty", "change_records"
+  ]
+}

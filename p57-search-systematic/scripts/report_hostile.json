@@ -1,0 +1,95 @@
+{
+  "schema_version": "systematic-hostile/v1",
+  "fixture": "synthetic_not_official",
+  "scenarios": [
+    {
+      "scenario": "bad_json_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "array_case_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_section_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "protocol_wrong_shape_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_criteria_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_records_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "bad_record_shape_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_review_record_exit3",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reviewer_identity_required",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unversioned_vote_is_review_not_silent",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unresolved_adjudication_evidence_stays_pending",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "fulltext_pending_is_not_included",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_search_date_is_review",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "contract_map_and_object_entries",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "contract_missing_status_cannot_spoof",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unicode_path_deterministic",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "usage_exit2",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 17,
+    "of": 17
+  }
+}

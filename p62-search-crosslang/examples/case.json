@@ -1,0 +1,126 @@
+{
+  "case_id": "crosslang-synthetic-example-v2",
+  "section": "crosslang",
+  "research_question": "Como a gasdermina regula a piroptose?",
+  "source_language": "pt",
+  "target_languages": ["pt", "en"],
+  "concepts": [
+    {
+      "id": "cell-death",
+      "concept": "inflammatory programmed cell death",
+      "terms": {
+        "pt": [
+          {"term": "piroptose", "kind": "disciplinary_preferred", "source": "synthetic controlled glossary"},
+          {"term": "morte celular inflamatória", "kind": "descriptive_variant"}
+        ],
+        "en": [
+          {"term": "pyroptosis", "kind": "disciplinary_preferred", "source": "synthetic controlled glossary"},
+          {"term": "pyroptotic cell death", "kind": "spelling_variant"}
+        ],
+        "zh": ["细胞焦亡", "细胞炎性坏死"]
+      },
+      "controlled_terms": {"en": ["Pyroptosis"], "zh": ["焦亡"]},
+      "translation_service": "human-curated synthetic terminology fixture",
+      "translation_version": "v1",
+      "source": "synthetic teaching glossary; not a live MT response",
+      "license": "example data generated for package verification"
+    },
+    {
+      "id": "pore-protein",
+      "concept": "gasdermin family",
+      "terms": {
+        "pt": ["gasdermina", "GSDM"],
+        "en": ["gasdermin", "GSDM"],
+        "zh": ["gasdermin", "GSDM"]
+      },
+      "source": "synthetic teaching glossary"
+    }
+  ],
+  "documents": [
+    {
+      "id": "w1-pt-original",
+      "work_id": "w1",
+      "doi": "10.4000/w1",
+      "language": "pt",
+      "version": "original",
+      "title": "Piroptose mediada por gasdermina em modelo experimental",
+      "abstract": "A piroptose depende da gasdermina. Modelo experimental celular com análise mecanística.",
+      "full_text": "Neste modelo experimental celular, a piroptose foi avaliada e a gasdermina foi medida.",
+      "source": "synthetic Portuguese original fixture"
+    },
+    {
+      "id": "w1-en-publisher-translation",
+      "work_id": "w1",
+      "doi": "10.4000/w1",
+      "language": "en",
+      "version_kind": "publisher_full_translation",
+      "translation_of": "10.4000/w1",
+      "title": "Gasdermin-mediated pyroptosis in an experimental model",
+      "abstract": "Pyroptosis depends on gasdermin. Experimental cell model with mechanistic analysis.",
+      "full_text": "In this experimental cell model, pyroptosis was assessed and gasdermin was measured.",
+      "source": "synthetic publisher full-translation fixture"
+    },
+    {
+      "id": "w1-en-publisher-translation-duplicate",
+      "work_id": "w1",
+      "doi": "10.4000/W1",
+      "language": "en",
+      "version_kind": "publisher_full_translation",
+      "translation_of": "10.4000/w1",
+      "title": "Gasdermin-mediated pyroptosis in an experimental model",
+      "abstract": "Pyroptosis depends on gasdermin. Experimental cell model with mechanistic analysis.",
+      "full_text": "In this experimental cell model, pyroptosis was assessed and gasdermin was measured.",
+      "source": "a different export of the same explicit duplicate fixture"
+    },
+    {
+      "id": "w2-pt-original",
+      "work_id": "w2",
+      "doi": "10.4000/w2",
+      "language": "pt",
+      "version": "original",
+      "title": "Piroptose e gasdermina em células",
+      "abstract": "Estudo de piroptose e gasdermina em modelo experimental celular.",
+      "source": "synthetic Portuguese original fixture"
+    },
+    {
+      "id": "w2-en-abstract-only",
+      "work_id": "w2",
+      "doi": "10.4000/w2",
+      "language": "en",
+      "version_kind": "english_abstract_only",
+      "abstract_only": true,
+      "title": "Pyroptosis and gasdermin in cells",
+      "abstract": "An experimental cell model of pyroptosis and gasdermin.",
+      "source": "synthetic English abstract-only fixture"
+    },
+    {
+      "id": "w3-en-original",
+      "work_id": "w3",
+      "doi": "10.4000/w3",
+      "language": "en",
+      "version": "original",
+      "title": "Gasdermin-dependent pyroptosis",
+      "abstract": "Original English study of pyroptosis and gasdermin in an experimental cell model.",
+      "full_text": "This experimental cell model measures gasdermin-dependent pyroptosis.",
+      "source": "synthetic English original fixture"
+    }
+  ],
+  "reference_set": [
+    {"ref_id": "ref-w1", "work_id": "w1", "title": "Piroptose mediada por gasdermina em modelo experimental"},
+    {"ref_id": "ref-w2", "work_id": "w2", "title": "Piroptose e gasdermina em células"},
+    {"ref_id": "ref-w3", "work_id": "w3", "title": "Gasdermin-dependent pyroptosis"}
+  ],
+  "pseudo_relevance_feedback": {
+    "enabled": true,
+    "fb_docs": 3,
+    "fb_terms": 4,
+    "min_document_frequency": 2,
+    "original_query_weight": 0.5,
+    "accept_prf": false
+  },
+  "output_contract": [
+    "case_id", "concept_alignment", "multilingual_queries", "ranked_results",
+    "crosslingual_recall_gain", "language_summary", "feedback_runs", "evidence_ledger",
+    "candidate_set", "检索结果", "证据记录", "状态说明", "uncertainty", "change_records"
+  ]
+}

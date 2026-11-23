@@ -1,0 +1,85 @@
+{
+  "schema_version": "coverage-hostile/v1",
+  "scenarios": [
+    {
+      "scenario": "malformed_json_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "case_array_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_section_exit5_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_reference_set_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "empty_reference_set_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_candidates_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "wrong_document_shape_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "partial_bad_record_is_named_review",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "mapping_contract_full_echo",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "object_list_contract_and_status_not_spoofed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unsupported_contract_is_limit_not_crash",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_declared_material_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unicode_cold_path_and_exact_replay",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "manual_adjudication_can_confirm_and_reject",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "usage_is_argparse_exit2",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 15,
+    "of": 15
+  },
+  "fixture": "synthetic_not_official"
+}
