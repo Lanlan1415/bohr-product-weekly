@@ -1,11 +1,31 @@
 {
-  "schema_version": "ppt-master-bench/v1",
+  "schema_version": "ppt-master-verification/v3",
   "package": "p43-ppt-master",
+  "scope": "Author-side regression evidence only; not an official fixed-case score or prepared answer.",
   "benches": [
-    {"bench": "scripts/bench_deck.py", "scenarios": 11, "passed": 11, "engine": "deckaudit.py（写出真实 .pptx 再读回审计）"},
-    {"bench": "scripts/bench_deck2.py", "scenarios": 16, "passed": 16, "engine": "deckbuild.py 端到端：修订记录、CJK 溢出、字体、确定性、母版链、嵌入"},
-    {"bench": "scripts/bench_extra.py", "scenarios": 27, "passed": 27, "engine": "extra_rules.py 四个 section，每个缺陷带假阳性守卫"}
+    {"bench": "scripts/bench_deck.py", "passed": 11, "of": 11},
+    {"bench": "scripts/bench_deck2.py", "passed": 16, "of": 16},
+    {"bench": "scripts/bench_extra.py", "passed": 27, "of": 27},
+    {"bench": "scripts/bench_master.py", "passed": 37, "of": 37}
   ],
-  "totals": {"passed": 54, "of": 54},
-  "note": "One planted defect per scenario; each clean baseline must report no high or medium finding, so blanket flagging cannot pass. A missing typeface, a font without glyphs, a non-reproducible build, a broken master chain and a declared embedding that the package does not carry cannot be expressed in a spec, so bench_deck2 injects/patches them on a real written package. Reports are rewritten next to the benches on every run (scripts/report_deck*.json, scripts/report_extra.json); the shipped copies are from the verification run."
+  "hostile_probes": {"probe": "scripts/probe_hostile.py", "passed": 26, "of": 26},
+  "totals": {"benchmark_scenarios_passed": 91, "benchmark_scenarios": 91, "hostile_probes_passed": 26, "hostile_probes": 26},
+  "worked_example": {
+    "spec": "examples/spec-master.json",
+    "case": "examples/case.json",
+    "python": "-I -X utf8",
+    "status": "clean",
+    "case_id": "ppt-master-worked-001",
+    "slides": 4,
+    "findings": 0,
+    "deterministic": true,
+    "preview_rendered": false,
+    "preview_note": "No office renderer was available on this development machine; the result records this limit."
+  },
+  "artifact_open_check": "python-pptx reopened the worked deck, real-source edited deck and real-template deck; slide counts and canvas dimensions were readable.",
+  "notes": [
+    "Every new rule has a planted-defect scenario and a clean/false-positive guard.",
+    "The isolated hostile probes require exit in {0,3,4,5}, a parseable result.json and no traceback.",
+    "Binary decks are generated in _run* or the system temp directory and are not submission resources."
+  ]
 }

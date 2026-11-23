@@ -1,0 +1,57 @@
+{
+  "section": "paper_to_deck",
+  "spacing": {"title": 32, "body": 20},
+  "font_ea": "Microsoft YaHei",
+  "font_latin": "Arial",
+  "min_font_pt": 14,
+  "max_bullets_per_slide": 5,
+  "require_notes": true,
+  "required_mainline": ["question", "method", "result", "limit"],
+  "available_evidence": ["Sec. 2, p.3", "Table 1, p.6", "Fig. 3b, p.7", "Sec. 5, p.12"],
+  "review_note": "worked example；仅演示契约与运行形态，不是固定案例答案",
+  "uncertainty": ["示例数值仅用于演示接口，正式案例必须替换为源材料真实数值"],
+  "slides": [
+    {
+      "title": "吸收速率是工艺瓶颈",
+      "layout": "content",
+      "role": "question",
+      "claim": "研究问题是吸收速率而非终点吸收量",
+      "strength": "supported",
+      "evidence": "Sec. 2, p.3",
+      "bullets": [" faster uptake is the unmet need "],
+      "notes": "先界定问题；不要把标题扩成材料未支持的新结论。"
+    },
+    {
+      "title": "六次重复构成对照证据",
+      "layout": "content",
+      "role": "method",
+      "claim": "对照实验为速率比较提供直接证据",
+      "strength": "measured",
+      "evidence": "Table 1, p.6",
+      "caption": "Table 1, p.6 — 对照设计与重复数",
+      "bullets": ["control and coated groups", "six replicates per group"],
+      "notes": "交代对照与重复数；统计口径不能超出 Table 1。"
+    },
+    {
+      "title": "吸收速率提高 3 倍",
+      "layout": "content",
+      "role": "result",
+      "claim": "多孔涂层使吸收速率提高三倍",
+      "strength": "measured",
+      "evidence": "Fig. 3b, p.7",
+      "caption": "Fig. 3b, p.7 — 对比的是速率而非终点",
+      "bullets": ["control: 12.4 a.u.", "coated: 31.2 a.u.", "n = 6 per group"],
+      "notes": "这页只讲 Fig. 3b 支持的幅度；倍数口径按示例展示。"
+    },
+    {
+      "title": "单一厚度限制外推",
+      "layout": "content",
+      "role": "limit",
+      "claim": "结果不能直接外推到其他厚度与对象",
+      "strength": "supported",
+      "evidence": "Sec. 5, p.12",
+      "bullets": ["one coating thickness was tested", "other scales remain unverified"],
+      "notes": "以边界收尾；不要把未验证厚度写成下一代性能预测。"
+    }
+  ]
+}

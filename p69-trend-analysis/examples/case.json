@@ -1,0 +1,16 @@
+{
+  "case_id": "trend-worked-001",
+  "output_contract": {
+    "case_id": "输入标识",
+    "status": "运行状态",
+    "research_product": "研究产物",
+    "evidence_matrix": "证据矩阵",
+    "uncertainty": "不确定性",
+    "time_trend": "时间趋势",
+    "topic_evolution": "主题演化",
+    "representative_works": "代表性工作",
+    "research_gaps": "研究空白",
+    "screening_results": "筛选结果",
+    "review_note": "复核说明"
+  }
+}

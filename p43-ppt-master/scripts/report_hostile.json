@@ -1,0 +1,218 @@
+{
+  "schema_version": "ppt-master-hostile/v1",
+  "probes": [
+    {
+      "probe": "01_clean",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "02_missing_spec",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "03_invalid_json",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "04_array_spec",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "05_unknown_section",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "06_section_wrong_type",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "07_slides_wrong_type",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "08_bullets_wrong_type",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "09_bad_spacing_honest_default",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "10_empty_deck",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "11_contract_object_list",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "12_contract_bad_shape",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "13_missing_image",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "14_missing_source_deck",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "15_corrupt_source_deck",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "16_missing_template",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "17_malformed_template_xml",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "18_valid_case_contract",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "19_malformed_case_limit",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "20_invalid_slide_budget",
+      "pass": true,
+      "exit": 3,
+      "status": "review",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "21_slide_budget_exceeded",
+      "pass": true,
+      "exit": 3,
+      "status": "review",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "22_unicode_glyph_coverage",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "23_minimum_slide_count",
+      "pass": true,
+      "exit": 3,
+      "status": "review",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "24_audited_status_wins",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "25_real_source_edit",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "26_real_template_shell",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "no_traceback": true,
+      "has_result": true
+    }
+  ],
+  "totals": {
+    "passed": 26,
+    "of": 26
+  },
+  "temp_root": "C:\\Users\\lanlan\\AppData\\Local\\Temp\\p43_hostile_6_njy8rx"
+}

@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p69-trend-analysis
+https://github.com/Lanlan1415/bohr-product-weekly
+p69-trend-analysis/

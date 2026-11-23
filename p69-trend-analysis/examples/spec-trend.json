@@ -1,0 +1,119 @@
+{
+  "section": "trend_analysis",
+  "research_question": "在固定的多孔涂层与图方法语料中，年度产出、方法主题和跨尺度未决问题如何变化？",
+  "review_note": "合成 worked example，仅演示真实计算与契约，不是固定案例答案",
+  "search_protocol": {
+    "sources": [{"name": "synthetic-fixed-index", "version": "demo-v1"}],
+    "queries": ["(\"porous coating\" AND graph) OR \"graph neural network\""],
+    "start_year": 2018,
+    "end_year": 2024,
+    "complete_through": 2024,
+    "year_basis": "publication",
+    "as_of": "2025-01-15",
+    "status": "fixed_corpus"
+  },
+  "screening_protocol": {
+    "auto_apply": false,
+    "inclusion": ["reports coating or graph-method evidence within the declared question"],
+    "exclusion": ["off_topic", "duplicate"]
+  },
+  "topic_aliases": {
+    "graph neural networks": {"variants": ["GNN", "graph neural network"]},
+    "porous coating": {"variants": ["porous coatings"]},
+    "graph transformers": {"variants": ["graph transformer"]}
+  },
+  "ambiguous_terms": [
+    {"term": "transformer", "topic_by_context": {
+      "graph": "graph transformers",
+      "neural machine translation": "nlp transformers"
+    }}
+  ],
+  "representative_config": {"per_phase": 2, "selection_method": "evidence_and_contribution"},
+  "change_point_config": {"min_segment": 2, "alpha": 0.05},
+  "trend_claims": [
+    {"id": "T1", "statement_type": "fact", "year": 2021, "expected_count": 2,
+     "text": "2021 年本固定语料纳入 2 条记录。",
+     "evidence": ["annual_counts.csv#year=2021"]}
+  ],
+  "evolution_events": [
+    {"event_id": "E1", "type": "merge", "year": 2021,
+     "topics": ["graph neural networks", "porous coating"],
+     "statement_type": "inference",
+     "basis": "两篇记录的方法段同时出现图结构与涂层描述符；这是本语料内共现合并证据，不是因果机制。",
+     "evidence": [
+       {"record_id": "R005", "quote": "Graph neural networks were combined with porous coating descriptors.", "locator": "Sec. 2, p.4", "role": "cooccurrence"},
+       {"record_id": "R007", "quote": "A graph transformer combines graph structure with coating features.", "locator": "Sec. 2, p.3", "role": "cooccurrence"}
+     ]}
+  ],
+  "gap_candidates": [
+    {"gap_id": "G1", "type": "repeated_unresolved", "statement_type": "inference", "status": "supported",
+     "claim": "图模型向不同多孔介质尺度迁移仍缺少可复核解决方案",
+     "evidence": [
+       {"record_id": "R005", "quote": "The transfer of graph models across scales remains unresolved.", "locator": "Sec. 5, p.8"},
+       {"record_id": "R008", "quote": "Cross-scale transfer remains unresolved for porous media.", "locator": "Sec. 4, p.6"}
+     ],
+     "exclusion_checks": [
+       {"source": "synthetic-fixed-index", "query": "(graph OR GNN) AND (cross-scale OR transfer) AND (resolved OR validated)",
+        "covered_years": [2018, 2024], "outcome": "not_found", "note": "仅排除本固定索引内的已解决答案"}
+     ]}
+  ],
+  "records": [
+    {"id": "R001", "doi": "10.0000/demo.001", "title": "Porous coating uptake baseline", "year": 2018,
+     "online_year": 2018, "source_type": "article", "decision": "include", "reason_code": "in_scope",
+     "topics": ["porous coating"], "contribution_type": ["benchmark"], "citation_count": 40,
+     "locator": "p.2", "source_file": "synthetic/R001.pdf",
+     "excerpts": [{"text": "A porous coating baseline was established for uptake measurements.", "locator": "Sec. 1, p.2"}]},
+    {"id": "R002", "doi": "10.0000/demo.002", "title": "Graph kernels for coating data", "year": 2018,
+     "online_year": 2017, "source_type": "article", "decision": "include", "reason_code": "in_scope",
+     "topics": ["graph kernels", "porous coating"], "contribution_type": ["method"], "citation_count": 22,
+     "locator": "p.3", "source_file": "synthetic/R002.pdf",
+     "excerpts": [{"text": "Graph kernels encode coating descriptors without neural training.", "locator": "Sec. 2, p.3"}]},
+    {"id": "R003", "doi": "10.0000/demo.003", "title": "A first GNN for porous coating fingerprints", "year": 2019,
+     "online_year": 2018, "source_type": "article", "decision": "include", "reason_code": "in_scope",
+     "topics": ["GNN", "porous coating"], "contribution_type": ["method"], "first_method": true,
+     "citation_count": 3, "locator": "p.4", "source_file": "synthetic/R003.pdf",
+     "excerpts": [{"text": "We introduce the first GNN for these coating fingerprints.", "locator": "Sec. 1, p.4"}]},
+    {"id": "R004", "doi": "10.0000/demo.004", "title": "Review of graph neural network coatings", "year": 2019,
+     "online_year": 2019, "source_type": "review", "decision": "include", "reason_code": "in_scope",
+     "topics": ["graph neural network", "porous coating"], "contribution_type": ["review"], "citation_count": 51,
+     "locator": "p.2", "source_file": "synthetic/R004.pdf",
+     "excerpts": [{"text": "Early graph neural network studies were sparse but methodologically distinct.", "locator": "Sec. 1, p.2"}]},
+    {"id": "R005", "doi": "10.0000/demo.005", "title": "GNN coating descriptors at laboratory scale", "year": 2020,
+     "online_year": 2019, "source_type": "article", "decision": "include", "reason_code": "in_scope",
+     "topics": ["GNN", "porous coating"], "methods": ["GNN"], "objects": ["laboratory coupons"],
+     "scales": ["laboratory"], "contribution_type": ["method"], "citation_count": 18,
+     "locator": "p.4", "source_file": "synthetic/R005.pdf",
+     "excerpts": [
+       {"text": "Graph neural networks were combined with porous coating descriptors.", "locator": "Sec. 2, p.4"},
+       {"text": "The transfer of graph models across scales remains unresolved.", "locator": "Sec. 5, p.8"}
+     ]},
+    {"id": "R006", "doi": "10.0000/demo.006", "title": "Benchmarking porous coating graph models", "year": 2020,
+     "online_year": 2020, "source_type": "article", "decision": "include", "reason_code": "in_scope",
+     "topics": ["GNN", "porous coating"], "contribution_type": ["benchmark"], "citation_count": 33,
+     "locator": "p.5", "source_file": "synthetic/R006.pdf",
+     "excerpts": [{"text": "The benchmark reports within-scale validation only.", "locator": "Table 1, p.5"}]},
+    {"id": "R007", "doi": "10.0000/demo.007", "title": "Graph transformer for coating structure", "year": 2021,
+     "online_year": 2020, "source_type": "article", "decision": "include", "reason_code": "in_scope",
+     "topics": ["graph transformer", "porous coating"], "contribution_type": ["method"], "first_method": true,
+     "citation_count": 27, "locator": "p.3", "source_file": "synthetic/R007.pdf",
+     "excerpts": [{"text": "A graph transformer combines graph structure with coating features.", "locator": "Sec. 2, p.3"}]},
+    {"id": "R008", "doi": "10.0000/demo.008", "title": "Cross-scale GNN transfer in porous media", "year": 2021,
+     "online_year": 2021, "source_type": "article", "decision": "include", "reason_code": "in_scope",
+     "topics": ["GNN", "porous coating"], "methods": ["transfer learning"], "objects": ["porous media"],
+     "scales": ["cross-scale"], "contribution_type": ["evaluation"], "citation_count": 12,
+     "locator": "p.6", "source_file": "synthetic/R008.pdf",
+     "excerpts": [{"text": "Cross-scale transfer remains unresolved for porous media.", "locator": "Sec. 4, p.6"}]},
+    {"id": "R009", "doi": "10.0000/demo.009", "title": "Long-tail graph method for sparse coating data", "year": 2022,
+     "online_year": 2022, "source_type": "article", "decision": "include", "reason_code": "in_scope",
+     "topics": ["GNN", "porous coating"], "contribution_type": ["method"], "first_method": true,
+     "citation_count": 1, "locator": "p.4", "source_file": "synthetic/R009.pdf",
+     "excerpts": [{"text": "A sparse-data graph method is evaluated under paired controls.", "locator": "Sec. 3, p.4"}]},
+    {"id": "R010", "doi": "10.0000/demo.010", "title": "Clinical dosing without coating data", "year": 2023,
+     "online_year": 2023, "source_type": "article", "decision": "exclude", "reason_code": "off_topic",
+     "reason": "no coating or graph-method evidence for the declared question", "topics": ["clinical dosing"],
+     "locator": "p.2", "source_file": "synthetic/R010.pdf",
+     "excerpts": [{"text": "Clinical dosing was measured without coating data.", "locator": "Sec. 1, p.2"}]}
+  ],
+  "uncertainty": ["合成示例不用于证明真实领域的新颖性或实际产出趋势"],
+  "change_records": [{"version": "demo-v1", "action": "constructed synthetic interface fixture", "reason": "worked example only"}]
+}

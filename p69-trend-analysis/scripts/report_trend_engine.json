@@ -1,0 +1,676 @@
+{
+  "schema_version": "trend-engine-bench/v2",
+  "scenarios": [
+    {
+      "scenario": "research_question_missing",
+      "expected": [
+        "tr.research_question_missing"
+      ],
+      "fired": [
+        "tr.research_question_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "protocol_missing",
+      "expected": [
+        "tr.protocol_missing"
+      ],
+      "fired": [
+        "tr.incomplete_or_outside_year_used",
+        "tr.protocol_field_missing",
+        "tr.protocol_missing",
+        "tr.trend_claim_unlinked",
+        "tr.year_basis_unknown"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "protocol_field_missing",
+      "expected": [
+        "tr.protocol_field_missing"
+      ],
+      "fired": [
+        "tr.protocol_field_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "protocol_window_invalid",
+      "expected": [
+        "tr.protocol_window_invalid"
+      ],
+      "fired": [
+        "tr.event_year_invalid",
+        "tr.incomplete_or_outside_year_used",
+        "tr.protocol_window_invalid",
+        "tr.trend_claim_unlinked"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "year_basis_unknown",
+      "expected": [
+        "tr.year_basis_unknown"
+      ],
+      "fired": [
+        "tr.year_basis_unknown"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "no_records",
+      "expected": [
+        "tr.no_records"
+      ],
+      "fired": [
+        "tr.evidence_unknown_record",
+        "tr.evolution_event_unsupported",
+        "tr.gap_without_positive_evidence",
+        "tr.no_records",
+        "tr.representative_phase_missing",
+        "tr.trend_count_mismatch",
+        "tr.unsupported_gap_asserted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "no_included_records",
+      "expected": [
+        "tr.no_included_records"
+      ],
+      "fired": [
+        "tr.evidence_unknown_record",
+        "tr.evolution_event_unsupported",
+        "tr.gap_without_positive_evidence",
+        "tr.no_included_records",
+        "tr.representative_phase_missing",
+        "tr.trend_count_mismatch",
+        "tr.unsupported_gap_asserted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "screening_decision_missing",
+      "expected": [
+        "tr.screening_decision_missing"
+      ],
+      "fired": [
+        "tr.screening_decision_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "exclusion_reason_missing",
+      "expected": [
+        "tr.exclusion_reason_missing"
+      ],
+      "fired": [
+        "tr.exclusion_reason_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "duplicate_version",
+      "expected": [
+        "tr.duplicate_version"
+      ],
+      "fired": [
+        "tr.duplicate_version"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "record_id_duplicate",
+      "expected": [
+        "tr.record_id_duplicate"
+      ],
+      "fired": [
+        "tr.duplicate_version",
+        "tr.record_id_duplicate"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "year_missing",
+      "expected": [
+        "tr.year_missing"
+      ],
+      "fired": [
+        "tr.year_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "incomplete_year_used",
+      "expected": [
+        "tr.incomplete_or_outside_year_used"
+      ],
+      "fired": [
+        "tr.incomplete_or_outside_year_used",
+        "tr.trend_claim_unlinked"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "trend_count_mismatch",
+      "expected": [
+        "tr.trend_count_mismatch"
+      ],
+      "fired": [
+        "tr.trend_count_mismatch"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "changepoint_overclaimed",
+      "expected": [
+        "tr.changepoint_overclaimed"
+      ],
+      "fired": [
+        "tr.changepoint_overclaimed"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "causal_overreach",
+      "expected": [
+        "tr.causal_overreach"
+      ],
+      "fired": [
+        "tr.causal_overreach"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "trend_claim_unlinked",
+      "expected": [
+        "tr.trend_claim_unlinked"
+      ],
+      "fired": [
+        "tr.trend_claim_unlinked"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "trend_claim_dangling_link",
+      "expected": [
+        "tr.trend_claim_unlinked"
+      ],
+      "fired": [
+        "tr.trend_claim_unlinked"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "trend_claim_shape",
+      "expected": [
+        "tr.trend_claim_shape"
+      ],
+      "fired": [
+        "tr.trend_claim_shape"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fact_inference_unlabelled",
+      "expected": [
+        "tr.fact_inference_unlabelled"
+      ],
+      "fired": [
+        "tr.fact_inference_unlabelled"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "topic_unassigned",
+      "expected": [
+        "tr.topic_unassigned"
+      ],
+      "fired": [
+        "tr.topic_unassigned"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "topic_ambiguity_unresolved",
+      "expected": [
+        "tr.topic_ambiguity_unresolved"
+      ],
+      "fired": [
+        "tr.topic_ambiguity_unresolved"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "event_basis_missing",
+      "expected": [
+        "tr.event_basis_missing"
+      ],
+      "fired": [
+        "tr.event_basis_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "event_shape_invalid",
+      "expected": [
+        "tr.event_shape_invalid"
+      ],
+      "fired": [
+        "tr.event_shape_invalid"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "event_topics_incomplete",
+      "expected": [
+        "tr.event_topics_incomplete"
+      ],
+      "fired": [
+        "tr.event_topics_incomplete"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "event_type_unknown",
+      "expected": [
+        "tr.event_type_unknown"
+      ],
+      "fired": [
+        "tr.event_type_unknown"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "event_year_invalid",
+      "expected": [
+        "tr.event_year_invalid"
+      ],
+      "fired": [
+        "tr.event_year_invalid"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "evidence_unknown_record",
+      "expected": [
+        "tr.evidence_unknown_record"
+      ],
+      "fired": [
+        "tr.evidence_unknown_record"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "evidence_quote_mismatch",
+      "expected": [
+        "tr.evidence_quote_mismatch"
+      ],
+      "fired": [
+        "tr.evidence_quote_mismatch"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "evidence_quote_missing",
+      "expected": [
+        "tr.evidence_quote_missing"
+      ],
+      "fired": [
+        "tr.evidence_quote_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "evidence_locator_missing",
+      "expected": [
+        "tr.evidence_locator_missing"
+      ],
+      "fired": [
+        "tr.evidence_locator_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "evidence_locator_vague",
+      "expected": [
+        "tr.evidence_locator_vague"
+      ],
+      "fired": [
+        "tr.evidence_locator_vague"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "evidence_shape_invalid",
+      "expected": [
+        "tr.evidence_shape_invalid"
+      ],
+      "fired": [
+        "tr.evidence_shape_invalid"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "evolution_event_unsupported",
+      "expected": [
+        "tr.evolution_event_unsupported"
+      ],
+      "fired": [
+        "tr.evolution_event_unsupported"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "gap_shape_invalid",
+      "expected": [
+        "tr.gap_shape_invalid"
+      ],
+      "fired": [
+        "tr.gap_shape_invalid"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "gap_type_unknown",
+      "expected": [
+        "tr.gap_type_unknown"
+      ],
+      "fired": [
+        "tr.gap_type_unknown",
+        "tr.unsupported_gap_asserted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "gap_without_positive_evidence",
+      "expected": [
+        "tr.gap_without_positive_evidence"
+      ],
+      "fired": [
+        "tr.gap_without_positive_evidence",
+        "tr.unsupported_gap_asserted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "gap_without_exclusion_check",
+      "expected": [
+        "tr.gap_without_exclusion_check"
+      ],
+      "fired": [
+        "tr.gap_without_exclusion_check",
+        "tr.unsupported_gap_asserted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "gap_exclusion_check_incomplete",
+      "expected": [
+        "tr.gap_exclusion_check_incomplete"
+      ],
+      "fired": [
+        "tr.gap_exclusion_check_incomplete",
+        "tr.gap_without_exclusion_check",
+        "tr.unsupported_gap_asserted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "gap_failure_scope_missing",
+      "expected": [
+        "tr.gap_failure_scope_missing"
+      ],
+      "fired": [
+        "tr.gap_failure_scope_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "gap_counterevidence_unresolved",
+      "expected": [
+        "tr.gap_counterevidence_unresolved"
+      ],
+      "fired": [
+        "tr.gap_counterevidence_unresolved",
+        "tr.unsupported_gap_asserted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "unsupported_gap_asserted",
+      "expected": [
+        "tr.unsupported_gap_asserted"
+      ],
+      "fired": [
+        "tr.unsupported_gap_asserted"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "citation_only_selection",
+      "expected": [
+        "tr.citation_only_selection"
+      ],
+      "fired": [
+        "tr.citation_only_selection"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "citation_count_invalid",
+      "expected": [
+        "tr.citation_count_invalid"
+      ],
+      "fired": [
+        "tr.citation_count_invalid"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "representative_phase_missing",
+      "expected": [
+        "tr.representative_phase_missing"
+      ],
+      "fired": [
+        "tr.representative_phase_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "representative_quota_invalid",
+      "expected": [
+        "tr.representative_quota_invalid"
+      ],
+      "fired": [
+        "tr.representative_quota_invalid"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "phase_basis_missing",
+      "expected": [
+        "tr.phase_basis_missing"
+      ],
+      "fired": [
+        "tr.phase_basis_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "phase_window_invalid",
+      "expected": [
+        "tr.phase_window_invalid"
+      ],
+      "fired": [
+        "tr.phase_window_invalid"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "record_locator_missing",
+      "expected": [
+        "tr.record_locator_missing"
+      ],
+      "fired": [
+        "tr.record_locator_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "clean_baseline",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "aliases_not_extra_zero_topics",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "excluded_topic_not_counted",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "date_basis_not_imputed",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "zero_baseline_growth_null",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "long_tail_method_first",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "all_phases_covered",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "gap_is_bounded",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "multi_label_denominator",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "no_forced_turning_point",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "strong_change_point_detectable",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "flat_series_no_change_point",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "multiple_phases_covered",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "conflict_gap_supported",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "deterministic_analysis",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "json_records_path_clean",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "jsonl_records_path_clean",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "csv_records_path_clean",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "prospective_auto_screening_clean",
+      "expected": [],
+      "pass": true
+    },
+    {
+      "scenario": "evidence_source_text_missing",
+      "expected": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 69,
+    "of": 69
+  },
+  "note": "All tr.* rules plus clean/determinism/input/semantic guards. No platform score is implied."
+}

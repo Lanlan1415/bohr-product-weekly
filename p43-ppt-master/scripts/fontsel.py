@@ -61,6 +61,32 @@ def _find(names: list[str]) -> str | None:
     return None
 
 
+def find_family(family: str) -> str | None:
+    """Resolve a declared family without matplotlib when necessary."""
+    wanted = family.strip().casefold()
+    common = {"arial": ["arial.ttf"], "times new roman": ["times.ttf"],
+              "calibri": ["calibri.ttf"], "aptos": ["aptos.ttf"],
+              "liberation sans": ["LiberationSans-Regular.ttf"]}
+    for known, names in PREFERRED + [(k, v) for k, v in common.items()]:
+        if wanted == known.casefold():
+            found = _find(names)
+            if found:
+                return found
+    # Uncommon fonts can still be identified through their own name table.
+    import glyphmetrics
+    for directory in FONT_DIRS:
+        root = Path(directory)
+        if not root.is_dir():
+            continue
+        for pattern in ("*.ttf", "*.ttc", "*.otf"):
+            for candidate in root.rglob(pattern):
+                if any(wanted == name.casefold() for name in glyphmetrics.family(candidate)):
+                    return str(candidate)
+                if wanted == candidate.stem.casefold():
+                    return str(candidate)
+    return None
+
+
 def _cjk_fonts() -> list[str]:
     """Any installed file whose name looks CJK-capable, as a last resort."""
     out = []
@@ -81,7 +107,12 @@ def coverage(path: str, text: str) -> tuple[str, ...]:
         from matplotlib.ft2font import FT2Font
         ft = FT2Font(path)
     except Exception:
-        return tuple(sorted(set(c for c in text if not c.isspace())))
+        try:
+            import glyphmetrics
+            return glyphmetrics.coverage(path, text)
+        except Exception:
+            # Coverage is unverifiable, not proof that every character is absent.
+            return tuple()
 
     missing = []
     for ch in sorted(set(text)):

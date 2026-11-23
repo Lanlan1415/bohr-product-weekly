@@ -1,0 +1,402 @@
+{
+  "schema_version": "ppt-master-deep-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "no_slides",
+      "expected": [
+        "deck.no_slides",
+        "paper.mainline_missing"
+      ],
+      "fired": [
+        "deck.no_slides",
+        "paper.mainline_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "slide_over",
+      "expected": [
+        "deck.slide_count_over_limit"
+      ],
+      "fired": [
+        "deck.slide_count_over_limit"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "slide_under",
+      "expected": [
+        "deck.slide_count_under_limit"
+      ],
+      "fired": [
+        "deck.slide_count_under_limit"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "slide_budget_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "slide_budget_invalid",
+      "expected": [
+        "deck.slide_budget_invalid"
+      ],
+      "fired": [
+        "deck.slide_budget_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "instruction_missing",
+      "expected": [
+        "edit.revision_instruction_missing",
+        "edit.revision_without_changes"
+      ],
+      "fired": [
+        "edit.revision_instruction_missing",
+        "edit.revision_without_changes"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "instruction_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "talk_clean_guards",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "narrative_missing",
+      "expected": [
+        "org.narrative_incomplete"
+      ],
+      "fired": [
+        "org.narrative_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "role_outside",
+      "expected": [
+        "org.role_undeclared",
+        "org.narrative_incomplete"
+      ],
+      "fired": [
+        "org.narrative_incomplete",
+        "org.role_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "qa_incomplete",
+      "expected": [
+        "org.qa_prep_missing"
+      ],
+      "fired": [
+        "org.qa_prep_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "qa_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "pace_exceeded",
+      "expected": [
+        "org.pace_budget_exceeded"
+      ],
+      "fired": [
+        "org.pace_budget_exceeded"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "pace_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "pace_invalid",
+      "expected": [
+        "org.pace_budget_invalid"
+      ],
+      "fired": [
+        "org.pace_budget_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "strength_unknown",
+      "expected": [
+        "org.strength_unknown"
+      ],
+      "fired": [
+        "org.strength_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "strength_custom_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "mainline_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "mainline_missing",
+      "expected": [
+        "paper.mainline_missing"
+      ],
+      "fired": [
+        "paper.mainline_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "image_missing",
+      "expected": [
+        "image.source_missing"
+      ],
+      "fired": [
+        "image.source_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "image_absent_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_already_applied_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_before_missing",
+      "expected": [
+        "edit.before_not_in_source"
+      ],
+      "fired": [
+        "edit.before_not_in_source",
+        "edit.change_not_in_deck"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_invalid_slide",
+      "expected": [
+        "edit.source_change_unapplied"
+      ],
+      "fired": [
+        "edit.change_slide_out_of_range",
+        "edit.source_change_unapplied"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "package_preserved_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "package_not_preserved",
+      "expected": [
+        "edit.package_not_preserved"
+      ],
+      "fired": [
+        "edit.package_not_preserved"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_applied_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_layout_missing_unit",
+      "expected": [
+        "template.layout_not_found"
+      ],
+      "fired": [
+        "template.layout_not_found"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_duplicate_unit",
+      "expected": [
+        "template.duplicate_layout_name"
+      ],
+      "fired": [
+        "template.duplicate_layout_name"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_placeholder_unit",
+      "expected": [
+        "template.title_placeholder_missing"
+      ],
+      "fired": [
+        "template.title_placeholder_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_orphan_unit",
+      "expected": [
+        "template.layout_master_missing"
+      ],
+      "fired": [
+        "template.layout_master_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_font_unit",
+      "expected": [
+        "template.theme_font_mismatch"
+      ],
+      "fired": [
+        "template.theme_font_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_size_unit",
+      "expected": [
+        "template.slide_size_mismatch"
+      ],
+      "fired": [
+        "template.slide_size_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_unreadable_unit",
+      "expected": [
+        "template.unreadable"
+      ],
+      "fired": [
+        "template.unreadable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "contract_case_file_passthrough",
+      "pass": true,
+      "case_id": "case-from-file"
+    }
+  ],
+  "totals": {
+    "passed": 37,
+    "of": 37
+  }
+}

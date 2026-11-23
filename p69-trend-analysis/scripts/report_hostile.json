@@ -1,0 +1,250 @@
+{
+  "schema_version": "trend-hostile/v2",
+  "probes": [
+    {
+      "probe": "01_clean_contract_artifacts",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "02_missing_spec",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "03_invalid_json",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "04_array_spec",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "05_empty_corpus",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "06_records_wrong_type",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "07_missing_records_file",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "08_malformed_records_file",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "09_empty_csv",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "10_question_missing",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "11_protocol_missing",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "12_reversed_window",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "13_unknown_year_basis",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "14_undetermined_screening",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "15_duplicate_version",
+      "pass": true,
+      "exit": 3,
+      "status": "review",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "16_duplicate_record_id",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "17_missing_year",
+      "pass": true,
+      "exit": 3,
+      "status": "review",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "18_contract_bad_shape",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "19_contract_object_list",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "20_malformed_case",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "21_case_identity_authoritative",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "22_refusal_keeps_explicit_id",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "23_unknown_gap_evidence",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "24_gap_without_exclusion",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "25_unresolved_homonym",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "26_no_gap_candidates_not_invented",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "27_prospective_auto_screen",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "28_external_json_records",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "29_trend_count_mismatch",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    },
+    {
+      "probe": "30_overclaimed_turning_point",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "result_json": true,
+      "no_traceback": true
+    }
+  ],
+  "totals": {
+    "passed": 30,
+    "of": 30
+  },
+  "temp_root": "C:\\Users\\lanlan\\AppData\\Local\\Temp\\p69_hostile_c4lad58d"
+}

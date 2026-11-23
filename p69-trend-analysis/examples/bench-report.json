@@ -1,310 +1,37 @@
 {
-  "schema_version": "trend-bench/v1",
-  "scenarios": [
-    {
-      "scenario": "clean",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "clean"
-    },
-    {
-      "scenario": "results_missing",
-      "expected": [
-        "rd.results_missing"
-      ],
-      "fired": [
-        "rd.results_missing",
-        "rd.statistic_missing"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "discussion_missing",
-      "expected": [
-        "rd.discussion_missing"
-      ],
-      "fired": [
-        "rd.conflicting_literature_ignored",
-        "rd.discussion_missing"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "value_not_in_figures",
-      "expected": [
-        "rd.value_not_in_figures"
-      ],
-      "fired": [
-        "rd.value_not_in_figures"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "errorbar_undeclared",
-      "expected": [
-        "rd.errorbar_meaning_undeclared"
-      ],
-      "fired": [
-        "rd.errorbar_meaning_undeclared"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "statistic_missing",
-      "expected": [
-        "rd.statistic_missing"
-      ],
-      "fired": [
-        "rd.statistic_missing"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "comparison_no_verdict",
-      "expected": [
-        "rd.comparison_no_verdict"
-      ],
-      "fired": [
-        "rd.comparison_no_verdict"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "nonsig_as_effect",
-      "expected": [
-        "rd.non_significant_claimed_as_effect"
-      ],
-      "fired": [
-        "rd.non_significant_claimed_as_effect"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "interpretation_in_results",
-      "expected": [
-        "rd.interpretation_in_results"
-      ],
-      "fired": [
-        "rd.interpretation_in_results",
-        "rd.statistic_missing"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "mechanism_as_fact",
-      "expected": [
-        "rd.mechanism_as_fact"
-      ],
-      "fired": [
-        "rd.conflicting_literature_ignored",
-        "rd.mechanism_as_fact",
-        "rd.negative_result_omitted"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "causal_overreach",
-      "expected": [
-        "rd.causal_overreach"
-      ],
-      "fired": [
-        "rd.causal_overreach",
-        "rd.conflicting_literature_ignored",
-        "rd.negative_result_omitted"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "discussion_uncited",
-      "expected": [
-        "rd.discussion_uncited"
-      ],
-      "fired": [
-        "rd.conflicting_literature_ignored",
-        "rd.discussion_uncited",
-        "rd.negative_result_omitted"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "negative_omitted",
-      "expected": [
-        "rd.negative_result_omitted"
-      ],
-      "fired": [
-        "rd.negative_result_omitted"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "conflict_ignored",
-      "expected": [
-        "rd.conflicting_literature_ignored"
-      ],
-      "fired": [
-        "rd.conflicting_literature_ignored"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "limitations_missing",
-      "expected": [
-        "rd.limitations_missing"
-      ],
-      "fired": [
-        "rd.limitations_missing"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "limitation_vague",
-      "expected": [
-        "rd.limitation_vague"
-      ],
-      "fired": [
-        "rd.limitation_vague"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "review"
-    },
-    {
-      "scenario": "limitation_narrow",
-      "expected": [
-        "rd.limitation_level_narrow"
-      ],
-      "fired": [
-        "rd.limitation_level_narrow"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "review"
-    },
-    {
-      "scenario": "unitless_number",
-      "expected": [
-        "rd.unitless_number"
-      ],
-      "fired": [
-        "rd.statistic_missing",
-        "rd.unitless_number"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "overclaim",
-      "expected": [
-        "rd.overclaim"
-      ],
-      "fired": [
-        "rd.interpretation_in_results",
-        "rd.overclaim",
-        "rd.statistic_missing"
-      ],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "blocked"
-    },
-    {
-      "scenario": "pointer_and_pvalue_clean",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "clean"
-    },
-    {
-      "scenario": "stats_exempt",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "clean"
-    },
-    {
-      "scenario": "chinese_stats_clean",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "clean"
-    },
-    {
-      "scenario": "method_via_clean",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "clean"
-    },
-    {
-      "scenario": "data_ref_attributed",
-      "expected": [],
-      "fired": [],
-      "missing": [],
-      "spurious": [],
-      "pass": true,
-      "status": "clean"
-    }
+  "schema_version": "trend-analysis-verification/v2",
+  "package": "p69-trend-analysis",
+  "scope": "Author-side regression evidence only; not an official fixed-case score or prepared answer.",
+  "benches": [
+    {"bench": "scripts/bench_trend_engine.py", "passed": 69, "of": 69,
+     "coverage": "Every tr.* rule, clean baseline, statistical oracles, deterministic analysis, JSON/JSONL/CSV-style input handling and prospective screening guards."},
+    {"bench": "scripts/bench_trend.py", "passed": 24, "of": 24, "coverage": "Legacy results-discussion text-audit regression."},
+    {"bench": "scripts/bench_sections.py", "passed": 51, "of": 51, "coverage": "Legacy shared section regression and false-positive guards."}
   ],
-  "totals": {
-    "passed": 24,
-    "of": 24
+  "hostile_probes": {"probe": "scripts/probe_hostile.py", "passed": 30, "of": 30},
+  "totals": {"benchmark_scenarios_passed": 144, "benchmark_scenarios": 144, "hostile_probes_passed": 30, "hostile_probes": 30},
+  "worked_example": {
+    "spec": "examples/spec-trend.json",
+    "case": "examples/case.json",
+    "python": "-I -X utf8",
+    "status": "clean",
+    "case_id": "trend-worked-001",
+    "records": 10,
+    "included": 9,
+    "excluded": 1,
+    "artifacts": 4,
+    "findings": 0,
+    "supported_change_points": [],
+    "synthetic": true
   },
-  "note": "One scenario per rule, aligned to the trend-analysis scoring points. Clean baselines must report nothing."
+  "semantic_checks": [
+    "Aliases normalize to canonical topics without creating zero-count alias topics.",
+    "Generic years are not imputed as online, print or preprint years.",
+    "A zero previous-year baseline yields null growth, not zero or infinity.",
+    "A strong discontinuity is detectable; a flat series produces no supported turning point.",
+    "Low-citation method-first works can be selected over highly cited reviews.",
+    "No gap candidates produces an honest empty assessment rather than an invented gap."
+  ],
+  "strict_gate": "G1-G7 passed together with p43-ppt-master.",
+  "github": "GITHUB_URL.txt points to the public repository and this package directory."
 }

@@ -37,18 +37,26 @@ MAX_TITLE_CHARS = 80
 MAX_BODY_PT = 24
 
 
-def write_refused(out_dir, message: str) -> dict:
-    """A case that cannot run as declared is refused, not crashed: the CLI writes
-    this result.json and answers with exit code 5 (undetermined). The verdict is
-    honest in both directions — not a pass, not a failure, a named refusal."""
-    result = {"schema_version": "deckbuild/v1", "status": "undetermined",
+def write_refused(out_dir, message: str, case_id=None) -> dict:
+    """Write a standalone refusal; never call the normal contract-echo path.
+
+    A malformed spec may not define the nested objects that echoing requires.
+    Only an explicitly supplied scalar case id is retained here.
+    """
+    result = {"schema_version": "deckbuild/v3", "status": "undetermined",
               "findings": [{"rule": "audit.no_section", "severity": "high",
                             "message": message}],
+              "severity_counts": {"high": 1},
               "limits": ["the case could not be run as declared"]}
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
-                                         encoding="utf-8")
+    if case_id is not None:
+        result["case_id"] = case_id
+    try:
+        out_dir = Path(out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "result.json").write_text(
+            json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    except OSError as exc:
+        result["limits"].append(f"result.json could not be written: {exc}")
     return result
 
 
@@ -103,20 +111,27 @@ def measure_text(text: str, size_pt: float, max_width_px: float, dpi: int = 96,
 
     px = max(size_pt * dpi / 72.0, 1.0)
     use = font_path or _FONT
+    measure = None
     if use:
-        from PIL import ImageFont
-        font = ImageFont.truetype(use, int(round(px)))
-        measure = lambda s: font.getbbox(s)[2] - font.getbbox(s)[0]
+        try:
+            from PIL import ImageFont
+            font = ImageFont.truetype(use, int(round(px)))
+            measure = lambda s: font.getbbox(s)[2] - font.getbbox(s)[0]
+        except (ImportError, OSError, ValueError):
+            try:
+                import glyphmetrics
+                metric = glyphmetrics.load(use)
+                measure = lambda s: metric.width(s, px)
+            except Exception:
+                measure = None
+    if measure is not None:
         line_h = px * 1.22
         measured = True
     else:
-        # Average advance of a proportional Latin face, ~0.52 em. CJK glyphs are
-        # full width, so they are counted at 1.0 em.
+        # Last-resort estimate is named as such; optional imaging packages never
+        # turn a valid deck run into a ModuleNotFoundError refusal.
         def measure(s: str) -> float:
-            w = 0.0
-            for ch in s:
-                w += (1.0 if ord(ch) > 0x2E80 else 0.52) * px
-            return w
+            return sum((1.0 if ord(ch) > 0x2E80 else 0.52) * px for ch in s)
         line_h = px * 1.25
         measured = False
 
@@ -183,7 +198,11 @@ def _path_for(family: str) -> str | None:
         from matplotlib import font_manager
         return font_manager.findfont(family, fallback_to_default=False)
     except Exception:
-        return None
+        try:
+            import fontsel
+            return fontsel.find_family(family)
+        except Exception:
+            return None
 
 
 def _installed(family: str) -> bool:
@@ -195,7 +214,7 @@ def _installed(family: str) -> bool:
             return True
         return _path_for(family) is not None
     except Exception:
-        return False
+        return _path_for(family) is not None
 
 
 def _emu(px: float, dpi: int = 96) -> float:
@@ -244,9 +263,11 @@ def read_deck(path) -> list[dict]:
                     if text.strip():
                         paras.append({"text": text, "size_pt": sz, "level": lvl,
                                       "fonts": fonts})
+                ph = sp.find(".//p:nvPr/p:ph", NS)
                 shapes.append({
                     "kind": "sp",
                     "name": sp.find(".//p:cNvPr", NS).get("name", "") if sp.find(".//p:cNvPr", NS) is not None else "",
+                    "placeholder": (ph.get("type") or "body") if ph is not None else "",
                     "x": int(off.get("x")) if off is not None else 0,
                     "y": int(off.get("y")) if off is not None else 0,
                     "cx": int(ext.get("cx")) if ext is not None else 0,
@@ -292,6 +313,35 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
     evidence_list = {str(e).strip().lower() for e in (spec.get("available_evidence") or [])}
     measured_any = False
 
+    # A file that opens but contains no pages is not a presentation deliverable.
+    if not slides:
+        add("deck.no_slides", "high",
+            "the written presentation contains no slides, so there is no talk to deliver")
+    max_slides = spec.get("max_slides", (spec.get("goal") or {}).get("max_slides")
+                          if isinstance(spec.get("goal"), dict) else None)
+    min_slides = spec.get("min_slides")
+    try:
+        if max_slides is not None and len(slides) > int(max_slides):
+            add("deck.slide_count_over_limit", "medium",
+                "the written deck exceeds the declared slide budget",
+                slides=len(slides), limit=int(max_slides))
+        if min_slides is not None and len(slides) < int(min_slides):
+            add("deck.slide_count_under_limit", "medium",
+                "the written deck does not meet the declared minimum slide count",
+                slides=len(slides), minimum=int(min_slides))
+    except (TypeError, ValueError):
+        add("deck.slide_budget_invalid", "low",
+            "the declared slide budget is not an integer and could not be enforced",
+            max_slides=max_slides, min_slides=min_slides)
+
+    # Missing figures become an honest partial slide, never a build-time traceback.
+    for index, meta in enumerate(spec_slides, 1):
+        image = meta.get("image") if isinstance(meta, dict) else None
+        if image and not Path(str(image)).is_file():
+            add("image.source_missing", "high",
+                "a declared source figure does not exist; the slide was delivered without it",
+                slide=index, image=str(image))
+
     # The per-slide evidence map the brief asks the delivered record to carry:
     # claim, evidence locator and caption from the authoring spec, each cross-checked
     # against what the written deck actually contains (caption_landed).
@@ -318,10 +368,13 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
     for sl in slides:
         i = sl["index"]
         texts = [p for sh in sl["shapes"] for p in sh["paras"]]
-        title = next((p["text"] for sh in sl["shapes"] if sh["name"].lower().startswith("title")
+        title = next((p["text"] for sh in sl["shapes"]
+                      if sh["name"].lower().startswith("title")
+                      or sh.get("placeholder") in ("title", "ctrTitle")
                       for p in sh["paras"]), "")
         body_paras = [p for sh in sl["shapes"]
-                      if sh["name"].lower() in ("body",) for p in sh["paras"]]
+                      if sh["name"].lower() == "body" or sh.get("placeholder") == "body"
+                      for p in sh["paras"]]
 
         # --- structure ----------------------------------------------------
         if not title:

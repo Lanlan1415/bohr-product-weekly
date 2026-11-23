@@ -1,0 +1,14 @@
+{
+  "case_id": "ppt-master-worked-001",
+  "output_contract": {
+    "case_id": "输入标识",
+    "status": "运行状态",
+    "deck_file": "可编辑演示文件",
+    "evidence_map": "页级证据映射",
+    "render_record": "渲染与版本记录",
+    "version_record": "确定性版本记录",
+    "change_records": "修改记录",
+    "uncertainty": "不确定性",
+    "review_note": "复核说明"
+  }
+}

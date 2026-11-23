@@ -41,7 +41,9 @@
       "scenario": "edit_ok",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
@@ -53,7 +55,8 @@
         "edit.change_without_reason"
       ],
       "fired": [
-        "edit.change_without_reason"
+        "edit.change_without_reason",
+        "edit.revision_instruction_missing"
       ],
       "missing": [],
       "spurious": [],
@@ -66,7 +69,8 @@
         "edit.change_is_noop"
       ],
       "fired": [
-        "edit.change_is_noop"
+        "edit.change_is_noop",
+        "edit.revision_instruction_missing"
       ],
       "missing": [],
       "spurious": [],
@@ -79,7 +83,8 @@
         "edit.change_half_diff"
       ],
       "fired": [
-        "edit.change_half_diff"
+        "edit.change_half_diff",
+        "edit.revision_instruction_missing"
       ],
       "missing": [],
       "spurious": [],
@@ -89,7 +94,9 @@
       "scenario": "edit_half_fp_structural",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
@@ -101,7 +108,8 @@
         "edit.change_slide_out_of_range"
       ],
       "fired": [
-        "edit.change_slide_out_of_range"
+        "edit.change_slide_out_of_range",
+        "edit.revision_instruction_missing"
       ],
       "missing": [],
       "spurious": [],
@@ -111,7 +119,9 @@
       "scenario": "edit_range_fp_in_range",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
@@ -123,7 +133,8 @@
         "edit.delete_without_snapshot"
       ],
       "fired": [
-        "edit.delete_without_snapshot"
+        "edit.delete_without_snapshot",
+        "edit.revision_instruction_missing"
       ],
       "missing": [],
       "spurious": [],
@@ -133,7 +144,9 @@
       "scenario": "edit_delete_fp_snapshot",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
@@ -164,7 +177,9 @@
       "scenario": "edit_delivered_fp_single",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
@@ -176,7 +191,8 @@
         "edit.change_not_in_deck"
       ],
       "fired": [
-        "edit.change_not_in_deck"
+        "edit.change_not_in_deck",
+        "edit.revision_instruction_missing"
       ],
       "missing": [],
       "spurious": [],
@@ -186,7 +202,9 @@
       "scenario": "edit_after_fp_landed",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
@@ -195,7 +213,9 @@
       "scenario": "edit_after_fp_notes",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
@@ -204,7 +224,9 @@
       "scenario": "edit_after_fp_legacy",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
