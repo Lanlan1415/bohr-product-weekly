@@ -83,6 +83,29 @@ def comment(index, **over):
     return s
 
 
+def linked():
+    """Point -> Response -> uniquely identified before/after change."""
+    s = d(baseline_text="3.2 Results\nBaseline summary without the control group.\n")
+    s["responses"] = copy.deepcopy(BASE["responses"])
+    s["responses"][0].update({
+        "text": "Response to Point C1: We have added the control details to the results."})
+    s["responses"][0]["changes"][0].update({
+        "change_id": "C1-CH1",
+        "response_anchor": "Response to Point C1",
+        "before_text": "Baseline summary without the control group.",
+        "added_text": "We added a vehicle control (n=6)."})
+    s["responses"][1]["text"] = "Response to Point C2: The derivation is now explicit."
+    s["responses"][1]["changes"][0].update({
+        "change_id": "C2-CH1", "response_anchor": "Response to Point C2"})
+    return s
+
+
+def linked_with(mutator):
+    s = linked()
+    mutator(s)
+    return s
+
+
 SCEN = [
     ("clean", lambda: (d(), [])),
 
@@ -222,6 +245,30 @@ SCEN = [
                                  "source": "Table S2, n=6 per arm, raw values in the "
                                  "supplement"}]),
               [])),
+    ("evidence_added_clean",
+     lambda: (resp(0, evidence=[{"kind": "additional data", "status": "provided",
+                                 "source": "Table S2, n=6 per arm",
+                                 "added_to_manuscript": True, "manuscript_version": "v2",
+                                 "location": "We added a vehicle control"}]), [])),
+    ("evidence_version_mismatch",
+     lambda: (resp(0, evidence=[{"kind": "additional data", "status": "provided",
+                                 "source": "Table S2", "manuscript_version": "v1"}]),
+              ["resp.evidence_version_mismatch"])),
+    ("evidence_version_missing",
+     lambda: (resp(0, evidence=[{"kind": "additional data", "status": "provided",
+                                 "source": "Table S2", "added_to_manuscript": True,
+                                 "location": "We added a vehicle control"}]),
+              ["resp.evidence_version_missing"])),
+    ("evidence_locator_missing",
+     lambda: (resp(0, evidence=[{"kind": "additional data", "status": "provided",
+                                 "source": "Table S2", "added_to_manuscript": True,
+                                 "manuscript_version": "v2"}]),
+              ["resp.evidence_locator_missing"])),
+    ("evidence_locator_not_found",
+     lambda: (resp(0, evidence=[{"kind": "additional data", "status": "provided",
+                                 "source": "Table S2", "added_to_manuscript": True,
+                                 "manuscript_version": "v2", "location": "Appendix Z"}]),
+              ["resp.evidence_locator_not_found"])),
 
     # the claimed edits must land in the declared baseline
     ("manuscript_unrevised",
@@ -244,6 +291,40 @@ SCEN = [
                             "reason": "the kinetic model is justified by the derivation "
                                       "already in Appendix B"}]),
               [])),
+
+    # Stable Point -> Response -> Change links (inspired by bamdone-rebuttal).
+    ("point_response_change_clean", lambda: (linked(), [])),
+    ("change_id_duplicate",
+     lambda: (linked_with(lambda s: s["responses"][1]["changes"][0].update(
+         change_id="C1-CH1")), ["resp.change_id_duplicate"])),
+    ("change_id_missing",
+     lambda: (linked_with(lambda s: s["responses"][1]["changes"][0].pop("change_id")),
+              ["resp.change_id_missing"])),
+    ("response_anchor_not_found",
+     lambda: (linked_with(lambda s: s["responses"][0]["changes"][0].update(
+         response_anchor="missing response quote")), ["resp.response_anchor_not_found"])),
+    ("change_pair_incomplete",
+     lambda: (linked_with(lambda s: s["responses"][0]["changes"][0].update(added_text="")),
+              ["resp.change_pair_incomplete"])),
+    ("baseline_missing_for_change",
+     lambda: (linked_with(lambda s: s.update(baseline_text="")),
+              ["resp.baseline_missing_for_change"])),
+    ("before_not_in_baseline",
+     lambda: (linked_with(lambda s: s.update(baseline_text="unrelated baseline")),
+              ["resp.before_not_in_baseline"])),
+    ("unrecorded_revision_claim",
+     lambda: (linked_with(lambda s: s["responses"][0].update(changes=[])),
+              ["resp.unrecorded_revision_claim"])),
+    ("unrecorded_revision_guard_clarification",
+     lambda: (linked_with(lambda s: s["responses"][0].update(
+         changes=[], text="Response to Point C1: no file change was needed",
+         reason="the control was already reported in the baseline")), [])),
+    ("revision_claim_without_manuscript",
+     lambda: (linked_with(lambda s: s.update(manuscript_text="")),
+              ["resp.no_manuscript", "resp.revision_claim_without_manuscript"])),
+    ("package_version_missing",
+     lambda: (linked_with(lambda s: s.update(manuscript_version="")),
+              ["resp.package_version_missing"])),
 ]
 
 

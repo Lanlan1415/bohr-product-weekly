@@ -564,6 +564,11 @@ def _evidence_provenance(ev: dict) -> bool:
                for k, v in ev.items() if k not in _EVIDENCE_ADMIN_FIELDS)
 
 
+REVISION_CLAIM = re.compile(
+    r"\bwe\s+(?:have|'ve)\s+(?:added|revised|modified|changed|supplemented)\b"
+    r"|已(?:修改|修订|补充|新增|增加)(?:了)?", re.I)
+
+
 def review_response(spec: dict, findings: list[dict]) -> None:
     """Audit a revision package: the response letter against the manuscript it claims.
 
@@ -670,6 +675,7 @@ def review_response(spec: dict, findings: list[dict]) -> None:
             parts: list[str] = []
             for r in responses:
                 if str(r.get("comment_id")) == cid:
+                    parts.append(str(r.get("text") or r.get("response_text") or ""))
                     parts.append(str(r.get("reason") or ""))
                     ch_list = r.get("changes") or []
                     if isinstance(ch_list, dict):
@@ -685,6 +691,13 @@ def review_response(spec: dict, findings: list[dict]) -> None:
                      comment_id=cid, missing=missed[:6])
 
     # --- per response ----------------------------------------------------
+    baseline = str(spec.get("baseline_text") or "")
+    seen_change_ids: dict[str, str] = {}
+    any_change_id_declared = any(
+        isinstance(ch, dict) and str(ch.get("change_id") or "").strip()
+        for r in responses for ch in (
+            list((r.get("changes") or {}).values()) if isinstance(r.get("changes"), dict)
+            else (r.get("changes") or []) if isinstance(r.get("changes"), (list, tuple)) else []))
     for r in responses:
         cid = str(r.get("comment_id"))
         if cid not in known:
@@ -735,6 +748,23 @@ def review_response(spec: dict, findings: list[dict]) -> None:
             changes_raw = list(changes_raw.values())
         if not isinstance(changes_raw, (list, tuple)):
             changes_raw = []
+        response_body = str(r.get("text") or r.get("response_text") or "")
+        if response_body and REVISION_CLAIM.search(response_body) and not changes_raw:
+            _add(findings, "resp.unrecorded_revision_claim", "high",
+                 "the response says the manuscript was changed but records no change entry, "
+                 "so the claimed revision cannot be mapped back to the manuscript",
+                 comment_id=cid)
+        if changes_raw and not manuscript.strip():
+            _add(findings, "resp.revision_claim_without_manuscript", "high",
+                 "the response claims substantive changes but supplies no revised manuscript; "
+                 "the letter must not say the edits already landed in a file",
+                 comment_id=cid)
+        if any_change_id_declared:
+            for ch in changes_raw:
+                if isinstance(ch, dict) and not str(ch.get("change_id") or "").strip():
+                    _add(findings, "resp.change_id_missing", "medium",
+                         "some changes declare a stable change_id but another change does not, "
+                         "so the response-to-revision link is incomplete", comment_id=cid)
         for ch in changes_raw:
             if not isinstance(ch, dict):
                 # A bare-string change entry is a what with nothing else: degrade,
@@ -743,7 +773,45 @@ def review_response(spec: dict, findings: list[dict]) -> None:
             what = str(ch.get("what") or "").strip()
             loc = str(ch.get("location") or ch.get("anchor") or "").strip()
             ver = str(ch.get("manuscript_version") or "").strip()
-            added = str(ch.get("added_text") or "").strip()
+            added = str(ch.get("added_text") or ch.get("after_text") or
+                        ch.get("revised_text") or "").strip()
+            before = str(ch.get("before_text") or ch.get("original_text") or "").strip()
+            change_id = str(ch.get("change_id") or "").strip()
+            response_anchor = str(ch.get("response_anchor") or "").strip()
+
+            if change_id:
+                if change_id in seen_change_ids:
+                    _add(findings, "resp.change_id_duplicate", "high",
+                         "a change_id is reused by two responses, so revision links are "
+                         "not uniquely traceable", comment_id=cid, change_id=change_id,
+                         previous_comment_id=seen_change_ids[change_id])
+                else:
+                    seen_change_ids[change_id] = cid
+            if response_anchor:
+                letter_body = response_body or str(
+                    spec.get("response_letter_text") or
+                    (spec.get("response_letter") if isinstance(spec.get("response_letter"), str)
+                     else ""))
+                if not letter_body.strip() or response_anchor not in letter_body:
+                    _add(findings, "resp.response_anchor_not_found", "high",
+                         "a change cites a response anchor that does not occur in the supplied "
+                         "point-by-point response, so the reverse revision-to-letter link fails",
+                         comment_id=cid, change_id=change_id)
+            if (before or ch.get("after_text") or ch.get("revised_text")) and \
+                    not (before and added):
+                _add(findings, "resp.change_pair_incomplete", "medium",
+                     "a declared before/after revision pair must contain both the original "
+                     "and revised exact text", comment_id=cid, change_id=change_id)
+            if before:
+                if not baseline.strip():
+                    _add(findings, "resp.baseline_missing_for_change", "high",
+                         "a before/after pair declares original text but no baseline manuscript "
+                         "was supplied", comment_id=cid, change_id=change_id)
+                elif before not in baseline:
+                    _add(findings, "resp.before_not_in_baseline", "high",
+                         "the original side of a change pair does not occur verbatim in the "
+                         "declared baseline", comment_id=cid, change_id=change_id,
+                         before=before[:70])
 
             if not what:
                 _add(findings, "resp.change_unspecified", "medium",
@@ -783,7 +851,7 @@ def review_response(spec: dict, findings: list[dict]) -> None:
                 _add(findings, "resp.change_not_verifiable", "high",
                      "the letter says text was added that does not appear in the manuscript, so "
                      "the claim of change does not match the file", comment_id=cid,
-                     added=added[:70])
+                     change_id=change_id, added=added[:70])
 
         for ev in r.get("evidence") or []:
             # A bare string entry is a kind with no metadata: accepted, and then
@@ -812,6 +880,26 @@ def review_response(spec: dict, findings: list[dict]) -> None:
                      "an evidence entry is marked provided but names no data source (a file, "
                      "a dataset, a quoted result, a table), so the editor cannot trace where "
                      "it came from", comment_id=cid, kind=kind)
+            ev_ver = str(ev.get("manuscript_version") or "").strip()
+            if ev_ver and version and ev_ver != version:
+                _add(findings, "resp.evidence_version_mismatch", "high",
+                     "supplementary evidence is bound to a different manuscript version than "
+                     "the delivered file", comment_id=cid, kind=kind,
+                     evidence_version=ev_ver, manuscript_version=version)
+            if ev.get("added_to_manuscript"):
+                ev_loc = str(ev.get("location") or "").strip()
+                if version and not ev_ver:
+                    _add(findings, "resp.evidence_version_missing", "medium",
+                         "evidence said to be added to the manuscript carries no version stamp",
+                         comment_id=cid, kind=kind)
+                if not ev_loc:
+                    _add(findings, "resp.evidence_locator_missing", "high",
+                         "evidence said to be added to the manuscript has no manuscript locator",
+                         comment_id=cid, kind=kind)
+                elif manuscript and ev_loc not in manuscript:
+                    _add(findings, "resp.evidence_locator_not_found", "high",
+                         "the locator of newly added evidence does not occur in the delivered "
+                         "manuscript", comment_id=cid, kind=kind, location=ev_loc[:60])
 
     # --- the claimed edits must land in the supplied baseline -------------
     # The fixed case declares the baseline the revision starts from. When the
@@ -822,12 +910,15 @@ def review_response(spec: dict, findings: list[dict]) -> None:
     # (declarative), and only when at least one response claims an accepted
     # change: a letter that declines every comment and leaves the manuscript
     # untouched is a legitimate all-rebuttal package, not a defect.
-    baseline = str(spec.get("baseline_text") or "")
     if baseline.strip() and manuscript.strip():
         claims_a_change = any(
             str(r.get("decision") or r.get("stance") or "").strip().lower()
             in ("accept", "partial") and (r.get("changes") or [])
             for r in responses)
+        if claims_a_change and not version:
+            _add(findings, "resp.package_version_missing", "medium",
+                 "the revision package has accepted changes but no package-level manuscript "
+                 "version, so the response and the delivered file cannot be version-bound")
         if claims_a_change:
             flat = re.sub(r"\s+", "", G.normalise(manuscript))
             flat_base = re.sub(r"\s+", "", G.normalise(baseline))

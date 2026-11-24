@@ -13,13 +13,20 @@
 ```json
 {"edit_id": "C001", "sentence_id": "sent-0007", "level": "L1", "original": "<逐字抄当前原句>", "replacement": "<改后句>", "type": "grammar.agreement", "reason": "主语单数"}
 {"edit_id": "C002", "sentence_id": "sent-0012", "level": "L3", "original": "<原句>", "replacement": "<改后句>", "type": "intentional.exception", "reason": "期刊指南要求统一 SI 单位（出处：journal_guide.txt 第3条）", "allow_conservation_break": true}
+{"edit_id": "K001", "sentence_id": "sent-0014", "original": "<已经正确的原句>", "replacement": "<已经正确的原句>", "type": "keep_original", "reason": "无语法/语域错误，保留作者措辞"}
+{"edit_id": "A001", "sentence_id": "sent-0018", "original": "<歧义原句>", "replacement": "<推荐候选>", "type": "register", "reason": "两种读法会改变含义", "ambiguity": "significant 是统计显著还是程度大", "alternative": {"proposed": true, "options": ["保留原句", "The effect is substantial."]}}
 ```
 
 - `sentence_id` 来自 prepare.py 的 `sentences.tsv`；`original` 必须逐字抄
   该句**当前**文本（链式修改抄上一轮改后文本）；空白宽容、文字不宽容；
 - `type` 取 `references/edit_types.md`；有意例外必须带
-  `allow_conservation_break: true` + 充分 `reason`；
-- 【备选】条目不写入本文件，写在 change_log.md 等作者定夺；
+  `allow_conservation_break: true` + 充分 `reason`；实际文字变化无理由会回退；
+- `replacement == original` 进入 `unchanged`，不计为 accepted 修改；
+- 【备选】可如上写入本文件，也可只写 change_log.md。verify 对标
+  `alternative.proposed` 或未确认歧义项一律保留原文，写入 confirmations，
+  字段含 before、candidates、reason、ambiguity 与 author_confirmation=null；
+- 已获书面确认时才加入 `author_confirmation: "confirmed"`（或 approved/作者已确认），
+  不把作者未参与当下流程说成已确认；
 - 宽容路径：缺 `original` 的 id-only 记录可被接受但记 WARN（锚定核对
   失效，仅限实在无法抄录时）。
 

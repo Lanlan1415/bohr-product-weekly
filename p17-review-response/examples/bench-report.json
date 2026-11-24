@@ -43,7 +43,8 @@
         "resp.no_manuscript"
       ],
       "fired": [
-        "resp.no_manuscript"
+        "resp.no_manuscript",
+        "resp.revision_claim_without_manuscript"
       ],
       "missing": [],
       "spurious": [],
@@ -411,6 +412,67 @@
       "status": "clean"
     },
     {
+      "scenario": "evidence_added_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "evidence_version_mismatch",
+      "expected": [
+        "resp.evidence_version_mismatch"
+      ],
+      "fired": [
+        "resp.evidence_version_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "evidence_version_missing",
+      "expected": [
+        "resp.evidence_version_missing"
+      ],
+      "fired": [
+        "resp.evidence_version_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "evidence_locator_missing",
+      "expected": [
+        "resp.evidence_locator_missing"
+      ],
+      "fired": [
+        "resp.evidence_locator_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "evidence_locator_not_found",
+      "expected": [
+        "resp.evidence_locator_not_found"
+      ],
+      "fired": [
+        "resp.evidence_locator_not_found"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
       "scenario": "manuscript_unrevised",
       "expected": [
         "resp.manuscript_unrevised"
@@ -440,11 +502,149 @@
       "spurious": [],
       "pass": true,
       "status": "clean"
+    },
+    {
+      "scenario": "point_response_change_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "change_id_duplicate",
+      "expected": [
+        "resp.change_id_duplicate"
+      ],
+      "fired": [
+        "resp.change_id_duplicate"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "change_id_missing",
+      "expected": [
+        "resp.change_id_missing"
+      ],
+      "fired": [
+        "resp.change_id_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "response_anchor_not_found",
+      "expected": [
+        "resp.response_anchor_not_found"
+      ],
+      "fired": [
+        "resp.response_anchor_not_found"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "change_pair_incomplete",
+      "expected": [
+        "resp.change_pair_incomplete"
+      ],
+      "fired": [
+        "resp.change_pair_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "baseline_missing_for_change",
+      "expected": [
+        "resp.baseline_missing_for_change"
+      ],
+      "fired": [
+        "resp.baseline_missing_for_change"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "before_not_in_baseline",
+      "expected": [
+        "resp.before_not_in_baseline"
+      ],
+      "fired": [
+        "resp.before_not_in_baseline"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unrecorded_revision_claim",
+      "expected": [
+        "resp.unrecorded_revision_claim"
+      ],
+      "fired": [
+        "resp.accept_without_change",
+        "resp.unrecorded_revision_claim"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "unrecorded_revision_guard_clarification",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "revision_claim_without_manuscript",
+      "expected": [
+        "resp.no_manuscript",
+        "resp.revision_claim_without_manuscript"
+      ],
+      "fired": [
+        "resp.no_manuscript",
+        "resp.revision_claim_without_manuscript"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "package_version_missing",
+      "expected": [
+        "resp.package_version_missing"
+      ],
+      "fired": [
+        "resp.package_version_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
     }
   ],
   "totals": {
-    "passed": 36,
-    "of": 36
+    "passed": 52,
+    "of": 52
   },
   "note": "One scenario per rule, aligned to the review-response scoring points. Clean baselines must report nothing."
 }

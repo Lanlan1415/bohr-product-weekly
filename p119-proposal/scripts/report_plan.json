@@ -95,8 +95,10 @@
         "rp.objective_no_criteria"
       ],
       "fired": [
+        "rp.hypothesis_unknown_objective",
         "rp.objective_no_criteria",
-        "rp.outcome_unmapped"
+        "rp.outcome_unmapped",
+        "rp.work_package_ref_unknown"
       ],
       "missing": [],
       "spurious": [],
@@ -122,8 +124,10 @@
         "rp.objectives_missing"
       ],
       "fired": [
+        "rp.hypothesis_unknown_objective",
         "rp.objectives_missing",
-        "rp.outcome_unmapped"
+        "rp.outcome_unmapped",
+        "rp.work_package_ref_unknown"
       ],
       "missing": [],
       "spurious": [],
@@ -365,11 +369,219 @@
       "spurious": [],
       "pass": true,
       "status": "blocked"
+    },
+    {
+      "scenario": "problem_not_falsifiable",
+      "expected": [
+        "rp.problem_not_falsifiable"
+      ],
+      "fired": [
+        "rp.problem_not_falsifiable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "hypothesis_missing",
+      "expected": [
+        "rp.hypothesis_missing_for_objective"
+      ],
+      "fired": [
+        "rp.hypothesis_missing_for_objective"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "hypothesis_incomplete",
+      "expected": [
+        "rp.hypothesis_incomplete"
+      ],
+      "fired": [
+        "rp.hypothesis_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "hypothesis_unknown_objective",
+      "expected": [
+        "rp.hypothesis_unknown_objective"
+      ],
+      "fired": [
+        "rp.hypothesis_missing_for_objective",
+        "rp.hypothesis_unknown_objective"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "work_packages_missing",
+      "expected": [
+        "rp.work_packages_missing"
+      ],
+      "fired": [
+        "rp.route_not_in_work_package",
+        "rp.work_packages_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "work_package_incomplete",
+      "expected": [
+        "rp.work_package_incomplete"
+      ],
+      "fired": [
+        "rp.work_package_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "work_package_unknown_ref",
+      "expected": [
+        "rp.work_package_ref_unknown"
+      ],
+      "fired": [
+        "rp.route_not_in_work_package",
+        "rp.work_package_ref_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "route_not_in_work_package",
+      "expected": [
+        "rp.route_not_in_work_package"
+      ],
+      "fired": [
+        "rp.route_not_in_work_package"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "work_package_period_invalid",
+      "expected": [
+        "rp.work_package_schedule_invalid"
+      ],
+      "fired": [
+        "rp.work_package_schedule_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "route_dependency_cycle",
+      "expected": [
+        "rp.route_dependency_cycle"
+      ],
+      "fired": [
+        "rp.route_dependency_cycle"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "data_plan_missing",
+      "expected": [
+        "rp.data_plan_missing"
+      ],
+      "fired": [
+        "rp.data_plan_incomplete",
+        "rp.data_plan_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "data_plan_incomplete",
+      "expected": [
+        "rp.data_plan_incomplete"
+      ],
+      "fired": [
+        "rp.data_plan_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "ethics_undeclared",
+      "expected": [
+        "rp.ethics_undeclared"
+      ],
+      "fired": [
+        "rp.ethics_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "ethics_incomplete",
+      "expected": [
+        "rp.ethics_incomplete"
+      ],
+      "fired": [
+        "rp.ethics_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "ethics_data_mismatch",
+      "expected": [
+        "rp.ethics_data_mismatch"
+      ],
+      "fired": [
+        "rp.ethics_data_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "ethics_applicable_complete_ok",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
     }
   ],
   "totals": {
-    "passed": 29,
-    "of": 29
+    "passed": 45,
+    "of": 45
   },
   "note": "One scenario per opening-report scoring point, plus repaired-twin guards for the dependency / schedule-shape / outcome-mapping rules. Clean baselines must report nothing."
 }

@@ -82,6 +82,8 @@ def _refused(out_dir, message: str, spec: dict | None = None,
                                   "by this audit")
             if echo:
                 result["output_contract"] = echo
+                result.update(echo)  # direct contract fields, plus legacy nested view
+                result["output_contract_fields"] = list(echo)
     elif case_id is not None:
         result["case_id"] = str(case_id)
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
@@ -118,15 +120,32 @@ def build_and_audit(spec_path, out_dir, section=None, case_id=None) -> dict:
         checked["coverage"] = S.compare_coverage(spec)
     derived = {"status": status, "section": sec, "findings": findings,
                "severity_counts": counts, "checked": checked, "limits": limits}
+    artifacts = {}
+    if sec == "research_plan":
+        try:
+            import plan_deliverable
+            artifacts = plan_deliverable.write_research_plan(spec, out_dir)
+            derived["deliverable_markdown"] = artifacts["research_plan.md"]
+            derived["plan_matrix"] = artifacts["plan_matrix.json"]
+            derived["evidence_matrix"] = artifacts["evidence_matrix.csv"]
+        except (OSError, TypeError, ValueError, KeyError) as exc:
+            findings.append({"rule": "artifact.write_failed", "severity": "high",
+                             "message": "editable plan artifacts could not be generated: %s" % str(exc)[:180]})
+            status = "blocked"
+            counts["high"] = counts.get("high", 0) + 1
+            derived.update(status=status, findings=findings, severity_counts=counts)
+    derived["artifacts"] = artifacts
     echo = _contract_echo(spec, derived, limits)
-    result = {"schema_version": "secrun/v1", "section": sec, "status": status,
+    result = {"schema_version": "secrun/v2", "section": sec, "status": status,
               "findings": findings, "severity_counts": counts, "limits": limits,
-              "checked": checked}
+              "checked": checked, "artifacts": artifacts}
     cid = case_id or spec.get("case_id")
     if cid is not None:
         result["case_id"] = str(cid)
     if echo:
         result["output_contract"] = echo
+        result.update(echo)  # contract fields at top level, as the runtime requires
+        result["output_contract_fields"] = list(echo)
     (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
                                          encoding="utf-8")
     return result

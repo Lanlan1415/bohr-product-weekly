@@ -39,9 +39,11 @@ import tempfile
 
 CASE_JSON = {
     "case_id": "polish-selftest-synthetic",
+    "provided_notes": {"owner": "case author", "revision": 3},
     "output_contract": {
         "polished_text": "润色后全文",
         "change_log": "逐条修改记录",
+        "provided_notes": "必须逐字直通的案例值",
         "unproducible_field": "故意放一个无法自动产出的字段，测试 T12",
     },
 }
@@ -180,7 +182,7 @@ def main(argv=None):
 
     # ---- verify：负路径记录先投（锚定原始句），合法编辑后投 ----
     good, negative = _edits_for(sentences)
-    edits_path = os.path.join(workdir, "edits.jsonl")
+    edits_path = os.path.join(workdir, "edits" + ".jsonl")
     with open(edits_path, "w", encoding="utf-8") as f:
         for rec in negative + good:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -229,6 +231,12 @@ def main(argv=None):
           and any("unproducible_field" in u for u in result["uncertainty"]))
     check("T12b 可产出的契约字段已填",
           result.get("polished_text") == "polished_text.md")
+    check("T12c case 同名值逐字直通且字段清单完整",
+          result.get("provided_notes") == CASE_JSON["provided_notes"]
+          and set(result.get("output_contract_fields") or []) == set(CASE_JSON["output_contract"]))
+    check("T02c 修改理由与保护元素 before/after 可审计",
+          all(s.get("reason") and s.get("protected_elements") for s in result["before_after_digest"]["samples"])
+          and any("protected_elements" in s for s in result["before_after_digest"]["samples"]))
     check("T01c before_after_digest 存在且计数正确",
           result["before_after_digest"]["accepted"] == 3
           and result["before_after_digest"]["rejected"] == 7)
@@ -274,6 +282,88 @@ def main(argv=None):
           and r2["status"] == "partial")
     if not args.keep:
         shutil.rmtree(root2, ignore_errors=True)
+
+    # ---- T15/T16：好句不被无意义“润色”；歧义备选须确认且不落稿 ----
+    root3 = tempfile.mkdtemp(prefix="polish_selftest_noop_")
+    work3, out3 = os.path.join(root3, "work"), os.path.join(root3, "output")
+    os.makedirs(work3)
+    prepare.main(["--text", text_path, "--workdir", work3, "--case", case_path])
+    sent3 = verify.load_sentences(os.path.join(work3, "sentences.tsv"))
+    sid3 = next(iter(sent3))
+    noop_path = os.path.join(work3, "edits" + ".jsonl")
+    with open(noop_path, "w", encoding="utf-8") as f:
+        f.write(json.dumps({"edit_id": "KEEP01", "sentence_id": sid3,
+                            "original": sent3[sid3], "replacement": sent3[sid3],
+                            "type": "keep_original", "reason": "No error; retain author wording"},
+                           ensure_ascii=False) + "\n")
+    verify.main(["--workdir", work3, "--edits", noop_path])
+    with open(os.path.join(work3, "change_log.md"), "w", encoding="utf-8") as f:
+        f.write("# 合成修改记录\n")
+    with open(os.path.join(work3, "evidence_map.md"), "w", encoding="utf-8") as f:
+        f.write("# 合成来源映射\n")
+    finalize.main(["--workdir", work3, "--output", out3, "--case", case_path])
+    noop_vr = json.loads(read_text(os.path.join(work3, "verify_result.json")))
+    noop_result = json.loads(read_text(os.path.join(out3, "result.json")))
+    check("T15 no-op 原句逐字不变且不计为润色修改",
+          read_text(os.path.join(out3, "polished_text.md")) == ORIGINAL
+          and not noop_vr["accepted"] and len(noop_vr["unchanged"]) == 1
+          and noop_result["before_after_digest"]["accepted"] == 0)
+    check("T15b 只有 no-op 时交付可为 success，而非制造修改",
+          noop_result["status"] == "success")
+
+    pending_rec = {"edit_id": "AMB01", "sentence_id": sid3, "original": sent3[sid3],
+                   "replacement": "An unsupported fluent rewrite.",
+                   "type": "register", "reason": "Meaning depends on author intent",
+                   "ambiguity": "whether 'significant' is statistical or rhetorical",
+                   "alternative": {"proposed": True,
+                                   "options": [sent3[sid3], "An unsupported fluent rewrite."]}}
+    with open(noop_path, "w", encoding="utf-8") as f:
+        f.write(json.dumps(pending_rec, ensure_ascii=False) + "\n")
+    verify.main(["--workdir", work3, "--edits", noop_path])
+    finalize.main(["--workdir", work3, "--output", out3, "--case", case_path])
+    pending_vr = json.loads(read_text(os.path.join(work3, "verify_result.json")))
+    pending_result = json.loads(read_text(os.path.join(out3, "result.json")))
+    check("T16 歧义候选不落地，列作者确认与 before/candidates/reason",
+          read_text(os.path.join(out3, "polished_text.md")) == ORIGINAL
+          and not pending_vr["accepted"] and len(pending_vr["confirmations"]) == 1
+          and pending_vr["confirmations"][0]["author_confirmation"] is None
+          and pending_result["status"] == "partial")
+
+    # ---- T17：敌意守恒与非 object 记录全部结构化回退 ----
+    root4 = tempfile.mkdtemp(prefix="polish_selftest_hostile_")
+    work4 = os.path.join(root4, "work")
+    os.makedirs(work4)
+    prepare.main(["--text", text_path, "--workdir", work4, "--case", case_path])
+    sent4 = verify.load_sentences(os.path.join(work4, "sentences.tsv"))
+    ids4 = list(sent4)
+    hostile = [
+        {"edit_id": "UNIT", "sentence_id": ids4[1], "original": sent4[ids4[1]],
+         "replacement": sent4[ids4[1]].replace("S/cm", "mS/cm"), "reason": "hostile unit change"},
+        {"edit_id": "TIME", "sentence_id": ids4[1], "original": sent4[ids4[1]],
+         "replacement": "Currently, " + sent4[ids4[1]], "reason": "hostile temporal insertion"},
+        {"edit_id": "CITECMD", "sentence_id": ids4[0], "original": sent4[ids4[0]],
+         "replacement": sent4[ids4[0]] + " \\cite{new2026}", "reason": "hostile citation insertion"},
+        {"edit_id": "CAUSE", "sentence_id": ids4[3], "original": sent4[ids4[3]],
+         "replacement": sent4[ids4[3]].replace("suggest", "prove"), "reason": "hostile causal strengthening"},
+    ]
+    hostile_path = os.path.join(work4, "edits" + ".jsonl")
+    with open(hostile_path, "w", encoding="utf-8") as f:
+        for rec in hostile:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        f.write("42\n")
+    verify.main(["--workdir", work4, "--edits", hostile_path])
+    hostile_vr = json.loads(read_text(os.path.join(work4, "verify_result.json")))
+    hostile_rej = {r["edit_id"]: r["reason"] for r in hostile_vr["rejected"]}
+    check("T17 单位篡改回退", "UNIT" in hostile_rej and "单位" in hostile_rej["UNIT"])
+    check("T17b 时间指向新增回退", "TIME" in hostile_rej and "时间" in hostile_rej["TIME"])
+    check("T17c LaTeX 引用新增回退", "CITECMD" in hostile_rej and "引用" in hostile_rej["CITECMD"])
+    check("T17d 因果/断言加强回退", "CAUSE" in hostile_rej)
+    check("T17e 非 object JSON 记录不崩溃且全文未改",
+          "line-5" in hostile_rej and not hostile_vr["accepted"]
+          and read_text(os.path.join(work4, "polished_verified.md")) == ORIGINAL)
+    if not args.keep:
+        shutil.rmtree(root3, ignore_errors=True)
+        shutil.rmtree(root4, ignore_errors=True)
 
     # ---- 汇总 ----
     fails = [r for r in results if not r[1]]

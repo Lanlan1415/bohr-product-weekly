@@ -66,21 +66,133 @@
       "capability": "deposit 40 nm films",
       "evidence": "M0 run 2023-04",
       "relation": "the same rig makes the proposed coatings",
-      "status": "done"
+      "status": "done",
+      "owner": "external published platform work"
     }
   ],
   "timeline": [
     {
       "period": "Y1",
-      "milestone": "coating built and characterised"
+      "milestone": "coating built and characterised",
+      "deliverable": "coating protocol and first paired dataset",
+      "objectives": [
+        "O1"
+      ]
     }
   ],
   "budget": [
     {
       "item": "consumables",
+      "amount_status": "not_provided",
+      "amount": null,
+      "purpose": "synthesis and paired measurement campaigns",
+      "basis": "60 runs at the supplier catalogue unit scale; amount pending finance",
       "justification": "monomer for 60 runs"
     }
   ],
   "budget_justification": "each line is costed from current supplier quotes",
-  "section": "proposal"
+  "grant_profile": "nsfc_full",
+  "architecture": {
+    "background": "Current porous coatings are limited by surface area.",
+    "gap": "Endpoint uptake is reported, but the time-resolved rate is unknown.",
+    "question": "whether a 42 nm coating changes the uptake rate under paired controls",
+    "hypothesis": "the coating raises the rate at least three-fold without selectivity loss",
+    "objectives": "three measurable objectives in the work plan",
+    "content": "coating synthesis, rate measurement and control comparison",
+    "technical_route": "synthesise, characterise, then measure paired samples",
+    "outcomes": "a rate-ratio estimate and a reusable measurement protocol"
+  },
+  "science_question": {
+    "property": "需求牵引，突破瓶颈",
+    "central_question": "whether 42 nm porosity changes uptake rate rather than only endpoint uptake",
+    "hypothesis": "the rate ratio exceeds three against the uncoated substrate",
+    "boundary": "one material class, 24 h, paired controls, no in vivo claim",
+    "falsifiability": "a rate ratio at or below one falsifies the central hypothesis"
+  },
+  "innovations": [
+    {
+      "id": "I1",
+      "text": "Time-resolved rate measurement under paired controls.",
+      "comparison_target": "endpoint-only uptake studies [doe2020]",
+      "difference": "measures rate trajectories in the same samples instead of one endpoint",
+      "why_hard": "requires stable paired sampling without changing the coating",
+      "feasibility_evidence": "M1 pilot run and the existing coating rig",
+      "evidence": "[doe2020]; M1 pilot run"
+    }
+  ],
+  "key_questions": [
+    {
+      "id": "KQ1",
+      "text": "Does the coating change the uptake trajectory or only its endpoint?",
+      "content_ref": "C1",
+      "attribute": "mechanism",
+      "answer_measure": "paired rate ratio with a confidence interval"
+    }
+  ],
+  "feasibility": {
+    "technical": "the coating rig already deposits 40 nm films",
+    "team": "one materials lead and one measurement operator",
+    "resource": "existing rig plus consumables in the given budget",
+    "time": "two synthesis campaigns fit the annual plan",
+    "preliminary_status": "provided",
+    "preliminary_gap": ""
+  },
+  "applicant_evidence": {
+    "status": "partial",
+    "items": [],
+    "gap_note": "The applicant's independent preliminary results are not in the supplied materials; only external published evidence and team platform access are claimed."
+  },
+  "outcomes": [
+    {
+      "id": "W1",
+      "objectives": [
+        "O1"
+      ],
+      "kind": "paper and protocol",
+      "assessment": "rate ratio reproduces under a second operator"
+    }
+  ],
+  "risks": [
+    {
+      "id": "K1",
+      "type": "method_feasibility",
+      "trigger": "two pore collapses in one week",
+      "impact": "synthesis campaign stalls",
+      "fallback": "lower-temperature template removal",
+      "decision_point": "end of month two"
+    }
+  ],
+  "ethics": {
+    "applicable": false,
+    "scope_explanation": "in vitro materials only; no human, animal or personal data"
+  },
+  "section": "proposal",
+  "case_id": "demo-grant-full-synthetic",
+  "output_contract": {
+    "proposal_chapter": "editable seven-element grant chapter",
+    "element_matrix": "paragraph to element to evidence map",
+    "funding_plan": "budget logic without invented amounts",
+    "evidence_gaps": "applicant evidence gaps"
+  },
+  "proposal_chapter": "Synthetic demo: the chapter text is assembled from the seven element blocks.",
+  "element_matrix": [
+    {
+      "element": "rationale",
+      "evidence": "M1"
+    },
+    {
+      "element": "innovation",
+      "evidence": "[doe2020]; M1 pilot run"
+    }
+  ],
+  "funding_plan": [
+    {
+      "item": "consumables",
+      "amount_status": "not_provided",
+      "basis": "supplier scale; amount pending"
+    }
+  ],
+  "evidence_gaps": [
+    "Applicant-owned preliminary results are not supplied in this synthetic demo."
+  ]
 }

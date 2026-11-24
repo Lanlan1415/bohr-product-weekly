@@ -6,7 +6,10 @@ description: >
   carrying metric / sample / control / timepoint and a grounded threshold, a technical route with
   input, output and declared dependencies, a schedule that fits the stated period with milestones
   on a critical path, risks classified by type each with trigger / impact / fallback / decision
-  point, and expected outcomes tied back to objectives — plus a grant-proposal variant
+  point, and expected outcomes tied back to objectives. It additionally links every objective
+  to a falsifiable hypothesis, an owned work package, data collection/quality/analysis, explicit
+  applicable-or-not ethics governance and acceptance evidence, then emits an editable Markdown
+  plan plus objective/work-package/evidence matrices — plus a grant-proposal variant
   (rationale, question, objectives, content, innovation, route, foundation). Every claim keeps a
   material or reference and a version, the resource need is checked against the envelope, and the
   result echoes the case identifier and every declared output contract field. Use when a task asks
@@ -50,6 +53,13 @@ refused: the plan is asserted to fit, not shown to fit.
 **Outcomes written separately from objectives.** An expected outcome that names no objective
 is the "各写各的" failure — goals and deliverables that never touch.
 
+**A route without an executable governance layer.** Each objective must have a falsifiable
+hypothesis/design prediction; each route step must belong to a work package naming method,
+data, deliverable and acceptance. `data_plan` records sources/collection/quality/analysis;
+The ethics `applicable` field is an explicit boolean. Applicable ethics requires governance fields,
+while a false declaration needs its own scope explanation. `pending institutional review`
+is honest; an invented approval number is not.
+
 ## Runtime: the six steps
 
 Run the same six steps for every case. They keep the deliverable and the audit separate: the
@@ -57,10 +67,12 @@ audit checks structure, it never manufactures content.
 
 **Step 0 — read the case.** Read the input case file and the task statement. Copy two things
 out before anything else: the case identifier (recorded into the result as-is) and the declared
-output contract (the field names the result must carry). Also read the constraints the case
-states — period, funding, data conditions, personnel — because the schedule and resource checks
-are run against exactly those numbers. When the request is vague about period or funding, ask
-or record the gap in limits; do not invent a period.
+output contract (the field names the result must carry). Every declared contract field is written
+at the **top level** of result.json and listed in `output_contract_fields`; the nested
+`output_contract` copy remains for compatibility. Also read the constraints the case states —
+period, funding, data conditions, personnel — because the schedule and resource checks are run
+against exactly those numbers. When the request is vague about period or funding, ask or record
+the gap in limits; do not invent a period, an amount, or applicant evidence.
 
 **Step 1 — route by the shape of the ask.** Match the task wording against the table below
 and pick a section. When in doubt, prefer the primary section of this skill.
@@ -72,7 +84,8 @@ and pick a section. When in doubt, prefer the primary section of this skill.
 | 把宽泛方向收敛成 1–3 个可回答的问题并给出考核标准 | research_plan | objectives[]（metric / sample / control / timepoint）+ elements |
 | 技术路线拆步骤、标依赖与关键路径 | research_plan | route[]（input / output / depends_on）+ schedule |
 | 风险识别：触发信号、影响、备选、决策时点 | research_plan | risks[] 四类四字段 |
-| 基金申请书 / grant application 章节稿（含创新点与前期基础） | proposal | elements 七块（rationale…foundation）+ budget |
+| 基金申请书 / grant application 章节稿（含创新点与前期基础） | proposal | elements 七块（rationale…foundation）+ budget；完整评审档再加 grant_profile=nsfc_full 与下列完整字段 |
+| 完整基金评审：科学问题属性、创新边界、关键问题、可行性、年度计划、风险伦理、预算逻辑 | proposal | architecture 八层 + science_question + innovations[] + key_questions[] + feasibility + applicant_evidence + outcomes[] + risks[] + ethics + budget[] |
 | 论证段落→要素→证据三级映射的改稿 | proposal | paragraphs[] + foundation_items[] |
 | 开题初稿成文（正文写作而非结构化要素） | paper_draft | draft + materials + references |
 | 无关请求（翻译、泛读、降重） | none | refused as undetermined, never guessed |
@@ -86,10 +99,11 @@ docx/markdown descriptor the case declares passes through into the result untouc
 
 **Step 3 — assemble the spec.** One JSON object holding the deliverable, the evidence base and
 the contract: the case identifier, the section name from step 1, the seven element blocks, the
-objectives / route / schedule / risks / outcomes records, the claims with their material or
-reference and version, the declared period and resource envelope, and the case's output
-contract fields copied in as keys so they can be echoed verbatim into the result. See
-`examples/spec-plan-contract.json` for the full shape.
+objectives / hypotheses / work_packages / route / schedule / risks / outcomes records, the
+`data_plan`, explicit `ethics`, the claims with their material or reference and version, the
+declared period and resource envelope, and the case's output contract fields copied in as keys
+so they can be echoed verbatim into the result. See `examples/spec-plan-contract.json` for
+the complete runnable clean baseline, including both objectives and their work-package links.
 
 **Step 4 — audit.** Run the engine once:
 
@@ -108,12 +122,15 @@ and rerun. Repeat until exit 0 or 3, or until a finding genuinely cannot be reso
 leave it and record why in the run's limits, because an honest blocked status beats a
 silenced rule.
 
-**Step 6 — merge the result.** Write the deliverable files under the output directory. The
-result file written by the engine already carries: the case identifier, every field of the
-declared output contract (values the case carried pass through untouched; the audited status,
-findings and counts are filled by the audit; anything else is null with a limits note — never
-a fabricated value), findings, severity counts and limits. Keep that file as the structured
-result of the case.
+**Step 6 — merge the result with the real editable artifacts.** A valid `research_plan` run
+writes `research_plan.md` (seven elements plus hypotheses, packages, data, ethics and sources),
+`plan_matrix.json` (objective↔hypothesis↔route↔package↔outcome links) and
+`evidence_matrix.csv` (claim/material/reference/version) before `result.json`; its `artifacts`
+index reports only files actually generated. The result file also carries the case identifier
+and every declared contract field (case values pass through untouched; audited status, findings
+and counts are filled; unknown fields are null with a limits note). Render any docx requested
+by the case from `research_plan.md` with the provided Office tool; never invent a docx or PDF
+file that was not actually written.
 
 ## The spec, field by field (research_plan, the primary route)
 
@@ -127,7 +144,8 @@ result of the case.
   "references": [{"key": "doe2020", "title": "Porous coatings", "year": 2020}],
   "elements": {
     "background": {"known": "...", "unknown": "...", "to_test": "...", "text": "..."},
-    "problem": {"text": "whether a 42 nm porous coating raises uptake rate three-fold"},
+    "problem": {"text": "whether a 42 nm porous coating raises uptake rate three-fold",
+                 "falsification": "paired estimate fails the justified direction or threshold"},
     "objectives": {"text": "..."}, "technical_route": {"text": "..."},
     "schedule": {"text": "..."}, "risks": {"text": "..."}, "outcomes": {"text": "..."}
   },
@@ -149,6 +167,19 @@ result of the case.
               "decision_point": "end of month 2"}],
   "outcomes": [{"id": "W1", "objectives": ["O1"], "kind": "paper",
                 "assessment": "rate ratio confirmed by a second operator"}],
+  "hypotheses": [{"id": "H1", "objective": "O1", "statement": "42 nm raises ratio to >=3",
+                  "test": "paired assay at 24 h", "null_result": "threshold or direction not met"},
+                 {"id": "H2", "objective": "O2", "statement": "uniformity supports a controlled test",
+                  "test": "profilometry", "null_result": "nonuniformity triggers redesign"}],
+  "work_packages": [{"id": "WP1", "title": "coating and assay", "objectives": ["O1", "O2"],
+                     "route_steps": ["R1", "R2"], "method": "deposition and paired assay",
+                     "data": "M1 and paired rate runs", "deliverable": "protocol and dataset",
+                     "acceptance": "O1 evaluated with retained raw data", "start_month": 1, "end_month": 6}],
+  "data_plan": {"sources": [{"id": "M1", "version": "2025-03-14"}],
+                 "collection_method": "paired measurements", "quality_control": "independent repeat",
+                 "analysis": "paired ratio with uncertainty", "data_availability": "raw tables with report"},
+  "ethics": {"applicable": false,
+             "scope_explanation": "inorganic samples; no people, personal data or animals"},
   "output_contract": {"case_id": "...", "status": "...", "section": "...",
                        "findings": "...", "severity_counts": "..."}
 }
@@ -163,6 +194,63 @@ The grant-application variant (`proposal`) keeps its own seven elements — rati
 objectives, content, innovation, technical_route, foundation — plus paragraphs mapped to
 elements, a capability-evidence-relation foundation chain with a done / planned status, and a
 budget with a justification. See `examples/spec.json`.
+
+## Full grant-review profile (`grant_profile: nsfc_full`)
+
+The organizer's grant cases add a full review structure beyond the legacy seven elements. Set
+`grant_profile` (or `review_profile`) to `nsfc_full` only when the task asks for that complete
+chapter; legacy seven-element inputs stay valid. The complete explained example is
+`examples/spec.json`.
+
+```json
+{
+  "grant_profile": "nsfc_full",
+  "architecture": {"background": "...", "gap": "...", "question": "...",
+                   "hypothesis": "...", "objectives": "...", "content": "...",
+                   "technical_route": "...", "outcomes": "..."},
+  "science_question": {"property": "需求牵引，突破瓶颈", "central_question": "...",
+                       "hypothesis": "...", "boundary": "...", "falsifiability": "..."},
+  "innovations": [{"id": "I1", "text": "...", "comparison_target": "named work [ref]",
+                   "difference": "bounded scientific/technical delta", "why_hard": "...",
+                   "feasibility_evidence": "M1", "evidence": "[ref]; M1"}],
+  "key_questions": [{"id": "KQ1", "text": "...", "content_ref": "C1",
+                     "attribute": "mechanism", "answer_measure": "..."}],
+  "feasibility": {"technical": "...", "team": "...", "resource": "...", "time": "...",
+                  "preliminary_status": "provided|partial|not_provided",
+                  "preliminary_gap": "required when partial/not_provided"},
+  "applicant_evidence": {"status": "provided|partial|not_provided", "items": [],
+                         "gap_note": "state missing applicant evidence; never invent it"},
+  "outcomes": [{"id": "W1", "objectives": ["O1"], "assessment": "..."}],
+  "risks": [{"id": "K1", "type": "method_feasibility", "trigger": "...", "impact": "...",
+             "fallback": "...", "decision_point": "..."}],
+  "ethics": {"applicable": false, "scope_explanation": "why no human/animal/personal data"},
+  "budget": [{"item": "consumables", "amount_status": "not_provided", "amount": null,
+              "purpose": "which research activity", "basis": "quantity/price basis",
+              "justification": "why this line exists"}]
+}
+```
+
+Contract rules made executable by this profile:
+
+- **立得住**: eight architecture layers are separate; the scientific question carries its
+  attribute, hypothesis, boundary and a falsifiable test. A policy slogan cannot satisfy them.
+- **说得准**: each innovation names a comparator, a bounded difference, why it is hard and the
+  evidence that this team can do it. `首次/国际领先/填补空白`-type absolutes are blocked; generic
+  “use advanced methods” differences are flagged weak.
+- **对得上**: key questions map to content ids; objectives map to content and route; every
+  timeline phase maps to objectives and has a deliverable; every outcome maps back to an objective
+  with an assessment criterion.
+- **查得到 / 不编造**: foundation items name their owner; applicant evidence is an explicit
+  provided/partial/not_provided ledger with a gap note. Missing precedent and missing amounts are
+  recorded (`preliminary_gap`, `amount_status=not_provided`), never turned into invented results,
+  approvals or currency figures.
+
+External mechanisms implemented here: `https://github.com/crce-ux/grant-diagnosis` contributes
+the eight-layer collapse diagnosis, bounded comparative innovation and reviewer-perspective
+discipline; `https://github.com/haimingz/NSFC-LaTeX` contributes the annual-template warning
+(check the current official guide; the class does not certify current compliance). This package
+adds machine-checkable fields, does not copy proposal prose, and does not claim to replace the
+current NSFC guide or institutional review.
 
 ## Worked example（示例）
 
@@ -215,13 +303,15 @@ the case identifier is recorded — exit 0.
 | severity_counts | findings by severity |
 | checked | the section and the number of records audited |
 | limits | what this run could not verify, including any contract field left null |
-| output_contract | every declared contract field: case-carried values pass through, audited keys are filled by the audit, the rest are null with a limits note |
+| artifacts | the actual `research_plan.md`, `plan_matrix.json` and `evidence_matrix.csv` written under the output directory |
+| output_contract | compatibility view of every declared contract field: case-carried values pass through, audited keys are filled by the audit, the rest are null with a limits note; the same fields are also at top level |
+| output_contract_fields | the exact declared field-name list, so the echo can be checked without re-reading the case |
 
 ## Mapping to the required result sections
 
 | 评分要求的字段（原词） | 本 Skill 的交付 |
 |-|-|
-| 目标产物 | 七要素齐全、与周期和经费相容的开题方案本身：elements 七块 + objectives / route / schedule / risks / outcomes 记录；案例声明的可编辑交付描述符经 output_contract 原样直通 |
+| 目标产物 | 实际生成的 research_plan.md：七要素 + hypotheses / work_packages / data_plan / ethics + objectives / route / schedule / risks / outcomes；plan_matrix.json 给出目标—假设—路线—工作包—成果闭环；案例原描述符原样直通 |
 | 事实与来源映射 | claims[] 每条论断绑定 material 或 reference 并记录 version，引用与材料的存在性由 citation_unknown / material_unknown 核验 |
 | 版本与边界 | findings + severity_counts（逐条规则、逐条定位）、limits（不可核验项）、undetermined 拒绝路径（材料缺失时如实报不可判定，绝不补造） |
 
@@ -265,6 +355,21 @@ the case identifier is recorded — exit 0.
 | `rp.outcome_kind_unknown` | low | a kind outside paper/dataset/code/method/thesis/prototype |
 | `rp.resource_exceeds_budget` | high | resource need exceeds the envelope |
 | `rp.resource_unreadable` | medium | resource figures not numeric |
+| `rp.problem_not_falsifiable` | medium | no result that could falsify or reject the bounded problem |
+| `rp.hypothesis_missing_for_objective` | high | an objective lacks a hypothesis/design prediction |
+| `rp.hypothesis_incomplete` | high | missing statement/test/null_result/objective |
+| `rp.hypothesis_unknown_objective` | high | hypothesis points at a missing objective |
+| `rp.work_packages_missing` | high | no work package joins aims, execution and acceptance |
+| `rp.work_package_incomplete` | high | missing objectives/route/method/data/deliverable/acceptance |
+| `rp.work_package_ref_unknown` | high | package points at missing objective or route id |
+| `rp.route_not_in_work_package` | high | route step executes in no declared package |
+| `rp.work_package_schedule_invalid` | high | package interval unreadable, inverted or beyond total period |
+| `rp.route_dependency_cycle` | high | no executable start order in route dependencies |
+| `rp.data_plan_missing` | high | no data plan |
+| `rp.data_plan_incomplete` | high | sources/collection/quality/analysis incomplete |
+| `rp.ethics_undeclared` | medium | applicability or non-applicability basis left implicit |
+| `rp.ethics_incomplete` | high | applicable ethics lacks approval status/consent/privacy/retention/oversight |
+| `rp.ethics_data_mismatch` | high | sensitive data is declared but ethics applicability is false/missing |
 
 ### proposal (grant-application variant)
 
@@ -295,6 +400,63 @@ the case identifier is recorded — exit 0.
 | `prop.budget_line_unjustified` | medium | a line item with no reason |
 | `prop.field_too_thin` | low | an argumentative element too short to argue |
 
+### proposal full profile (declared-only)
+
+| rule | severity | what it proves |
+|-|-|-|
+| `prop.architecture_missing` / `prop.architecture_layer_missing` | high | the eight layers are supplied as separate, non-empty fields |
+| `prop.science_question_missing` | high | the scientific question is structured |
+| `prop.science_property_missing` | high | its funding/scientific-problem attribute is stated |
+| `prop.science_question_no_central` | high | one central question exists |
+| `prop.science_question_no_hypothesis` | high | a testable hypothesis exists |
+| `prop.science_question_no_boundary` | high | scope boundaries exist |
+| `prop.science_question_no_falsifiability` | high | the observation that would falsify it is stated |
+| `prop.innovation_items_missing` | high | innovation is decomposed into items |
+| `prop.innovation_no_comparator` | high | a concrete prior work/comparator is named |
+| `prop.innovation_no_difference` | high | the bounded scientific delta is stated |
+| `prop.innovation_no_difficulty` | high | why the step is hard is stated |
+| `prop.innovation_no_feasibility` | high | execution evidence exists |
+| `prop.innovation_no_evidence` | high | the comparative claim has a traceable source |
+| `prop.innovation_overclaimed` | high | unverifiable absolute novelty language is blocked |
+| `prop.innovation_weak` | medium | generic “advanced method” delta is flagged |
+| `prop.key_questions_missing` | high | key scientific questions exist |
+| `prop.key_question_no_text` | high | a key question has content |
+| `prop.key_question_unmapped` | high | it maps to a content item |
+| `prop.key_question_no_attribute` | high | its question type/attribute is declared |
+| `prop.key_question_no_measure` | high | it has an answer criterion |
+| `prop.key_question_content_unknown` | high | its content reference exists |
+| `prop.content_item_no_text` | high | a content item is answerable text, not just an id |
+| `prop.feasibility_missing` | high | a structured feasibility account exists |
+| `prop.feasibility_dimension_missing` | high | technical/team/resource/time are all stated |
+| `prop.feasibility_preliminary_unaccounted` | high | missing preliminary evidence is declared with a gap/alternative |
+| `prop.applicant_evidence_undeclared` | high | applicant-owned evidence is explicitly separated |
+| `prop.applicant_evidence_gap_note_missing` | high | partial/missing applicant evidence is recorded as a gap |
+| `prop.applicant_evidence_items_missing` | high | “provided” names actual evidence items |
+| `prop.applicant_item_no_capability` | high | an applicant item states the capability |
+| `prop.applicant_item_no_source` | high | an applicant item names its source |
+| `prop.applicant_item_no_relation` | high | it links to this study |
+| `prop.applicant_item_no_completion` | high | done vs planned is explicit |
+| `prop.foundation_owner_missing` | high | external/team foundation evidence names its owner |
+| `prop.timeline_missing` | high | an annual/phase plan exists |
+| `prop.timeline_period_missing` | high | each phase names its period |
+| `prop.timeline_deliverable_missing` | high | each phase has a deliverable |
+| `prop.timeline_objective_unmapped` | high | each phase serves an objective |
+| `prop.timeline_objective_unknown` | high | phase objective ids exist |
+| `prop.outcomes_missing` | high | expected outcomes exist |
+| `prop.outcome_unmapped` | high | each outcome delivers an objective |
+| `prop.outcome_objective_unknown` | high | outcome objective ids exist |
+| `prop.outcome_no_assessment` | high | each outcome has an assessment criterion |
+| `prop.risks_missing` | high | risks are classified |
+| `prop.risk_type_unknown` | medium | risk type is one of the four |
+| `prop.risk_field_missing` | high | trigger/impact/fallback/decision point all exist |
+| `prop.ethics_undeclared` | high | ethics applicability is explicit, with scope reason for false |
+| `prop.ethics_incomplete` | high | applicable ethics governance is complete without invented approvals |
+| `prop.budget_logic_missing` | high | costed activity logic exists |
+| `prop.budget_purpose_missing` | high | each line names its research activity |
+| `prop.budget_basis_missing` | high | each line has a quantity/price basis |
+| `prop.budget_amount_status_missing` | high | provided vs not_provided is explicit |
+| `prop.budget_amount_missing` | high | a “provided” amount is actually present |
+
 ### Input hygiene and refusal
 
 | rule | severity | what it proves |
@@ -312,7 +474,11 @@ the case identifier is recorded — exit 0.
 | section name unknown (typo or wrong level) | 5 | refusal; pick a route from the table |
 | elements is a list or string instead of an object | 4 | every element reads as absent plus a slot_malformed note; supply an object keyed by element name |
 | an element block is a bare string instead of an object | 4 | that block reads as absent plus a slot_malformed note; give it text and evidence fields |
-| a list slot (paragraphs / schedule / risks / outcomes / claims / timeline / budget) holds non-object entries | 4 | the entries are named and skipped (slot_malformed); supply objects |
+| a list slot (paragraphs / hypotheses / work_packages / schedule / risks / outcomes / claims / timeline / budget) holds non-object entries | 4 | the entries are named and skipped (slot_malformed); supply objects |
+| ethics.applicable=true but approval is only pending | 3/4 | pending is allowed and must be stated as such; approval status plus consent/privacy/retention/oversight must still be supplied; never invent an approval number |
+| ethics.applicable=false | clean if explained | supply scope_explanation proving why no human/animal/personal-data protocol applies; a bare false without explanation is review |
+| a work package interval is inverted, unreadable or after period_months | 4 | correct the actual plan or honestly narrow scope; do not move the total-period number |
+| route dependencies form a cycle | 4 | remove/reorder dependencies so an executable DAG exists; identifying valid ids alone is insufficient |
 | objectives slot is a string or number instead of a list | 4 | degrades to objectives_missing; supply a list of objects |
 | a schedule phase carries a non-numeric end month | 3 | schedule_unreadable; give the month number the phase ends in |
 | period and resource figures are non-numeric | 3 | resource_unreadable; supply the case's own numbers |
@@ -338,8 +504,20 @@ the case identifier is recorded — exit 0.
   version passes; whether that reference actually supports it is the reviewer's judgement.
 - **The first route step is exempt from the dependency rule** — something has to come first.
 - **No funder template is enforced.** Element names are the seven the task lists, per variant.
+  `nsfc_full` is an organizer/controlled-review structure, not the current annual NSFC policy;
+  verify the year's official guide, forms and AI-use rules before a real submission.
+- **Full-profile depth is structural.** Comparator presence, bounded difference, eight layers and
+  budget arithmetic are checkable; whether the comparator is the closest work and whether the
+  hypothesis is true remains scholarly judgement. Missing applicant evidence/amounts are reported,
+  not filled.
 - **It does not read PDFs or docx.** Extraction from the case materials is a separate step;
-  this audits the structured plan that comes out of it.
+  this audits and renders the structured plan that comes out of it.
+- **Ethics presence is not legal approval.** The run verifies applicability and governance fields,
+  not whether an institution approved them. A pending status must remain pending.
+- **Work-package completeness is structural.** `owner`, `start_month`, `end_month` and `acceptance` are
+  editable planning fields; the audit does not prove staff availability or scientific feasibility.
+- **Rendered Markdown echoes supplied claims.** `plan_matrix.json` proves cross-links, not that a
+  hypothesis is true or that sources actually support an assertion; those require the cited material.
 
 ## Failure handling
 
@@ -366,8 +544,8 @@ the case identifier is recorded — exit 0.
 ## Verification
 
 ```bash
-python scripts/bench_plan.py       # 29 scenarios: opening-report rules + repaired-twin guards
-python scripts/bench_proposal.py   # 19 scenarios: one per grant-proposal rule
+python scripts/bench_plan.py       # 45 scenarios: opening-report + hypothesis/package/data/ethics + repaired twins
+python scripts/bench_proposal.py   # 37 scenarios: legacy rules + full-profile layers/links/budget/CJK guard
 python scripts/bench_sections.py   # 51 scenarios: cross-section regression plus false-positive guards
 ```
 
@@ -391,6 +569,11 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
 6. **风险分类学**：四类（数据获取 / 方法可行性 / 进度 / 伦理合规）分类 + 每条风险四字段（trigger / impact / fallback / decision_point）+ 两大核心类别覆盖强制——风险条目可逐字段评分。
 7. **论断可追溯三键**：每条关键论断绑定 material 或 reference 并记录 version，引用与材料存在性由引擎核验——"说得清"可逐条回溯。
 8. **契约直通的 result.json 与崩溃免疫**：case_id 与 output_contract 全字段回填（案例自带值原样直通、审计键由审计填写、其余置 null 并写入 limits）；类型错位一律降级为发现项，退出码只有 0/3/4/5，绝不以 traceback 收场。
+9. **目标—假设—工作包闭环**：每个 objective 均有 statement/test/null_result，route step 必须属于 work_package；包内 method/data/deliverable/acceptance 与目标 ID 同步，依赖有向图额外查环，消除“要素齐全却无法开工”。
+10. **数据—伦理双线治理**：data_plan 拆解 sources/collection_method/quality_control/analysis；ethics 显式声明适用性，涉及人/个人数据/动物即与 false 冲突，适用时保留 pending 而非补造批准号。
+11. **真实可编辑交付**：除 JSON 审计外，实际生成结构化写作本体 research_plan.md、链接矩阵 plan_matrix.json 和证据 CSV，`artifacts` 仅登记磁盘上真实生成的文件。
+12. **完整基金评审档**：八层分离、科学问题属性、创新与具体已有工作的差异/难度/可行性、关键问题—内容—目标—路线—时间—成果闭环、证据 owner/申请人缺口、伦理与预算逻辑全部机械可查；不把外部成果冒充申请人成果，不把缺金额补成数字。
+13. **顶层契约直通**：case_id 与 output_contract 全字段既保留兼容视图，又逐字写到 result.json 顶层，并给出 output_contract_fields；拒绝路径也保留相同字段骨架。
 
 bench 目录下的场景（clean 基线零发现 + 缺陷-修复孪生守卫）是上述能力的回归证据。
 
@@ -399,8 +582,8 @@ bench 目录下的场景（clean 基线零发现 + 缺陷-修复孪生守卫）�
 1. **SKILL.md**：用途、适用条件、六步调用方式、路由决策表、输入输出契约、异常处置表、限制与自查方法齐备，且文档中的规则 id 与引擎逐一对得上。
 2. **scripts/**：纯标准库（Python 3.9+，3.14 实测），模块可独立导入；本包为独立副本，不依赖其他包的文件。
 3. **examples/spec.json 与 examples/spec-plan-contract.json**：最小调用示例与带 case_id + output_contract 回填的完整示例，示意输出标注为示例、实跑所得。
-4. **bench_plan.py**：29 个场景，覆盖 research_plan 每条规则，新增规则各配一个修复孪生守卫场景；report_plan.json 为可复跑证据。
-5. **bench_proposal.py**：19 个场景，每条 grant-proposal 规则一个缺陷场景，clean 基线必须零发现。
+4. **bench_plan.py**：45 个场景，覆盖 research_plan 全部规则、可证伪性/工作包/数据/伦理和修复孪生守卫；report_plan.json 为可复跑证据。
+5. **bench_proposal.py**：37 个场景，覆盖 legacy 七要素与 nsfc_full 八层/科学问题/创新比较/申请人证据/预算逻辑/CJK 误报守卫，clean 基线必须零发现。
 6. **bench_sections.py**：51 个跨 section 回归场景，防误报守卫覆盖中文与类型错位输入。
-7. **七要素 spec 模板**：elements / objectives / route / schedule / risks / outcomes 的字段结构可直接迁移到其他课题的开题场景，只需替换内容。
+7. **完整计划模板**：elements / objectives / hypotheses / work_packages / data_plan / ethics / route / schedule / risks / outcomes 结构可迁移到其他课题；实跑另交付 research_plan.md 与两个矩阵，避免空有检查清单。
 8. **规则 id 稳定词汇表**：rp.* 与 prop.* 前缀稳定命名、语义与严重度文档化，可作为同类开题与基金写作任务的共享检查词汇。

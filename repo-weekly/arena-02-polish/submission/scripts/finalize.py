@@ -93,6 +93,7 @@ def main(argv=None):
     workdir, outdir = os.path.abspath(args.workdir), os.path.abspath(args.output)
     os.makedirs(outdir, exist_ok=True)
     change_log, uncertainty, skipped = [], [], []
+    case_values = {}
 
     # ---- 1. 契约 ----
     case_id, fields = "", []
@@ -110,6 +111,13 @@ def main(argv=None):
             fields = contract_fields(case.get("output_contract"))
         except (json.JSONDecodeError, OSError) as exc:
             skipped.append("case.json 直读失败：%s" % exc)
+    if args.case and os.path.isfile(os.path.abspath(args.case)):
+        try:
+            loaded_case = json.loads(read_text(os.path.abspath(args.case)))
+            if isinstance(loaded_case, dict):
+                case_values = loaded_case
+        except (json.JSONDecodeError, OSError):
+            pass  # the earlier contract reader already recorded the degradation
     if not case_id:
         uncertainty.append("case_id 缺失 → 契约对齐无法确认 → 请人工核对 /input/case.json")
     change_log.append("[finalize] 契约字段 %d 个：%s"
@@ -128,12 +136,16 @@ def main(argv=None):
         skipped.append("prepare/verify 均无产出 → 无润色稿可交付")
 
     # ---- verify 结果摘要 ----
-    digest = {"accepted": 0, "rejected": 0, "rejected_reasons": {}, "samples": []}
+    digest = {"accepted": 0, "unchanged": 0, "confirmations": 0,
+              "rejected": 0, "rejected_reasons": {}, "samples": [],
+              "unchanged_samples": [], "confirmation_items": []}
     vr_path = os.path.join(workdir, "verify_result.json")
     if os.path.isfile(vr_path):
         try:
             vr = json.loads(read_text(vr_path))
             digest["accepted"] = len(vr.get("accepted") or [])
+            digest["unchanged"] = len(vr.get("unchanged") or [])
+            digest["confirmations"] = len(vr.get("confirmations") or [])
             digest["rejected"] = len(vr.get("rejected") or [])
             for r in vr.get("rejected") or []:
                 key = str(r.get("reason", "")).split("：")[0]
@@ -141,8 +153,20 @@ def main(argv=None):
                     digest["rejected_reasons"].get(key, 0) + 1
             for a in (vr.get("accepted") or [])[:DIGEST_SAMPLES]:
                 digest["samples"].append({"edit_id": a.get("edit_id"),
+                                          "sentence_id": a.get("sentence_id"),
                                           "before": a.get("before"),
-                                          "after": a.get("after")})
+                                          "after": a.get("after"),
+                                          "type": a.get("type"),
+                                          "reason": a.get("reason"),
+                                          "ambiguity": a.get("ambiguity"),
+                                          "author_confirmation": a.get("author_confirmation"),
+                                          "protected_elements": a.get("protected_elements")})
+            digest["unchanged_samples"] = (vr.get("unchanged") or [])[:DIGEST_SAMPLES]
+            digest["confirmation_items"] = vr.get("confirmations") or []
+            if digest["confirmations"]:
+                uncertainty.append(
+                    "%d 条歧义/备选尚未由作者确认 → 对应原文未改 → 见 before_after_digest.confirmation_items"
+                    % digest["confirmations"])
             if digest["rejected"]:
                 uncertainty.append(
                     "%d 条编辑被守恒门回退（见 rejected_edits.jsonl）→ "
@@ -170,11 +194,21 @@ def main(argv=None):
                  "本文件由 finalize.py 依据 verify_result.json 生成，"
                  "逐条六要素记录请以正式 change_log 为准。", "",
                  "## 接受的编辑（前 %d 条示例）" % DIGEST_SAMPLES, ""]
-        lines.append("- 接受编辑 %d 条；回退 %d 条（违规句保持原文）。"
-                     % (digest["accepted"], digest["rejected"]))
+        lines.append("- 接受编辑 %d 条；保持原文 %d 条；待作者确认 %d 条；回退 %d 条。"
+                     % (digest["accepted"], digest["unchanged"],
+                        digest["confirmations"], digest["rejected"]))
         for s in digest["samples"]:
-            lines.append("- %s | 原文：%s | 改后：%s"
-                         % (s["edit_id"], s["before"], s["after"]))
+            lines.append("- %s | 原文：%s | 改后：%s | 类型：%s | 理由：%s | 歧义：%s | 作者确认：%s"
+                         % (s["edit_id"], s["before"], s["after"], s.get("type"),
+                            s.get("reason"), s.get("ambiguity"), s.get("author_confirmation")))
+        lines += ["", "## 保持原文（不计为润色修改）", ""]
+        for s in digest["unchanged_samples"]:
+            lines.append("- %s | 原文/改后：%s | 理由：%s"
+                         % (s.get("edit_id"), s.get("before"), s.get("reason")))
+        lines += ["", "## 待作者确认（候选未落稿）", ""]
+        for s in digest["confirmation_items"]:
+            lines.append("- %s | 歧义：%s | 候选：%s | 当前：保留原文"
+                         % (s.get("edit_id"), s.get("ambiguity"), s.get("candidates")))
         lines += ["", "## 被回退的编辑（守恒门拦截，句子保持原文）", ""]
         vr_path2 = os.path.join(workdir, "verify_result.json")
         if os.path.isfile(vr_path2):
@@ -216,7 +250,7 @@ def main(argv=None):
     status = "success"
     if polished_text is None:
         status = "failed"
-    elif skipped or digest["rejected"]:
+    elif skipped or digest["rejected"] or digest["confirmations"]:
         status = "partial"
     result = {
         "case_id": case_id,
@@ -226,6 +260,7 @@ def main(argv=None):
         "change_log": change_log,
         "before_after_digest": digest,
         "quality_gate": {},
+        "output_contract_fields": fields,
     }
     if skipped:
         result["skipped_reason"] = skipped
@@ -236,6 +271,11 @@ def main(argv=None):
     for f in fields:
         if f in result and result[f] not in (None, ""):
             pre_check.append((f, True, "已填"))
+        elif f in case_values and f not in ("case_id", "output_contract") and \
+                case_values[f] is not None and \
+                (not isinstance(case_values[f], str) or case_values[f].strip()):
+            result[f] = case_values[f]
+            pre_check.append((f, True, "case 同名字段逐字直通"))
         elif f in auto:
             result[f] = auto[f]
             pre_check.append((f, True, "自动填充"))

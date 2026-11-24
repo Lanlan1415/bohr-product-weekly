@@ -2062,6 +2062,267 @@ BROAD = re.compile(
     r"\b(all|every|entire|comprehensive|systematic study of everything|"
     r"全面|所有|系统研究|一切)\b", re.IGNORECASE)
 
+FULL_GRANT_PROFILES = ("nsfc_full", "research_grant_full")
+ARCH_LAYERS = ("background", "gap", "question", "hypothesis", "objectives",
+               "content", "technical_route", "outcomes")
+OVERCLAIM_NOVELTY = re.compile(
+    r"首次|首创|国际领先|世界领先|填补空白|突破性|颠覆性|"
+    r"\bfirst[- ]ever\b|\bworld[- ]first\b|\bgroundbreaking\b|\brevolutionary\b|"
+    r"\bunprecedented\b", re.I)
+GENERIC_INNOVATION = re.compile(
+    r"采用.{0,12}(?:先进|最新|人工智能|深度学习|多组学|大数据|新技术)|"
+    r"使用.{0,12}(?:先进|最新|人工智能|深度学习|新技术)|提高(?:了)?效率|"
+    r"提升(?:了)?性能|combines?.{0,30}methods?$", re.I)
+
+
+def _txt(value) -> str:
+    return str(value or "").strip()
+
+
+def _full_grant_profile(spec: dict, findings: list[dict], elements: dict,
+                        objectives: list, route_steps: list, content_ids: set) -> None:
+    """The organizer's full grant review profile, opt-in by grant_profile.
+
+    Legacy seven-element specs stay auditable; a runtime task that opts into the
+    full profile must carry the eight-layer architecture, structured comparative
+    innovation, key questions, feasibility, an explicit applicant-evidence ledger,
+    outcomes, risks/ethics and budget logic. Missing applicant evidence and budget
+    amounts are recorded as gaps, never invented.
+    """
+    # 1. Eight architecture layers, kept separate.
+    arch = spec.get("architecture")
+    if not isinstance(arch, dict):
+        _add(findings, "prop.architecture_missing", "high",
+             "the full grant profile requires the eight architecture layers as separate fields")
+        arch = {}
+    for layer in ARCH_LAYERS:
+        if not _txt(arch.get(layer)):
+            _add(findings, "prop.architecture_layer_missing", "high",
+                 "an architecture layer is empty, so background/gap/question/hypothesis/"
+                 "objectives/content/route/outcomes have collapsed", layer=layer)
+
+    # 2. Scientific-question attributes.
+    sq = spec.get("science_question")
+    if not isinstance(sq, dict):
+        _add(findings, "prop.science_question_missing", "high",
+             "the scientific question is not stated as a structured, answerable object")
+        sq = {}
+    for field, rule in (("property", "prop.science_property_missing"),
+                        ("central_question", "prop.science_question_no_central"),
+                        ("hypothesis", "prop.science_question_no_hypothesis"),
+                        ("boundary", "prop.science_question_no_boundary"),
+                        ("falsifiability", "prop.science_question_no_falsifiability")):
+        if not _txt(sq.get(field)):
+            _add(findings, rule, "high",
+                 "a required scientific-question attribute is missing", field=field)
+
+    # 3. Comparative innovation, not adjective novelty.
+    innovations = _records(spec.get("innovations"))
+    if not innovations:
+        _add(findings, "prop.innovation_items_missing", "high",
+             "innovation is not decomposed into comparable, bounded items")
+    for i, item in enumerate(innovations):
+        iid = _txt(item.get("id")) or "I%d" % (i + 1)
+        text = _txt(item.get("text"))
+        checks = (
+            ("comparison_target", "prop.innovation_no_comparator",
+             "the innovation names no concrete prior work or comparator"),
+            ("difference", "prop.innovation_no_difference",
+             "the innovation does not state what differs from that comparator"),
+            ("why_hard", "prop.innovation_no_difficulty",
+             "the innovation does not explain why the step is difficult"),
+            ("feasibility_evidence", "prop.innovation_no_feasibility",
+             "the innovation has no evidence that the team can execute it"),
+            ("evidence", "prop.innovation_no_evidence",
+             "the comparative innovation claim has no traceable source"),
+        )
+        for field, rule, message in checks:
+            if not _txt(item.get(field)):
+                _add(findings, rule, "high", message, innovation=iid, field=field)
+        if OVERCLAIM_NOVELTY.search(text):
+            _add(findings, "prop.innovation_overclaimed", "high",
+                 "an unverifiable absolute novelty phrase is used; replace it with a bounded "
+                 "difference against a named work", innovation=iid, text=text[:100])
+        difference = _txt(item.get("difference"))
+        if difference and (len(difference) < 16 or GENERIC_INNOVATION.search(difference)):
+            _add(findings, "prop.innovation_weak", "medium",
+                 "the stated difference is generic or too thin to identify a scientific delta",
+                 innovation=iid, difference=difference[:100])
+
+    # 4. Key questions mapped to content, each with an answer measure.
+    key_questions = _records(spec.get("key_questions"))
+    if not key_questions:
+        _add(findings, "prop.key_questions_missing", "high",
+             "no key scientific questions were supplied for the research content")
+    for i, kq in enumerate(key_questions):
+        kid = _txt(kq.get("id")) or "KQ%d" % (i + 1)
+        for field, rule in (("text", "prop.key_question_no_text"),
+                            ("content_ref", "prop.key_question_unmapped"),
+                            ("attribute", "prop.key_question_no_attribute"),
+                            ("answer_measure", "prop.key_question_no_measure")):
+            if not _txt(kq.get(field)):
+                _add(findings, rule, "high",
+                     "a key question is incomplete", key_question=kid, field=field)
+        ref = _txt(kq.get("content_ref"))
+        if ref and content_ids and ref not in content_ids:
+            _add(findings, "prop.key_question_content_unknown", "high",
+                 "a key question points at a research-content item that does not exist",
+                 key_question=kid, content_ref=ref)
+    for i, c in enumerate(_records(spec.get("content"))):
+        if not _txt(c.get("text")):
+            _add(findings, "prop.content_item_no_text", "high",
+                 "a research-content item is only an id, not an answerable content statement",
+                 content=c.get("id") or i)
+
+    # 5. Feasibility and the applicant-evidence boundary.
+    feas = spec.get("feasibility")
+    if not isinstance(feas, dict):
+        _add(findings, "prop.feasibility_missing", "high",
+             "technical/team/resource/time feasibility is not stated as separate dimensions")
+        feas = {}
+    for field in ("technical", "team", "resource", "time"):
+        if not _txt(feas.get(field)):
+            _add(findings, "prop.feasibility_dimension_missing", "high",
+                 "a feasibility dimension is absent", dimension=field)
+    pre = _txt(feas.get("preliminary_status")).lower()
+    if pre not in ("provided", "not_provided", "partial"):
+        _add(findings, "prop.feasibility_preliminary_unaccounted", "high",
+             "whether preliminary evidence exists is not declared; absence must not be "
+             "written as a completed result")
+    if pre in ("not_provided", "partial") and not _txt(feas.get("preliminary_gap")):
+        _add(findings, "prop.feasibility_preliminary_unaccounted", "high",
+             "missing/partial preliminary evidence has no explicit gap statement and alternative",
+             status=pre)
+    applicant = spec.get("applicant_evidence")
+    if not isinstance(applicant, dict):
+        _add(findings, "prop.applicant_evidence_undeclared", "high",
+             "applicant-owned evidence is not separated from external prior work")
+        applicant = {}
+    status = _txt(applicant.get("status")).lower()
+    if status not in ("provided", "partial", "not_provided"):
+        _add(findings, "prop.applicant_evidence_undeclared", "high",
+             "the applicant-evidence ledger must say provided/partial/not_provided", found=status)
+    elif status in ("partial", "not_provided") and not _txt(applicant.get("gap_note")):
+        _add(findings, "prop.applicant_evidence_gap_note_missing", "high",
+             "missing applicant evidence must be recorded as a gap, not inferred or fabricated")
+    if status == "provided":
+        items = _records(applicant.get("items"))
+        if not items:
+            _add(findings, "prop.applicant_evidence_items_missing", "high",
+                 "applicant evidence is marked provided but no evidence items are listed")
+        for i, item in enumerate(items):
+            for field, rule in (("capability", "prop.applicant_item_no_capability"),
+                                ("source", "prop.applicant_item_no_source"),
+                                ("relation", "prop.applicant_item_no_relation"),
+                                ("completion", "prop.applicant_item_no_completion")):
+                if not _txt(item.get(field)):
+                    _add(findings, rule, "high",
+                         "an applicant-evidence item breaks the capability-source-relation "
+                         "chain or omits completion status", item=item.get("name") or i,
+                         field=field)
+    # foundation_items represent external/team evidence too: require ownership under the
+    # full profile so published work is never silently presented as the applicant's own.
+    for item in _records(spec.get("foundation_items")):
+        if not _txt(item.get("owner")):
+            _add(findings, "prop.foundation_owner_missing", "high",
+                 "foundation evidence does not say whose work it is; external results must not "
+                 "be presented as applicant-owned", item=item.get("name"))
+
+    # 6. Annual plan, outcomes, risks and ethics.
+    timeline = _slot(findings, spec, "timeline")
+    if not timeline:
+        _add(findings, "prop.timeline_missing", "high",
+             "no annual/phase plan was supplied")
+    objective_ids = {_txt(o.get("id")) for o in objectives if _txt(o.get("id"))}
+    for i, phase in enumerate(timeline):
+        if not _txt(phase.get("period")):
+            _add(findings, "prop.timeline_period_missing", "high",
+                 "a timeline phase names no period", phase=i)
+        if not _txt(phase.get("deliverable")):
+            _add(findings, "prop.timeline_deliverable_missing", "high",
+                 "a timeline phase has no concrete deliverable", phase=i)
+        refs = phase.get("objectives") or []
+        refs = [refs] if isinstance(refs, str) else refs if isinstance(refs, (list, tuple)) else []
+        if not refs:
+            _add(findings, "prop.timeline_objective_unmapped", "high",
+                 "a timeline phase serves no declared objective", phase=i)
+        for ref in refs:
+            if objective_ids and _txt(ref) not in objective_ids:
+                _add(findings, "prop.timeline_objective_unknown", "high",
+                     "a timeline phase points at an objective that does not exist",
+                     phase=i, objective=_txt(ref))
+    outcomes = _records(spec.get("outcomes"))
+    if not outcomes:
+        _add(findings, "prop.outcomes_missing", "high",
+             "expected outcomes are not declared")
+    for i, out in enumerate(outcomes):
+        refs = out.get("objectives") or []
+        refs = [refs] if isinstance(refs, str) else refs if isinstance(refs, (list, tuple)) else []
+        if not refs:
+            _add(findings, "prop.outcome_unmapped", "high",
+                 "an expected outcome delivers no declared objective", outcome=out.get("id") or i)
+        for ref in refs:
+            if objective_ids and _txt(ref) not in objective_ids:
+                _add(findings, "prop.outcome_objective_unknown", "high",
+                     "an outcome points at an objective that does not exist",
+                     outcome=out.get("id") or i, objective=_txt(ref))
+        if not _txt(out.get("assessment")):
+            _add(findings, "prop.outcome_no_assessment", "high",
+                 "an expected outcome has no completion/assessment criterion",
+                 outcome=out.get("id") or i)
+    risks = _records(spec.get("risks"))
+    if not risks:
+        _add(findings, "prop.risks_missing", "high",
+             "risks are not classified with triggers and fallbacks")
+    for i, risk in enumerate(risks):
+        rid = _txt(risk.get("id")) or "K%d" % (i + 1)
+        rtype = _txt(risk.get("type")).lower()
+        if rtype not in RISK_TYPES:
+            _add(findings, "prop.risk_type_unknown", "medium",
+                 "a risk type is outside data/method/schedule/ethics", risk=rid, found=rtype)
+        for field in ("trigger", "impact", "fallback", "decision_point"):
+            if not _txt(risk.get(field)):
+                _add(findings, "prop.risk_field_missing", "high",
+                     "a risk lacks a trigger, impact, fallback or decision point",
+                     risk=rid, field=field)
+    ethics = spec.get("ethics")
+    if not isinstance(ethics, dict) or not isinstance(ethics.get("applicable"), bool):
+        _add(findings, "prop.ethics_undeclared", "high",
+             "ethics.applicable must explicitly be true or false for the full profile")
+        ethics = {}
+    elif ethics.get("applicable") is False and not _txt(ethics.get("scope_explanation")):
+        _add(findings, "prop.ethics_undeclared", "high",
+             "ethics.applicable=false needs a scope explanation, not an assumed exemption")
+    elif ethics.get("applicable") is True:
+        missing = [k for k in ("approval_status", "consent", "privacy", "data_retention", "oversight")
+                   if not _txt(ethics.get(k))]
+        if missing:
+            _add(findings, "prop.ethics_incomplete", "high",
+                 "applicable ethics governance is incomplete; pending status is allowed, "
+                 "invention is not", missing=missing)
+
+    # 7. Budget logic without invented amounts.
+    budget = _slot(findings, spec, "budget")
+    if not budget:
+        _add(findings, "prop.budget_logic_missing", "high",
+             "the full profile requires a costed activity logic")
+    for i, line in enumerate(budget):
+        lid = _txt(line.get("item")) or "B%d" % (i + 1)
+        if not _txt(line.get("purpose")):
+            _add(findings, "prop.budget_purpose_missing", "high",
+                 "a budget line is not tied to a research activity", item=lid)
+        if not _txt(line.get("basis")):
+            _add(findings, "prop.budget_basis_missing", "high",
+                 "a budget line has no quantity/price or estimation basis", item=lid)
+        astatus = _txt(line.get("amount_status")).lower()
+        if astatus not in ("provided", "not_provided"):
+            _add(findings, "prop.budget_amount_status_missing", "high",
+                 "a budget line must say provided or not_provided; amounts are never invented",
+                 item=lid)
+        elif astatus == "provided" and line.get("amount") in (None, ""):
+            _add(findings, "prop.budget_amount_missing", "high",
+                 "an amount is marked provided but is absent", item=lid)
+
 
 def proposal(spec: dict, findings: list[dict]) -> None:
     """Audit a grant-proposal chapter against the seven elements it must carry.
@@ -2202,10 +2463,16 @@ def proposal(spec: dict, findings: list[dict]) -> None:
             _add(findings, "prop.budget_line_unjustified", "medium",
                  "a budget line carries no justification", item=line.get("item"))
 
+    if str(spec.get("grant_profile") or spec.get("review_profile") or "").strip() in \
+            FULL_GRANT_PROFILES:
+        _full_grant_profile(spec, findings, elements, objectives, route_steps, content_ids)
+
     # --- thin narrative elements ----------------------------------------
     for e in ("rationale", "innovation"):
         text = str((elements.get(e) or {}).get("text") or "")
-        if text and len(text.split()) < 25 and len(text) < 80:
+        cjk = bool(re.search(r"[\u4e00-\u9fff]", text))
+        too_thin = (len(text) < 40) if cjk else (len(text.split()) < 25 and len(text) < 80)
+        if text and too_thin:
             _add(findings, "prop.field_too_thin", "low",
                  "an argumentative element is too short to carry its argument", element=e,
                  length=len(text))
@@ -2325,7 +2592,15 @@ def research_plan(spec: dict, findings: list[dict]) -> None:
             _add(findings, "rp.route_no_io", "high",
                  "a route step declares no input or no output, so it is a method name rather "
                  "than a step", step=sid)
-        deps = s.get("depends_on") or []
+        raw_deps = s.get("depends_on") or []
+        if isinstance(raw_deps, str):
+            deps = [raw_deps]
+        elif isinstance(raw_deps, (list, tuple)):
+            deps = raw_deps
+        else:
+            deps = []
+            _add(findings, "spec.slot_malformed", "medium",
+                 "depends_on must be a list of route ids (or one string id)", step=sid)
         for dep in deps:
             if str(dep) not in step_ids:
                 _add(findings, "rp.route_dependency_unknown", "high",
@@ -2462,6 +2737,148 @@ def research_plan(spec: dict, findings: list[dict]) -> None:
         except (TypeError, ValueError):
             _add(findings, "rp.resource_unreadable", "medium",
                  "resource figures are not numeric, so compatibility cannot be checked")
+
+    # --- problem, falsifiable hypotheses, executable work packages ---------
+    # A plan is not ready merely because it has elegant route prose: each objective
+    # must have a test and a null/alternative result, and each route step must live
+    # in a work package with data, acceptance criteria and a deliverable.
+    if problem := elements.get("problem"):
+        if not str(problem.get("falsification") or "").strip():
+            _add(findings, "rp.problem_not_falsifiable", "medium",
+                 "the bounded problem does not state which result would falsify or reject it",
+                 element="problem")
+    hypotheses = _slot(findings, spec, "hypotheses")
+    objective_ids = {str(o.get("id")) for o in objectives}
+    hypotheses_by_objective = {str(h.get("objective") or "") for h in hypotheses}
+    if objectives:
+        for oid in sorted(objective_ids - hypotheses_by_objective):
+            _add(findings, "rp.hypothesis_missing_for_objective", "high",
+                 "an objective has no explicit falsifiable hypothesis or design prediction",
+                 objective=oid)
+    for i, h in enumerate(hypotheses):
+        hid = str(h.get("id") or "H%d" % (i + 1))
+        missing = [key for key in ("statement", "test", "null_result", "objective")
+                   if not str(h.get(key) or "").strip()]
+        if missing:
+            _add(findings, "rp.hypothesis_incomplete", "high",
+                 "a hypothesis needs a statement, linked objective, test and null/alternative result",
+                 hypothesis=hid, missing=missing)
+        if str(h.get("objective") or "") and str(h.get("objective")) not in objective_ids:
+            _add(findings, "rp.hypothesis_unknown_objective", "high",
+                 "a hypothesis points at an objective that does not exist", hypothesis=hid,
+                 objective=h.get("objective"))
+
+    packages = _slot(findings, spec, "work_packages")
+    if not packages:
+        _add(findings, "rp.work_packages_missing", "high",
+             "no work package connects objectives, route steps, data and acceptance")
+    route_ids = {str(step.get("id")) for step in steps}
+    assigned_routes = set()
+    for i, wp in enumerate(packages):
+        wid = str(wp.get("id") or "WP%d" % (i + 1))
+        missing = [key for key in ("objectives", "route_steps", "method", "data",
+                                   "deliverable", "acceptance") if not wp.get(key)]
+        if missing:
+            _add(findings, "rp.work_package_incomplete", "high",
+                 "a work package does not connect objective, route, method, data, delivery and acceptance",
+                 work_package=wid, missing=missing)
+        wp_objectives = wp.get("objectives") or []
+        wp_objectives = [wp_objectives] if isinstance(wp_objectives, str) else wp_objectives
+        if not isinstance(wp_objectives, (list, tuple)):
+            wp_objectives = []
+        wp_routes = wp.get("route_steps") or []
+        wp_routes = [wp_routes] if isinstance(wp_routes, str) else wp_routes
+        if not isinstance(wp_routes, (list, tuple)):
+            wp_routes = []
+        for oid in wp_objectives:
+            if str(oid) not in objective_ids:
+                _add(findings, "rp.work_package_ref_unknown", "high",
+                     "a work package points at an unknown objective", work_package=wid,
+                     objective=oid)
+        for rid in wp_routes:
+            assigned_routes.add(str(rid))
+            if str(rid) not in route_ids:
+                _add(findings, "rp.work_package_ref_unknown", "high",
+                     "a work package points at an unknown route step", work_package=wid,
+                     route_step=rid)
+        start, end = wp.get("start_month"), wp.get("end_month")
+        if start is not None or end is not None:
+            try:
+                start_f, end_f = float(start), float(end)
+                if start_f > end_f or start_f < 1:
+                    _add(findings, "rp.work_package_schedule_invalid", "high",
+                         "a work package has an inverted or non-positive month interval",
+                         work_package=wid, start_month=start, end_month=end)
+                if period is not None and end_f > float(period):
+                    _add(findings, "rp.work_package_schedule_invalid", "high",
+                         "a work package ends after the declared project period",
+                         work_package=wid, end_month=end, period_months=period)
+            except (TypeError, ValueError):
+                _add(findings, "rp.work_package_schedule_invalid", "high",
+                     "work-package start_month/end_month must both be numeric when supplied",
+                     work_package=wid, start_month=start, end_month=end)
+    for rid in sorted(route_ids - assigned_routes):
+        _add(findings, "rp.route_not_in_work_package", "high",
+             "a technical-route step belongs to no work package, so it has no executable owner/delivery chain",
+             route_step=rid)
+
+    # --- methods/data and ethical data governance --------------------------
+    data = spec.get("data_plan")
+    if not isinstance(data, dict) or not data:
+        _add(findings, "rp.data_plan_missing", "high",
+             "no data_sources/collection/quality/analysis plan was supplied")
+        data = {}
+    missing_data = [key for key in ("sources", "collection_method", "quality_control", "analysis")
+                    if not data.get(key)]
+    if missing_data:
+        _add(findings, "rp.data_plan_incomplete", "high",
+             "the data/method plan omits sources, collection, quality control or analysis",
+             missing=missing_data)
+    ethics = spec.get("ethics")
+    if not isinstance(ethics, dict) or not isinstance(ethics.get("applicable"), bool):
+        _add(findings, "rp.ethics_undeclared", "medium",
+             "ethics.applicable must explicitly say whether human/animal/personal-data ethics applies; absence is not false")
+        ethics = {}
+    if ethics.get("applicable") is False and not str(ethics.get("scope_explanation") or "").strip():
+        _add(findings, "rp.ethics_undeclared", "medium",
+             "ethics.applicable=false requires a scope explanation rather than an assumed exemption")
+    if ethics.get("applicable") is True:
+        missing_ethics = [key for key in ("approval_status", "consent", "privacy", "data_retention", "oversight")
+                          if not str(ethics.get(key) or "").strip()]
+        if missing_ethics:
+            _add(findings, "rp.ethics_incomplete", "high",
+                 "human/animal/personal-data ethics was declared applicable without governance fields; pending status is allowed, invention is not",
+                 missing=missing_ethics)
+    sensitive = any(data.get(key) is True for key in ("human_subjects", "personal_data", "animals"))
+    if sensitive and ethics.get("applicable") is not True:
+        _add(findings, "rp.ethics_data_mismatch", "high",
+             "the data plan declares human/animal/personal data but ethics.applicable is not true")
+
+    # Route dependencies must be an acyclic graph, not merely a set of valid ids.
+    adjacency = {str(step.get("id")): [str(x) for x in (step.get("depends_on") or [])]
+                 if not isinstance(step.get("depends_on"), str) else [step.get("depends_on")]
+                 for step in steps if step.get("id")}
+    visiting, visited = set(), set()
+
+    def route_acyclic(node):
+        if node in visiting:
+            return False
+        if node in visited:
+            return True
+        visiting.add(node)
+        for parent in adjacency.get(node, []):
+            if parent in adjacency and not route_acyclic(parent):
+                return False
+        visiting.remove(node)
+        visited.add(node)
+        return True
+
+    for rid in sorted(adjacency):
+        if not route_acyclic(rid):
+            _add(findings, "rp.route_dependency_cycle", "high",
+                 "route dependencies contain a cycle, so no executable start order exists",
+                 route_step=rid)
+            break
 
 
 ARGUMENT_ELEMENTS = ("question", "method", "result", "discussion", "limitation")

@@ -97,6 +97,31 @@ BASE = {
     "outcomes": OUTCOMES,
 }
 
+# Extended recipe-repair, FAIR/reproducibility and ethics closed-loop fields. They
+# formalize what the case gives; no approval number or result is invented.
+BASE["elements"]["problem"]["falsification"] = "the paired estimate fails the declared threshold"
+BASE["hypotheses"] = [
+    {"id": "H1", "objective": "O1", "statement": "42 nm coating raises the 24 h rate ratio to 3",
+     "test": "paired coated/uncoated assay", "null_result": "threshold or direction is not met"},
+    {"id": "H2", "objective": "O2", "statement": "thickness is sufficiently uniform for a controlled test",
+     "test": "within-wafer profilometry", "null_result": "nonuniformity triggers deposition redesign"},
+]
+BASE["work_packages"] = [
+    {"id": "WP1", "title": "coating and test", "objectives": ["O1", "O2"],
+     "route_steps": ["R1", "R2"], "method": "templated deposition and paired assay",
+     "data": "M1 and paired runs", "deliverable": "protocol and dataset",
+     "acceptance": "H1/H2 evaluated with raw data retained", "start_month": 1, "end_month": 6}
+]
+BASE["data_plan"] = {
+    "sources": [{"id": "M1", "version": "2025-03-14", "access": "existing lab records"}],
+    "collection_method": "paired coated/uncoated measurements",
+    "quality_control": "witness wafer and independent repeat",
+    "analysis": "paired rate ratio with uncertainty and uniformity sensitivity analysis",
+    "data_availability": "raw measurement tables with the report",
+}
+BASE["ethics"] = {"applicable": False,
+                  "scope_explanation": "inorganic samples, no humans, personal data or animals"}
+
 
 def d(**over):
     s = copy.deepcopy(BASE)
@@ -204,6 +229,53 @@ SCEN = [
 
     # resource envelope
     ("resource_exceeds_budget", lambda: (d(resource_needed=64), ["rp.resource_exceeds_budget"])),
+
+    # falsifiable hypotheses and executable work packages
+    ("problem_not_falsifiable", lambda: (
+        d(elements={**BASE["elements"], "problem": {"text": "coating improves uptake"}}),
+        ["rp.problem_not_falsifiable"])),
+    ("hypothesis_missing", lambda: (d(hypotheses=[BASE["hypotheses"][0]]),
+                                    ["rp.hypothesis_missing_for_objective"])),
+    ("hypothesis_incomplete", lambda: (
+        d(hypotheses=[{**BASE["hypotheses"][0], "null_result": ""}, BASE["hypotheses"][1]]),
+        ["rp.hypothesis_incomplete"])),
+    ("hypothesis_unknown_objective", lambda: (
+        d(hypotheses=[{**BASE["hypotheses"][0], "objective": "O9"}, BASE["hypotheses"][1]]),
+        ["rp.hypothesis_unknown_objective"])),
+    ("work_packages_missing", lambda: (d(work_packages=[]), ["rp.work_packages_missing"])),
+    ("work_package_incomplete", lambda: (
+        d(work_packages=[{**BASE["work_packages"][0], "acceptance": ""}]),
+        ["rp.work_package_incomplete"])),
+    ("work_package_unknown_ref", lambda: (
+        d(work_packages=[{**BASE["work_packages"][0], "objectives": ["O9"], "route_steps": ["R9"]}]),
+        ["rp.work_package_ref_unknown"])),
+    ("route_not_in_work_package", lambda: (
+        d(work_packages=[{**BASE["work_packages"][0], "route_steps": ["R1"]}]),
+        ["rp.route_not_in_work_package"])),
+    ("work_package_period_invalid", lambda: (
+        d(work_packages=[{**BASE["work_packages"][0], "start_month": 7, "end_month": 6}]),
+        ["rp.work_package_schedule_invalid"])),
+    ("route_dependency_cycle", lambda: (
+        d(route=[{**ROUTE[0], "depends_on": ["R2"]}, ROUTE[1]]),
+        ["rp.route_dependency_cycle"])),
+
+    # data, analysis and explicit applicable/not-applicable ethics governance
+    ("data_plan_missing", lambda: (d(data_plan={}), ["rp.data_plan_missing"])),
+    ("data_plan_incomplete", lambda: (
+        d(data_plan={**BASE["data_plan"], "quality_control": ""}),
+        ["rp.data_plan_incomplete"])),
+    ("ethics_undeclared", lambda: (d(ethics={}), ["rp.ethics_undeclared"])),
+    ("ethics_incomplete", lambda: (
+        d(ethics={"applicable": True, "approval_status": "pending institutional review"}),
+        ["rp.ethics_incomplete"])),
+    ("ethics_data_mismatch", lambda: (
+        d(data_plan={**BASE["data_plan"], "personal_data": True}), ["rp.ethics_data_mismatch"])),
+    ("ethics_applicable_complete_ok", lambda: (
+        d(ethics={"applicable": True, "approval_status": "pending; no recruitment before approval",
+                  "consent": "written informed consent before enrollment",
+                  "privacy": "pseudonymization with a separately controlled key",
+                  "data_retention": "retain de-identified records for five years per protocol",
+                  "oversight": "institutional review board"}), [])),
 ]
 
 

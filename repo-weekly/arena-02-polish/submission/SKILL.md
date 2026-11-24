@@ -1,6 +1,6 @@
 ---
 name: polishing-academic-language
-description: 对给定学术文本（期刊论文/学位论文/基金申请书/审稿回复，中英双语）做语义保持的分级润色：先建术语表与约束卡，再按"语法→句式→风格→逻辑连贯"四级产出句级编辑记录（先抄原句再写改文的锚定协议），五脚本流水线 prepare→verify→finalize→audit 强制数字、术语、引用标记、公式、图表编号、限定词强度、否定范围守恒，违规编辑自动回退而非只报告；finalize 无条件导出（失败时交付已完成部分+skipped_reason），audit 做事后篡改检测；不确定的改法给备选而非硬改，全部修改可逐条回溯。当任务要求读取 /input/case.json 并依据固定材料完成"学术语言润色/改写/校对/中译英优化"时使用；纯内容问答不触发改写。
+description: 对给定学术文本（期刊论文/学位论文/基金申请书/审稿回复，中英双语）做语义保持的分级润色：先建术语表与约束卡，再按"语法→句式→风格→逻辑连贯"四级产出句级编辑记录（先抄原句再写改文的锚定协议），五脚本流水线 prepare→verify→finalize→audit 强制数字、单位、术语、引用标记、公式、图表编号、时间指向、限定词七类强度、否定范围与因果/相关关系守恒，违规编辑自动回退而非只报告；no-op 不计为修改，歧义备选未经作者确认不落稿；finalize 无条件导出（失败时交付已完成部分+skipped_reason），audit 做事后篡改检测；全部修改保留 before/after、理由、歧义、作者确认和保护元素对照。当任务要求读取 /input/case.json 并依据固定材料完成"学术语言润色/改写/校对/中译英优化"时使用；纯内容问答不触发改写。
 ---
 
 # 学术语言润色（Polishing Academic Language）
@@ -11,15 +11,15 @@ description: 对给定学术文本（期刊论文/学位论文/基金申请书/�
 
 - **改得对**：硬错误（主谓一致、时态、冠词、搭配、标点）真正改掉，不是换说法掩盖；
 - **说得像**：符合目标文体与语域（期刊/学位/基金/审稿回复），术语全篇统一；
-- **没改坏**：数字、单位、限定强度、结论方向、引用编号、图表指向、公式，润色前后**逐字守恒**；
-- **讲得清**：每处修改有原文、改文、类型、理由四要素，第三方能判断该不该改。
+- **没改坏**：数字、单位、限定强度、结论方向、时间指向、因果/相关关系、引用编号与 `\cite/\ref` 命令、图表指向、公式，润色前后**逐字或同类守恒**；
+- **讲得清**：每处实际修改有原文、改文、类型、理由、歧义与作者确认状态、保护元素 before/after；未改句子单列保持原文理由，**不算已润色**。
 
 **不应触发的邻近场景**：① 用户只问内容问题（"这段的结论可靠吗"）——回答即可，**不得擅自改写原文**；② 任务是从零写作新文本（开题报告、综述）而非修改给定文本——用写作类 Skill。
 
 ## 运行环境契约
 
 1. 输入在 `/input/`：`case.json`、`task.md`、待润色稿件与辅助材料（术语表、期刊要求、事实底稿等）。**先读真实文件**，不按文件名臆测。
-2. 先解析 `/input/case.json`：取 `case_id` 与 `output_contract`；`/app/output/result.json` 必须含 `case_id` 和 `output_contract` 声明的**全部原始字段**。
+2. 先解析 `/input/case.json`：取 `case_id` 与 `output_contract`；`/app/output/result.json` 必须含 `case_id` 和 `output_contract` 声明的**全部原始字段**。case 顶层与契约字段同名的非空值逐字直通；审计已产出的字段保留审计值；自动可产出的字段填真实产物；其余置 null + uncertainty，不改名不删字段。
 3. 工作文件在 `/app/work/`；最终交付在 `/app/output/`：润色后全文（可编辑 Markdown/LaTeX，保持来稿格式）、`change_log.md`（逐条修改记录）、`evidence_map.md`（事实与来源映射）、`result.json`（诚实 status + sources + uncertainty + change_log）。
 4. 预算：64 次请求 / 900 秒 / 16384 token 每响应。**先把全文过一遍语法级润色落盘，再逐级加深**；长文分章节处理，每完成一章就更新交付文件。
 5. 禁止：预制答案、新增材料之外的事实、编造运行状态。
@@ -84,12 +84,12 @@ python3 /skills/weekly-skill/scripts/self_test.py
 产出不是润色稿全文，而是**编辑记录** `/app/work/edits.jsonl`（每行一条 JSON，格式见 `templates/output_skeleton.md` §2）。**锚定协议（红线）**：每条记录必须先逐字抄原句进 `original` 字段、再写 `replacement` 改文——`sentence_id` 只用于定位，抄录的原句才是锚。免抄原文的 id-only 记录 verify 能宽容接受但记 WARN，锚定核对失效会让错误编辑漏网（公开复盘教训：某榜首方案 v1.1 改 id-only 后 76.3→72.3，恢复抄原句锚定后回到 77.7）。**不确定的改法不硬改**：给 2 个备选 + 倾向 + 理由，标 `alternative.proposed`。分批产出（如每章一批），每批走完第 4 步再投下一批。编辑类型用词表 `references/edit_types.md`。
 
 ### 第 4 步　verify：锚定核验 + 守恒门（违规自动回退）
-运行 `verify.py`：逐条核对锚定（空白宽容），再做句级守恒门——数字/单位、引用标记、图表公式编号、LaTeX 数学环境、限定词强度、否定范围。**违规编辑自动回退**（该句保持原文），不是只报告；回退清单在 `rejected_edits.jsonl` 与 `verify_report.md`。处置每条回退：修正后重投（下一轮 verify），或确认是任务明确要求的有意例外（记录加 `allow_conservation_break: true` + `reason`，依据写入 change_log）。产物：`polished_verified.md`。
+运行 `verify.py`：逐条核对锚定（空白宽容），再做句级守恒门——数字/单位、数字引用与 `\cite/\ref` 命令、图表公式编号、LaTeX 数学环境、时间指向、限定词七类强度、否定范围、因果/相关关系。**违规编辑自动回退**（该句保持原文），不是只报告；回退清单在 `rejected_edits.jsonl` 与 `verify_report.md`。`replacement == original` 的记录只进入 `unchanged`，不进入 accepted、不制造修改；`alternative.proposed` 或有歧义但未获作者确认的记录只进入 `confirmations`，候选不落稿；实际变化缺 `reason` 会被回退。接受的每条记录保留 before/after、理由、歧义、作者确认状态和 `protected_elements` 逐项 Same/Changed 对照。处置每条回退：修正后重投（下一轮 verify），或确认是任务明确要求的有意例外（记录加 `allow_conservation_break: true` + `reason`，依据写入 change_log）。产物：`polished_verified.md`。
 
 ### 第 5 步　finalize：无条件导出
 运行 `finalize.py`——**无条件导出：无论 verify 是否通过、是否有未修复 FAIL，
 都导出当前最好版本**（`polished_verified.md` 缺失或 verify 未通过时自动退化为
-当前最好版本/原文快照 + skipped_reason）、change_log、evidence_map 写入 `/app/output/`；写 `result.json` 前**先做契约前置校验**（case_id + output_contract 全部字段，缺字段置 null 并记 uncertainty，不删字段）；生成评审友好的 `before_after_digest`（接受/回退计数 + 改前改后样例）与 `_manifest.json`；写盘后经"改后回读"通道复核一致性。同时把 Agent 维护的 `change_log.md`（六要素逐条记录，骨架见 templates/）与 `evidence_map.md` 放进 `/app/work/` 供其复制。
+当前最好版本/原文快照 + skipped_reason）、change_log、evidence_map 写入 `/app/output/`；写 `result.json` 前**先做契约前置校验**（case_id + output_contract 全部字段，case 同名值直通，缺字段置 null 并记 uncertainty，不删字段）；生成评审友好的 `before_after_digest`（accepted/unchanged/confirmations/rejected 计数 + before/after/reason/ambiguity/confirmation/protected_elements 样例）与 `_manifest.json`；有待确认项时 status=partial。写盘后经"改后回读"通道复核一致性。同时把 Agent 维护的 `change_log.md` 与 `evidence_map.md` 放进 `/app/work/` 供其复制。
 
 ### 第 6 步　audit + selfcheck：交付后审计与结构自查
 运行 `audit.py`（篡改检测：manifest 哈希比对；守恒复核：整文档复跑 conservation_check；契约复核；回退留痕核对）→ 有 FAIL 能修则修一轮（回第 3/4 步修复后重跑 verify→finalize→audit 一次），两轮后仍有 FAIL：记入 uncertainty/skipped_reason 照常交付，不再返修；再运行 `selfcheck.py` 做交付结构自查（v2 新增项只 WARN 不阻塞）。任何脚本退出码都不阻止交付——交付物已在 finalize 一步落盘，audit/selfcheck 只是事后自查清单而非门禁。
@@ -106,7 +106,7 @@ python3 /skills/weekly-skill/scripts/self_test.py
 - [ ] 每条修改记录六要素齐全，≥1 条【备选】类条目的处理合规（给了备选而非硬改）；
 - [ ] 指定章节逐段处理完毕，无漏段；
 - [ ] 润色稿保持来稿格式（Markdown/LaTeX/纯文本），可直接使用；
-- [ ] `result.json` 含 case_id 与契约全部字段 + before_after_digest，status 诚实（有回退/skipped 即 partial）。
+- [ ] `result.json` 含 case_id 与契约全部字段 + output_contract_fields + before_after_digest，status 诚实（有回退/待确认/skipped 即 partial）；未改输入 accepted=0。
 
 ## 反馈回路
 
@@ -133,7 +133,9 @@ verify 回退编辑 → 修正 edits.jsonl（或标有意例外+依据）→ 复
 
 ## 验证与限制声明
 
-- 本包的脚本与示例**仅在本地做过合成数据验证**（self_test.py 的 29 项断言、examples/ 的合成案例），用于证明流程与脚本行为正确；
+- 本包的脚本与示例**仅在本地做过合成数据验证**（self_test.py 的 39 项断言、examples/ 的合成案例），包括 no-op、待作者确认、敌意契约、篡改回退与确定性；用于证明流程与脚本行为正确；
+- 保留并重放了本地历史高分 academic-polisher 的 43 项不变量自测；其中的七类限定词与单位守恒能力已移植，不用增强版替代对历史高分的记录；
+- 外部方法参考：`https://github.com/Moonlit-Pages/AIGC-Detector-Rewriter-Skill` 的最小编辑、候选稿不自动成为新基线、保护元素逐项 Same/Changed 对照。这里只采用其保守学术修订机制，不做检测器规避、不承诺分数，也不采用与普通的语言润色无关的篇幅增长目标。
 - 平台的 **3 个隐藏评测案例与对照组（不加载 Skill 的基础 Agent）未在本地运行**，本包不声称任何具体分数；文档中引用的 76.3/72.3/77.7 等数字来自他人公开复盘，仅作为锚定协议重要性的证据，不是本包的得分承诺；
 - 示例中的"稿件"、数值、结论全部为演示虚构，不冒充真实案例结果。
 

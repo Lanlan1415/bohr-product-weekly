@@ -32,9 +32,13 @@
           "what": "added a vehicle control group",
           "location": "3.2 Results",
           "manuscript_version": "v2",
-          "added_text": "We added a vehicle control"
+          "added_text": "We added a vehicle control",
+          "change_id": "C1-CH1",
+          "response_anchor": "Response to Point C1",
+          "before_text": "Baseline summary without the control group."
         }
-      ]
+      ],
+      "text": "Response to Point C1: We have added the control details to the results."
     },
     {
       "comment_id": "C2",
@@ -44,9 +48,12 @@
         {
           "what": "added a derivation appendix",
           "location": "Appendix A",
-          "manuscript_version": "v2"
+          "manuscript_version": "v2",
+          "change_id": "C2-CH1",
+          "response_anchor": "Response to Point C2"
         }
-      ]
+      ],
+      "text": "Response to Point C2: The derivation is now explicit."
     }
   ],
   "section": "review_response",
@@ -69,9 +76,13 @@
             "what": "added a vehicle control group",
             "location": "3.2 Results",
             "manuscript_version": "v2",
-            "added_text": "We added a vehicle control"
+            "added_text": "We added a vehicle control",
+            "change_id": "C1-CH1",
+            "response_anchor": "Response to Point C1",
+            "before_text": "Baseline summary without the control group."
           }
-        ]
+        ],
+        "text": "Response to Point C1: We have added the control details to the results."
       },
       {
         "comment_id": "C2",
@@ -81,20 +92,29 @@
           {
             "what": "added a derivation appendix",
             "location": "Appendix A",
-            "manuscript_version": "v2"
+            "manuscript_version": "v2",
+            "change_id": "C2-CH1",
+            "response_anchor": "Response to Point C2"
           }
-        ]
+        ],
+        "text": "Response to Point C2: The derivation is now explicit."
       }
     ]
   },
   "change_locations": [
     {
       "comment_id": "C1",
-      "location": "3.2 Results"
+      "location": "3.2 Results",
+      "change_id": "C1-CH1",
+      "response_anchor": "Response to Point C1",
+      "before_text": "Baseline summary without the control group.",
+      "after_text": "We added a vehicle control"
     },
     {
       "comment_id": "C2",
-      "location": "Appendix A"
+      "location": "Appendix A",
+      "change_id": "C2-CH1",
+      "response_anchor": "Response to Point C2"
     }
   ],
   "pending_evidence": []

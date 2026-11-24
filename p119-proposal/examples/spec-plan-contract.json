@@ -13,7 +13,8 @@
       "to_test": "rate ratio of coated vs uncoated substrate at one thickness",
       "text": "Uptake is limited by surface area; prior coatings raise it, but no published system tested the thickness this platform can produce."
     },
-    "problem": {"text": "whether a 42 nm porous coating raises uptake rate three-fold at 24 h"},
+    "problem": {"text": "whether a 42 nm porous coating raises uptake rate three-fold at 24 h",
+                 "falsification": "the paired 95% confidence interval includes a rate ratio below the justified threshold"},
     "objectives": {"text": "two objectives, each with metric, sample, control and timepoint"},
     "technical_route": {"text": "two steps with input, output and a declared dependency"},
     "schedule": {"text": "two phases inside the 18-month period, both on the critical path"},
@@ -61,6 +62,32 @@
     {"id": "W2", "objectives": ["O2"], "kind": "dataset",
      "assessment": "thickness map accepted by the co-supervisor"}
   ],
+  "hypotheses": [
+    {"id": "H1", "objective": "O1", "statement": "42 nm coating raises the 24 h uptake rate ratio to at least 3",
+     "test": "paired coated/uncoated measurements at 24 h",
+     "null_result": "the justified threshold is not met or the effect is absent"},
+    {"id": "H2", "objective": "O2", "statement": "the deposited thickness is uniform enough to test H1",
+     "test": "within-wafer profilometry across six wafers",
+     "null_result": "nonuniformity prevents a controlled test of H1 and R1 is redesigned"}
+  ],
+  "work_packages": [
+    {"id": "WP1", "title": "coating and uptake test", "objectives": ["O1", "O2"],
+     "route_steps": ["R1", "R2"], "method": "templated deposition followed by paired uptake assay",
+     "data": "M1 coating runs and paired rate measurements", "deliverable": "coating protocol and dataset",
+     "acceptance": "H1 and H2 evaluated with declared controls and retained raw data",
+     "start_month": 1, "end_month": 6, "owner": "experimental team"}
+  ],
+  "data_plan": {
+    "sources": [{"id": "M1", "access": "existing lab records plus newly generated paired runs", "version": "run 2025-03-14"}],
+    "collection_method": "six paired coated/uncoated substrates per condition, measured at 24 h",
+    "quality_control": "witness wafers, blinded sample labels, second-operator repeat and retained raw traces",
+    "analysis": "report paired rate ratios, dispersion and sensitivity to thickness nonuniformity",
+    "data_availability": "de-identified measurement tables and analysis notes accompany the report"
+  },
+  "ethics": {
+    "applicable": false,
+    "scope_explanation": "inorganic substrates and instrument records only; no human participants, personal data or animals"
+  },
   "deliverable_docx": {"format": "docx", "heading_numbering": "1 / 1.1", "editable": true},
   "output_contract": {
     "case_id": "echo of the input identifier",
@@ -68,6 +95,8 @@
     "section": "audited section",
     "findings": "audit findings",
     "severity_counts": "finding counts by severity",
-    "deliverable_docx": "the editable deliverable descriptor, passed through from the spec"
+    "deliverable_docx": "the editable deliverable descriptor, passed through from the spec",
+    "deliverable_markdown": "actual generated editable markdown descriptor",
+    "plan_matrix": "actual objective-work-package-evidence matrix"
   }
 }

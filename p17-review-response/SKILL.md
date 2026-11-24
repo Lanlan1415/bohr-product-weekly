@@ -6,10 +6,12 @@ description: >
   covered, that an acceptance is backed by an actual change or a stated reason, that tone and
   decision tell the same story, that each claimed change carries a location that resolves in
   the stated manuscript version and a version stamp, that "we have added X" is actually in the
-  file, that the manuscript is no longer identical to a declared baseline, and that promised
-  experiments or data record their state, their data source when provided, and an alternative
-  when they could not be done. Use when a task produces a response-to-reviewers letter, a
-  rebuttal, or a revision package.
+  file, that the manuscript is no longer identical to a declared baseline, that stable
+  Point → Response → Change ids resolve in both directions through response_anchor and exact
+  before/after text, and that promised experiments or data record their state, source,
+  integrated location/version when applicable, and an alternative when they could not be done.
+  A revision claim without a revised manuscript is blocked. Use when a task produces a
+  response-to-reviewers letter, a rebuttal, or a revision package.
 ---
 
 # review-response
@@ -23,7 +25,9 @@ the third: does the letter describe the file you actually submitted.
 | 答得全：每条意见及子要求都有明确处理结论 | `resp.comment_unanswered`, `resp.subrequirement_unanswered`, `resp.accept_without_change` |
 | 改得准：声称的修改真实落在正文、可定位 | `resp.change_not_verifiable`, `resp.locator_not_in_manuscript`, `resp.change_unlocatable` |
 | 证得住：补充证据可查证或说清为何补不了 | `resp.evidence_status_missing`, `resp.evidence_without_alternative`, `resp.evidence_source_missing` |
-| 对得上：回复信、修订稿、版本三者一致 | `resp.version_mismatch`, `resp.change_version_missing`, `resp.manuscript_unrevised` |
+| 对得上：回复信、修订稿、版本三者一致 | `resp.version_mismatch`, `resp.change_version_missing`, `resp.manuscript_unrevised`, `resp.package_version_missing` |
+| 双向定位：Point→Response→Change 可独立复核 | `resp.change_id_missing`, `resp.change_id_duplicate`, `resp.response_anchor_not_found`, `resp.change_pair_incomplete`, `resp.before_not_in_baseline`, `resp.baseline_missing_for_change` |
+| 不冒称已改：无修订稿或无 change 不得称已修改 | `resp.revision_claim_without_manuscript`, `resp.unrecorded_revision_claim` |
 
 ## 运行契约（Harbor runtime contract）
 
@@ -55,12 +59,16 @@ the third: does the letter describe the file you actually submitted.
 0. **读 case.json 取标识**：记下 case_id 与 output_contract 的每个字段名；读 task.md 确认
    返修动作（逐条回复、修订定位、证据清单）。
 1. **判形态路由**：按下面的「任务措辞 → 路由」决策表决定跑哪个 section、哪些字段必填。
-2. **先产出目标产物**：可编辑修订稿（基线 + 落进正文的实质修改）+ 逐条回复信草案 + 每处
-   修改的定位 + 未到位证据清单。产物先行，审计在后。
+2. **先产出目标产物**：可编辑修订稿（基线 + 落进正文的实质修改）+ 逐条回复信草案（每个 Point 一段真实回应 + accept/partial/reject 与 reason）+ 每处修改的定位 + 未到位证据清单。产物先行，审计在后。需要新材料但材料未提供时只列证据缺口和可执行的替代说明，不编实验、结果或“已提供”状态。
 3. **构造 spec**：意见结构化为 comments（id、text、type、severity、subrequirements），回复
-   结构化为 responses（decision、tone、reason、changes、evidence），基线与修订稿分别进
-   baseline_text 与 manuscript_text；section 取 review_response；附上 case_id，并把
-   output_contract 的每个字段以同名键放进 spec（值逐字直通进 result.json）。
+   结构化为 responses（comment_id、text、decision、tone、reason、changes、evidence），基线与
+   修订稿分别进 baseline_text 与 manuscript_text。每条 change 写唯一 change_id、所在稿件版本、
+   可检索 location；受控修订演练还必须写 response_anchor（回复信 text 中逐字可找）、
+   before_text（基线逐字原文）与 added_text（修订稿逐字新文）。这样 change 既能由 comment_id
+   回到 Point，也能由 response_anchor 回到 Response，并由 before/after 双向核对。section 取
+   review_response；附上 case_id，并把 output_contract 每个字段以同名键放进 spec（值逐字直通进
+   result.json）。新证据若声明 added_to_manuscript，另给 manuscript_version 与 location；
+   evidence 未提供时如实 unavailable/alternative_given。
 4. **审计**：运行 python scripts/writeaudit.py --spec spec.json --section review_response
    --out /app/output。退出码：0 clean、3 review、4 blocked、5 undetermined（输入无法审计）。
 5. **修发现重跑**：每条 finding 按 Failure handling 表处置后重跑，直到 clean，或只剩已声明
@@ -78,8 +86,9 @@ the third: does the letter describe the file you actually submitted.
 | 材料是意见摘要 + 基线稿 | reviewer-comments.md 拆成 comments（id/text/type/severity/subrequirements），manuscript-baseline.md 进 baseline_text |
 | 「修订稿 + 回复信」双交付 | manuscript_text 为修订后全文，responses 为信；每处修改写 changes |
 | 「意见里有多个子要求 / 一条意见问了两件事」 | 拆进 subrequirements（答得全）；引擎按共享 id 的全部回复体判覆盖 |
-| 「标注每处修改位置 / 定位到章节行号」 | changes 的 location 用稿件里可检索的原文锚点（改得准）；anchors 声明锚点表 |
-| 「需要补实验/补数据/补文献」 | evidence 带 status 与 source（provided 时）或 alternative（补不了时）（证得住） |
+| 「标注每处修改位置 / 定位到章节行号」 | changes 的 location 用稿件里可检索的原文锚点（改得准）；anchors 声明锚点表；受控演练同时给 change_id/response_anchor/before_text/added_text，构成双向定位 |
+| 「意见是摘要、不能冒称原文」 | comments.text 逐字抄摘要；responses.text 明确这是对摘要的回应；不得补写不存在的 reviewer 原话 |
+| 「需要补实验/补数据/补文献」 | evidence 带 status 与 source（provided 时）或 alternative（补不了时）（证得住）；声明落到修订稿的必须有版本和定位 |
 | 「多轮返修 / 版本对齐 / 承诺仍成立」 | manuscript_version 全局声明 + 每条 change 盖版本章（对得上） |
 | 「语气礼貌反驳 / 澄清 / 申诉」 | tone 四档声明（accept / clarify / polite_rebuttal / appeal）；拒绝必须配 accept 以外的语气 |
 | 「未到位证据清单」 | evidence 每条如实标 status；result.json 的 checked.evidence_by_status 与 pending_evidence 直通字段即清单 |
@@ -109,6 +118,10 @@ no version cannot be matched to the file the letter claims to revise.
 
 **An experiment promised and quietly dropped.** Evidence marked unavailable needs an
 alternative; evidence marked provided must name where its data comes from.
+
+## 外部方法落地（真实机制，不是链接装饰）
+
+参考 `https://github.com/avonmoll/bamdone-rebuttal` 的 Point / Response / New 组织和每点评稳定编号：本包用 comments.id → responses.comment_id → changes.change_id 建立同等可追踪骨架，用 responses.text 保存真实 Response、用 added_text 保存 New；额外把 response_anchor 绑定回对应回复段，把 before_text 绑定到基线、把 added_text 绑定到修订稿，并给唯一性、存在性、版本和证据位置检查。未引入 Typst 渲染依赖，也不把排版模板当作真实性证明。
 
 ## Worked example（示例，非正式案例结果）
 
@@ -147,6 +160,8 @@ examples/spec.json 的完整输入（带 case_id 与 output_contract；此处节
   "pending_evidence": []
 }
 ```
+
+当前 examples/spec.json 还示范了受控演练的双向链：C1 的 responses.text 含 `Response to Point C1`，change 含 `change_id=C1-CH1`、`response_anchor=Response to Point C1`、`before_text=Baseline summary without the control group.` 与修订稿中的 added_text；C2 的 change_id 为 C2-CH1。output_contract 的 change_locations 保留同一 change_id、response_anchor、before_text/after_text，故从回复到改稿、从改稿到回复都能独立定位。
 
 decision 取 accept、partial 或 reject；tone 取 accept、clarify、polite_rebuttal 或 appeal。
 拒绝或部分接受必须给 reason。type 取 method、data、writing、format 或 ethics；severity 取
@@ -239,6 +254,14 @@ python scripts/writeaudit.py --spec examples/spec.json --out examples/_demo_out
 | `resp.change_version_missing` | medium | a change carries no version stamp, so it cannot be matched to the declared version |
 | `resp.version_mismatch` | high | the letter and the file are different revisions |
 | `resp.change_not_verifiable` | high | text claimed as added is not in the manuscript |
+| `resp.change_id_missing` / `_duplicate` | medium / high | once stable ids are declared, every change has one and no two responses reuse it |
+| `resp.response_anchor_not_found` | high | the change-to-response reverse anchor is not verbatim in the point-by-point reply |
+| `resp.change_pair_incomplete` | medium | a declared before/after pair lacks one exact side |
+| `resp.before_not_in_baseline` | high | the before side is not verbatim in the declared baseline |
+| `resp.baseline_missing_for_change` | high | original text is declared without any baseline to bind it to |
+| `resp.package_version_missing` | medium | accepted changes have no package-level version |
+| `resp.unrecorded_revision_claim` | high | response text says it changed the manuscript but has no change entry |
+| `resp.revision_claim_without_manuscript` | high | substantive changes are claimed while no revised manuscript exists |
 | `resp.manuscript_unrevised` | high | the manuscript is still identical to the declared baseline while the letter claims accepted changes |
 
 ### Promised evidence
@@ -249,6 +272,9 @@ python scripts/writeaudit.py --spec examples/spec.json --out examples/_demo_out
 | `resp.evidence_status_unknown` | low | state outside provided/unavailable/alternative_given |
 | `resp.evidence_without_alternative` | high | unavailable, with no substitute offered |
 | `resp.evidence_source_missing` | medium | marked provided, but no field says where the data comes from |
+| `resp.evidence_version_mismatch` | high | evidence declares a different manuscript version than the delivered file |
+| `resp.evidence_version_missing` | medium | evidence declared as added to the manuscript has no version stamp |
+| `resp.evidence_locator_missing` / `_not_found` | high | evidence declared as added has no locator / its locator is absent from the manuscript |
 
 ### Audit entry (writeaudit.py)
 
@@ -303,7 +329,15 @@ output_contract_fields（案例声明的字段名清单），以及 output_contr
   some response claims an accepted change. An all-rebuttal letter that legitimately touches
   nothing passes; without a baseline_text the check stays silent.
 - **accept_without_change is a record check.** It fires only when neither a change entry nor a
-  reason exists; a written-out justification counts as the record.
+  reason exists; a written-out justification counts as the record. By contrast, explicit “we have
+  changed/added” response text with no change entry, or any substantive change with no revised
+  manuscript, is blocked rather than accepted as a reason.
+- **Dual-link checks are declared-only.** Legacy specs without change_id/response_anchor/before_text
+  stay valid; when any change_id is declared, all changes need one. The controlled exercise workflow
+  above requires the full link for every substantive change. before/after must be exact substrings.
+- **Evidence integration checks are declared-only.** Any provided evidence needs provenance;
+  manuscript_version is checked whenever present. The locator/version requirements fire only when
+  added_to_manuscript=true; unavailable evidence needs an alternative and is never recast as provided.
 - **Provided evidence needs any provenance field.** evidence_source_missing fires only on an
   entry that carries nothing beyond kind and status; provenance recorded under any other field
   name counts.
@@ -340,11 +374,11 @@ output_contract_fields（案例声明的字段名清单），以及 output_contr
 ## Verification
 
 ```bash
-python scripts/bench_review.py    # 36 scenarios: one per rule, plus FP guards
+python scripts/bench_review.py    # 52 scenarios: one per rule, plus FP and dual-link guards
 python scripts/bench_writing.py   # 20 scenarios: cross-section regression
 ```
 
-Both pass in full on this machine (36/36 and 20/20). The clean baseline in each must report
+Both pass in full on this machine (52/52 and 20/20). The clean baseline in each must report
 nothing. examples/bench-report.json 是示意报告（示例，非正式案例结果）。
 
 ## Requirements
@@ -360,9 +394,9 @@ result.json 写出）均可独立导入。
 1. **覆盖审计而非语感判断**：意见逐 id 对账、一条意见内的多个子要求按共享 id 的全部回复体
    判词面覆盖、拒绝必须有理由、接受必须有动作或书面理由——四种「空话」形态（笼统致谢、只答
    一半、拒而不述、受而无据）各有一条规则拦着。通用 Agent 无法对自己起草的回复信做这四项证明。
-2. **三文件一致性核对**：回复信声称的 added_text 必须逐字出现在修订稿；基线与修订稿逐字相同
-   而信称已改会被整体拦截；每条 change 盖版本章、全局版本不一致点名——回复信、修订稿、版本
-   三者的对齐由机制保证，不靠自觉。
+2. **三文件一致性核对 + 双向定位**：回复信声称的 added_text 必须逐字出现在修订稿；基线与修订稿逐字相同
+   而信称已改会被整体拦截；每条 change 盖版本章、全局版本不一致点名；唯一 change_id、response_anchor、
+   before_text 把每个 Point 与其 Response/改前改后双向闭合。无修订稿却声称已修改，直接 blocked。
 3. **证据台账**：每条 evidence 的到位状态由 checked.evidence_by_status 汇总为清单，provided
    无来源、unavailable 无替代分别点名——「未到位证据清单」是审计产物，不是事后手写。
 4. **declared-only 零误报设计**：基线同一性、版本对齐、证据状态全部只在案例声明对应字段时
