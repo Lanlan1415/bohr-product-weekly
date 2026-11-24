@@ -1,0 +1,138 @@
+{
+  "schema_version": "template-delivery-bench/v4",
+  "temp_root": "C:\\Users\\lanlan\\AppData\\Local\\Temp\\p33_delivery4_fzungt93",
+  "scenarios": [
+    {
+      "scenario": "native_template_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "declared_theme_color_mismatch_unit",
+      "expected": [
+        "template.theme_color_mismatch"
+      ],
+      "fired": [
+        "template.theme_color_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_corrects_theme_color",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_corrects_title_size",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_canvas_applied",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "preapplication_size_mismatch_unit",
+      "expected": [
+        "template.slide_size_mismatch"
+      ],
+      "fired": [
+        "template.slide_size_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_batch_footer_logo_styles",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_batch_plus_real_template",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_batch_footer_optout",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "body_margin_drift_detected",
+      "expected": [
+        "format.body_drift"
+      ],
+      "fired": [
+        "format.body_drift"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_batch_missing_logo",
+      "expected": [
+        "image.logo_missing"
+      ],
+      "fired": [
+        "image.logo_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "required_title_placeholder_missing",
+      "expected": [
+        "template.title_placeholder_missing"
+      ],
+      "fired": [
+        "template.title_placeholder_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 12,
+    "of": 12
+  }
+}

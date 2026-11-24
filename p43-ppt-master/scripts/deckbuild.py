@@ -140,7 +140,11 @@ def _fingerprint(path: Path) -> tuple:
     with zipfile.ZipFile(path) as z:
         notes = tuple((n, hashlib.sha256(z.read(n)).hexdigest()) for n in sorted(z.namelist())
                       if n.startswith("ppt/notesSlides/notesSlide") and n.endswith(".xml"))
-    return tuple(parts), notes
+        # OPC container timestamps are intentionally irrelevant; every payload part
+        # must nevertheless be byte-identical, including media, theme and relations.
+        package = tuple((n, hashlib.sha256(z.read(n)).hexdigest()) for n in sorted(z.namelist())
+                        if not n.endswith("/"))
+    return tuple(parts), notes, package
 
 
 def _apply_template_if_requested(pptx: Path, spec: dict, measured: dict | None) -> dict:
@@ -165,8 +169,35 @@ def check_deterministic(spec: dict, out_dir: Path, template_measured: dict | Non
         temp.unlink(missing_ok=True)
     same = prints[0] == prints[1]
     return {"deterministic": same,
-            "note": "two final artifacts compared on slide text, geometry and speaker notes",
+            "note": "two final artifacts compared on every OPC payload part as well as slide text, geometry and notes; container timestamps excluded",
             "detail": {} if same else {"slide_parts": len(prints[0][0])}}
+
+
+def _png_previews(pdf: Path, out_dir: Path) -> dict:
+    """Rasterize the actual exported PDF when pdftoppm is available."""
+    executable = shutil.which("pdftoppm")
+    if not executable:
+        return {"rendered": False, "images": [],
+                "reason": "no pdftoppm on PATH for PNG slide previews"}
+    prefix = out_dir / pdf.stem
+    try:
+        owned = re.compile(re.escape(pdf.stem) + r"-\d+\.png$", re.IGNORECASE)
+        for old in out_dir.glob(f"{pdf.stem}-*.png"):
+            if owned.fullmatch(old.name):
+                old.unlink()
+        proc = subprocess.run([executable, "-png", "-r", "120", str(pdf), str(prefix)],
+                              check=True, capture_output=True, timeout=180)
+        images = sorted((p for p in out_dir.glob(f"{pdf.stem}-*.png")
+                         if owned.fullmatch(p.name)),
+                        key=lambda p: int(p.stem.rsplit("-", 1)[-1]))
+        images = [p for p in images if p.stat().st_size]
+        if images:
+            return {"rendered": True, "renderer": "pdftoppm", "images": [str(p) for p in images],
+                    "returncode": proc.returncode}
+        reason = "pdftoppm returned success but produced no non-empty PNG"
+    except Exception as exc:
+        reason = str(exc)[:240]
+    return {"rendered": False, "images": [], "reason": reason}
 
 
 def _render_preview(pptx_path: Path, out_dir: Path) -> dict:
@@ -180,8 +211,14 @@ def _render_preview(pptx_path: Path, out_dir: Path) -> dict:
                                   check=True, capture_output=True, timeout=180)
             pdf = out_dir / (pptx_path.stem + ".pdf")
             if pdf.is_file() and pdf.stat().st_size:
-                return {"rendered": True, "renderer": command, "pdf": str(pdf),
-                        "artifacts": [str(pdf)], "returncode": proc.returncode}
+                png = _png_previews(pdf, out_dir)
+                artifacts = [str(pdf)] + png["images"]
+                out = {"rendered": True, "renderer": command, "pdf": str(pdf),
+                       "images": png["images"], "png_rendered": png["rendered"],
+                       "artifacts": artifacts, "returncode": proc.returncode}
+                if not png["rendered"]:
+                    out["png_reason"] = png.get("reason", "PNG preview export failed")
+                return out
             reason = "renderer returned success but produced no non-empty PDF"
         except Exception as exc:
             reason = str(exc)[:240]
@@ -225,7 +262,7 @@ def build_and_audit(spec_path: Path, out_dir: Path, case_path: Path | None = Non
     refusal_id = case_id if case_id is not None else case.get("case_id")
 
     def refuse(message: str) -> dict:
-        return A.write_refused(out_dir, message, case_id=refusal_id)
+        return A.write_refused(out_dir, message, case_id=refusal_id, case=case)
 
     try:
         spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
@@ -298,6 +335,16 @@ def build_and_audit(spec_path: Path, out_dir: Path, case_path: Path | None = Non
             if not isinstance(section, str):
                 return refuse("section must be a string")
             findings.extend(X.run(spec, section, deck_summary(slides_spec, pptx, written)))
+            if section != "talk_org" and any(
+                    key in spec for key in ("goal", "narrative", "require_qa_prep", "qa_prep")):
+                # Audience/time/narrative controls are route-independent. Only
+                # declared fields activate them; paper decks are not forced to
+                # acquire talk_org's separate evidence-strength vocabulary.
+                declared_findings: list[dict] = []
+                X.declared_talk_constraints(spec, declared_findings)
+                for finding in declared_findings:
+                    finding.setdefault("section", section)
+                findings.extend(declared_findings)
         det = (check_deterministic(spec, out_dir) if template_measured is None
                else check_deterministic(spec, out_dir, template_measured))
         if not det["deterministic"]:
@@ -313,8 +360,13 @@ def build_and_audit(spec_path: Path, out_dir: Path, case_path: Path | None = Non
     preview = _render_preview(pptx, out_dir)
     if not preview.get("rendered"):
         limits.append("preview not rendered: " + str(preview.get("reason", "unknown")))
-    if not audit["checked"].get("text_measured"):
-        limits.append("text overflow was estimated, not measured: no usable font metrics")
+    elif not preview.get("png_rendered"):
+        limits.append("PDF rendered but PNG slide previews unavailable: "
+                      + str(preview.get("png_reason", "unknown")))
+    if not audit["checked"].get("text_measured_all"):
+        limits.append("some or all text overflow results were estimated because usable glyph metrics were unavailable")
+    if not audit["checked"].get("contrast_checks"):
+        limits.append("text contrast could not be resolved to explicit foreground/background RGB values")
     if template_measured is not None and not template_application.get("applied"):
         limits.append("template shell not applied: " + str(template_application.get("reason")))
     if source_record:
@@ -324,14 +376,18 @@ def build_and_audit(spec_path: Path, out_dir: Path, case_path: Path | None = Non
                               f"slide {rec.get('slide')}")
 
     evidence_map = []
+    audited_evidence = {row["slide"]: row for row in audit["checked"].get("evidence_map", [])}
     for index, slide in enumerate(slides_spec, 1):
         if not isinstance(slide, dict):
             continue
+        readback = audited_evidence.get(index, {})
         evidence_map.append({
             "slide": index, "title": slide.get("title") or "",
             "claim": slide.get("claim") or "", "strength": slide.get("strength"),
             "role": slide.get("role"), "evidence": slide.get("evidence") or "",
             "caption": slide.get("caption") or "", "notes_present": bool(slide.get("notes")),
+            "caption_landed": readback.get("caption_landed"),
+            "evidence_landed": readback.get("evidence_landed"),
         })
     uncertainty = spec.get("uncertainty", spec.get("pending_confirmation", []))
     if not isinstance(uncertainty, list):
@@ -351,7 +407,9 @@ def build_and_audit(spec_path: Path, out_dir: Path, case_path: Path | None = Non
         "limits": limits,
         "artifacts": ([{"kind": "editable_presentation", "path": str(pptx)}]
                       + ([{"kind": "rendered_pdf", "path": preview["pdf"]}]
-                         if preview.get("rendered") else [])),
+                         if preview.get("rendered") else [])
+                      + [{"kind": "rendered_png", "path": path}
+                         for path in preview.get("images", [])]),
     }
     C.apply(result, spec, case if case or case_id is None else {"case_id": case_id})
     if case_id is not None:
@@ -376,8 +434,11 @@ def main(argv: list[str] | None = None) -> int:
                                  case_path=Path(args.case) if args.case else None,
                                  case_id=args.case_id)
     except Exception as exc:  # external CLI boundary: never leak a traceback to the harness
+        emergency_case, _ = C.read_case(args.case) if args.case else ({}, None)
+        emergency_id = (args.case_id if args.case_id is not None
+                        else emergency_case.get("case_id"))
         result = A.write_refused(args.out, f"unexpected engine boundary: {type(exc).__name__}: {exc}",
-                                 case_id=args.case_id)
+                                 case_id=emergency_id, case=emergency_case)
     print(json.dumps({"status": result.get("status", "undetermined"),
                       "case_id": result.get("case_id"),
                       "findings": [f.get("rule") for f in result.get("findings", [])],

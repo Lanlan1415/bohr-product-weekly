@@ -230,15 +230,16 @@ def _is_topic_claim(claim: str) -> bool:
     return len(stripped.split()) <= 4
 
 
-def talk_org(spec: dict, findings: list[dict]) -> None:
-    """A talk needs a stated goal before page count means anything.
+def talk_constraints(spec: dict, findings: list[dict], *, require_goal: bool = True,
+                     check_claims: bool = True) -> None:
+    """Check declared audience/time/narrative constraints across any route.
 
     This challenge asks for the talk's objective to become checkable. Without it,
     "six slides is too many" is an opinion; with it, the deck can be judged against
     the goal it declared.
     """
     goal = spec.get("goal") or {}
-    if not goal.get("objective"):
+    if require_goal and not goal.get("objective"):
         _add(findings, "org.goal_missing", "high",
              "the deck declares no objective, so its length and depth cannot be judged")
     if goal and not goal.get("audience"):
@@ -293,23 +294,34 @@ def talk_org(spec: dict, findings: list[dict]) -> None:
         except (TypeError, ValueError):
             _add(findings, "org.pace_budget_invalid", "low",
                  "a timing allocation is not numeric and could not be reconciled")
-    scale = spec.get("strength_scale") or ["weak", "moderate", "strong", "measured",
-                                           "supported", "suggested", "cited"]
-    ordered = {str(name): i for i, name in enumerate(scale)}
-    for i, s in enumerate(slides, start=1):
-        claim = str(s.get("claim") or "").strip()
-        if claim and _is_topic_claim(claim):
-            _add(findings, "org.claim_is_topic", "medium",
-                 "the slide's claim is a topic word rather than an assertion, so the slide "
-                 "states no position", slide=i, claim=claim)
-        if s.get("claim") and not s.get("strength"):
-            _add(findings, "org.evidence_strength_missing", "medium",
-                 "the claim carries no evidence-strength label, so a reader cannot tell a "
-                 "confirmed result from a suggestive one", slide=i)
-        if s.get("strength") and str(s.get("strength")) not in ordered:
-            _add(findings, "org.strength_unknown", "low",
-                 "the evidence-strength label is outside the declared rankable scale",
-                 slide=i, strength=s.get("strength"), allowed=list(ordered))
+    if check_claims:
+        scale = spec.get("strength_scale") or ["weak", "moderate", "strong", "measured",
+                                               "supported", "suggested", "cited"]
+        ordered = {str(name): i for i, name in enumerate(scale)}
+        for i, s in enumerate(slides, start=1):
+            claim = str(s.get("claim") or "").strip()
+            if claim and _is_topic_claim(claim):
+                _add(findings, "org.claim_is_topic", "medium",
+                     "the slide's claim is a topic word rather than an assertion, so the slide "
+                     "states no position", slide=i, claim=claim)
+            if s.get("claim") and not s.get("strength"):
+                _add(findings, "org.evidence_strength_missing", "medium",
+                     "the claim carries no evidence-strength label, so a reader cannot tell a "
+                     "confirmed result from a suggestive one", slide=i)
+            if s.get("strength") and str(s.get("strength")) not in ordered:
+                _add(findings, "org.strength_unknown", "low",
+                     "the evidence-strength label is outside the declared rankable scale",
+                     slide=i, strength=s.get("strength"), allowed=list(ordered))
+
+
+def talk_org(spec: dict, findings: list[dict]) -> None:
+    """The organization route additionally requires a goal and evidence labels."""
+    talk_constraints(spec, findings, require_goal=True, check_claims=True)
+
+
+def declared_talk_constraints(spec: dict, findings: list[dict]) -> None:
+    """Enforce only explicitly declared constraints on paper/edit/template routes."""
+    talk_constraints(spec, findings, require_goal=False, check_claims=False)
 
 
 # --- 33: 学术 PPT 模板与格式适配 ---------------------------------------------

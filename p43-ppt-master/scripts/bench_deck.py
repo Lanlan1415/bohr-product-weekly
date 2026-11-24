@@ -43,7 +43,7 @@ def deck(title="Uptake was 3x faster", bullets=None, notes="Pause; contrast rate
          image=None, alt="uptake curves", spacing=None, first_notes="Frame the question."):
     slides = [
         P.Slide(title="Porous coatings accelerate uptake", caption="42 nm, 3x rate",
-                layout="title", notes=first_notes),
+                evidence="Fig. 3b, p.7", layout="title", notes=first_notes),
         P.Slide(title=title, claim="finding",
                 bullets=bullets if bullets is not None else
                         [P.Bullet("Control: 12.4 a.u."), P.Bullet("Coated: 31.2 a.u.")],

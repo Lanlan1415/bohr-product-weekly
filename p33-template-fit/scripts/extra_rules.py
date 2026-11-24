@@ -26,13 +26,6 @@ from __future__ import annotations
 
 import re
 
-import templateread as _tr
-
-
-# Shared with deckbuild's unreadable/unknown-spec refusal. Keeping the literal in
-# the scanned rule module makes documentation/engine parity mechanically auditable.
-REFUSAL_RULE = "audit.no_section"
-
 
 def _add(findings, rule, severity, message, **extra):
     findings.append({"rule": rule, "severity": severity, "message": message, **extra})
@@ -55,6 +48,14 @@ def paper_to_deck(spec: dict, findings: list[dict]) -> None:
     carries an image but no figure/table locator cannot be checked by a reader, so
     the mapping is required rather than encouraged.
     """
+    required = spec.get("required_mainline") or []
+    if required:
+        roles = {str(s.get("role") or "") for s in (spec.get("slides") or [])}
+        missing = [str(beat) for beat in required if str(beat) not in roles]
+        if missing:
+            _add(findings, "paper.mainline_missing", "high",
+                 "the deck does not cover every declared research-mainline beat",
+                 missing=missing, required=[str(x) for x in required])
     for i, s in enumerate(spec.get("slides") or [], start=1):
         has_image = bool(s.get("image"))
         note = " ".join(str(s.get(k) or "") for k in ("caption", "evidence", "notes"))
@@ -138,6 +139,10 @@ def deck_edit(spec: dict, findings: list[dict], deck_summary: dict | None = None
                  revisions=len(revisions), delivered=spec.get("delivered_revision"))
 
     for n, rev in enumerate(revisions, start=1):
+        if not str(rev.get("instruction") or "").strip():
+            _add(findings, "edit.revision_instruction_missing", "low",
+                 "a revision round does not record its instruction, so the intent of the "
+                 "iteration is missing from the version history", revision=n)
         changes = rev.get("changes") or []
         if not changes:
             _add(findings, "edit.revision_without_changes", "medium",
@@ -251,7 +256,47 @@ def talk_org(spec: dict, findings: list[dict]) -> None:
                  "over four minutes per slide suggests the deck is thinner than the talk",
                  minutes=goal["minutes"], slides=len(spec["slides"]), min_per_slide=round(per, 2))
 
-    for i, s in enumerate(spec.get("slides") or [], start=1):
+    slides = spec.get("slides") or []
+    narrative = [str(x) for x in (spec.get("narrative") or [])]
+    if narrative:
+        roles = [str(s.get("role") or "") for s in slides]
+        missing = [beat for beat in narrative if beat not in roles]
+        if missing:
+            _add(findings, "org.narrative_incomplete", "medium",
+                 "the declared narrative arc has no slide for every beat",
+                 missing=missing, narrative=narrative)
+        outside = [{"slide": i, "role": s.get("role")}
+                   for i, s in enumerate(slides, 1)
+                   if s.get("role") and str(s.get("role")) not in narrative]
+        if outside:
+            _add(findings, "org.role_undeclared", "low",
+                 "a slide carries a role outside the declared narrative arc", slides=outside)
+    if spec.get("require_qa_prep"):
+        qa = spec.get("qa_prep") or []
+        incomplete = [i for i, item in enumerate(qa, 1)
+                      if not isinstance(item, dict)
+                      or not str(item.get("question") or "").strip()
+                      or not (str(item.get("answer") or "").strip()
+                              or item.get("answer_slide"))]
+        if not qa or incomplete:
+            _add(findings, "org.qa_prep_missing", "medium",
+                 "Q&A preparation was required but a question or its answer/pointer is missing",
+                 incomplete=incomplete)
+    if goal.get("minutes") and any(s.get("pace_minutes") is not None for s in slides):
+        try:
+            allocated = sum(float(s.get("pace_minutes") or 0) for s in slides)
+            budget = float(goal["minutes"])
+            if allocated > budget + 1e-9:
+                _add(findings, "org.pace_budget_exceeded", "medium",
+                     "per-slide timing allocations exceed the declared talk duration",
+                     allocated_minutes=allocated, budget_minutes=budget)
+        except (TypeError, ValueError):
+            _add(findings, "org.pace_budget_invalid", "low",
+                 "a timing allocation is not numeric and could not be reconciled")
+    scale = spec.get("strength_scale") or ["weak", "moderate", "strong", "measured",
+                                           "supported", "suggested", "cited"]
+    ordered = {str(name): i for i, name in enumerate(scale)}
+    for i, s in enumerate(slides, start=1):
         claim = str(s.get("claim") or "").strip()
         if claim and _is_topic_claim(claim):
             _add(findings, "org.claim_is_topic", "medium",
@@ -261,6 +306,10 @@ def talk_org(spec: dict, findings: list[dict]) -> None:
             _add(findings, "org.evidence_strength_missing", "medium",
                  "the claim carries no evidence-strength label, so a reader cannot tell a "
                  "confirmed result from a suggestive one", slide=i)
+        if s.get("strength") and str(s.get("strength")) not in ordered:
+            _add(findings, "org.strength_unknown", "low",
+                 "the evidence-strength label is outside the declared rankable scale",
+                 slide=i, strength=s.get("strength"), allowed=list(ordered))
 
 
 # --- 33: 学术 PPT 模板与格式适配 ---------------------------------------------
@@ -311,6 +360,15 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
     summary = deck_summary or {}
     sp = summary.get("spacing") or spec.get("spacing") or {}
     title, body = sp.get("title"), sp.get("body")
+    # Real template application may correct a stale declared size. Judge the
+    # delivered ladder, not a superseded spec value. The smallest measured title
+    # and body are the conservative check when cover/content layouts differ.
+    delivered_title = [float(v) for slide in summary.get("slides") or []
+                       for v in slide.get("title_sizes") or []]
+    delivered_body = [float(v) for slide in summary.get("slides") or []
+                      for v in slide.get("body_sizes") or []]
+    if delivered_title and delivered_body:
+        title, body = min(delivered_title), min(delivered_body)
     if title and body:
         ratio = float(title) / float(body)
         if ratio < 1.35:
@@ -351,113 +409,6 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
     if not dslides:
         return
 
-    # --- template constraints, measured not declared --------------------------
-    # A spec may name a real template package (template.file). templateread.py
-    # measures what that file actually provides — its layout names, its theme
-    # typefaces, its title placeholder geometry — and the checks below compare
-    # the written deck against those measurements. Every check is off when no
-    # template was read, so declarative-only callers are never punished.
-    tinfo = summary.get("template") or {}
-    if isinstance(tinfo, dict) and tinfo.get("read"):
-        layouts = tinfo.get("layouts") or []
-        used = {str(s.get("layout") or "content") for s in (spec.get("slides") or [])}
-        unmatched = sorted(u for u in used
-                           if not _tr.match_layout(u, layouts))
-        if unmatched and layouts:
-            _add(findings, "template.layout_not_found", "high",
-                 "a slide's layout does not exist in the measured template, so writing it "
-                 "will fall back to a default layout and lose the theme — measured from the "
-                 "template file, not from the spec's declaration",
-                 layouts=unmatched, available=[l.get("name") for l in layouts][:12])
-
-        # A readable package can still leave individual constraints unmeasurable.
-        # Those states are not silently converted into "missing" or "matching".
-        if not tinfo.get("slide_size_emu"):
-            _add(findings, "template.slide_size_unmeasured", "medium",
-                 "presentation.xml has no usable slide size, so deck geometry cannot be "
-                 "compared with the template")
-        theme_fonts = {str(v).strip().lower() for v in (tinfo.get("theme_fonts") or {}).values()
-                       if v}
-        if not theme_fonts:
-            _add(findings, "template.theme_unmeasured", "medium",
-                 "no theme typeface could be measured from the template's master/theme chain, "
-                 "so theme-font conformance is unknown rather than satisfied")
-
-        masters = set(tinfo.get("masters") or [])
-        for layout_name in sorted(used):
-            matches = _tr.match_layouts(layout_name, layouts)
-            if not matches:
-                continue
-            if len(matches) > 1:
-                _add(findings, "template.duplicate_layout_name", "medium",
-                     "the requested layout name resolves to more than one measured layout, so "
-                     "choosing either would make geometry and inheritance arbitrary",
-                     requested=layout_name,
-                     candidates=[m.get("part") for m in matches])
-            lay = matches[0]
-            if not lay.get("master") or lay.get("master") not in masters:
-                _add(findings, "template.layout_master_missing", "high",
-                     "a used layout has no valid relationship back to a slide master, so its "
-                     "theme and placeholder inheritance are broken",
-                     requested=layout_name, layout=lay.get("part"), master=lay.get("master") or None)
-            if not lay.get("title_present"):
-                _add(findings, "template.title_placeholder_missing", "high",
-                     "a used layout has no title placeholder, so title inheritance cannot occur; "
-                     "an explicit fallback text box is required and must be declared",
-                     requested=layout_name, layout=lay.get("part"))
-            elif not lay.get("title_ph"):
-                _add(findings, "template.title_geometry_unmeasured", "medium",
-                     "a used layout has a title placeholder but neither it nor its master gives "
-                     "the placeholder geometry, so title-position conformance is unverifiable",
-                     requested=layout_name, layout=lay.get("part"))
-
-        theme_names = sorted({str(v) for v in (tinfo.get("theme_fonts") or {}).values() if v})
-        declared_fonts = {str(f).strip() for f in (spec.get("font_ea"), spec.get("font_latin"))
-                          if f}
-        off_theme = sorted(f for f in declared_fonts
-                           if f.strip().lower() not in theme_fonts)
-        if theme_fonts and off_theme:
-            _add(findings, "template.theme_font_mismatch", "medium",
-                 "a declared typeface is not named anywhere in the template's measured theme "
-                 "font scheme, so the adaptation is carrying a face from another template",
-                 faces=off_theme, theme=theme_names)
-
-        tsize = tinfo.get("slide_size_emu")
-        dsize = summary.get("slide_size_emu")
-        if tsize and dsize and all(v for v in tsize) and all(v for v in dsize):
-            ta, da = tsize[0] / max(tsize[1], 1), dsize[0] / max(dsize[1], 1)
-            # Aspect-only comparison missed a uniformly scaled template: identical
-            # ratio but different EMU extents still changes every placeholder box.
-            # A 0.01-inch tolerance absorbs serialisation rounding, not rescaling.
-            extent_drift = any(abs(int(t) - int(d)) > 9144 for t, d in zip(tsize, dsize))
-            if extent_drift or abs(ta - da) / max(ta, 1e-9) > 0.02:
-                _add(findings, "template.slide_size_mismatch", "medium",
-                     "the deck's slide size does not match the template's, so the layout "
-                     "geometry cannot carry over: pages will be letterboxed or cropped",
-                     template_emu=tsize, deck_emu=dsize)
-
-        for ds in dslides:
-            i = ds.get("index")
-            lay = _tr.match_layout(str(ds.get("layout") or "content"), layouts)
-            if lay is None:
-                continue
-            ph = lay.get("title_ph")
-            geom = ds.get("title_geom")
-            if ph and geom and not _tr.geom_close(ph, dict(zip(("x", "y", "cx", "cy"), geom))):
-                _add(findings, "template.title_geometry_drift", "medium",
-                     "a slide's title box is not at the position or size the template's "
-                     "title placeholder declares, so that page is not on the template's "
-                     "layout geometry", slide=i, layout=lay.get("name"))
-            tsz = lay.get("title_sz")
-            sizes = ds.get("title_sizes") or []
-            if tsz and sizes:
-                deck_sz = sorted(sizes)[0]
-                if not (0.8 * tsz <= deck_sz <= 1.25 * tsz):
-                    _add(findings, "template.title_size_off", "low",
-                         "a slide's title size drifts from the size the template's title "
-                         "placeholder declares, so the type ladder is not the template's",
-                         slide=i, deck_pt=deck_sz, template_pt=tsz, layout=lay.get("name"))
-
     # Theme typefaces, declared. A run with no explicit typeface inherits the theme
     # and is fine; only an explicit off-theme face on a *title* is flagged — body
     # runs legitimately change face for code or emphasis, and a title does not.
@@ -496,6 +447,30 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
                      "slides on one declared layout set their titles at different sizes, "
                      "so the type ladder is not one ladder",
                      slide_layout=layout, aspect="size", variants=len(set(size_sets)))
+
+    # Body geometry and size must share the same layout contract as the title.
+    # Without this, a deck can have perfect cover/title formatting while later
+    # pages retain old margins and font sizes — the exact partial-adaptation failure.
+    if spec.get("template"):
+        body_groups: dict[str, list[dict]] = {}
+        for ds in dslides:
+            if ds.get("body_geom"):
+                body_groups.setdefault(str(ds.get("layout") or "content"), []).append(ds)
+        for layout, members in body_groups.items():
+            # A caption or image legitimately reserves a different body height.
+            # Batch margins are determined by origin and width, not forced equal cy.
+            variants = {tuple(m["body_geom"][:3]) for m in members}
+            if len(variants) > 1:
+                _add(findings, "format.body_drift", "medium",
+                     "slides on one declared layout place their body boxes differently, "
+                     "so page margins/reflow are not batch-consistent",
+                     slide_layout=layout, aspect="body_geometry", variants=len(variants),
+                     slides=[m.get("index", 0) for m in members])
+            sizes = [tuple(m.get("body_sizes") or ()) for m in members]
+            if sizes and all(sizes) and len(set(sizes)) > 1:
+                _add(findings, "format.body_drift", "medium",
+                     "slides on one declared layout use different body font sizes",
+                     slide_layout=layout, aspect="body_size", variants=len(set(sizes)))
 
     # Declared content must actually land. An exact-text match against the written
     # slide is the mechanical net for a missing placeholder with no substitution:

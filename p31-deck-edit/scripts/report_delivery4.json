@@ -1,0 +1,135 @@
+{
+  "schema_version": "deck-delivery-bench/v4",
+  "temp_root": "C:\\Users\\lanlan\\AppData\\Local\\Temp\\p31_delivery4_ldx3skhm",
+  "scenarios": [
+    {
+      "scenario": "clean_styled_footer_logo",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "low_contrast_detected",
+      "expected": [
+        "format.low_contrast"
+      ],
+      "fired": [
+        "format.low_contrast"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "bad_style_degrades_with_limit",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_logo_detected",
+      "expected": [
+        "image.logo_missing"
+      ],
+      "fired": [
+        "image.logo_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_text_geometry_style",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_already_applied_guard",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "source_missing_shape_blocked",
+      "expected": [
+        "edit.source_change_unapplied"
+      ],
+      "fired": [
+        "edit.source_change_unapplied"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "out_of_bounds_detected",
+      "expected": [
+        "layout.out_of_bounds"
+      ],
+      "fired": [
+        "layout.out_of_bounds"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "text_overlap_detected",
+      "expected": [
+        "layout.overlap"
+      ],
+      "fired": [
+        "layout.overlap"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "blank_slide_detected",
+      "expected": [
+        "deck.empty_slide"
+      ],
+      "fired": [
+        "deck.empty_slide",
+        "deck.no_title",
+        "deck.notes_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    },
+    {
+      "scenario": "template_native_placeholders",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertion_failures": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 11,
+    "of": 11
+  }
+}

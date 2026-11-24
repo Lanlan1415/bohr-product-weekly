@@ -23,6 +23,8 @@ import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
 
+import contract_echo as C
+
 NS = {
     "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
     "p": "http://schemas.openxmlformats.org/presentationml/2006/main",
@@ -37,17 +39,24 @@ MAX_TITLE_CHARS = 80
 MAX_BODY_PT = 24
 
 
-def write_refused(out_dir, message: str, case_id=None) -> dict:
-    """Write a standalone refusal; never call the normal contract-echo path.
+def write_refused(out_dir, message: str, case_id=None, case: dict | None = None) -> dict:
+    """Write a structured refusal and safely retain a readable case contract.
 
-    A malformed spec may not define the nested objects that echoing requires.
-    Only an explicitly supplied scalar case id is retained here.
+    The spec is never consulted here: it may be absent or malformed.  Only the
+    independently parsed case supplies identity and contract fields.  Contract
+    backfill is guarded so even a hostile contract cannot hide the refusal.
     """
     result = {"schema_version": "deckbuild/v3", "status": "undetermined",
               "findings": [{"rule": "audit.no_section", "severity": "high",
                             "message": message}],
               "severity_counts": {"high": 1},
               "limits": ["the case could not be run as declared"]}
+    if isinstance(case, dict) and case:
+        try:
+            C.apply(result, {}, case)
+        except Exception as exc:  # refusal must remain available for every input
+            result["limits"].append(
+                f"case contract could not be backfilled on refusal: {type(exc).__name__}: {exc}")
     if case_id is not None:
         result["case_id"] = case_id
     try:
@@ -246,10 +255,10 @@ def read_deck(path) -> list[dict]:
                         rpr = runs[0].find("a:rPr", NS)
                         if rpr is not None and rpr.get("sz"):
                             sz = int(rpr.get("sz")) / 100.0
-                    # Explicit typefaces the runs declare, if any. A run with none
-                    # inherits the theme, which is exactly what "kept the theme font"
-                    # means, so absence is collected as absence and never punished.
-                    fonts = []
+                    # Explicit typefaces and RGB colors, if any. A run with none
+                    # inherits the theme, so absence is collected as absence and
+                    # never guessed into either a font or contrast violation.
+                    fonts, colors = [], []
                     for r in runs:
                         rpr = r.find("a:rPr", NS)
                         if rpr is None:
@@ -258,12 +267,17 @@ def read_deck(path) -> list[dict]:
                             el = rpr.find(tag, NS)
                             if el is not None and el.get("typeface"):
                                 fonts.append(el.get("typeface"))
+                        rgb = rpr.find("a:solidFill/a:srgbClr", NS)
+                        if rgb is not None and rgb.get("val"):
+                            colors.append(rgb.get("val").upper())
                     ppr = p.find("a:pPr", NS)
                     lvl = int(ppr.get("lvl", "0")) if ppr is not None else 0
                     if text.strip():
                         paras.append({"text": text, "size_pt": sz, "level": lvl,
-                                      "fonts": fonts})
+                                      "fonts": fonts, "colors": colors})
                 ph = sp.find(".//p:nvPr/p:ph", NS)
+                sppr = sp.find("p:spPr", NS)
+                fill_node = sppr.find("a:solidFill/a:srgbClr", NS) if sppr is not None else None
                 shapes.append({
                     "kind": "sp",
                     "name": sp.find(".//p:cNvPr", NS).get("name", "") if sp.find(".//p:cNvPr", NS) is not None else "",
@@ -273,16 +287,25 @@ def read_deck(path) -> list[dict]:
                     "cx": int(ext.get("cx")) if ext is not None else 0,
                     "cy": int(ext.get("cy")) if ext is not None else 0,
                     "paras": paras,
+                    "fill_rgb": fill_node.get("val").upper()
+                               if fill_node is not None and fill_node.get("val") else None,
                 })
+            bg = root.find("p:cSld/p:bg", NS)
+            bg_rgb = bg.find(".//a:srgbClr", NS) if bg is not None else None
             pics = []
             for pic in root.iter(f"{{{NS['p']}}}pic"):
                 xfrm = pic.find(".//a:xfrm", NS)
+                off = xfrm.find("a:off", NS) if xfrm is not None else None
                 ext = xfrm.find("a:ext", NS) if xfrm is not None else None
                 blip = pic.find(".//a:blip", NS)
                 cnv = pic.find(".//p:cNvPr", NS)
                 pics.append({
+                    "kind": "pic",
+                    "name": cnv.get("name", "Figure") if cnv is not None else "Figure",
                     "rel": blip.get(f"{{{NS['r']}}}embed") if blip is not None else None,
                     "descr": cnv.get("descr", "") if cnv is not None else "",
+                    "x": int(off.get("x")) if off is not None else 0,
+                    "y": int(off.get("y")) if off is not None else 0,
                     "cx": int(ext.get("cx")) if ext is not None else 0,
                     "cy": int(ext.get("cy")) if ext is not None else 0,
                 })
@@ -291,8 +314,63 @@ def read_deck(path) -> list[dict]:
             if nname in z.namelist():
                 nroot = ET.fromstring(z.read(nname))
                 notes = " ".join((t.text or "") for t in nroot.iter(f"{{{NS['a']}}}t"))
-            slides.append({"index": idx, "shapes": shapes, "pics": pics, "notes": notes.strip()})
+            slides.append({"index": idx, "shapes": shapes, "pics": pics, "notes": notes.strip(),
+                           "background_rgb": bg_rgb.get("val").upper()
+                                             if bg_rgb is not None and bg_rgb.get("val") else None})
     return slides
+
+
+def _part_background(z: zipfile.ZipFile, part: str | None) -> str | None:
+    """Read an explicit RGB background from a slide, layout or master part."""
+    if not part or part not in z.namelist():
+        return None
+    try:
+        root = ET.fromstring(z.read(part))
+    except (KeyError, ET.ParseError):
+        return None
+    node = root.find("p:cSld/p:bg//a:srgbClr", NS)
+    return node.get("val").upper() if node is not None and node.get("val") else None
+
+
+def _theme_background(z: zipfile.ZipFile, master_part: str | None) -> str | None:
+    """Resolve the theme's background-1 RGB when no explicit background exists."""
+    if not master_part or master_part not in z.namelist():
+        return None
+    rel_name = posixpath.join(posixpath.dirname(master_part), "_rels",
+                              posixpath.basename(master_part) + ".rels")
+    if rel_name not in z.namelist():
+        return None
+    for rel in ET.fromstring(z.read(rel_name)):
+        if not (rel.get("Type") or "").endswith("relationships/theme"):
+            continue
+        theme_part = posixpath.normpath(posixpath.join(posixpath.dirname(master_part),
+                                                       rel.get("Target") or ""))
+        if theme_part not in z.namelist():
+            continue
+        root = ET.fromstring(z.read(theme_part))
+        bg1 = root.find(".//a:clrScheme/a:lt1", NS)
+        if bg1 is None:
+            return None
+        rgb = bg1.find("a:srgbClr", NS)
+        if rgb is not None and rgb.get("val"):
+            return rgb.get("val").upper()
+        system = bg1.find("a:sysClr", NS)
+        if system is not None and system.get("lastClr"):
+            return system.get("lastClr").upper()
+    return None
+
+
+def _relative_luminance(rgb: str) -> float:
+    channels = [int(rgb[i:i + 2], 16) / 255.0 for i in (0, 2, 4)]
+    linear = [v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
+              for v in channels]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def _contrast_ratio(fg: str, bg: str) -> float:
+    a, b = _relative_luminance(fg), _relative_luminance(bg)
+    lighter, darker = max(a, b), min(a, b)
+    return (lighter + 0.05) / (darker + 0.05)
 
 
 def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict:
@@ -312,6 +390,21 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
     require_notes = bool(spec.get("require_notes", False))
     evidence_list = {str(e).strip().lower() for e in (spec.get("available_evidence") or [])}
     measured_any = False
+    measured_count = 0
+    measured_total = 0
+    contrast_checks = 0
+    slide_w, slide_h = 12192000, 6858000
+    try:
+        with zipfile.ZipFile(pptx_path) as z:
+            pres = ET.fromstring(z.read("ppt/presentation.xml"))
+            size = pres.find("p:sldSz", NS)
+            if size is not None:
+                slide_w = int(size.get("cx", slide_w))
+                slide_h = int(size.get("cy", slide_h))
+    except (KeyError, ET.ParseError, TypeError, ValueError):
+        # export.invalid_package reports the missing/broken presentation below;
+        # geometric checks retain a conservative standard canvas meanwhile.
+        pass
 
     # A file that opens but contains no pages is not a presentation deliverable.
     if not slides:
@@ -353,17 +446,27 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
     for i, ss in enumerate(spec_slides):
         cap = str(ss.get("caption") or "").strip()
         landed = (cap == "") or (cap in deck_text_by_slide.get(i + 1, ""))
+        evidence = str(ss.get("evidence") or "")
+        evidence_landed = (not evidence or evidence.casefold()
+                           in deck_text_by_slide.get(i + 1, "").casefold())
         evidence_map.append({
             "slide": i + 1,
             "claim": str(ss.get("claim") or ss.get("title") or ""),
-            "evidence": str(ss.get("evidence") or ""),
+            "evidence": evidence,
             "caption": cap,
             "caption_landed": landed,
+            "evidence_landed": evidence_landed,
         })
     if evidence_map and not all(e["caption_landed"] for e in evidence_map):
         add("deck.caption_not_landed", "high",
             "a caption the spec declares never landed in the written deck, so the "
             "evidence locator is missing from the deliverable")
+    evidence_not_landed = [e["slide"] for e in evidence_map if not e["evidence_landed"]]
+    if evidence_not_landed:
+        add("deck.evidence_not_landed", "high",
+            "a declared source locator is absent from the visible slide text; "
+            "the editable deck does not retain its own page-level provenance",
+            slides=evidence_not_landed)
 
     for sl in slides:
         i = sl["index"]
@@ -375,6 +478,39 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
         body_paras = [p for sh in sl["shapes"]
                       if sh["name"].lower() == "body" or sh.get("placeholder") == "body"
                       for p in sh["paras"]]
+
+        # --- canvas geometry and real text-box collisions ------------------
+        # Intentional decoration may overlap freely; only content-bearing text
+        # boxes are collision-checked. Pictures still receive canvas bounds checks.
+        tolerance = int(0.01 * EMU_IN)
+        text_shapes = [sh for sh in sl["shapes"]
+                       if any(p["text"].strip() for p in sh["paras"])]
+        for obj in text_shapes + sl["pics"]:
+            x, y, w, h = (obj[k] for k in ("x", "y", "cx", "cy"))
+            if (w <= 0 or h <= 0 or x < -tolerance or y < -tolerance
+                    or x + w > slide_w + tolerance or y + h > slide_h + tolerance):
+                add("shape.out_of_bounds", "high",
+                    "a content object has non-positive geometry or extends beyond the slide canvas",
+                    slide=i, shape=obj.get("name") or obj["kind"],
+                    geometry=[x, y, w, h], canvas=[slide_w, slide_h])
+        for left in range(len(text_shapes)):
+            a = text_shapes[left]
+            area_a = a["cx"] * a["cy"]
+            if area_a <= 0:
+                continue
+            for right in range(left + 1, len(text_shapes)):
+                b = text_shapes[right]
+                area_b = b["cx"] * b["cy"]
+                if area_b <= 0:
+                    continue
+                iw = max(0, min(a["x"] + a["cx"], b["x"] + b["cx"]) - max(a["x"], b["x"]))
+                ih = max(0, min(a["y"] + a["cy"], b["y"] + b["cy"]) - max(a["y"], b["y"]))
+                overlap = iw * ih
+                if overlap and overlap / min(area_a, area_b) >= 0.25:
+                    add("shape.overlap", "high",
+                        "two non-empty text boxes overlap by at least 25% of the smaller box",
+                        slide=i, shapes=[a["name"], b["name"]],
+                        overlap_ratio=round(overlap / min(area_a, area_b), 3))
 
         # --- structure ----------------------------------------------------
         if not title:
@@ -413,16 +549,27 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
             inner_w = sh["cx"] - 2 * int(0.12 * EMU_IN)
             inner_h = sh["cy"] - 2 * int(0.08 * EMU_IN)
             total_px = 0.0
+            horizontal_needed_emu = 0
             for p in sh["paras"]:
-                m = measure_text(p["text"], p["size_pt"] or 18.0, inner_w / EMU_IN * 96,
+                max_width_px = max(inner_w / EMU_IN * 96, 1.0)
+                m = measure_text(p["text"], p["size_pt"] or 18.0, max_width_px,
                                  font_path=measure_font)
                 measured_any = measured_any or m["measured"]
+                measured_count += int(bool(m["measured"]))
+                measured_total += 1
                 total_px += m["height_px"]
-            if _emu(total_px) > inner_h:
+                # A single unbreakable Latin token used to bypass the vertical-only
+                # test. Check its measured width explicitly, allowing raster rounding.
+                if m["width_px"] > max_width_px * 1.01 + 1.0:
+                    horizontal_needed_emu = max(horizontal_needed_emu, int(_emu(m["width_px"])))
+            if _emu(total_px) > inner_h or horizontal_needed_emu:
                 add("text.overflow", "high",
-                    "the text does not fit its box even with autofit, so it will be shrunk "
-                    "below the floor or spill", slide=i, shape=sh["name"] or "text",
-                    needed_emu=int(_emu(total_px)), box_emu=inner_h)
+                    "the measured text exceeds its box horizontally or vertically; "
+                    "automatic shrink-to-fit must not hide the defect",
+                    slide=i, shape=sh["name"] or "text",
+                    needed_emu=int(_emu(total_px)), box_emu=inner_h,
+                    horizontal_needed_emu=horizontal_needed_emu,
+                    horizontal_box_emu=inner_w if horizontal_needed_emu else None)
 
         # --- images -------------------------------------------------------
         for pic in sl["pics"]:
@@ -531,6 +678,7 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
     # to. Both are read from the relationships of the written file, so a deck
     # assembled or patched by hand is checked exactly like a generated one.
     masters: set[str] = set()
+    master_by_slide: dict[int, tuple[str, str]] = {}
     with zipfile.ZipFile(pptx_path) as z:
         names = set(z.namelist())
         if "ppt/presentation.xml" not in names:
@@ -562,12 +710,45 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
                     "the slide's layout resolves to no slide master, so the master styles "
                     "behind the page are undefined", slide=i, layout=lay_part)
                 continue
-            masters.add(_resolve(posixpath.dirname(lay_part), mas_targets[0]))
+            master_part = _resolve(posixpath.dirname(lay_part), mas_targets[0])
+            masters.add(master_part)
+            master_by_slide[i] = (lay_part, master_part)
         if len(masters) > 1:
             add("master.inconsistent", "high",
                 "the slides resolve to more than one slide master, so part of the deck sits "
                 "on a different template — an edit that was supposed to touch one page "
                 "reached the master behind the rest", masters=sorted(masters))
+
+        # Contrast is checked only when both foreground and background RGB values
+        # can be resolved from the actual package. Unknown effects/images are not
+        # guessed into a verdict. Background precedence follows the real shell:
+        # shape -> slide -> layout -> master -> theme background-1.
+        for sl in slides:
+            i = sl["index"]
+            lay_part, master_part = master_by_slide.get(i, (None, None))
+            inherited_bg = (sl.get("background_rgb") or _part_background(z, lay_part)
+                            or _part_background(z, master_part)
+                            or _theme_background(z, master_part))
+            reported_contrast: set[tuple[str, str, str]] = set()
+            for sh in sl["shapes"]:
+                bg = sh.get("fill_rgb") or inherited_bg
+                if not bg:
+                    continue
+                for para in sh["paras"]:
+                    for fg in para.get("colors") or []:
+                        try:
+                            ratio = _contrast_ratio(fg, bg)
+                        except (ValueError, TypeError):
+                            continue  # malformed/unsupported colors cannot be judged
+                        contrast_checks += 1
+                        threshold = 3.0 if (para.get("size_pt") or 0) >= 24 else 4.5
+                        key = (sh["name"], fg, bg)
+                        if ratio < threshold and key not in reported_contrast:
+                            reported_contrast.add(key)
+                            add("text.contrast_low", "high",
+                                "explicit text and background colors have insufficient contrast",
+                                slide=i, shape=sh["name"], foreground=fg, background=bg,
+                                ratio=round(ratio, 2), minimum=threshold)
 
         # 字体不丢: when the workflow declares embedded fonts, the package must
         # actually carry them. A deck that declares embed_fonts and ships none is
@@ -593,6 +774,11 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
         "checked": {
             "slides": len(slides),
             "text_measured": measured_any,
+            "text_measured_all": measured_total > 0 and measured_count == measured_total,
+            "text_measurements": measured_total,
+            "text_measurements_with_glyphs": measured_count,
+            "contrast_checks": contrast_checks,
+            "slide_size_emu": [slide_w, slide_h],
             # Report the font the measurements actually used, not the module default:
             # the two differ for any deck containing Chinese. "checked.font_file" is
             # the output-contract field a reader relies on to interpret overflow
@@ -600,8 +786,9 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
             # different font than the reader will see.
             "font_file": measure_font,
             "minimum_font_pt": min_pt,
-            "note": ("overflow measured against glyph metrics" if measured_any else
-                      "no font file found; overflow is an estimate and is reported as such"),
+            "note": ("overflow measured against glyph metrics"
+                      if measured_total and measured_count == measured_total else
+                      "some or all overflow measurements are estimates and are reported as such"),
             "evidence_map": evidence_map,
         },
         "evidence_map_top": evidence_map,

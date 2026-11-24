@@ -20,11 +20,10 @@ import pptxgen as P  # noqa: E402
 
 FIG_DIR = Path(tempfile.mkdtemp())
 FIG = FIG_DIR / "fig.png"
-from PIL import Image, ImageDraw  # noqa: E402
+from pnggen import Canvas  # noqa: E402
 
-_im = Image.new("RGB", (600, 400), "white")
-_d = ImageDraw.Draw(_im)
-_d.rectangle([40, 40, 560, 360], outline="black", width=2)
+_im = Canvas(600, 400)
+_im.rect_outline(40, 40, 560, 360, width=2)
 _im.save(FIG)
 
 SPEC = {

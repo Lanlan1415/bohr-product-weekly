@@ -246,6 +246,45 @@
       "status": "review"
     },
     {
+      "scenario": "duplicate_node_id",
+      "expected": [
+        "map.duplicate_node_id"
+      ],
+      "fired": [
+        "map.duplicate_node_id"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "parent_relation_unknown",
+      "expected": [
+        "map.parent_relation_unknown"
+      ],
+      "fired": [
+        "map.parent_relation_unknown"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "label_missing",
+      "expected": [
+        "map.label_missing"
+      ],
+      "fired": [
+        "map.label_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
       "scenario": "fp_real_labels",
       "expected": [],
       "fired": [],
@@ -265,8 +304,8 @@
     }
   ],
   "totals": {
-    "passed": 21,
-    "of": 21
+    "passed": 24,
+    "of": 24
   },
   "note": "One scenario per rule, aligned to the mind-map scoring points. Clean baselines and false-positive guards must report nothing."
 }

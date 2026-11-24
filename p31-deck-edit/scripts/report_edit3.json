@@ -16,7 +16,8 @@
         "deck.empty_deck"
       ],
       "fired": [
-        "deck.empty_deck"
+        "deck.empty_deck",
+        "deck.no_slides"
       ],
       "missing": [],
       "spurious": [],

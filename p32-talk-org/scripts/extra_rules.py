@@ -10,11 +10,7 @@ here targets the specific failure its challenge is about:
                     half-recorded diff; a deletion with nothing to restore; no
                     pointer to the delivered revision; and a record whose "new
                     text" never landed in the written deck
-  talk_org        — a deck with no stated goal, so "too many slides" is undefined; a
-                    strength label outside the declared vocabulary; a declared
-                    narrative beat no slide carries; a slide on a role the arc does
-                    not name; and a talk that demanded question preparation but
-                    records no anticipated question with an answer page
+  talk_org        — a deck with no stated goal, so "too many slides" is undefined
   template_fit    — a type ladder that is not a ladder, titles that drifted off the
                     layout, title faces off the declared theme, a caption and a source
                     locator that name different figures, and declared content that
@@ -44,18 +40,6 @@ PAPER_OBJECT = re.compile(
 )
 
 
-def _slides_of(spec: dict) -> list:
-    """The spec's slide entries, tolerating a spec whose slides are not a list.
-
-    A caller that hands over hostile types gets degradation, not a crash: any
-    non-dict entry is skipped rather than raising mid-audit.
-    """
-    slides = spec.get("slides")
-    if not isinstance(slides, list):
-        return []
-    return [s for s in slides if isinstance(s, dict)]
-
-
 def paper_to_deck(spec: dict, findings: list[dict]) -> None:
     """A figure on a slide must name the paper object it came from.
 
@@ -64,7 +48,15 @@ def paper_to_deck(spec: dict, findings: list[dict]) -> None:
     carries an image but no figure/table locator cannot be checked by a reader, so
     the mapping is required rather than encouraged.
     """
-    for i, s in enumerate(_slides_of(spec), start=1):
+    required = spec.get("required_mainline") or []
+    if required:
+        roles = {str(s.get("role") or "") for s in (spec.get("slides") or [])}
+        missing = [str(beat) for beat in required if str(beat) not in roles]
+        if missing:
+            _add(findings, "paper.mainline_missing", "high",
+                 "the deck does not cover every declared research-mainline beat",
+                 missing=missing, required=[str(x) for x in required])
+    for i, s in enumerate(spec.get("slides") or [], start=1):
         has_image = bool(s.get("image"))
         note = " ".join(str(s.get(k) or "") for k in ("caption", "evidence", "notes"))
         named = bool(PAPER_OBJECT.search(note))
@@ -117,10 +109,10 @@ def deck_edit(spec: dict, findings: list[dict], deck_summary: dict | None = None
                                        deck in `deck_summary`, never on the spec
                                        alone)
     """
-    revisions = [r for r in (spec.get("revisions") or []) if isinstance(r, dict)]
+    revisions = spec.get("revisions") or []
     if not revisions:
         return
-    n_slides = len(_slides_of(spec))
+    n_slides = len(spec.get("slides") or [])
     dslides = (deck_summary or {}).get("slides") or []
 
     # 哪一版是交付版: with two or more revisions on record, the pointer to the
@@ -147,6 +139,10 @@ def deck_edit(spec: dict, findings: list[dict], deck_summary: dict | None = None
                  revisions=len(revisions), delivered=spec.get("delivered_revision"))
 
     for n, rev in enumerate(revisions, start=1):
+        if not str(rev.get("instruction") or "").strip():
+            _add(findings, "edit.revision_instruction_missing", "low",
+                 "a revision round does not record its instruction, so the intent of the "
+                 "iteration is missing from the version history", revision=n)
         changes = rev.get("changes") or []
         if not changes:
             _add(findings, "edit.revision_without_changes", "medium",
@@ -222,11 +218,6 @@ def deck_edit(spec: dict, findings: list[dict], deck_summary: dict | None = None
 # from firing on a real sentence that happens to contain "概述".
 WEAK_CLAIM = re.compile("(about|overview|introduction|background|summary|outline|概述|介绍|背景|总结|简介|梳理)", re.IGNORECASE)
 
-# The strength vocabulary the evidence-strength label is judged against. A spec may
-# widen it with strength_scale; anything outside the scale is a label the reader
-# cannot rank, not a stronger claim.
-DEFAULT_STRENGTH_SCALE = ("strong", "moderate", "weak")
-
 
 def _is_topic_claim(claim: str) -> bool:
     if not WEAK_CLAIM.search(claim):
@@ -239,110 +230,285 @@ def _is_topic_claim(claim: str) -> bool:
     return len(stripped.split()) <= 4
 
 
-def talk_org(spec: dict, findings: list[dict]) -> None:
-    """A talk needs a stated goal before page count means anything.
+BACKUP_ROLES = {"backup", "appendix", "qa", "spare", "reserve", "备用", "附录", "问答"}
+CLOSING_ROLES = {"closing", "conclusion", "takeaway", "limit", "limitations", "next_steps", "结论", "局限"}
+TOPIC_TITLES = {
+    "方法", "研究方法", "结果", "实验结果", "背景", "研究背景", "结论", "讨论", "实验",
+    "研究内容", "工作安排", "method", "methods", "result", "results", "background",
+    "introduction", "conclusion", "discussion", "summary", "backup", "appendix",
+}
+LIMIT_ROLES = {"limit", "limits", "limitation", "limitations", "局限", "边界", "不足"}
 
-    This challenge asks for the talk's objective to become checkable. Without it,
-    "six slides is too many" is an opinion; with it, the deck can be judged against
-    the goal it declared. Four more declared-only checks ride on the same shape:
 
-      org.strength_unknown       a strength label outside the declared vocabulary,
-                                 so the reader cannot rank the claim
-      org.narrative_incomplete   the declared narrative arc has a beat no slide
-                                 carries — a gap in the 起承转合 (checked only when
-                                 the spec declares a narrative)
-      org.role_undeclared        a slide carries a narrative role the arc does not
-                                 name, so the page sits outside the planned path
-      org.qa_prep_missing        the talk demands question preparation but the spec
-                                 records no anticipated question with an answer page
-                                 (checked only when require_qa_prep is declared)
-    """
-    goal = spec.get("goal") if isinstance(spec.get("goal"), dict) else {}
+def _main_slides(slides: list[dict]) -> list[tuple[int, dict]]:
+    return [(i, s) for i, s in enumerate(slides, 1)
+            if str(s.get("role") or "").strip().casefold() not in BACKUP_ROLES]
+
+
+def _sentences(claim: str) -> int:
+    """Conservative assertion count; decimal numbers and section locators stay safe."""
+    boundaries = len(re.findall(r"[。！？!?]+", claim))
+    english = len(re.findall(r"(?<=[A-Za-z0-9)])\.\s+[A-Z]", claim))
+    return max(1, boundaries, english + 1 if english else 1)
+
+
+def talk_org(spec: dict, findings: list[dict], deck_summary: dict | None = None) -> None:
+    """Audit an audience/time/claim/QA plan and, when supplied, its written deck."""
+    goal = spec.get("goal") or {}
+    slides = spec.get("slides") or []
+    main = _main_slides(slides)
     if not goal.get("objective"):
         _add(findings, "org.goal_missing", "high",
              "the deck declares no objective, so its length and depth cannot be judged")
     if goal and not goal.get("audience"):
         _add(findings, "org.audience_missing", "medium",
              "the deck declares no audience, so background depth is uncalibrated")
-    slides = [s for s in (spec.get("slides") or []) if isinstance(s, dict)]
-    if goal.get("minutes") and slides:
-        # ~1.5 min/slide is fast for a research talk; >4 is dilatory.
+
+    # Audience is a plan, not a one-word label. It is enabled only when declared.
+    plan = spec.get("audience_plan") or {}
+    if spec.get("require_audience_plan"):
+        missing_keys = [key for key in ("prior_knowledge", "decision") if not plan.get(key)]
+        emphasis = plan.get("emphasis") or []
+        if isinstance(emphasis, str):
+            emphasis = [emphasis]
+        if not emphasis:
+            missing_keys.append("emphasis")
+        if missing_keys:
+            _add(findings, "org.audience_plan_missing", "medium",
+                 "the audience adaptation lacks prior knowledge, the decision to enable, or narrative emphasis",
+                 missing=missing_keys)
+        roles = {str(s.get("role") or "") for _, s in main}
+        missing_emphasis = [str(beat) for beat in emphasis if str(beat) not in roles]
+        if missing_emphasis:
+            _add(findings, "org.audience_emphasis_missing", "medium",
+                 "the declared audience concerns have no slide devoted to them",
+                 missing=missing_emphasis)
+        max_background = plan.get("max_background_slides")
+        if max_background is not None:
+            try:
+                actual = sum(1 for _, s in main if str(s.get("role") or "") in {"background", "context", "背景"})
+                if actual > int(max_background):
+                    _add(findings, "org.audience_background_overload", "medium",
+                         "background exceeds the declared audience adaptation budget",
+                         actual=actual, maximum=int(max_background))
+            except (TypeError, ValueError):
+                _add(findings, "org.audience_budget_invalid", "low",
+                     "max_background_slides is not an integer")
+
+    minutes = None
+    if goal.get("minutes") is not None:
         try:
             minutes = float(goal["minutes"])
+            if minutes <= 0:
+                raise ValueError("duration is not positive")
+            if main:
+                per = minutes / len(main)
+                if per < 0.7:
+                    _add(findings, "org.pace_too_fast", "medium",
+                         "there is under 45 seconds per main slide",
+                         minutes=minutes, main_slides=len(main), minutes_per_slide=round(per, 2))
+                elif per > 4.0:
+                    _add(findings, "org.pace_too_slow", "low",
+                         "over four minutes per main slide suggests the deck is thinner than the talk",
+                         minutes=minutes, main_slides=len(main), minutes_per_slide=round(per, 2))
         except (TypeError, ValueError):
-            minutes = 0.0
-        if minutes > 0:
-            per = minutes / len(slides)
-            if per < 0.7:
-                _add(findings, "org.pace_too_fast", "medium",
-                     "there is under 42 seconds (0.7 min) per slide, so slides will be "
-                     "skipped or raced",
-                     minutes=goal["minutes"], slides=len(slides), min_per_slide=round(per, 2))
-            elif per > 4.0:
-                _add(findings, "org.pace_too_slow", "low",
-                     "over four minutes per slide suggests the deck is thinner than the talk",
-                     minutes=goal["minutes"], slides=len(slides), min_per_slide=round(per, 2))
+            _add(findings, "org.duration_invalid", "medium",
+                 "the talk duration is not a positive number of minutes", minutes=goal.get("minutes"))
 
-    scale = {str(x).strip().lower() for x in
-             (spec.get("strength_scale") or DEFAULT_STRENGTH_SCALE) if str(x).strip()}
-    narrative = [str(b).strip() for b in (spec.get("narrative") or []) if str(b).strip()]
-
-    for i, s in enumerate(slides, start=1):
-        claim = str(s.get("claim") or "").strip()
-        if claim and _is_topic_claim(claim):
-            _add(findings, "org.claim_is_topic", "medium",
-                 "the slide's claim is a topic word rather than an assertion, so the slide "
-                 "states no position", slide=i, claim=claim)
-        strength = str(s.get("strength") or "").strip()
-        if claim and not strength:
-            _add(findings, "org.evidence_strength_missing", "medium",
-                 "the claim carries no evidence-strength label, so a reader cannot tell a "
-                 "confirmed result from a suggestive one", slide=i)
-        elif strength and scale and strength.lower() not in scale:
-            _add(findings, "org.strength_unknown", "low",
-                 "the strength label is outside the declared vocabulary, so the reader "
-                 "cannot rank it against the scale",
-                 slide=i, strength=strength, scale=sorted(scale))
-        role = str(s.get("role") or "").strip()
-        if narrative and role and role not in narrative:
-            _add(findings, "org.role_undeclared", "low",
-                 "the slide carries a narrative role the declared arc does not name, so the "
-                 "page sits outside the planned telling path",
-                 slide=i, role=role, narrative=narrative)
-
-    # 叙事顺序: the declared arc must be covered by the slides' roles. A declared
-    # beat no slide carries is a hole in the talk; only a spec that declares the
-    # arc starts the check, so a deck planned without beats is never punished.
+    # Page roles and actual declared story order. Coverage alone would accept a
+    # deck that mentions every beat in the wrong order.
+    narrative = [str(x) for x in (spec.get("narrative") or [])]
+    if narrative or spec.get("require_role"):
+        missing_roles = [i for i, s in enumerate(slides, 1) if not str(s.get("role") or "").strip()]
+        if missing_roles:
+            _add(findings, "org.role_missing", "medium",
+                 "a slide has no declared narrative role", slides=missing_roles)
     if narrative:
-        covered = {str(s.get("role") or "").strip() for s in slides}
-        missing = [b for b in narrative if b not in covered]
+        actual_roles = [str(s.get("role") or "") for s in slides]
+        missing = [beat for beat in narrative if beat not in actual_roles]
         if missing:
             _add(findings, "org.narrative_incomplete", "medium",
-                 "the declared narrative arc has a beat no slide carries, so the talk "
-                 "skips a planned step",
+                 "the declared narrative arc has no slide for every beat",
                  missing=missing, narrative=narrative)
+        outside = [{"slide": i, "role": s.get("role")}
+                   for i, s in enumerate(slides, 1)
+                   if s.get("role") and str(s.get("role")) not in narrative
+                   and str(s.get("role") or "").casefold() not in BACKUP_ROLES]
+        if outside:
+            _add(findings, "org.role_undeclared", "low",
+                 "a slide carries a role outside the declared narrative arc", slides=outside)
+        rank = {beat: idx for idx, beat in enumerate(narrative)}
+        ordered_roles = [(i, str(s.get("role") or ""), rank.get(str(s.get("role") or ""), -1))
+                         for i, s in enumerate(slides, 1) if str(s.get("role") or "") in rank]
+        for (prev_i, prev_role, prev_rank), (i, role, current_rank) in zip(ordered_roles, ordered_roles[1:]):
+            if current_rank < prev_rank:
+                _add(findings, "org.narrative_order", "medium",
+                     "a later slide moves backwards in the declared narrative order",
+                     slide=i, role=role, previous_slide=prev_i, previous_role=prev_role)
 
-    # 问答准备: prepared questions with an answer pointer. Only a spec that asks for
-    # preparation turns the check on; the deliverable is a list a presenter can
-    # rehearse from, not a promise that answers are correct.
+    # Mechanically reconciled timing, including optional question-time reserve.
+    if minutes is not None:
+        qa_minutes = 0.0
+        try:
+            qa_minutes = float(goal.get("qa_minutes") or 0)
+            if qa_minutes < 0 or qa_minutes >= minutes:
+                raise ValueError("Q&A reserve must be non-negative and shorter than the slot")
+        except (TypeError, ValueError):
+            _add(findings, "org.pace_budget_invalid", "low",
+                 "Q&A reserve is invalid")
+            qa_minutes = 0.0
+        budget = minutes - qa_minutes
+        missing_pace = [i for i, s in main if s.get("pace_minutes") is None]
+        if spec.get("require_timing") and missing_pace:
+            _add(findings, "org.pace_slide_missing", "medium",
+                 "a main slide has no allocated speaking time", slides=missing_pace)
+        allocations = []
+        for i, s in main:
+            if s.get("pace_minutes") is None:
+                continue
+            try:
+                value = float(s["pace_minutes"])
+                if value <= 0:
+                    _add(findings, "org.pace_slide_invalid", "medium",
+                         "a slide has non-positive speaking time", slide=i, pace_minutes=value)
+                allocations.append((i, value))
+            except (TypeError, ValueError):
+                _add(findings, "org.pace_budget_invalid", "low",
+                     "a timing allocation is not numeric", slide=i)
+        if allocations:
+            allocated = sum(v for _, v in allocations)
+            if allocated > budget + 1e-9:
+                _add(findings, "org.pace_budget_exceeded", "medium",
+                     "per-slide timing allocations exceed the talk duration after Q&A reserve",
+                     allocated_minutes=allocated, main_budget_minutes=budget,
+                     qa_reserve_minutes=qa_minutes)
+            if spec.get("require_timing") and allocated < 0.75 * budget:
+                _add(findings, "org.pace_budget_underused", "low",
+                     "allocated speaking time leaves more than a quarter of the main slot unplanned",
+                     allocated_minutes=allocated, main_budget_minutes=budget)
+
+    # Every strong conclusion needs inspectable support and a reason for its level.
+    scale = spec.get("strength_scale") or ["weak", "moderate", "strong", "measured",
+                                           "supported", "suggested", "cited"]
+    ordered = {str(name): i for i, name in enumerate(scale)}
+    for i, s in enumerate(slides, start=1):
+        claim = str(s.get("claim") or "").strip()
+        title = str(s.get("title") or "").strip()
+        if claim and _is_topic_claim(claim):
+            _add(findings, "org.claim_is_topic", "medium",
+                 "the slide's claim is a topic word rather than an assertion", slide=i, claim=claim)
+        if title and (title.casefold().strip(" :：-—_") in TOPIC_TITLES or _is_topic_claim(title)):
+            _add(findings, "org.title_is_topic", "medium",
+                 "the visible slide title is a topic label rather than a conclusion", slide=i, title=title)
+        if claim and _sentences(claim) > 1 and spec.get("require_single_claim", True):
+            _add(findings, "org.multiple_claims", "medium",
+                 "a slide declares multiple sentence-level claims instead of one message",
+                 slide=i, claim=claim)
+        if s.get("claim") and not s.get("strength"):
+            _add(findings, "org.evidence_strength_missing", "medium",
+                 "the claim carries no evidence-strength label", slide=i)
+        if s.get("strength") and str(s.get("strength")) not in ordered:
+            _add(findings, "org.strength_unknown", "low",
+                 "the evidence-strength label is outside the declared rankable scale",
+                 slide=i, strength=s.get("strength"), allowed=list(ordered))
+        if spec.get("require_evidence_rationale") and s.get("claim") and not str(s.get("strength_rationale") or "").strip():
+            _add(findings, "org.strength_rationale_missing", "medium",
+                 "the evidence-strength label has no supporting rationale", slide=i)
+        if str(s.get("strength") or "").casefold() == "strong":
+            context = " ".join(str(s.get(k) or "") for k in ("claim", "strength_rationale", "notes")).casefold()
+            if re.search(r"preliminary|suggestive|uncertain|possibly|初步|探索性|不确定|可能|或许", context):
+                _add(findings, "org.strength_overstated", "medium",
+                     "a 'strong' label conflicts with preliminary or uncertain evidence language", slide=i)
+
+    # Closing and limitations must survive the actual slide sequence, not just notes.
+    if spec.get("require_closing"):
+        if not main or str(main[-1][1].get("role") or "").casefold() not in CLOSING_ROLES:
+            _add(findings, "org.closing_missing", "medium",
+                 "the last main slide is not a conclusion/takeaway/limitation; backups cannot replace it")
+        else:
+            final_slide, final = main[-1]
+            takeaway = str(final.get("takeaway") or final.get("title") or "").strip()
+            if not takeaway:
+                _add(findings, "org.takeaway_missing", "medium",
+                     "the closing slide has no portable takeaway")
+            delivered = (deck_summary or {}).get("slides") or []
+            if delivered and takeaway and final_slide <= len(delivered):
+                text = str(delivered[final_slide - 1].get("text") or "")
+                if takeaway not in text:
+                    _add(findings, "org.takeaway_not_landed", "high",
+                         "the declared closing takeaway is absent from the delivered final slide",
+                         slide=final_slide)
+    if spec.get("require_limitations"):
+        limited = [i for i, s in main if str(s.get("role") or "").casefold() in LIMIT_ROLES and
+                   (s.get("limitations") or s.get("bullets") or s.get("takeaway") or s.get("claim"))]
+        if not limited:
+            _add(findings, "org.limitations_missing", "medium",
+                 "no main slide carries explicit study limitations or extrapolation boundaries")
+
+    # Q&A preparation has real topics, answers and optional evidence/page pointers.
+    qa = spec.get("qa_prep") or []
     if spec.get("require_qa_prep"):
-        qa = spec.get("qa_prep")
-        entries = [q for q in (qa if isinstance(qa, list) else []) if isinstance(q, dict)]
-        usable = [q for q in entries
-                  if str(q.get("question") or q.get("topic") or "").strip()]
-        if not usable:
+        incomplete = [i for i, item in enumerate(qa, 1)
+                      if not isinstance(item, dict)
+                      or not str(item.get("question") or "").strip()
+                      or not (str(item.get("answer") or "").strip() or item.get("answer_slide"))]
+        if not qa or incomplete:
             _add(findings, "org.qa_prep_missing", "medium",
-                 "the talk requires prepared answers but the spec records no anticipated "
-                 "question, so the presenter is unprepared for the 追问",
-                 require_qa_prep=str(spec.get("require_qa_prep")))
-        elif any(not str(q.get("answer") or q.get("answer_slide") or q.get("page") or "").strip()
-                 for q in usable):
-            _add(findings, "org.qa_prep_missing", "medium",
-                 "an anticipated question records no answer or answer page, so the "
-                 "preparation cannot be rehearsed",
-                 count=len(usable) - len([q for q in usable
-                                          if str(q.get("answer") or q.get("answer_slide")
-                                                 or q.get("page") or "").strip()]))
+                 "Q&A preparation was required but a question or answer/answer-slide pointer is missing",
+                 incomplete=incomplete)
+    normalized_questions = set()
+    for pos, item in enumerate(qa, 1):
+        if not isinstance(item, dict):
+            continue
+        question = re.sub(r"\s+", " ", str(item.get("question") or "").strip().casefold())
+        if question in normalized_questions and question:
+            _add(findings, "org.qa_duplicate", "low", "the same anticipated question is repeated", item=pos)
+        normalized_questions.add(question)
+        answer_slide = item.get("answer_slide")
+        if answer_slide is not None:
+            try:
+                if not 1 <= int(answer_slide) <= len(slides):
+                    raise ValueError("outside slide range")
+            except (TypeError, ValueError):
+                _add(findings, "org.qa_pointer_invalid", "medium",
+                     "a Q&A answer points to a slide outside the deck", item=pos,
+                     answer_slide=answer_slide)
+        if spec.get("require_qa_evidence") and not (item.get("evidence") or item.get("answer_slide")):
+            _add(findings, "org.qa_evidence_missing", "medium",
+                 "a prepared answer has no evidence locator or answer-slide pointer", item=pos)
+    required_topics = [str(t) for t in (spec.get("required_qa_topics") or [])]
+    if required_topics:
+        actual_topics = {str(item.get("topic") or "") for item in qa if isinstance(item, dict)}
+        missing_topics = [t for t in required_topics if t not in actual_topics]
+        if missing_topics:
+            _add(findings, "org.qa_topics_missing", "medium",
+                 "anticipated Q&A omits required challenge categories", missing=missing_topics)
+
+    # Selection choices are as reviewable as the final slides.
+    if spec.get("require_selection_ledger"):
+        ledger = spec.get("selection_ledger") or {}
+        incomplete = []
+        for bucket in ("kept", "omitted"):
+            for i, item in enumerate(ledger.get(bucket) or [], 1):
+                if not isinstance(item, dict) or not item.get("content") or not item.get("reason") or not item.get("evidence"):
+                    incomplete.append({"bucket": bucket, "item": i})
+        if not (ledger.get("kept") or ledger.get("omitted")) or incomplete:
+            _add(findings, "org.selection_ledger_incomplete", "medium",
+                 "the content-selection ledger lacks kept/omitted content, source locator, or reason",
+                 incomplete=incomplete)
+    if spec.get("require_selection_reasons"):
+        for i, s in main:
+            if not str(s.get("selection_reason") or "").strip():
+                _add(findings, "org.slide_decision_missing", "low",
+                     "a slide does not say why it earned a slot in the talk", slide=i)
+
+    # Visible slides are checked when a written-deck summary is available.
+    for i, ds in enumerate((deck_summary or {}).get("slides") or [], 1):
+        if i <= len(slides) and str(slides[i - 1].get("title") or "").strip():
+            expected = str(slides[i - 1]["title"]).strip()
+            if expected not in str(ds.get("text") or ""):
+                _add(findings, "org.content_dropped", "high",
+                     "a declared conclusion-style title is absent from the delivered slide", slide=i)
 
 
 # --- 33: 学术 PPT 模板与格式适配 ---------------------------------------------
@@ -391,10 +557,17 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
     template turns the corresponding check off rather than on.
     """
     summary = deck_summary or {}
-    sp = summary.get("spacing") if isinstance(summary.get("spacing"), dict) else None
-    if not isinstance(sp, dict):
-        sp = spec.get("spacing") if isinstance(spec.get("spacing"), dict) else {}
+    sp = summary.get("spacing") or spec.get("spacing") or {}
     title, body = sp.get("title"), sp.get("body")
+    # Real template application may correct a stale declared size. Judge the
+    # delivered ladder, not a superseded spec value. The smallest measured title
+    # and body are the conservative check when cover/content layouts differ.
+    delivered_title = [float(v) for slide in summary.get("slides") or []
+                       for v in slide.get("title_sizes") or []]
+    delivered_body = [float(v) for slide in summary.get("slides") or []
+                      for v in slide.get("body_sizes") or []]
+    if delivered_title and delivered_body:
+        title, body = min(delivered_title), min(delivered_body)
     if title and body:
         ratio = float(title) / float(body)
         if ratio < 1.35:
@@ -406,17 +579,16 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
                  "the title is more than three times the body size, which will wrap or crowd",
                  title_pt=title, body_pt=body, ratio=round(ratio, 2))
 
-    tmpl = spec.get("template") if isinstance(spec.get("template"), dict) else None
-    if tmpl:
+    if spec.get("template"):
         # "template.layouts" is the declared set the template actually provides; a
         # slide outside it falls back to a default layout and loses the theme.
-        used = {str(s.get("layout") or "content") for s in _slides_of(spec)}
-        declared = set(tmpl.get("layouts") or [])
+        used = {s.get("layout", "content") for s in (spec.get("slides") or [])}
+        declared = set((spec.get("template") or {}).get("layouts") or [])
         if declared and not used <= declared:
             _add(findings, "format.undeclared_layout", "high",
                  "a slide uses a layout the template does not declare, so it will fall back "
                  "to a default and lose the theme", used=sorted(used), declared=sorted(declared))
-        if tmpl.get("name") is None:
+        if (spec.get("template") or {}).get("name") is None:
             _add(findings, "format.template_unnamed", "low",
                  "the deck names no template, so the adaptation is not reproducible")
 
@@ -455,7 +627,7 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
     # Title geometry and title size, per declared layout. One layout is one geometry
     # in the template; slides on the same layout that disagree are pages the
     # adaptation never reached. A slide with no title box is deck.no_title's job.
-    if tmpl:
+    if spec.get("template"):
         groups: dict[str, list[dict]] = {}
         for ds in dslides:
             if ds.get("title_geom"):
@@ -475,10 +647,34 @@ def template_fit(spec: dict, findings: list[dict], deck_summary: dict | None = N
                      "so the type ladder is not one ladder",
                      slide_layout=layout, aspect="size", variants=len(set(size_sets)))
 
+    # Body geometry and size must share the same layout contract as the title.
+    # Without this, a deck can have perfect cover/title formatting while later
+    # pages retain old margins and font sizes — the exact partial-adaptation failure.
+    if spec.get("template"):
+        body_groups: dict[str, list[dict]] = {}
+        for ds in dslides:
+            if ds.get("body_geom"):
+                body_groups.setdefault(str(ds.get("layout") or "content"), []).append(ds)
+        for layout, members in body_groups.items():
+            # A caption or image legitimately reserves a different body height.
+            # Batch margins are determined by origin and width, not forced equal cy.
+            variants = {tuple(m["body_geom"][:3]) for m in members}
+            if len(variants) > 1:
+                _add(findings, "format.body_drift", "medium",
+                     "slides on one declared layout place their body boxes differently, "
+                     "so page margins/reflow are not batch-consistent",
+                     slide_layout=layout, aspect="body_geometry", variants=len(variants),
+                     slides=[m.get("index", 0) for m in members])
+            sizes = [tuple(m.get("body_sizes") or ()) for m in members]
+            if sizes and all(sizes) and len(set(sizes)) > 1:
+                _add(findings, "format.body_drift", "medium",
+                     "slides on one declared layout use different body font sizes",
+                     slide_layout=layout, aspect="body_size", variants=len(set(sizes)))
+
     # Declared content must actually land. An exact-text match against the written
     # slide is the mechanical net for a missing placeholder with no substitution:
     # the file opens, the layout holds, and the content is simply not there.
-    spec_slides = _slides_of(spec)
+    spec_slides = spec.get("slides") or []
     for i, ds in enumerate(dslides, start=1):
         text = ds.get("text")
         if text is None:
@@ -516,9 +712,9 @@ def run(spec: dict, section: str, deck_summary: dict | None = None) -> list[dict
     if fn is None:
         raise ValueError(f"unknown section '{section}'; choose from {sorted(SECTIONS)}")
     findings: list[dict] = []
-    if section in ("template_fit", "deck_edit"):
-        # Both sections judge the written deck against the record when a summary is
-        # handed over, and stay silent when it is not.
+    if section in ("template_fit", "deck_edit", "talk_org"):
+        # All three judge the written artifact against their own domain records;
+        # direct rule-only bench calls pass no summary and keep declarative guards.
         fn(spec, findings, deck_summary)
     else:
         fn(spec, findings)

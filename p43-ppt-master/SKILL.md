@@ -22,7 +22,7 @@ description: >
 | `scripts/deckbuild.py` | 总控入口：构建/保结构编辑→模板套用→读回审计→修约→契约回填 |
 | `scripts/decksource.py` | 从真实 PPTX 提取页面骨架；保留母版、媒体和嵌入对象执行文本修改 |
 | `scripts/templatecheck.py` | 测量真实 PPTX/POTX，并移交其 master/layout/theme 壳 |
-| `scripts/deckaudit.py` | 对最终 PPTX 逐页审计，不信任 spec 自述 |
+| `scripts/deckaudit.py` | 读回最终 PPTX，审计主张/来源落位、横纵溢出、越界、文本碰撞、字形与可解析对比度 |
 | `scripts/extra_rules.py` | 四条路由的专属结构规则 |
 | `scripts/pptxgen.py` | 纯标准库 PresentationML 生成器 |
 | `scripts/fontsel.py` | 按实际字符选择有字形的字体 |
@@ -36,16 +36,22 @@ description: >
    数据、PPTX/POTX；文件标签不是证据。解析 PDF 时用原 PDF，不假设存在预抽取答案。
 1. **按任务措辞路由。** 使用下表确定 section 和必填字段；一个案例可在同一 spec 叠加目标、
    修订和模板字段，但只选一个 section。跨路由必须顺序产生新 spec 和新一轮变更台账。
-2. **先产出目标产物。** 从源材料提炼研究问题、方法、结果和限制，每页写一个可反驳 claim、
-   来源 locator 与讲者备注；先保存 `/app/output/deck.pptx` 的诚实版本。编辑任务优先保留
-   原包，而不是按记忆重建；模板任务使用模板文件本体。
+2. **先产出目标产物。** 从源材料提炼研究问题、方法、结果和限制，每页只写一个可反驳 claim、
+   来源 locator 与讲者备注；标题承载该页结论，备注补过渡、强调点和追问证据，不复读页面。
+   数值、单位和图号逐字核对原文，来源同时落在可见页面和 evidence_map，不生摘段落或改写结果。
+   先保存 `/app/output/deck.pptx` 的诚实版本。编辑任务优先保留原包，而不是按记忆重建；
+   模板任务使用模板文件本体。
 3. **构造 spec。** 在 `/app/work` 写 JSON：公共字段为 slides、available_evidence、spacing、
    font_ea、font_latin、min_font_pt、require_notes、max_slides、uncertainty；按路由增加
    required_mainline、source_deck、revisions、template、goal、narrative、qa_prep。
    CLI 传 `--case /input/case.json`，无需复制或改写契约。
 4. **审计。** 在技能目录执行：
    `python -I -X utf8 scripts/deckbuild.py --spec /app/work/spec.json --case /input/case.json --out /app/output`。
-   正常路径写 deck.pptx、result.json，渲染器存在时另写真实 PDF；退出码只有 0/3/4/5。
+   正常路径写 deck.pptx、result.json；PATH 上有 LibreOffice/office-renderer 时另写真实 PDF，
+   有 pdftoppm 时再从该 PDF 生成逐页 PNG 并列入 preview.images/artifacts。退出码只有 0/3/4/5。
+   生成页使用 `a:noAutofit`，不允许 PowerPoint 暗中缩字掩盖溢出；读回审计还会检查画布越界、
+   非空文本框碰撞、可见来源和能解析为 RGB 的文本/背景对比度。声明 goal 时，任一路由都核对受众、
+   时长和逐页 pace；未声明不会强加 talk_org 的证据强度词表。
 5. **修发现并重跑。** 按异常表修源材料映射、页面内容或记录后重跑。为消除发现而补造论文
    对象、数字、字体或预览属于失败；材料确实不支持时保留 review/blocked 并写 uncertainty
    与 limits。每次实际修改都进 revisions，交付版由 delivered_revision 指认。
@@ -149,9 +155,10 @@ result.json 同时含四行 evidence_map、review_note 原文和 uncertainty；c
 | blocked | 4 | 至少一个 high；不得把未完成品写成完成 |
 | undetermined | 5 | 输入/源文件/路由无法运行；独立拒绝路径，永不 traceback |
 
-正常结果保留原 `output_contract` 对象及 `output_contract_fields` 清单。契约支持名称→说明对象、
-字符串数组、含 field/name/key 的对象数组；审计已有字段不被 spec 覆盖，案例文件中的 case_id
-优先于 spec 内标识。无法推导的同名字段为 null 并进入 limits。
+正常结果保留原 `output_contract` 对象及 `output_contract_fields` 清单。**结构化拒绝也会仅从独立
+可读的 case 安全回填同一身份与全部字段**；畸形 spec 不参与拒绝回填，找不到的产物字段为 null。
+契约支持名称→说明对象、字符串数组、含 field/name/key 的对象数组；审计已有字段不被 spec 覆盖，
+案例文件中的 case_id 优先于 spec 内标识。无法推导的同名字段为 null 并进入 limits。
 
 ## 规则索引（每条一行）
 
@@ -165,6 +172,7 @@ result.json 同时含四行 evidence_map、review_note 原文和 uncertainty；c
 | `deck.claim_missing` | medium | 页面只有主题没有主张 |
 | `deck.evidence_missing` | high | 页面无来源定位 |
 | `deck.evidence_unsupported` | high | 定位不在实际证据白名单 |
+| `deck.evidence_not_landed` | high | 声明来源只存在于 JSON，未落入可见页面文本 |
 | `deck.caption_not_landed` | high | spec 声明 caption 但未落入最终文件 |
 | `format.figure_mismatch` | high | caption 与 evidence 指向不同图号 |
 
@@ -240,7 +248,10 @@ result.json 同时含四行 evidence_map、review_note 原文和 uncertainty；c
 | `format.size_ladder_flat` | medium | 标题/正文比例小于 1.35 |
 | `format.size_ladder_steep` | low | 标题超过正文三倍 |
 | `format.template_unnamed` | low | 声明 template 却无名称 |
-| `text.overflow` | high | 文本按字形度量后超出实际框 |
+| `shape.out_of_bounds` | high | 非空文本框或图片几何非正或越过实际画布 |
+| `shape.overlap` | high | 两个非空文本框交叠至少占较小框 25% |
+| `text.overflow` | high | 文本按字形横/纵度量后超出实际框，含不可断行长 token |
+| `text.contrast_low` | high | 实际包可解析的前景/背景 RGB 对比度不足 |
 | `text.font_too_small` | high | 字号低于可读下限 |
 | `text.size_missing` | medium | run 未声明字号 |
 | `text.body_too_large` | low | 正文字号与标题竞争 |
@@ -263,7 +274,7 @@ result.json 同时含四行 evidence_map、review_note 原文和 uncertainty；c
 | case.json 缺失/坏 JSON | 有可读 spec 时继续并在 limits 注明；case_id 仅为明确值，不能编造契约字段 |
 | task.md 缺失或约束不清 | 登记 uncertainty，不虚构时长/页数；无法形成产物时写 undetermined |
 | 论文 PDF 不可读/缺页 | 保留未完成页与材料缺口；不把文件名当研究结论 |
-| spec 缺失、坏 JSON、非对象、slides 非数组 | exit 5 + result.json；拒绝函数不调用契约回填 |
+| spec 缺失、坏 JSON、非对象、slides 非数组 | exit 5 + result.json；拒绝回填只读独立 case，绝不读畸形 spec |
 | section 未知或非字符串 | exit 5；选择四条合法路由，不静默跳过专属检查 |
 | spacing/bullets 类型错误 | spacing 安全回退并写 limits；bullets 无法规范化则 exit 5 |
 | 源 PPTX 不存在/损坏 | exit 5；先修复输入，不从记忆伪造“原稿” |
@@ -274,9 +285,13 @@ result.json 同时含四行 evidence_map、review_note 原文和 uncertainty；c
 | layout 缺失或重名 | high/medium；改用真实 name/type，歧义未解不应用模板壳 |
 | 页数超预算/时间超预算 | 按主张强度压缩页；保留被删快照和新一轮记录 |
 | 图文件缺失 | 不画替代曲线；页面无图部分交付并 exit 4 |
-| 文本溢出 | 删要点或拆页；不得缩到字号下限以下 |
+| 文本横向/纵向溢出 | 删要点或拆页、缩短不可断行 token；不得依赖自动缩字或降到字号下限以下 |
+| 元素越界/文本框重叠 | 回到实际画布移动或缩放框、拆分内容；碰撞规则不推断装饰图片的意图 |
+| 来源只在 JSON 中 | 把精确 locator 写入页面 Source/caption/修订文本，再读回确认；不补造图号或页码 |
+| 对比度不足 | 调整实际前景或背景色后重跑；未知图片/特效背景只记限制，不猜测 |
 | 字体未安装/缺字形 | 换有字形的实际字体；记录缺失字符，不声称字体嵌入成功 |
 | 无 Office renderer | preview.rendered=false + limits；安装后重跑，不创建假 PDF |
+| 有 PDF、无 pdftoppm/PNG 失败 | 保留真实 PDF，preview.png_rendered=false + png_reason/limits；不伪造 PNG |
 | 模板无法应用 | 交付块标 template_applied=false；不能以 template 名字冒充已套用 |
 | 两遍构建不同 | blocked；消除时间戳式内容、随机布局或并发写入 |
 | output_contract 形状未知 | 保持主产物，limits 点名未知形状，不迭代数字/空对象 |
@@ -292,7 +307,19 @@ result.json 同时含四行 evidence_map、review_note 原文和 uncertainty；c
 - 原型图片/媒体随包保留；不声称生成原生可编辑图表或重绘位图数据。
 - 标准库字形测量使用 cmap/advance width，不含 kerning/ligature；Pillow 存在时交叉使用其实际
   字形宽度。完全不能读取字体时退化为估算并在 checked/limits 标记。
+- 越界覆盖内容文本框与图片；碰撞只比较非空文本框，未推断背景图、组合形状、旋转图形的遮挡意图。
+  对比度覆盖可解析的 shape→slide→layout→master→theme 实色 RGB，未仿真图片、渐变、透明度与特效。
+- 没有 Office renderer 时 preview.rendered=false，且必须继续做 zip CRC、XML、OOXML 关系、几何、
+  横纵文字、缺字形和可解析对比度检查；这些检查不等于逐一像素证明无视觉问题。
 - 证据白名单和叙事字段是声明式审计；`clean` 不等于保证引用语义，最终仍要人工回读源文。
+
+## 版式实现参考（非运行时依赖）
+
+参考 GitHub 上广泛使用的 [PptxGenJS](https://github.com/gitbrent/PptxGenJS) 及其
+[文本框 fit/margin 文档](https://gitbrent.github.io/PptxGenJS/docs/api-text.html)：`fit: none/shrink/resize`
+分别对应 `a:noAutofit/a:normAutofit/a:spAutoFit`，margin/inset 是框内可用区域的一部分。本包采用
+“明确 insets + noAutofit + 实际字形横纵测量”的保守组合，不用 shrink-to-fit 掩盖问题，也不让
+spAutoFit 擅自改框制造碰撞。参考只用于 OOXML 行为核对；本包不引入 Node/PptxGenJS 依赖。
 
 ## 创新增益（均为本包真实能力）
 
@@ -308,27 +335,33 @@ result.json 同时含四行 evidence_map、review_note 原文和 uncertainty；c
    证据强度词表都由同一 spec 复算；声明才启用，避免惩罚普通合法页面。
 6. **科学诚实优先于全绿**：缺图、缺材料、无预览、结构修改未执行和契约不可推导都有独立记录；
    引擎不接受 spec 中的 status 覆盖实际审计结论。
+7. **页级证据与版面双重读回**：来源文字实际落在每页，横/纵文本、画布、文本碰撞和 RGB 对比度
+   都从交付 PPTX 复算；确定性比较涵盖所有 OPC payload 部件而非只看标题。
+8. **拒绝仍是完整契约结果**：缺 spec、坏 spec 和源文件失败不再丢掉 case 字段；正常交付与异常
+   都能在相同 JSON 合同下复核，未知产物明确为 null。
 
 ## 生态贡献（八项）
 
 1. **使用说明**：本文件含用途、条件、0–6 入口、调用、输入输出、异常、限制和维护门槛。
-2. **无个人路径依赖**：所有引擎在包内；Python 3.9+，核心标准库，可选 Pillow/matplotlib 仅加速。
+2. **无个人路径依赖**：所有引擎在包内；Python 3.9+，核心标准库，可选 Pillow/matplotlib 仅加速；
+   LibreOffice/office-renderer 与 pdftoppm 只用于真实预览，PATH 缺失会明确降级而非导入失败。
 3. **可复用引擎**：decksource、templatecheck、glyphmetrics、deckaudit、contract_echo 均可独立导入。
 4. **声明式配置**：页面、证据、预算、源稿、模板、叙事和问答全由 JSON 控制，无需改源码。
 5. **最小与组合示例**：examples/case.json + spec-master.json；另有三条旧路由的独立规格示例。
-6. **回归资产**：四个 bench 共 91 个场景，规则触发与 FP 守卫并存，clean 基线零发现。
-7. **敌意探针**：26 个真实 CLI 场景统一验证 exit∈{0,3,4,5}、result.json 和无 traceback。
+6. **回归资产**：五个 bench 共 98 个真实生成/变异场景，规则触发与 FP 守卫并存，clean 基线零发现。
+7. **敌意探针**：29 个真实 CLI 场景统一验证 exit∈{0,3,4,5}、result.json、拒绝契约和无 traceback。
 8. **实践经验固化**：文本写后再读、拒绝与契约分离、二进制只在临时目录生成、规则以本包 bench
    为维护门槛；任何规则变更须同步规则索引、缺陷场景和正常守卫。
 
 ## Verification（作者复跑，不是运行时必做步骤）
 
 ```bash
-python -X utf8 scripts/bench_deck.py     # 11 场景
-python -X utf8 scripts/bench_deck2.py    # 16 场景
-python -X utf8 scripts/bench_extra.py    # 27 场景
-python -X utf8 scripts/bench_master.py   # 37 场景
-python -X utf8 scripts/probe_hostile.py  # 26 个真实 CLI 探针
+python -X utf8 scripts/bench_deck.py       # 11 场景；使用作者机可选 Pillow 生成测试图
+python -X utf8 scripts/bench_deck2.py      # 16 场景
+python -X utf8 scripts/bench_extra.py      # 27 场景
+python -X utf8 scripts/bench_master.py     # 37 场景
+python -I -X utf8 scripts/bench_layout.py  # 7 场景；纯标准库，含冷导入/OOXML/几何
+python -I -X utf8 scripts/probe_hostile.py # 29 个真实 CLI 探针；冷导入
 ```
 
 bench 在包内 `_run*` 写临时 PPTX，打包器会排除；探针改用系统临时目录。scripts 中的

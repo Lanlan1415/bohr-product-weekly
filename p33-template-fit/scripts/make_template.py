@@ -1,41 +1,34 @@
-"""Write the worked example's template package (.potx) — standard library only.
+"""Create a real two-layout PPTX template for the worked example.
 
-The example template is a genuine .potx-shaped OPC zip, so it cannot ship as a
-text file. Instead the package ships the *builder*: this script regenerates the
-template anywhere, deterministically, with the theme faces of your choice.
-
-    python scripts/make_template.py --out examples/template.potx
-    python scripts/make_template.py --out /app/work/template.potx --latin "Times New Roman" --ea "SimSun"
-
-The layouts it provides ("Title Slide", "Title and Content") carry the same
-title-placeholder geometry the generator writes, which is what makes the clean
-worked example clean; point a spec's template.file at the file to run the
-measured-template rules against it.
+The fixture starts from the same renderer-tested PresentationML package as the
+runtime generator, then adds native title/body placeholders and valid master
+relationships. It writes a binary runtime artifact; nothing binary ships in the
+skill package.
 """
-
 from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import bench_template as BT  # noqa: E402
+from bench_delivery4 import native_template  # noqa: E402
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="make_template", description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--out", required=True, help="path of the .potx to write")
+    ap = argparse.ArgumentParser(prog="make_template", description=__doc__)
+    ap.add_argument("--out", required=True, help="output .pptx template path")
     ap.add_argument("--latin", default="Arial", help="major/minor latin typeface")
     ap.add_argument("--ea", default="Microsoft YaHei", help="major/minor east-asian typeface")
-    a = ap.parse_args(argv)
-    out = Path(a.out)
+    args = ap.parse_args(argv)
+    source = native_template("documented-example", latin=args.latin, ea=args.ea)
+    out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    p = BT.build_template(out, latin=a.latin, ea=a.ea)
-    print(json.dumps({"ok": True, "wrote": str(p), "bytes": p.stat().st_size},
-                     ensure_ascii=False))
+    shutil.copyfile(source, out)
+    print(json.dumps({"ok": True, "wrote": str(out), "bytes": out.stat().st_size,
+                      "layouts": ["Title Slide", "Title and Content"]}, ensure_ascii=False))
     return 0
 
 

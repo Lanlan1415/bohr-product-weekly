@@ -1,0 +1,233 @@
+{
+  "schema_version": "talk-delivery-bench/v4",
+  "temp_root": "C:\\Users\\lanlan\\AppData\\Local\\Temp\\p32_delivery4_8j8j09ud",
+  "scenarios": [
+    {
+      "scenario": "clean_complete_story",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "topic_title_detected",
+      "expected": [
+        "org.title_is_topic"
+      ],
+      "fired": [
+        "org.title_is_topic"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "multiple_claims_detected",
+      "expected": [
+        "org.multiple_claims"
+      ],
+      "fired": [
+        "org.multiple_claims"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "narrative_backwards_detected",
+      "expected": [
+        "org.narrative_order"
+      ],
+      "fired": [
+        "org.narrative_order"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "takeaway_landing_checked",
+      "expected": [
+        "org.takeaway_not_landed"
+      ],
+      "fired": [
+        "org.takeaway_not_landed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_closing_detected",
+      "expected": [
+        "org.closing_missing"
+      ],
+      "fired": [
+        "org.audience_emphasis_missing",
+        "org.closing_missing",
+        "org.limitations_missing",
+        "org.narrative_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_limitations_detected",
+      "expected": [
+        "org.limitations_missing"
+      ],
+      "fired": [
+        "org.audience_emphasis_missing",
+        "org.limitations_missing",
+        "org.narrative_incomplete",
+        "org.role_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "audience_emphasis_gap_detected",
+      "expected": [
+        "org.audience_emphasis_missing"
+      ],
+      "fired": [
+        "org.audience_emphasis_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "time_budget_exceeded_detected",
+      "expected": [
+        "org.pace_budget_exceeded"
+      ],
+      "fired": [
+        "org.pace_budget_exceeded"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_slide_time_detected",
+      "expected": [
+        "org.pace_slide_missing"
+      ],
+      "fired": [
+        "org.pace_slide_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_qa_topic_detected",
+      "expected": [
+        "org.qa_topics_missing"
+      ],
+      "fired": [
+        "org.qa_topics_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "invalid_qa_pointer_detected",
+      "expected": [
+        "org.qa_pointer_invalid"
+      ],
+      "fired": [
+        "org.qa_pointer_invalid"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_strength_reason_detected",
+      "expected": [
+        "org.strength_rationale_missing"
+      ],
+      "fired": [
+        "org.strength_rationale_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "overstated_strength_detected",
+      "expected": [
+        "org.strength_overstated"
+      ],
+      "fired": [
+        "org.strength_overstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "incomplete_selection_ledger_detected",
+      "expected": [
+        "org.selection_ledger_incomplete"
+      ],
+      "fired": [
+        "org.selection_ledger_incomplete"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "missing_selection_reason_detected",
+      "expected": [
+        "org.slide_decision_missing"
+      ],
+      "fired": [
+        "org.slide_decision_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    },
+    {
+      "scenario": "visible_evidence_landing_checked",
+      "expected": [
+        "deck.evidence_not_landed"
+      ],
+      "fired": [
+        "deck.evidence_not_landed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "assertions": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 17,
+    "of": 17
+  }
+}

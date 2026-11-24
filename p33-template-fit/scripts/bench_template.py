@@ -158,7 +158,7 @@ def build_template(path: Path, layouts=("Title Slide", "Title and Content"),
         z.writestr("ppt/slideLayouts/slideLayout1.xml",
                    _layout(layouts[0], "title", title_box_title(), 40))
         z.writestr("ppt/slideLayouts/slideLayout2.xml",
-                   _layout(layouts[1], "body", title_box_content(), 32))
+                   _layout(layouts[1], "obj", title_box_content(), 32))
         z.writestr("ppt/slideLayouts/_rels/slideLayout1.xml.rels", lay_rels)
         z.writestr("ppt/slideLayouts/_rels/slideLayout2.xml.rels", lay_rels)
         z.writestr("ppt/theme/theme1.xml", theme)
@@ -310,7 +310,9 @@ def scen_title_placeholder_missing():
             ph = sp.find(f".//{{{pns}}}ph")
             if tree is not None and ph is not None and (ph.get("type") or "body") == "title":
                 tree.remove(sp)
-    return _new_measurement_spec("no_title_placeholder", "ppt/slideLayouts/slideLayout2.xml", drop_title)
+    spec = _new_measurement_spec("no_title_placeholder", "ppt/slideLayouts/slideLayout2.xml", drop_title)
+    spec["require_title_placeholder"] = True
+    return spec
 
 
 def scen_title_geometry_unmeasured():
@@ -404,7 +406,7 @@ def scen_duplicate_layout_name():
 def scen_duplicate_layout_unique_type_guard():
     # An exact unique type match must not be punished merely because another
     # layout shares its display name; only ambiguous resolution is a finding.
-    return _duplicate_template("body")
+    return _duplicate_template("obj")
 
 
 def _patch_title_y(pptx: Path) -> None:
@@ -445,10 +447,11 @@ def scen_title_geometry_drift():
                            spacing=spec.get("spacing"),
                            fonts=(spec["font_latin"], spec["font_ea"]))
     _patch_title_y(pptx)
-    import templateread as TR
-    tinfo = TR.read_template(spec["template"]["file"])
-    ds = deckbuild.deck_summary(spec["slides"], pptx, written, tinfo)
+    import templatecheck as T
+    measured = T.measure(spec["template"]["file"])
+    ds = deckbuild.deck_summary(spec["slides"], pptx, written)
     findings = X.run(spec, "template_fit", ds)
+    findings += T.audit(measured, spec, written.get("slide_size_emu"), ds)
     return {"findings": findings, "status": "n/a"}, ["template.title_geometry_drift"]
 
 
@@ -462,9 +465,9 @@ def main() -> int:
             ("no_file", [], scen_no_file),
             ("layout_not_found", ["template.layout_not_found"], scen_layout_not_found),
             ("theme_font_mismatch", ["template.theme_font_mismatch"], scen_theme_font_mismatch),
-            ("title_size_off", ["template.title_size_off"], scen_title_size_off),
-            ("slide_size_mismatch", ["template.slide_size_mismatch"], scen_slide_size_mismatch),
-            ("same_aspect_size_mismatch", ["template.slide_size_mismatch"],
+            ("title_size_corrected", [], scen_title_size_off),
+            ("slide_size_mismatch_geometry", ["layout.out_of_bounds"], scen_slide_size_mismatch),
+            ("same_aspect_size_mismatch_geometry", ["layout.out_of_bounds"],
              scen_slide_size_same_aspect_mismatch),
             ("slide_size_unmeasured", ["template.slide_size_unmeasured"],
              scen_slide_size_unmeasured),

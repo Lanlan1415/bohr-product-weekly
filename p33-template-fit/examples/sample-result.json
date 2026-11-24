@@ -1,91 +1,279 @@
 {
-  "schema_version": "deckbuild/v1",
+  "schema_version": "deckbuild/v3",
+  "section": "template_fit",
   "status": "clean",
   "findings": [],
   "severity_counts": {},
   "deck": {
-    "path": "examples\\demo_out\\deck.pptx",
-    "slides": 2,
+    "path": "/app/output/deck.pptx",
+    "slides": 4,
     "size_emu": [
       12192000,
       6858000
     ],
     "spacing": {
-      "title": 32,
-      "body": 20
+      "title": 32.0,
+      "body": 20.0
     },
     "fonts": {
       "latin": "Arial",
       "ea": "Microsoft YaHei"
-    }
+    },
+    "source_deck": null,
+    "style": {
+      "slide_in": [
+        13.3333333333,
+        7.5
+      ],
+      "margins_in": [
+        0.35,
+        0.5,
+        0.9,
+        0.5
+      ],
+      "title_height_in": 1.0,
+      "gap_in": 0.15,
+      "image_ratio": 0.38,
+      "colors": {
+        "background": "FFFFFF",
+        "text": "1A1A1A",
+        "title": "17365D",
+        "accent": "0072B2",
+        "muted": "5F6B76"
+      },
+      "footer": {
+        "text": "示例模板 · 非正式案例",
+        "page_numbers": true,
+        "logo": null,
+        "logo_alt": ""
+      }
+    },
+    "template_applied": true
   },
+  "evidence_map": [
+    {
+      "slide": 1,
+      "title": "多孔涂层解决吸收速率瓶颈",
+      "claim": "吸收速率是示例研究要解决的问题",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 2, p.3",
+      "caption": "",
+      "notes_present": true
+    },
+    {
+      "slide": 2,
+      "title": "等温对照分离结构效应与热效应",
+      "claim": "示例对照设计可以区分结构效应与热效应",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 2, p.3",
+      "caption": "",
+      "notes_present": true
+    },
+    {
+      "slide": 3,
+      "title": "涂层组速率为对照组 2.52 倍",
+      "claim": "31.2 / 12.4 = 2.52，数值对应同一对照",
+      "strength": null,
+      "role": null,
+      "evidence": "Fig. 3b, p.7",
+      "caption": "Fig. 3b, p.7 — 示例对照，每组 n = 6",
+      "notes_present": true
+    },
+    {
+      "slide": 4,
+      "title": "速率提升仅在示例厚度下成立",
+      "claim": "单一厚度数据不能支持对其他厚度的外推",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 5, p.12",
+      "caption": "",
+      "notes_present": true
+    }
+  ],
+  "sources": [
+    {
+      "slide": 1,
+      "title": "多孔涂层解决吸收速率瓶颈",
+      "claim": "吸收速率是示例研究要解决的问题",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 2, p.3",
+      "caption": "",
+      "notes_present": true
+    },
+    {
+      "slide": 2,
+      "title": "等温对照分离结构效应与热效应",
+      "claim": "示例对照设计可以区分结构效应与热效应",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 2, p.3",
+      "caption": "",
+      "notes_present": true
+    },
+    {
+      "slide": 3,
+      "title": "涂层组速率为对照组 2.52 倍",
+      "claim": "31.2 / 12.4 = 2.52，数值对应同一对照",
+      "strength": null,
+      "role": null,
+      "evidence": "Fig. 3b, p.7",
+      "caption": "Fig. 3b, p.7 — 示例对照，每组 n = 6",
+      "notes_present": true
+    },
+    {
+      "slide": 4,
+      "title": "速率提升仅在示例厚度下成立",
+      "claim": "单一厚度数据不能支持对其他厚度的外推",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 5, p.12",
+      "caption": "",
+      "notes_present": true
+    }
+  ],
   "preview": {
-    "rendered": false,
-    "reason": "no office renderer on PATH (soffice / office-renderer)"
+    "rendered": true,
+    "renderer": "soffice",
+    "pdf": "/app/output/deck.pdf",
+    "artifacts": [
+      "/app/output/deck.pdf"
+    ],
+    "returncode": 0,
+    "pdf_bytes": 109395,
+    "pdf_header_valid": true,
+    "inspection": "real PDF produced; pixel-level parity is not claimed by this record"
   },
   "reproducibility": {
     "deterministic": true,
-    "note": "two builds compared on slide text and geometry",
+    "note": "two final artifacts compared on slide text, geometry and speaker notes",
     "detail": {}
   },
   "checked": {
-    "slides": 2,
+    "slides": 4,
     "text_measured": true,
+    "glyph_coverage": "measured",
     "font_file": "C:\\Windows\\Fonts\\msyh.ttc",
     "minimum_font_pt": 14.0,
-    "glyph_coverage": "measured",
-    "note": "overflow measured against glyph metrics"
-  },
-  "limits": [
-    "preview not rendered: no office renderer on PATH (soffice / office-renderer)"
-  ],
-  "template_measured": {
-    "file": "examples/template.potx",
-    "read": true,
-    "slide_size_emu": [
+    "canvas_emu": [
       12192000,
       6858000
     ],
+    "geometry_checked": 16,
+    "contrast_checked": 0,
+    "layout_scope": "explicit slide shapes/pictures only; inherited and group transforms are not fully simulated",
+    "note": "overflow measured against glyph metrics",
+    "evidence_map": [
+      {
+        "slide": 1,
+        "claim": "吸收速率是示例研究要解决的问题",
+        "evidence": "Sec. 2, p.3",
+        "caption": "",
+        "caption_landed": true
+      },
+      {
+        "slide": 2,
+        "claim": "示例对照设计可以区分结构效应与热效应",
+        "evidence": "Sec. 2, p.3",
+        "caption": "",
+        "caption_landed": true
+      },
+      {
+        "slide": 3,
+        "claim": "31.2 / 12.4 = 2.52，数值对应同一对照",
+        "evidence": "Fig. 3b, p.7",
+        "caption": "Fig. 3b, p.7 — 示例对照，每组 n = 6",
+        "caption_landed": true
+      },
+      {
+        "slide": 4,
+        "claim": "单一厚度数据不能支持对其他厚度的外推",
+        "evidence": "Sec. 5, p.12",
+        "caption": "",
+        "caption_landed": true
+      }
+    ]
+  },
+  "template_measured": {
+    "read": true,
+    "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\_judge_tmp\\p33_staged_render\\demo-template.pptx",
     "layouts": [
       "Title Slide",
       "Title and Content"
     ],
     "layout_details": [
       {
+        "part": "ppt/slideLayouts/slideLayout1.xml",
         "name": "Title Slide",
         "type": "title",
         "master": "ppt/slideMasters/slideMaster1.xml",
-        "part": "ppt/slideLayouts/slideLayout1.xml",
-        "title_present": true,
-        "title_ph": {
+        "master_exists": true,
+        "title_placeholder": true,
+        "title_geometry": {
           "x": 822960,
           "y": 2194560,
           "cx": 10546080,
           "cy": 1371600
         },
-        "title_sz": 40.0,
-        "body_present": false,
-        "body_ph": null,
-        "title_geometry_inherited": false,
-        "title_size_inherited": false
+        "body_geometry": null,
+        "title_size_pt": 40.0,
+        "body_size_pt": null,
+        "title_body_pr": {
+          "lIns": "109728",
+          "rIns": "109728",
+          "tIns": "73152",
+          "bIns": "73152",
+          "anchor": "b",
+          "wrap": "square"
+        },
+        "body_body_pr": {},
+        "title_placeholder_idx": null,
+        "title_geometry_inherited": false
       },
       {
-        "name": "Title and Content",
-        "type": "body",
-        "master": "ppt/slideMasters/slideMaster1.xml",
         "part": "ppt/slideLayouts/slideLayout2.xml",
-        "title_present": true,
-        "title_ph": {
+        "name": "Title and Content",
+        "type": "obj",
+        "master": "ppt/slideMasters/slideMaster1.xml",
+        "master_exists": true,
+        "title_placeholder": true,
+        "title_geometry": {
           "x": 457200,
           "y": 320040,
           "cx": 11277600,
           "cy": 914400
         },
-        "title_sz": 32.0,
-        "body_present": false,
-        "body_ph": null,
+        "body_geometry": {
+          "x": 457200,
+          "y": 1371600,
+          "cx": 11277600,
+          "cy": 4663440
+        },
+        "title_size_pt": 32.0,
+        "body_size_pt": 20.0,
+        "title_body_pr": {
+          "lIns": "109728",
+          "rIns": "109728",
+          "tIns": "73152",
+          "bIns": "73152",
+          "anchor": "t",
+          "wrap": "square"
+        },
+        "body_body_pr": {
+          "lIns": "109728",
+          "rIns": "109728",
+          "tIns": "73152",
+          "bIns": "73152",
+          "anchor": "t",
+          "wrap": "square"
+        },
+        "title_placeholder_idx": null,
         "title_geometry_inherited": false,
-        "title_size_inherited": false
+        "body_placeholder": true,
+        "body_placeholder_idx": "1",
+        "body_geometry_inherited": false
       }
     ],
     "theme_fonts": {
@@ -94,22 +282,242 @@
       "minor_latin": "Arial",
       "minor_ea": "Microsoft YaHei"
     },
+    "theme_colors": {
+      "dk1": "1A1A1A",
+      "lt1": "FFFFFF",
+      "dk2": "1A1A1A",
+      "lt2": "FFFFFF",
+      "accent1": "0072B2",
+      "accent2": "D55E00",
+      "accent3": "009E73",
+      "accent4": "E69F00",
+      "accent5": "CC79A7",
+      "accent6": "56B4E9",
+      "hlink": "0072B2",
+      "folHlink": "CC79A7"
+    },
+    "slide_size_emu": [
+      12192000,
+      6858000
+    ],
+    "master_parts": [
+      "ppt/slideMasters/slideMaster1.xml"
+    ],
+    "theme_parts": [
+      "ppt/theme/theme1.xml"
+    ],
+    "master_hashes": {
+      "ppt/slideMasters/slideMaster1.xml": "08f5485e608c831915f5358073bf699bac161449641398c57e9d1faf49fe6845"
+    }
+  },
+  "template_application": {
+    "applied": true,
+    "template": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\_judge_tmp\\p33_staged_render\\demo-template.pptx",
     "masters": [
       "ppt/slideMasters/slideMaster1.xml"
     ],
-    "inheritance_model": "layout placeholder first, then the same placeholder on its related slide master; absent placeholders are not inherited"
+    "layouts": {
+      "1": "ppt/slideLayouts/slideLayout1.xml",
+      "2": "ppt/slideLayouts/slideLayout2.xml",
+      "3": "ppt/slideLayouts/slideLayout2.xml",
+      "4": "ppt/slideLayouts/slideLayout2.xml"
+    },
+    "placeholder_records": {
+      "1": {
+        "title_placeholder": true,
+        "body_placeholder": false,
+        "textbox_fallback": [],
+        "theme_fonts_applied": true,
+        "theme_colors_applied": true
+      },
+      "2": {
+        "title_placeholder": true,
+        "body_placeholder": true,
+        "textbox_fallback": [],
+        "theme_fonts_applied": true,
+        "theme_colors_applied": true
+      },
+      "3": {
+        "title_placeholder": true,
+        "body_placeholder": true,
+        "textbox_fallback": [],
+        "theme_fonts_applied": true,
+        "theme_colors_applied": true,
+        "caption_bands_preserved": [
+          {
+            "caption_y": 5532120,
+            "body_cy": 4023360
+          }
+        ]
+      },
+      "4": {
+        "title_placeholder": true,
+        "body_placeholder": true,
+        "textbox_fallback": [],
+        "theme_fonts_applied": true,
+        "theme_colors_applied": true
+      }
+    },
+    "note": "real master/layout/theme copied; title/body use native placeholders when the selected layout provides them"
   },
-  "case_id": "ppt-710fbc72-demo",
+  "source_record": null,
+  "change_records": [],
+  "uncertainty": [],
+  "version_record": {
+    "reproducibility": {
+      "deterministic": true,
+      "note": "two final artifacts compared on slide text, geometry and speaker notes",
+      "detail": {}
+    },
+    "source_record": null,
+    "delivered_revision": null,
+    "change_records": []
+  },
+  "presentation_plan": {
+    "goal": null,
+    "audience_plan": null,
+    "narrative": [],
+    "qa_prep": [],
+    "slides": [
+      {
+        "slide": 1,
+        "title": "多孔涂层解决吸收速率瓶颈",
+        "claim": "吸收速率是示例研究要解决的问题",
+        "strength": null,
+        "role": null,
+        "evidence": "Sec. 2, p.3",
+        "caption": "",
+        "notes_present": true
+      },
+      {
+        "slide": 2,
+        "title": "等温对照分离结构效应与热效应",
+        "claim": "示例对照设计可以区分结构效应与热效应",
+        "strength": null,
+        "role": null,
+        "evidence": "Sec. 2, p.3",
+        "caption": "",
+        "notes_present": true
+      },
+      {
+        "slide": 3,
+        "title": "涂层组速率为对照组 2.52 倍",
+        "claim": "31.2 / 12.4 = 2.52，数值对应同一对照",
+        "strength": null,
+        "role": null,
+        "evidence": "Fig. 3b, p.7",
+        "caption": "Fig. 3b, p.7 — 示例对照，每组 n = 6",
+        "notes_present": true
+      },
+      {
+        "slide": 4,
+        "title": "速率提升仅在示例厚度下成立",
+        "claim": "单一厚度数据不能支持对其他厚度的外推",
+        "strength": null,
+        "role": null,
+        "evidence": "Sec. 5, p.12",
+        "caption": "",
+        "notes_present": true
+      }
+    ]
+  },
+  "limits": [
+    "output_contract field 'not_available_from_material' was not derivable; null retained"
+  ],
+  "artifacts": [
+    {
+      "kind": "editable_presentation",
+      "path": "/app/output/deck.pptx"
+    },
+    {
+      "kind": "rendered_pdf",
+      "path": "/app/output/deck.pdf"
+    }
+  ],
+  "case_id": "p33-staged-real",
+  "output_contract": [
+    "case_id",
+    "status",
+    "deck_file",
+    "evidence_map",
+    "slide_evidence_map",
+    "render_record",
+    "version_record",
+    "template_application",
+    "pending_confirmation",
+    "gaps",
+    "not_available_from_material"
+  ],
+  "output_contract_fields": [
+    "case_id",
+    "status",
+    "deck_file",
+    "evidence_map",
+    "slide_evidence_map",
+    "render_record",
+    "version_record",
+    "template_application",
+    "pending_confirmation",
+    "gaps",
+    "not_available_from_material"
+  ],
+  "deck_file": "/app/output/deck.pptx",
   "slide_evidence_map": [
     {
       "slide": 1,
-      "source": "paper",
-      "locator": "Section 1, p.1"
+      "title": "多孔涂层解决吸收速率瓶颈",
+      "claim": "吸收速率是示例研究要解决的问题",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 2, p.3",
+      "caption": "",
+      "notes_present": true
     },
     {
       "slide": 2,
-      "source": "figure",
-      "locator": "Fig. 3b, p.7"
+      "title": "等温对照分离结构效应与热效应",
+      "claim": "示例对照设计可以区分结构效应与热效应",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 2, p.3",
+      "caption": "",
+      "notes_present": true
+    },
+    {
+      "slide": 3,
+      "title": "涂层组速率为对照组 2.52 倍",
+      "claim": "31.2 / 12.4 = 2.52，数值对应同一对照",
+      "strength": null,
+      "role": null,
+      "evidence": "Fig. 3b, p.7",
+      "caption": "Fig. 3b, p.7 — 示例对照，每组 n = 6",
+      "notes_present": true
+    },
+    {
+      "slide": 4,
+      "title": "速率提升仅在示例厚度下成立",
+      "claim": "单一厚度数据不能支持对其他厚度的外推",
+      "strength": null,
+      "role": null,
+      "evidence": "Sec. 5, p.12",
+      "caption": "",
+      "notes_present": true
     }
-  ]
+  ],
+  "render_record": {
+    "rendered": true,
+    "renderer": "soffice",
+    "pdf": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\_judge_tmp\\p33_staged_render\\out\\deck.pdf",
+    "artifacts": [
+      "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\_judge_tmp\\p33_staged_render\\out\\deck.pdf"
+    ],
+    "returncode": 0,
+    "pdf_bytes": 109395,
+    "pdf_header_valid": true,
+    "inspection": "real PDF produced; pixel-level parity is not claimed by this record"
+  },
+  "pending_confirmation": [],
+  "gaps": [],
+  "not_available_from_material": null,
+  "example_only": "Worked example output, not an official test result"
 }

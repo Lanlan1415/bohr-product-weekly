@@ -107,7 +107,8 @@
         "image.aspect_distorted"
       ],
       "fired": [
-        "image.aspect_distorted"
+        "image.aspect_distorted",
+        "layout.out_of_bounds"
       ],
       "missing": [],
       "spurious": [],

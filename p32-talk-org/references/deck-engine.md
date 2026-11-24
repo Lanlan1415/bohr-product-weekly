@@ -1,111 +1,76 @@
-# The shared deck engine
+# talk-org engine map and verification boundary
 
-Four slides-track skills share one measured engine. That is deliberate: four
-reimplementations of "does this text fit its box" would give four different
-answers to one question, and the answer would stop meaning anything.
-
-```
-scripts/pptxgen.py     write a real .pptx with the standard library only
-scripts/deckaudit.py   read the written file back and audit it
-scripts/deckbuild.py   spec -> deck -> audit -> result.json
-scripts/extra_rules.py the one section that makes this skill distinct
-```
-
-## Why the generator has no dependencies
-
-The pinned evaluation image lists the tools it provides, and `python-pptx` is not
-among them. A skill that imports it fails at import time and produces no deck at
-all. So `pptxgen.py` writes PresentationML directly with `zipfile` and
-`xml.sax.saxutils`, and reads PNG/JPEG dimensions from their headers with
-`int.from_bytes`.
-
-The output is a genuine package — one master, one layout, one theme, one slide
-part per slide — and it was verified by opening the generated files with
-`python-pptx` in an environment where that library *is* available:
+All runtime code is in this package and uses Python 3.10+ standard library. Rendering/font/imaging
+packages are optional accelerators, never import prerequisites.
 
 ```
-slides 2 | size 12192000 x 6858000
-has_notes True | notes: Pause here; the key contrast is rate.
+pptxgen.py        editable PresentationML, notes, media, footer/slidenum, visible source bands
+ deckaudit.py     final-file evidence, overflow, fonts/glyphs, bounds/overlap, package chain
+ extra_rules.py   audience→story→claim→strength→timing→closing→QA→selection rules
+ deckbuild.py     the only build CLI; result/plan/evidence/version records and full contract
+ decksource.py    preserve-edit real starting decks (shared supporting path)
+ templatecheck.py measured real-template application (shared supporting path)
 ```
 
-That is the useful form of a self-check: an independent implementation agrees the
-file is a valid presentation.
+`SKILL.md` is the operative workflow and complete spec reference. This file records implementation mechanics
+and how the author tests them; it is not a second runtime entry point.
 
-## Why the audit reads the file, not the spec
+## Story mechanics actually enforced
 
-Checking the spec only restates the spec. `deckaudit.py` unzips the `.pptx` and
-parses each `slideN.xml`, so a renderer that drops a font size, misplaces a box, or
-loses the notes placeholder is caught. Two defects in this engine's own history
-were found exactly this way:
+- `goal` objective/audience/time, optional Q&A reserve; main-slide timing excludes backup/appendix.
+- audience prior knowledge/decision/emphasis plan; declared emphasis must map to main roles.
+- conclusion titles and one-claim checks; short topic labels and multiple assertion sentences fail independently.
+- declared narrative coverage and order; backup roles are exempt from undeclared-role checks.
+- final main slide must be a closing/limitation role, with a takeaway that actually lands in that slide.
+- explicit threshold/limitation slide and evidence rationale for strength; strong label conflicts with hedging language.
+- Q&A topics, duplicate questions, answer-slide bounds and answer evidence pointers.
+- kept/omitted selection ledger with source+reason, plus per-slide selection reason when required.
+- visible evidence: `require_evidence_on_slide` checks the final slide text, not just metadata JSON.
 
-1. **Speaker notes were written into a plain text box**, so `python-pptx` reported
-   `notes_text_frame is None` and PowerPoint showed an empty notes pane. Notes
-   must live in the body placeholder (`ph type="body"`); the placeholder identity
-   is what makes them speaker notes.
-2. **Images were forced into a fixed 4.6×3.4 in slot regardless of source aspect**,
-   which stretched every non-1.35 figure. The generator now fits-and-centres, and
-   `image.aspect_distorted` catches the case when a deck arrives from elsewhere.
+The rules produce review/blocked findings, not silent rewrites. An agent must change slides, evidence mappings,
+or the study design; it cannot edit the audit fields or invent source positions to silence them.
 
-## Text measurement
+## Artifact mechanics
 
-Overflow is decided by measuring glyph widths from a real font file (DejaVu Sans
-via matplotlib, or a system TTF), wrapping into the actual box width, and comparing
-against the box height minus insets. When no font file can be found the check
-degrades to a per-character estimate and `checked.note` says so — the number is
-then approximate and is reported as approximate.
+- Speaker notes are written into a real notes body placeholder. Figures are aspect-fit from file headers without Pillow.
+- Every slide with evidence gets a visible caption/source band; if an image caption already contains the exact
+  locator, it is not duplicated. The band is separated from body geometry so it cannot silently overlap.
+- Footer/Logo/dynamic page fields are real shapes/fields. Template application preserves caption bands by shortening
+  only the body's `cy`, never its x/y/width; a template with missing master target is not applied.
+- Audit re-reads delivered PPTX XML: claim/caption/evidence landing, notes, CJK width+height overflow, out-of-bounds,
+  overlap, explicit-RGB contrast, glyph coverage, fonts, slide→layout→master chain, and repeat-build determinism.
+- Content Use, OOXML layout enums, and each OPC part's default namespace are validated by real LibreOffice exports,
+  not only XML parsing.
 
-CJK glyphs are counted at full em width, ASCII at the font's measured advance.
+## Verification layers
 
-## Measured behaviour
+Legacy coverage is 61 scenarios: 11 deck, 20 talk-rule/CJK/font/master, 7 contract/refusal, 23 focused section guards.
+`bench_delivery4.py` adds 17 story/artifact scenarios including the complete clean 5+1 talk and a real source
+deck whose visible evidence is deliberately absent. `probe_delivery4.py` adds 27 external CLI probes for all
+exit codes, readable refusal JSON, contract field retention, unknown/malformed inputs, idempotency, source
+preservation, closing review and audited status precedence.
 
-Eleven scenarios in `bench_deck.py`, one planted defect each, every one writing a
-real `.pptx` and re-reading it:
-
-```
-clean, too_many_bullets, font_too_small, overflow, no_title,
-evidence_missing, evidence_unsupported, notes_missing,
-aspect_distorted, no_alt_text, term_inconsistent
-                                            11/11 pass
-```
-
-Twenty scenarios in `bench_deck2.py` cover the organisation rules end to end
-(a stated goal, audience, claim shape, strength vocabulary, narrative coverage,
-QA preparation, pace, declared figures, CJK measurement, font existence, glyph
-coverage, determinism; three inject a defect that no spec can express).
-Twenty-three scenarios in `bench_extra.py` cover the per-skill sections, one per
-rule plus FP guards. Seven scenarios in `bench_contract.py` pin the case contract:
-case_id and output_contract passthrough, and the refusal ladder (bad JSON,
-non-object, missing file, unknown section — all exit 5 with a result.json, and a
-refusal never runs the contract echo).
-
-```
-talk_org       org.goal_missing, org.claim_is_topic,
-               org.evidence_strength_missing, org.strength_unknown,
-               org.pace_too_fast, org.pace_too_slow,
-               org.narrative_incomplete, org.role_undeclared,
-               org.qa_prep_missing
-template_fit   format.size_ladder_flat, format.undeclared_layout
-deck_edit      edit.change_without_reason, edit.change_is_noop
-paper_to_deck  paper.figure_unattributed, paper.caption_missing
-contract       case_id echo, output_contract passthrough, refusal ladder
-                                            20 + 11 + 23 + 7 pass
-```
-
-Every clean baseline must report no high or medium finding, so a detector cannot
-pass by flagging everything. Run both with:
+Run author checks from the package root:
 
 ```bash
-python scripts/bench_deck.py
-python scripts/bench_extra.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_deck.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_deck2.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_contract.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_extra.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_delivery4.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/probe_delivery4.py
 ```
 
-These are author-side checks. Producing a deck needs only `deckbuild.py`.
+Reports are text JSON under `scripts/`, not official platform scores. Temporary PPTX/PNG/PDF artifacts stay
+outside the skill package. No binary fixture is shipped.
 
-## What the engine cannot do
+## Visual/export proof and limits
 
-- It cannot judge the story. It can prove a slide is untraceable; it cannot tell
-  you the argument is in the wrong order.
-- It cannot predict font substitution. If the declared typeface is missing on the
-  target machine, metrics change and the overflow verdict is wrong.
-- It cannot see inside a picture. A gap axis inside a rasterised chart is invisible.
-- It cannot validate against a real journal template, because it does not ship one.
+Run `deckbuild.py` without `DECKBUILD_NO_RENDER`. A real PDF and `%PDF-` header prove an independent office
+implementation consumed the package; bytes are recorded. Pixel-level parity is not automatically proven and
+should be checked by rasterizing key pages. Without a renderer, only structural/geometry verification is claimed.
+
+The engine cannot read scientific meaning, choose study design, or verify that a cited panel number refers to the
+intended experiment beyond the declared evidence map. It cannot simulate every PowerPoint layout engine, complex
+group transforms, animation/OLE/SmartArt internals, kerning/ligatures, or target-machine font substitution.
+Bitmap figures remain editable pictures, not native chart data. `clean` is a mechanical verdict, not peer review.

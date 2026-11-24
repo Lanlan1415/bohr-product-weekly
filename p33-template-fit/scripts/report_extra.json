@@ -41,7 +41,9 @@
       "scenario": "edit_ok",
       "section": "deck_edit",
       "expected": [],
-      "fired": [],
+      "fired": [
+        "edit.revision_instruction_missing"
+      ],
       "missing": [],
       "spurious": [],
       "pass": true
@@ -53,7 +55,8 @@
         "edit.change_without_reason"
       ],
       "fired": [
-        "edit.change_without_reason"
+        "edit.change_without_reason",
+        "edit.revision_instruction_missing"
       ],
       "missing": [],
       "spurious": [],
@@ -66,7 +69,8 @@
         "edit.change_is_noop"
       ],
       "fired": [
-        "edit.change_is_noop"
+        "edit.change_is_noop",
+        "edit.revision_instruction_missing"
       ],
       "missing": [],
       "spurious": [],

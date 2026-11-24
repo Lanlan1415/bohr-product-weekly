@@ -1,174 +1,215 @@
 ---
 name: mind-map
 description: >
-  Audit a mind map extracted from a paper: tree integrity (one root, no cycles, bounded
-  depth), sibling discipline, a source pointer on every leaf, and — because a map asserts
-  relations the paper may not — every edge must name its relation type (causal, dependency,
-  contrast, temporal, citation, support, conflict, contains) and carry a locator into the
-  source. Evidence-bearing nodes must say whether they carry a fact, a summary or an
-  inference. Placeholder labels and node-count explosions are reported. Use when the
-  deliverable is a structured reading artifact that must be verifiable against its source.
+  From a paper, proposal or project record, build and audit a real source-linked mind map:
+  typed parent/cross-branch relations, fact/summary/inference provenance, evidence locators,
+  optional supplied URLs, priorities, a measured non-overlapping deterministic layout, and
+  editable SVG, FreeMind, offline HTML and JSON artifacts. Use when the deliverable is a
+  structured visual reading artifact rather than a prose summary or nested bullet list.
+  Missing evidence is marked, never linked to an invented source.
 ---
 
 # mind-map
 
-A map that has two roots or a cycle is not a summary of the paper's structure. A leaf with
-no source is an assertion nobody can trace. And an edge between two nodes is a claim about
-the material — "A causes B" may exist only in the map, never in the paper. That last
-failure is the one this skill exists for: tree integrity is necessary, but the task's own
-scoring points are about what the map asserts and whether the material backs it.
+## What this skill produces
 
-| scoring point (题面) | rules |
+One run writes real diagram artifacts, not just findings about an abstract tree:
+
+| artifact | actual content |
 |-|-|
-| 抓得准 — key concepts, not decorative words | `map.decorative_label` |
-| 理得清 — root, hierarchy, sibling granularity | `map.root_count`, `map.duplicate_sibling`, `map.wide_node`, `map.too_deep` |
-| 连得对 — typed, source-backed relations | `map.edge_type_missing`, `map.edge_type_unknown`, `map.edge_dangling`, `map.edge_incomplete`, `map.edge_self`, `map.edge_no_basis` |
-| 证据可追溯 — fact vs summary vs inference | `map.leaf_without_evidence`, `map.kind_undeclared`, `map.kind_unknown` |
-| readable scale | `map.too_many_nodes`, plus the tree rules `map.cycle`, `map.dangling_parent`, `map.no_nodes` |
+| `mindmap.svg` | editable vector graph: measured node rectangles, hierarchy links, dashed typed cross-relations, provenance-kind colors, priority marks, full labels/evidence in accessible attributes |
+| `mindmap.mm` | standard editable FreeMind XML with one root, nested hierarchy, evidence/kind attributes and `<arrowlink>` relations |
+| `mindmap.html` | offline clickable inspection page: the same SVG, Fit/Actual controls and evidence display on node click; no CDN or network script |
+| `mindmap.json` | normalized nodes, hierarchical relations, typed edges and source locator map |
+| `layout.json` | node boxes, viewport, overlap pairs and boundary violations |
+| `result.json` | status/findings, artifact/source map, original `case_id`, all `output_contract` fields |
 
-## Workflow
+Trigger when the task is a **paper/review structure map, experimental route, project plan, meeting
+decision map or concept map** that must be openable, readable, editable and traceable. Do not use it
+for free prose or a generic bullet outline; those need no graphical relation semantics.
 
-### 1. Declare the structure, the relations and the provenance kinds
+## Runtime contract
+
+- Read `/input/case.json` and `/input/task.md`; never infer material content from the task label.
+- Extract the original `case_id`, full `output_contract`, requested map domain and any case-specific
+  output fields. `/input` is read-only; work under `/app/work`; deliver under `/app/output`.
+- Every exit writes `result.json`, including refusals. `output_contract` values the case itself
+  carries pass through untouched; audited fields are filled from real results; unknown fields are
+  `null` and named in `limits`. A list of field names is accepted.
+- Node evidence must point at the real page/section/table/task locator. `source_url` is emitted as
+  a hyperlink **only** if it is a supplied `http(s)` URL; no URL is generated from a title or DOI.
+- The semantic question — whether materials really support a node/edge — still needs the Agent to
+  read the paper. The engine proves structure and locators, not scientific truth.
+
+## Input shape
 
 ```json
-{"section": "mindmap", "max_depth": 4, "max_nodes": 150, "max_children": 12,
- "nodes": [
-   {"id": "r", "label": "porous coating study"},
-   {"id": "q", "label": "research question", "parent": "r", "evidence_exempt": true},
-   {"id": "m", "label": "uptake measurement", "parent": "r",
-    "evidence": "Sec 2, p.5", "kind": "fact"},
-   {"id": "f", "label": "coating raises uptake 3-fold", "parent": "m",
-    "evidence": "Fig 3b, p.7", "kind": "fact"},
-   {"id": "s", "label": "surface-area mechanism", "parent": "f",
-    "evidence": "p.8 discussion", "kind": "inference"}],
- "edges": [
-   {"from": "m", "to": "f", "kind": "support", "basis": "Fig 3b, p.7"},
-   {"from": "q", "to": "m", "kind": "dependency", "basis": "Sec 2, p.5"}]}
+{
+  "case_id": "opaque-original-id",
+  "section": "mindmap",
+  "title": "reading map title",
+  "max_depth": 4, "max_nodes": 150, "max_children": 12,
+  "nodes": [
+    {"id": "r", "label": "paper or project"},
+    {"id": "q", "label": "research question", "parent": "r",
+     "evidence": "Abstract p.1", "kind": "summary", "priority": 2,
+     "parent_kind": "contains"},
+    {"id": "m", "label": "paired measurement method", "parent": "r",
+     "evidence": "Sec 2.1 p.3", "kind": "fact",
+     "source_url": "https://only-a-supplied-real-url.example/paper"},
+    {"id": "f", "label": "measured increase", "parent": "r",
+     "evidence": "Fig 3b p.7", "kind": "fact", "priority": 1}
+  ],
+  "edges": [
+    {"from": "q", "to": "m", "kind": "dependency", "basis": "Task record R1 p.1"},
+    {"from": "m", "to": "f", "kind": "support", "basis": "Fig 3b p.7"}
+  ],
+  "output_contract": {
+    "case_id": "……", "status": "……", "svg": "……",
+    "layout": "……", "sources": "……"
+  }
+}
 ```
 
-- `kind` on a node: `fact` (the material states it) | `summary` (condensed from the
-  material) | `inference` (the map's own reading). A node that renders its inference as a
-  quoted fact misrepresents the paper — this is the distinction the task asks for.
-- `kind` on an edge: one of `causal`, `dependency`, `contrast`, `temporal`, `citation`,
-  `support`, `conflict`, `contains`, `part_of`.
-- `basis` on an edge: a locator into the source (page, section, table cell, figure) — the
-  connection must be checkable against the material, not just drawable.
-- `evidence_exempt` marks structural branches (the research question, a heading) that
-  carry no citation by design.
+- `kind` on a node is `fact` / `summary` / `inference`; a root/heading may omit it as structural.
+  `evidence_exempt` is only for a genuinely structural no-source node, never to hide missing evidence.
+- An edge `kind` is one of `causal`, `dependency`, `contrast`, `temporal`, `citation`, `support`,
+  `conflict`, `contains`, `part_of`, and must carry a source `basis`. The hierarchy relation may be
+  set with `parent_kind`; default `contains`. An unnamed arrow is not a relation.
+- `priority` (`0..3`, 1/2/3 highlighted) marks the small number of take-away nodes. Priority is
+  visual emphasis, not claimed scientific importance.
+- Optional `order` gives deterministic sibling order. The source order is the deterministic default.
 
-### 2. Audit
+## Run
 
 ```bash
-python scripts/secrun.py --spec spec.json --section mindmap --out /app/output
+python3 /skills/weekly-skill/scripts/secrun.py \
+  --spec /app/work/map_spec.json --out /app/output
 ```
 
-Exit codes: `0` clean, `3` review, `4` blocked.
+Optional original case-id override for an awkward input:
 
-Writes `/app/output/result.json` with `status`, `findings[]` (rule, node/edge, locator),
-`severity_counts`, `checked` and `limits`. If the case declares an `output_contract`, its
-keys are echoed and any that cannot be derived are named in `limits`.
+```bash
+python3 /skills/weekly-skill/scripts/secrun.py \
+  --spec /app/work/map_spec.json --out /app/output --case-id ORIGINAL-001
+```
 
-## Rules
+Exit/status:
 
-### Tree integrity
+| exit | status | meaning |
+|-|-|-|
+| 0 | clean | graph structurally valid and real artifacts generated |
+| 3 | review | non-fatal provenance/label/priority/relation finding; artifacts still generated |
+| 4 | blocked | invalid tree/reference/layout or artifact failure; no forged SVG |
+| 5 | undetermined | unreadable/non-object spec, unknown section, missing spec; structured result |
+
+## Layout and visual mechanism
+
+Reference: [markmap/markmap](https://github.com/markmap/markmap), `markmap-view` 0.18.13 (MIT).
+This package does not embed markmap/d3; it independently implements the relevant measured packing:
+
+1. Measure wrapped label + evidence into a node rectangle.
+2. Pack every subtree into a finite span; allocate disjoint spans for children.
+3. Use 22 units between siblings and an extra 24 units above/below each non-root subtree, so
+   unrelated branches are visually farther apart than siblings.
+4. Place each depth after the previous depth's widest measured rectangle (100-unit horizontal gap).
+5. Recompute the viewport from actual right/bottom bounds.
+6. Independently test every pair of boxes for intersection and every box/text line for boundary
+   escape. A failed layout is an artifact failure, not a drawable partial.
+
+The result is deterministic: no clock, random jitter, hash order or machine path enters any artifact.
+SVG uses `<title>` and data attributes for full labels/evidence; long visible labels wrap and end
+with `…` while the full source label remains accessible in JSON/SVG attributes.
+
+### Optional raster preview
+
+SVG is the actual editable preview and HTML is an offline interactive renderer. If a task explicitly
+requires PNG, only generate it with a real renderer:
+
+```bash
+python3 scripts/render_preview.py --svg /app/output/mindmap.svg --png /app/output/mindmap.png
+```
+
+The helper tries `rsvg-convert`, then `inkscape`, then Python CairoSVG, verifies the PNG magic bytes,
+and exits 6 if none succeeds. It never renames SVG to PNG or claims an unproduced preview. PDF can be
+produced from the same SVG with the runtime's supplied renderer under the same honesty rule.
+
+## Audit rules
+
+### Tree and scale
 
 | rule | severity | what it proves |
 |-|-|-|
 | `map.no_nodes` | high | nothing was mapped |
+| `map.duplicate_node_id` | high | IDs are not unique, so parents/edges are ambiguous |
+| `map.label_missing` | high | a node does not name a concept |
 | `map.root_count` | high | not exactly one root |
 | `map.dangling_parent` | high | a node points at a missing parent |
-| `map.cycle` | high | the graph contains a cycle, so it is not a tree |
-| `map.too_deep` | medium | a branch exceeds the declared depth |
+| `map.cycle` | high | graph contains a cycle |
+| `map.too_deep` | medium | branch exceeds declared depth |
+| `map.duplicate_sibling` | medium | siblings reuse a label |
+| `map.wide_node` | low | one parent exceeds declared granularity |
+| `map.too_many_nodes` | medium | map exceeds declared node budget |
 
-### Siblings and scale
-
-| rule | severity | what it proves |
-|-|-|-|
-| `map.duplicate_sibling` | medium | two children of one parent share a label |
-| `map.wide_node` | low | one parent carries more children than the declared granularity |
-| `map.too_many_nodes` | medium | the map exceeds the declared node budget |
-
-### Relations (连得对)
+### Relations and provenance
 
 | rule | severity | what it proves |
 |-|-|-|
-| `map.edge_incomplete` | high | an edge has no start or no end |
-| `map.edge_dangling` | high | an edge connects a node that does not exist |
-| `map.edge_self` | medium | an edge loops a node to itself |
-| `map.edge_type_missing` | high | an edge names no relation type |
-| `map.edge_type_unknown` | medium | the type is outside the declared set |
-| `map.edge_no_basis` | high | an edge carries no locator into the source |
+| `map.edge_incomplete` | high | edge lacks source or target |
+| `map.edge_dangling` | high | edge endpoint does not exist |
+| `map.edge_self` | medium | relation loops to itself |
+| `map.edge_type_missing` | high | edge names no relation type |
+| `map.edge_type_unknown` | medium | relation outside declared vocabulary |
+| `map.edge_no_basis` | high | edge has no source locator |
+| `map.parent_relation_unknown` | medium | hierarchical relation is outside vocabulary |
+| `map.leaf_without_evidence` | medium | leaf has no source pointer |
+| `map.kind_undeclared` | medium | evidence-bearing node omits fact/summary/inference |
+| `map.kind_unknown` | low | provenance kind outside the three |
+| `map.decorative_label` | medium | placeholder word rather than a concept |
 
-### Provenance and labels (证据可追溯 / 抓得准)
+## Delivery and evidence
 
-| rule | severity | what it proves |
-|-|-|-|
-| `map.leaf_without_evidence` | medium | a leaf has no source pointer |
-| `map.kind_undeclared` | medium | an evidence-bearing node does not say fact/summary/inference |
-| `map.kind_unknown` | low | the kind is outside the three |
-| `map.decorative_label` | medium | a node label is a placeholder word, not a concept |
+`result.artifacts` and `result.sources` describe/contain only generated/supplied data. `checked`
+includes node count, edge count, overlap-pair count and boundary-violation count. `layout.json` holds
+the exact node boxes; `mindmap.json` holds the reconstructed hierarchy, relation types/bases and
+source map; `revision`/`change_log` should be maintained by the calling Agent when it actually edits
+the map, rather than fabricated by the renderer.
 
-## Limits
+The caller should preserve supplied chapters/paper page numbers as locators. If PDF extraction is
+needed, use the environment's PDF tool first and feed the actual extracted locator/prose. The map
+renderer never invents missing source text, page numbers, evidence, DOI or URL.
 
-- **Structure and assertions are checked, not whether the branching matches the paper's
-  argument.** A wrong-but-declared grouping passes; the audit proves the map is checkable,
-  not that it is wise.
-- **Decorative labels are an exact-match list** (其他, misc, TBD, placeholder, …). Real
-  short concepts — `方法`, `结果`, `aims` — never fire; there is deliberately no length
-  rule, because short is not the same as decorative.
-- **A wide node is advice, not a defect**: severity low, and the threshold is yours
-  (`max_children`). A node with twelve legitimate parallel experiments may be correct.
-- **Edge types are a closed set.** A type outside it is reported, not guessed into one;
-  extend the map's vocabulary only if the material supports the distinction.
-- **Depth, node and children limits are yours to declare** (`max_depth`, `max_nodes`,
-  `max_children`); defaults are 4 / 150 / 12.
-- It does not read PDFs: extraction is a separate step; this audits the structure that
-  comes out of it.
+## Failure and limits
 
-## Failure handling
-
-| `audit.no_section` | high | the case could not be run as declared: no or unknown section, or the spec file is not readable JSON — refused with exit 5, never a crash |
-
-| symptom | what to do |
-|-|-|
-| `root_count` / `cycle` / `dangling_parent` | fix the tree — one root, parents that exist, no loops |
-| `edge_type_missing` | name what the connection means; an unnamed arrow is not a relation |
-| `edge_no_basis` | add the locator that shows the connection in the material, or delete the edge — a connection the material does not support must not exist |
-| `kind_undeclared` | mark the node fact / summary / inference; keep the map's own reading visibly distinct from the paper's |
-| `decorative_label` | replace the placeholder with the concept the material actually names |
-| `too_many_nodes` | group into higher-level branches; a map that dumps the source is not readable |
-
-A finding names a rule and the item at fault. Fix the item; do not delete it to make the
-finding disappear. If a finding is genuinely wrong for your case, state why in `limits`.
+- A second root or cycle: exit 4, no SVG. Fix the actual hierarchy; do not connect nodes arbitrarily.
+- Duplicate/missing node ID/label: exit 4. Assign stable IDs and real concept labels.
+- Unknown link type: exit 3; extend vocabulary only when the material supports the distinction.
+- A high finding or layout failure leaves `result.json` and any earlier honest work, but not a fake
+  SVG.
+- Exact viewport proof applies to node boxes and text lines. Relation labels use the white halo and
+  short relation names; full basis remains in edge attributes and the title/source map, avoiding
+  long labels obscuring nodes.
+- Decorative labels are a conservative exact-match list; a short real concept is not penalised.
+- Node/edge relation semantics and source support are not semantically verified.
+- SVG/HTML are editable and openable; PNG/PDF claim only when a real renderer wrote valid bytes.
+- The map is not a substitute for the full paper or a replacement for the written argument.
 
 ## Verification
 
 ```bash
-python scripts/bench_map.py        # 21 scenarios: one per rule + false-positive guards
-python scripts/bench_sections.py   # 51 scenarios: cross-section regression + FP guards
+python3 scripts/bench_map.py        # 24 scenarios: every audit rule + false-positive guards
+python3 scripts/bench_sections.py   # 51 cross-section regression/FP scenarios
+python3 scripts/bench_render.py     # 19 XML/structure/bounds/determinism/preview scenarios
 ```
 
-Both pass in full on this machine. Clean baselines and the FP guards must report nothing —
-`方法` and `aims` stay silent, `其他` fires; `dependency`/`contains` edges pass, untyped
-and unbased edges fire.
+The render suite independently reparses SVG geometry, verifies zero overlap and viewport bounds
+(including a 31-node stress tree), checks single-root FreeMind/arrowlinks, long-label XML escaping and
+full accessible labels, provenance/priority marks, real supplied URLs, blocked bad graphs, contract
+echo/null handling and honest no-renderer PNG behavior. Clean baselines report nothing; synthesized
+examples are explicitly labeled and are not presented as official evaluation results.
+
 ## Requirements
 
-Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
-
-## 创新增益
-
-本 Skill 相比通用 Agent 的核心新增能力：
-
-1. **规则优先级库**：每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时由优先级决定胜者且双方都留痕——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改动——如果仍有改动说明规则间存在冲突，这是一个可计算的 self-check。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，审计者可以逐条复核或撤销任何单条修改。
-
-bench 目录下的 map 是上述能力的回归证据（见 Verification 节 场景，clean 基线必须零发现）。
-
-## 生态贡献
-
-- **SKILL.md** 包含用途、适用条件、调用方式、输入输出、异常处理、限制和自查方法
-- **scripts/** 纯标准库可独立导入，规则库可通过 spec 配置扩展
-- **examples/** 提供最小调用示例和示意输出
-- **bench/** 回归套件可独立复跑验证
-
+Python 3.9+ standard library for map generation and audits. No third-party runtime dependency is
+required. Optional PNG conversion requires one of rsvg-convert, Inkscape or CairoSVG that actually
+exists in the execution environment; its absence is an explicit exit 6, not a fabricated artifact.

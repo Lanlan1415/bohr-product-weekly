@@ -43,6 +43,7 @@
         "template.theme_font_mismatch"
       ],
       "fired": [
+        "format.font_drift",
         "template.theme_font_mismatch"
       ],
       "missing": [],
@@ -51,44 +52,39 @@
       "status": "review"
     },
     {
-      "scenario": "title_size_off",
-      "expected": [
-        "template.title_size_off"
-      ],
-      "fired": [
-        "format.size_ladder_flat",
-        "template.title_size_off"
-      ],
+      "scenario": "title_size_corrected",
+      "expected": [],
+      "fired": [],
       "missing": [],
       "spurious": [],
       "pass": true,
-      "status": "review"
+      "status": "clean"
     },
     {
-      "scenario": "slide_size_mismatch",
+      "scenario": "slide_size_mismatch_geometry",
       "expected": [
-        "template.slide_size_mismatch"
+        "layout.out_of_bounds"
       ],
       "fired": [
-        "template.slide_size_mismatch"
+        "layout.out_of_bounds"
       ],
       "missing": [],
       "spurious": [],
       "pass": true,
-      "status": "review"
+      "status": "blocked"
     },
     {
-      "scenario": "same_aspect_size_mismatch",
+      "scenario": "same_aspect_size_mismatch_geometry",
       "expected": [
-        "template.slide_size_mismatch"
+        "layout.out_of_bounds"
       ],
       "fired": [
-        "template.slide_size_mismatch"
+        "layout.out_of_bounds"
       ],
       "missing": [],
       "spurious": [],
       "pass": true,
-      "status": "review"
+      "status": "blocked"
     },
     {
       "scenario": "slide_size_unmeasured",
@@ -217,52 +213,54 @@
       "scenario": "template_measured_echo",
       "pass": true,
       "template_measured": {
-        "file": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\skills\\p33-template-fit\\scripts\\_run_template\\probe_meas.potx",
         "read": true,
-        "slide_size_emu": [
-          12192000,
-          6858000
-        ],
+        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p33-template-fit\\scripts\\_run_template\\probe_meas.potx",
         "layouts": [
           "Title Slide",
           "Title and Content"
         ],
         "layout_details": [
           {
+            "part": "ppt/slideLayouts/slideLayout1.xml",
             "name": "Title Slide",
             "type": "title",
             "master": "ppt/slideMasters/slideMaster1.xml",
-            "part": "ppt/slideLayouts/slideLayout1.xml",
-            "title_present": true,
-            "title_ph": {
+            "master_exists": true,
+            "title_placeholder": true,
+            "title_geometry": {
               "x": 822960,
               "y": 2194560,
               "cx": 10546080,
               "cy": 1371600
             },
-            "title_sz": 40.0,
-            "body_present": false,
-            "body_ph": null,
-            "title_geometry_inherited": false,
-            "title_size_inherited": false
+            "body_geometry": null,
+            "title_size_pt": 40.0,
+            "body_size_pt": null,
+            "title_body_pr": {},
+            "body_body_pr": {},
+            "title_placeholder_idx": null,
+            "title_geometry_inherited": false
           },
           {
-            "name": "Title and Content",
-            "type": "body",
-            "master": "ppt/slideMasters/slideMaster1.xml",
             "part": "ppt/slideLayouts/slideLayout2.xml",
-            "title_present": true,
-            "title_ph": {
+            "name": "Title and Content",
+            "type": "obj",
+            "master": "ppt/slideMasters/slideMaster1.xml",
+            "master_exists": true,
+            "title_placeholder": true,
+            "title_geometry": {
               "x": 457200,
               "y": 320040,
               "cx": 11277600,
               "cy": 914400
             },
-            "title_sz": 32.0,
-            "body_present": false,
-            "body_ph": null,
-            "title_geometry_inherited": false,
-            "title_size_inherited": false
+            "body_geometry": null,
+            "title_size_pt": 32.0,
+            "body_size_pt": null,
+            "title_body_pr": {},
+            "body_body_pr": {},
+            "title_placeholder_idx": null,
+            "title_geometry_inherited": false
           }
         ],
         "theme_fonts": {
@@ -271,10 +269,23 @@
           "minor_latin": "Arial",
           "minor_ea": "Microsoft YaHei"
         },
-        "masters": [
+        "theme_colors": {
+          "dk1": "1A1A1A",
+          "lt1": "FFFFFF"
+        },
+        "slide_size_emu": [
+          12192000,
+          6858000
+        ],
+        "master_parts": [
           "ppt/slideMasters/slideMaster1.xml"
         ],
-        "inheritance_model": "layout placeholder first, then the same placeholder on its related slide master; absent placeholders are not inherited"
+        "theme_parts": [
+          "ppt/theme/theme1.xml"
+        ],
+        "master_hashes": {
+          "ppt/slideMasters/slideMaster1.xml": "a5ce586ab6990b2082640734da347c2ecfa686cbde8c991831c2c0123077db7c"
+        }
       }
     }
   ],

@@ -42,6 +42,9 @@ class Resolved:
     family: str
     path: str | None
     missing: tuple[str, ...]
+    # Callers may explicitly mark coverage unknown (for an injected limit or an
+    # unreadable font backend). Unknown must never become "all glyphs missing".
+    measured: bool = True
 
     @property
     def ok(self) -> bool:
@@ -58,6 +61,32 @@ def _find(names: list[str]) -> str | None:
             hits = glob.glob(str(Path(d) / "**" / name), recursive=True)
             if hits:
                 return hits[0]
+    return None
+
+
+def find_family(family: str) -> str | None:
+    """Resolve a declared family without matplotlib when necessary."""
+    wanted = family.strip().casefold()
+    common = {"arial": ["arial.ttf"], "times new roman": ["times.ttf"],
+              "calibri": ["calibri.ttf"], "aptos": ["aptos.ttf"],
+              "liberation sans": ["LiberationSans-Regular.ttf"]}
+    for known, names in PREFERRED + [(k, v) for k, v in common.items()]:
+        if wanted == known.casefold():
+            found = _find(names)
+            if found:
+                return found
+    # Uncommon fonts can still be identified through their own name table.
+    import glyphmetrics
+    for directory in FONT_DIRS:
+        root = Path(directory)
+        if not root.is_dir():
+            continue
+        for pattern in ("*.ttf", "*.ttc", "*.otf"):
+            for candidate in root.rglob(pattern):
+                if any(wanted == name.casefold() for name in glyphmetrics.family(candidate)):
+                    return str(candidate)
+                if wanted == candidate.stem.casefold():
+                    return str(candidate)
     return None
 
 
@@ -81,7 +110,12 @@ def coverage(path: str, text: str) -> tuple[str, ...]:
         from matplotlib.ft2font import FT2Font
         ft = FT2Font(path)
     except Exception:
-        return tuple(sorted(set(c for c in text if not c.isspace())))
+        try:
+            import glyphmetrics
+            return glyphmetrics.coverage(path, text)
+        except Exception:
+            # Coverage is unverifiable, not proof that every character is absent.
+            return tuple()
 
     missing = []
     for ch in sorted(set(text)):
@@ -134,18 +168,5 @@ def resolve(text: str = "") -> Resolved:
 
     # Nothing found at all: name it rather than pretending.
     return Resolved(family="<none>", path=None,
-                    missing=tuple(sorted(set(c for c in text if not c.isspace()))))
-
-
-def labels_text(spec: dict) -> str:
-    """Every character the figure will draw, gathered from the spec."""
-    parts = []
-    for n in spec.get("nodes") or []:
-        parts.append(str(n.get("label") or ""))
-    for e in spec.get("edges") or []:
-        parts.append(str(e.get("label") or ""))
-    parts.append(str(spec.get("title") or ""))
-    parts.append(str(spec.get("caption") or ""))
-    for g in spec.get("groups") or []:
-        parts.append(str(g))
-    return "".join(parts)
+                    missing=tuple(sorted(set(c for c in text if not c.isspace()))),
+                    measured=False)

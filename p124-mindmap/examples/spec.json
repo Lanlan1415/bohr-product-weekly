@@ -1,28 +1,40 @@
 {
+  "case_id": "synthetic-mindmap-demo-001",
+  "section": "mindmap",
+  "title": "Synthetic coating-uptake reading map (example, not an official case)",
   "max_depth": 4,
+  "max_nodes": 20,
+  "max_children": 6,
   "nodes": [
-    {
-      "id": "r",
-      "label": "paper"
-    },
-    {
-      "id": "a",
-      "label": "problem",
-      "parent": "r",
-      "evidence_exempt": true
-    },
-    {
-      "id": "b",
-      "label": "method",
-      "parent": "r",
-      "evidence": "Sec 2"
-    },
-    {
-      "id": "c",
-      "label": "finding",
-      "parent": "r",
-      "evidence": "Fig 3b"
-    }
+    {"id": "root", "label": "Porous coating uptake study"},
+    {"id": "question", "label": "Does the declared 42 nm coating increase uptake at 24 h?", "parent": "root",
+     "evidence": "Synthetic abstract, p.1", "kind": "summary", "priority": 2},
+    {"id": "method", "label": "Paired coated and uncoated uptake assay", "parent": "root",
+     "evidence": "Synthetic methods, Sec. 2.1, p.3", "kind": "fact", "priority": 1},
+    {"id": "control", "label": "Six paired substrates with identical measurement conditions", "parent": "method",
+     "evidence": "Synthetic Table 1, p.4", "kind": "fact"},
+    {"id": "measurement", "label": "Measure uptake at 24 h and retain raw traces", "parent": "method",
+     "evidence": "Synthetic protocol, Sec. 2.3, p.4", "kind": "fact"},
+    {"id": "result", "label": "Measured rate increases for coated samples in this dataset", "parent": "root",
+     "evidence": "Synthetic Fig. 2b, p.6", "kind": "fact", "priority": 2},
+    {"id": "limits", "label": "One material and one thickness limit generalization", "parent": "result",
+     "evidence": "Synthetic limitations, p.9", "kind": "summary"},
+    {"id": "future", "label": "Other thicknesses still need a separate controlled test", "parent": "limits",
+     "evidence": "Synthetic discussion, p.10", "kind": "inference", "priority": 1}
   ],
-  "section": "mindmap"
+  "edges": [
+    {"from": "question", "to": "method", "kind": "dependency", "basis": "Synthetic task record R1, p.1"},
+    {"from": "control", "to": "result", "kind": "support", "basis": "Synthetic paired rows, Table 1 and Fig. 2b"},
+    {"from": "result", "to": "limits", "kind": "contrast", "basis": "Synthetic limitations paragraph, p.9"}
+  ],
+  "output_contract": {
+    "case_id": "original case identifier",
+    "status": "clean/review/blocked/undetermined",
+    "svg": "actual editable vector artifact descriptor",
+    "editable_map": "offline clickable preview descriptor",
+    "freemind": "editable Freemind artifact descriptor",
+    "layout": "node bounds and overlap checks",
+    "sources": "evidence/source pointer map",
+    "unseen_case_field": "not derivable; must remain null and be named in limits"
+  }
 }

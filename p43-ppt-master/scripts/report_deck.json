@@ -81,6 +81,7 @@
         "deck.evidence_unsupported"
       ],
       "fired": [
+        "deck.evidence_not_landed",
         "deck.evidence_unsupported"
       ],
       "missing": [],
@@ -107,7 +108,8 @@
         "image.aspect_distorted"
       ],
       "fired": [
-        "image.aspect_distorted"
+        "image.aspect_distorted",
+        "shape.out_of_bounds"
       ],
       "missing": [],
       "spurious": [],

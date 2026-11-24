@@ -1,69 +1,52 @@
 {
   "section": "template_fit",
+  "case_id": "ppt-710fbc72-demo",
+  "output_contract": [
+    "case_id", "status", "deck_file", "evidence_map", "slide_evidence_map",
+    "render_record", "version_record", "template_application",
+    "pending_confirmation", "gaps", "not_available_from_material"
+  ],
+  "spacing": {"title": 32, "body": 20},
+  "font_ea": "Microsoft YaHei",
+  "font_latin": "Arial",
   "min_font_pt": 14,
   "max_bullets_per_slide": 5,
   "require_notes": true,
-  "spacing": {
-    "title": 32,
-    "body": 20
+  "max_slides": 6,
+  "template": {"name": "declarative-house-style-demo", "layouts": ["title", "content"]},
+  "style": {
+    "colors": {
+      "background": "FFFFFF", "text": "1A1A1A", "title": "17365D",
+      "accent": "0072B2", "muted": "5F6B76"
+    },
+    "margins_in": [0.35, 0.5, 0.9, 0.5],
+    "footer": {"text": "示例模板 · 非正式案例", "page_numbers": true}
   },
-  "font_ea": "Microsoft YaHei",
-  "font_latin": "Arial",
-  "template": {
-    "name": "conf-2026",
-    "layouts": [
-      "title",
-      "content"
-    ],
-    "file": "examples/template.potx"
-  },
-  "available_evidence": [
-    "Fig. 3b, p.7"
-  ],
+  "available_evidence": ["Sec. 2, p.3", "Fig. 3b, p.7", "Sec. 5, p.12"],
   "slides": [
     {
-      "title": "多孔涂层加速吸收",
-      "layout": "title",
-      "claim": "吸收速率是当前工艺的瓶颈",
-      "evidence": "Fig. 3b, p.7",
-      "notes": "引入问题；不读标题。"
+      "title": "多孔涂层解决吸收速率瓶颈", "layout": "title",
+      "claim": "吸收速率是示例研究要解决的问题", "evidence": "Sec. 2, p.3",
+      "notes": "示例讲法：先立问题，再说明对照设计。"
     },
     {
-      "title": "吸收速率提高 3 倍",
-      "layout": "content",
-      "claim": "涂层使吸收速率提高三倍",
-      "evidence": "Fig. 3b, p.7",
-      "bullets": [
-        "对照组 12.4 a.u.",
-        "涂层组 31.2 a.u.",
-        "每组 n = 6"
-      ],
-      "notes": "停顿；对比的是速率，不是终点。"
-    }
-  ],
-  "case_id": "ppt-710fbc72-demo",
-  "output_contract": [
-    "status",
-    "findings",
-    "severity_counts",
-    "deck",
-    "preview",
-    "reproducibility",
-    "checked",
-    "limits",
-    "case_id",
-    "slide_evidence_map"
-  ],
-  "slide_evidence_map": [
-    {
-      "slide": 1,
-      "source": "paper",
-      "locator": "Section 1, p.1"
+      "title": "等温对照分离结构效应与热效应", "layout": "content",
+      "claim": "示例对照设计可以区分结构效应与热效应", "evidence": "Sec. 2, p.3",
+      "bullets": ["两组处于同一温度", "每组 n = 6"],
+      "notes": "示例讲法：仅解释材料明确给出的对照条件。"
     },
     {
-      "slide": 2,
-      "source": "figure",
-      "locator": "Fig. 3b, p.7"
+      "title": "涂层组速率为对照组 2.52 倍", "layout": "content",
+      "claim": "31.2 / 12.4 = 2.52，数值对应同一对照",
+      "evidence": "Fig. 3b, p.7", "caption": "Fig. 3b, p.7 — 示例对照，每组 n = 6",
+      "bullets": ["对照组 12.4 a.u.", "涂层组 31.2 a.u.", "每组 n = 6"],
+      "notes": "示例讲法：指向面板和精确数值，正式任务不得按印象取整。"
+    },
+    {
+      "title": "速率提升仅在示例厚度下成立", "layout": "content",
+      "claim": "单一厚度数据不能支持对其他厚度的外推", "evidence": "Sec. 5, p.12",
+      "bullets": ["仅测量一个厚度", "长期稳定性尚未评估"],
+      "notes": "示例讲法：最后给出结论、局限和后续验证。"
     }
   ],
   "pending_confirmation": [],

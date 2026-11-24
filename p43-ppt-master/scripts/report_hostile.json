@@ -208,11 +208,35 @@
       "status": "clean",
       "no_traceback": true,
       "has_result": true
+    },
+    {
+      "probe": "27_refusal_case_contract",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "28_invalid_spec_case_contract",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "no_traceback": true,
+      "has_result": true
+    },
+    {
+      "probe": "29_paper_goal_pace",
+      "pass": true,
+      "exit": 3,
+      "status": "review",
+      "no_traceback": true,
+      "has_result": true
     }
   ],
   "totals": {
-    "passed": 26,
-    "of": 26
+    "passed": 29,
+    "of": 29
   },
-  "temp_root": "C:\\Users\\lanlan\\AppData\\Local\\Temp\\p43_hostile_6_njy8rx"
+  "temp_root": "C:\\Users\\lanlan\\AppData\\Local\\Temp\\p43_hostile_bjoqqo8d"
 }

@@ -2840,6 +2840,11 @@ def mindmap(spec: dict, findings: list[dict]) -> None:
         _add(findings, "map.no_nodes", "high", "the mind map has no nodes")
         return
     ids = [str(n.get("id")) for n in nodes]
+    repeated_ids = sorted({x for x in ids if x and ids.count(x) > 1})
+    if repeated_ids:
+        _add(findings, "map.duplicate_node_id", "high",
+             "two nodes reuse one id, so parent and relation endpoints cannot resolve uniquely",
+             nodes=repeated_ids)
     roots = [n for n in nodes if not n.get("parent")]
     if len(roots) != 1:
         _add(findings, "map.root_count", "high",
@@ -2847,6 +2852,14 @@ def mindmap(spec: dict, findings: list[dict]) -> None:
              roots=[r.get("id") for r in roots])
     seen_parents = {}
     for n in nodes:
+        if not str(n.get("label") or "").strip():
+            _add(findings, "map.label_missing", "high",
+                 "a node has no label, so it cannot name a concept or task in the map", node=n.get("id"))
+        parent_kind = str(n.get("parent_kind") or n.get("relation") or "contains").strip().lower()
+        if parent_kind not in EDGE_KINDS:
+            _add(findings, "map.parent_relation_unknown", "medium",
+                 "a hierarchical parent relation is outside the declared relation vocabulary",
+                 node=n.get("id"), found=parent_kind)
         p = n.get("parent")
         if p is None:
             continue

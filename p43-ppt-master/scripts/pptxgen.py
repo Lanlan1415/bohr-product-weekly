@@ -130,7 +130,7 @@ def _txbox(shape_id: int, name: str, x: int, y: int, cx: int, cy: int, paras: st
         '<p:spPr><a:xfrm><a:off x="%d" y="%d"/><a:ext cx="%d" cy="%d"/></a:xfrm>'
         '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>'
         '<p:txBody><a:bodyPr wrap="square" lIns="%d" rIns="%d" tIns="%d" bIns="%d" anchor="%s">'
-        "<a:normAutofit/></a:bodyPr><a:lstStyle/>%s</p:txBody></p:sp>"
+        "<a:noAutofit/></a:bodyPr><a:lstStyle/>%s</p:txBody></p:sp>"
         % (shape_id, escape(name), x, y, cx, cy, INSET_X, INSET_X, INSET_Y, INSET_Y, anchor, paras)
     )
 
@@ -157,6 +157,13 @@ def _slide_xml(slide: Slide, spacing: dict, fonts: tuple[str, str]) -> tuple[str
     images: list[str] = []
     sid = 2
 
+    # A source locator belongs on the editable page, not only in result.json. Avoid
+    # duplicating it when the authored caption already contains the exact locator.
+    evidence = slide.evidence.strip()
+    evidence_in_caption = bool(evidence and evidence.casefold() in slide.caption.casefold())
+    source_line = "" if not evidence or evidence_in_caption else f"Source: {evidence}"
+    footer_font = max(body_sz - 4, 12.0)
+
     if slide.layout == "title":
         shapes.append(_txbox(sid, "Title", int(0.9 * EMU_IN), int(2.4 * EMU_IN),
                              SLIDE_W - int(1.8 * EMU_IN), int(1.5 * EMU_IN),
@@ -168,15 +175,31 @@ def _slide_xml(slide: Slide, spacing: dict, fonts: tuple[str, str]) -> tuple[str
                                  SLIDE_W - int(1.8 * EMU_IN), int(1.0 * EMU_IN),
                                  _para(slide.caption, body_sz, 0, False, latin, ea, bullet=False)))
             sid += 1
+        if source_line:
+            shapes.append(_txbox(sid, "Source", int(0.5 * EMU_IN), int(6.65 * EMU_IN),
+                                 SLIDE_W - int(1.0 * EMU_IN), int(0.6 * EMU_IN),
+                                 _para(source_line, footer_font, 0, False, latin, ea,
+                                       bullet=False)))
+            sid += 1
     else:
         shapes.append(_txbox(sid, "Title", int(0.5 * EMU_IN), int(0.35 * EMU_IN),
                              SLIDE_W - int(1.0 * EMU_IN), int(1.0 * EMU_IN),
                              _para(slide.title, title_sz, 0, True, latin, ea, bullet=False)))
         sid += 1
 
+        footer_lines = []
+        if slide.caption and not slide.image:
+            footer_lines.append(slide.caption)
+        if source_line:
+            footer_lines.append(source_line)
+        # Reserve geometry before writing the body: two distinct footer lines get
+        # two lines of height instead of being squeezed into a one-line strip.
+        footer_y = int((6.35 if len(footer_lines) > 1 else 6.65) * EMU_IN)
+        footer_h = int((0.85 if len(footer_lines) > 1 else 0.6) * EMU_IN)
         body_x, body_y = int(0.5 * EMU_IN), int(1.5 * EMU_IN)
         body_w = SLIDE_W - int(1.0 * EMU_IN)
-        body_h = SLIDE_H - body_y - int(0.9 * EMU_IN)
+        body_bottom = footer_y - int(0.1 * EMU_IN) if footer_lines else SLIDE_H - int(0.9 * EMU_IN)
+        body_h = body_bottom - body_y
 
         if slide.image:
             # Image on the right third, text on the left two thirds.
@@ -202,7 +225,7 @@ def _slide_xml(slide: Slide, spacing: dict, fonts: tuple[str, str]) -> tuple[str
                 shapes.append(_txbox(sid, "Caption",
                                      SLIDE_W - int(4.6 * EMU_IN) - int(0.5 * EMU_IN),
                                      int(5.1 * EMU_IN), int(4.6 * EMU_IN), int(0.7 * EMU_IN),
-                                     _para(slide.caption, body_sz - 4, 0, False, latin, ea,
+                                     _para(slide.caption, footer_font, 0, False, latin, ea,
                                            bullet=False)))
                 sid += 1
 
@@ -213,15 +236,13 @@ def _slide_xml(slide: Slide, spacing: dict, fonts: tuple[str, str]) -> tuple[str
             shapes.append(_txbox(sid, "Body", body_x, body_y, body_w, body_h, paras))
             sid += 1
 
-        if slide.caption and not slide.image:
-            # A declared caption is evidence (its locator) and must land in the deck
-            # even without a figure: write it as a bottom strip, so a caption the spec
-            # declares can never silently vanish from the deliverable.
-            shapes.append(_txbox(sid, "Caption", int(0.5 * EMU_IN),
-                                 SLIDE_H - int(0.85 * EMU_IN),
-                                 SLIDE_W - int(1.0 * EMU_IN), int(0.5 * EMU_IN),
-                                 _para(slide.caption, body_sz - 4, 0, False, latin, ea,
-                                       bullet=False)))
+        if footer_lines:
+            # Caption and/or exact source locator must land in the visible deck.
+            paras = "".join(_para(line, footer_font, 0, False, latin, ea, bullet=False)
+                            for line in footer_lines)
+            shapes.append(_txbox(sid, "Source" if source_line else "Caption",
+                                 int(0.5 * EMU_IN), footer_y,
+                                 SLIDE_W - int(1.0 * EMU_IN), footer_h, paras))
             sid += 1
 
     xml = (

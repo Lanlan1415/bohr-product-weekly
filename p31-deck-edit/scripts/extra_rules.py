@@ -48,6 +48,14 @@ def paper_to_deck(spec: dict, findings: list[dict]) -> None:
     carries an image but no figure/table locator cannot be checked by a reader, so
     the mapping is required rather than encouraged.
     """
+    required = spec.get("required_mainline") or []
+    if required:
+        roles = {str(s.get("role") or "") for s in (spec.get("slides") or [])}
+        missing = [str(beat) for beat in required if str(beat) not in roles]
+        if missing:
+            _add(findings, "paper.mainline_missing", "high",
+                 "the deck does not cover every declared research-mainline beat",
+                 missing=missing, required=[str(x) for x in required])
     for i, s in enumerate(spec.get("slides") or [], start=1):
         has_image = bool(s.get("image"))
         note = " ".join(str(s.get(k) or "") for k in ("caption", "evidence", "notes"))
@@ -117,8 +125,7 @@ def deck_edit(spec: dict, findings: list[dict], deck_summary: dict | None = None
         for pos, rev in enumerate(revisions, start=1):
             labels.add(pos)
             try:
-                if isinstance(rev, dict):
-                    labels.add(int(rev.get("n")))
+                labels.add(int(rev.get("n")))
             except (TypeError, ValueError):
                 pass
         try:
@@ -132,20 +139,15 @@ def deck_edit(spec: dict, findings: list[dict], deck_summary: dict | None = None
                  revisions=len(revisions), delivered=spec.get("delivered_revision"))
 
     for n, rev in enumerate(revisions, start=1):
-        if not isinstance(rev, dict):
-            continue
+        if not str(rev.get("instruction") or "").strip():
+            _add(findings, "edit.revision_instruction_missing", "low",
+                 "a revision round does not record its instruction, so the intent of the "
+                 "iteration is missing from the version history", revision=n)
         changes = rev.get("changes") or []
         if not changes:
             _add(findings, "edit.revision_without_changes", "medium",
                  "a revision records no changes, so it is indistinguishable from the previous one",
                  revision=n)
-        # 每轮为什么改: the instruction is what makes the round reviewable as a
-        # round ("压缩到十分钟", "面向评审改写"); without it the changes still
-        # carry reasons but nobody can tell what the round was asked to do.
-        if not str(rev.get("instruction") or "").strip():
-            _add(findings, "edit.revision_instruction_missing", "low",
-                 "a revision records no instruction, so the intent of the round is lost "
-                 "even though the individual changes carry reasons", revision=n)
         for c in changes:
             if not c.get("slide"):
                 _add(findings, "edit.change_without_slide", "high",
@@ -254,7 +256,47 @@ def talk_org(spec: dict, findings: list[dict]) -> None:
                  "over four minutes per slide suggests the deck is thinner than the talk",
                  minutes=goal["minutes"], slides=len(spec["slides"]), min_per_slide=round(per, 2))
 
-    for i, s in enumerate(spec.get("slides") or [], start=1):
+    slides = spec.get("slides") or []
+    narrative = [str(x) for x in (spec.get("narrative") or [])]
+    if narrative:
+        roles = [str(s.get("role") or "") for s in slides]
+        missing = [beat for beat in narrative if beat not in roles]
+        if missing:
+            _add(findings, "org.narrative_incomplete", "medium",
+                 "the declared narrative arc has no slide for every beat",
+                 missing=missing, narrative=narrative)
+        outside = [{"slide": i, "role": s.get("role")}
+                   for i, s in enumerate(slides, 1)
+                   if s.get("role") and str(s.get("role")) not in narrative]
+        if outside:
+            _add(findings, "org.role_undeclared", "low",
+                 "a slide carries a role outside the declared narrative arc", slides=outside)
+    if spec.get("require_qa_prep"):
+        qa = spec.get("qa_prep") or []
+        incomplete = [i for i, item in enumerate(qa, 1)
+                      if not isinstance(item, dict)
+                      or not str(item.get("question") or "").strip()
+                      or not (str(item.get("answer") or "").strip()
+                              or item.get("answer_slide"))]
+        if not qa or incomplete:
+            _add(findings, "org.qa_prep_missing", "medium",
+                 "Q&A preparation was required but a question or its answer/pointer is missing",
+                 incomplete=incomplete)
+    if goal.get("minutes") and any(s.get("pace_minutes") is not None for s in slides):
+        try:
+            allocated = sum(float(s.get("pace_minutes") or 0) for s in slides)
+            budget = float(goal["minutes"])
+            if allocated > budget + 1e-9:
+                _add(findings, "org.pace_budget_exceeded", "medium",
+                     "per-slide timing allocations exceed the declared talk duration",
+                     allocated_minutes=allocated, budget_minutes=budget)
+        except (TypeError, ValueError):
+            _add(findings, "org.pace_budget_invalid", "low",
+                 "a timing allocation is not numeric and could not be reconciled")
+    scale = spec.get("strength_scale") or ["weak", "moderate", "strong", "measured",
+                                           "supported", "suggested", "cited"]
+    ordered = {str(name): i for i, name in enumerate(scale)}
+    for i, s in enumerate(slides, start=1):
         claim = str(s.get("claim") or "").strip()
         if claim and _is_topic_claim(claim):
             _add(findings, "org.claim_is_topic", "medium",
@@ -264,6 +306,10 @@ def talk_org(spec: dict, findings: list[dict]) -> None:
             _add(findings, "org.evidence_strength_missing", "medium",
                  "the claim carries no evidence-strength label, so a reader cannot tell a "
                  "confirmed result from a suggestive one", slide=i)
+        if s.get("strength") and str(s.get("strength")) not in ordered:
+            _add(findings, "org.strength_unknown", "low",
+                 "the evidence-strength label is outside the declared rankable scale",
+                 slide=i, strength=s.get("strength"), allowed=list(ordered))
 
 
 # --- 33: 学术 PPT 模板与格式适配 ---------------------------------------------

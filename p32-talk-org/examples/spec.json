@@ -1,52 +1,162 @@
 {
   "case_id": "demo-case-320",
   "section": "talk_org",
-  "min_font_pt": 14,
-  "max_bullets_per_slide": 5,
-  "require_notes": true,
-  "require_qa_prep": true,
+  "output_contract": [
+    "case_id", "status", "deck_file", "evidence_map", "presenter_notes",
+    "qa_ledger", "timing_plan", "selection_ledger", "version_record", "not_available_from_material"
+  ],
   "spacing": {"title": 32, "body": 20},
   "font_ea": "Microsoft YaHei",
   "font_latin": "Arial",
+  "min_font_pt": 14,
+  "max_bullets_per_slide": 5,
+  "min_slides": 5,
+  "max_slides": 8,
+  "require_notes": true,
+  "require_qa_prep": true,
+  "require_qa_evidence": true,
+  "required_qa_topics": ["mechanism", "data", "limitations"],
+  "require_audience_plan": true,
+  "require_evidence_rationale": true,
+  "require_timing": true,
+  "require_closing": true,
+  "require_limitations": true,
+  "require_selection_ledger": true,
+  "require_selection_reasons": true,
+  "require_role": true,
+  "require_single_claim": true,
+  "require_evidence_on_slide": true,
+  "style": {
+    "colors": {"background": "FFFFFF", "text": "1A1A1A", "title": "17365D", "muted": "5F6B76"},
+    "footer": {"text": "示例汇报 · 非正式案例", "page_numbers": true}
+  },
   "goal": {
-    "objective": "让评审认可多孔涂层方法的新颖性",
-    "audience": "具备表面化学背景的评审",
-    "minutes": 6
+    "objective": "示例：让评审认可对照方法的证据价值，同时接受外推边界",
+    "audience": "具备表面化学背景但非制造方向的研究评审",
+    "minutes": 12,
+    "qa_minutes": 2
+  },
+  "audience_plan": {
+    "prior_knowledge": "理解吸附和对照实验，不熟悉本实验室制造细节",
+    "decision": "判断对照是否支持速率结论，以及能否外推",
+    "emphasis": ["method", "result", "limit"],
+    "max_background_slides": 0
   },
   "narrative": ["question", "method", "result", "limit"],
-  "available_evidence": ["Fig. 3b, p.7", "Fig. 4a, p.9", "Sec. 5.2, p.12"],
+  "available_evidence": ["Sec. 1, p.1", "Sec. 2, p.3", "Fig. 3b, p.7", "Fig. 4a, p.9", "Sec. 5.2, p.12"],
+  "selection_ledger": {
+    "kept": [
+      {"content": "等温对照与直接速率比较", "evidence": "Sec. 2, p.3", "reason": "直接回应评审的对照疑问"},
+      {"content": "速率与变温两组证据", "evidence": "Fig. 3b, p.7", "reason": "分别支持效应大小和机制解释"},
+      {"content": "厚度与长期边界", "evidence": "Sec. 5.2, p.12", "reason": "避免将局部证据外推为普适结论"}
+    ],
+    "omitted": [
+      {"content": "整段吸附理论综述", "evidence": "Sec. 1, p.1", "reason": "评审已有先验，12 分钟内优先展示直接证据"}
+    ]
+  },
   "qa_prep": [
-    {"question": "对照组的涂层厚度如何保证一致？", "answer_slide": 2},
-    {"question": "速率提高是热效应还是结构效应？", "answer": "Fig. 4a 的变温对照排除了热效应"}
+    {
+      "topic": "mechanism",
+      "question": "速率差异是否只是热效应？",
+      "answer": "等温与变温对照共同排除了单一热效应解释",
+      "answer_slide": 2,
+      "evidence": "Fig. 4a, p.9"
+    },
+    {
+      "topic": "data",
+      "question": "2.52 倍是否在重复测量中稳定？",
+      "answer": "回到 Fig. 3b 的 n = 6 对照和逐点分布，不用单点外推",
+      "answer_slide": 3,
+      "evidence": "Fig. 3b, p.7"
+    },
+    {
+      "topic": "limitations",
+      "question": "能否推广到其他厚度和长期使用？",
+      "answer": "当前材料不支持该外推，需补充厚度矩阵与长期稳定性实验",
+      "answer_slide": 5,
+      "evidence": "Sec. 5.2, p.12"
+    }
   ],
   "slides": [
     {
       "title": "吸收速率是当前工艺的瓶颈",
-      "claim": "瓶颈在于可用表面积，而不是驱动力",
-      "strength": "moderate",
+      "layout": "title",
       "role": "question",
-      "evidence": "Fig. 3b, p.7",
-      "notes": "先立瓶颈，再给方法。"
+      "claim": "可用表面积而非驱动力是当前改进的关键约束",
+      "strength": "moderate",
+      "strength_rationale": "Sec. 2 的问题定义直接约束研究取舍",
+      "evidence": "Sec. 2, p.3",
+      "pace_minutes": 1.5,
+      "selection_reason": "先建立评审需要回答的科学问题",
+      "notes": "先立瓶颈，再说明为什么必须看对照。"
     },
     {
-      "title": "多孔涂层使速率提高 3 倍",
-      "claim": "涂层使吸收速率提高三倍",
-      "strength": "strong",
+      "title": "等温对照分离结构效应与热效应",
+      "layout": "content",
+      "role": "method",
+      "claim": "同一温度下的成对对照能够区分结构效应与热效应",
+      "strength": "measured",
+      "strength_rationale": "两组等温且每组 n = 6，比较条件明确",
+      "evidence": "Sec. 2, p.3",
+      "pace_minutes": 2,
+      "selection_reason": "非制造方向评审需要先理解比较条件",
+      "bullets": ["两组处于同一温度", "每组 n = 6"],
+      "notes": "只解释与支持结论有关的控制变量。"
+    },
+    {
+      "title": "涂层组速率为对照组 2.52 倍",
+      "layout": "content",
       "role": "result",
+      "claim": "31.2 / 12.4 = 2.52，涂层组速率在本对照中更高",
+      "strength": "strong",
+      "strength_rationale": "Fig. 3b 的 n = 6 直接对照同时给出两组实测速率",
       "evidence": "Fig. 3b, p.7",
+      "caption": "Fig. 3b, p.7 — 每组 n = 6 的直接对照",
+      "pace_minutes": 2,
+      "selection_reason": "这是报告目标所需的最直接定量证据",
       "bullets": ["对照组 12.4 a.u.", "涂层组 31.2 a.u.", "每组 n = 6"],
-      "notes": "核心结果；强调速率，不是终点。"
+      "notes": "强调精确数值与重复测量，不复读标题。"
+    },
+    {
+      "title": "变温对照排除了单一热效应解释",
+      "layout": "content",
+      "role": "result",
+      "claim": "变温对照不支持只有热变化造成速率差异的解释",
+      "strength": "moderate",
+      "strength_rationale": "Fig. 4a 提供机制对照，但尚不构成所有机制的唯一证明",
+      "evidence": "Fig. 4a, p.9",
+      "caption": "Fig. 4a, p.9 — 变温对照",
+      "pace_minutes": 2,
+      "selection_reason": "回答评审最可能提出的替代解释",
+      "bullets": ["结构条件保持一致", "变温趋势与单一热解释不一致"],
+      "notes": "把证据强度限定在该对照能支持的范围内。"
+    },
+    {
+      "title": "变温与厚度范围限制外推",
+      "layout": "content",
+      "role": "limit",
+      "takeaway": "变温与厚度范围限制外推",
+      "claim": "这些发现不能推广到未测厚度或长期使用条件",
+      "strength": "moderate",
+      "strength_rationale": "当前证据只有单厚度和有限时长，Sec. 5.2 明确列出验证缺口",
+      "evidence": "Sec. 5.2, p.12",
+      "pace_minutes": 1.5,
+      "selection_reason": "结论必须同时说明贡献和不可外推之处",
+      "limitations": ["仅测一个厚度", "未评估长期稳定性"],
+      "bullets": ["仅测量一个厚度", "长期稳定性尚未评估"],
+      "notes": "以区间化结论结束，并准备说明补充实验。"
+    },
+    {
+      "title": "原始测量与补充对照可供问答复核",
+      "layout": "content",
+      "role": "appendix",
+      "claim": "备用页按相同对照口径组织原始与补充证据",
+      "strength": "measured",
+      "strength_rationale": "备用内容直接复用 Fig. 3b 与 Fig. 4a，不新增测量解释",
+      "evidence": "Fig. 3b, p.7",
+      "selection_reason": "仅用于回答数据复核，不占主讲时间",
+      "bullets": ["Fig. 3b 的直接速率对照", "Fig. 4a 的变温对照"],
+      "notes": "备用页，不在 10 分钟主线中主动讲述。"
     }
-  ],
-  "output_contract": {
-    "deck_file": "可编辑演示文件",
-    "evidence_map": "页级证据映射",
-    "presenter_notes": "讲稿/备注导出",
-    "qa_ledger": "问答准备台账"
-  },
-  "presenter_notes": "全场口径：强调速率而非终点；追问见 qa_prep。",
-  "qa_ledger": [
-    {"question": "对照组的涂层厚度如何保证一致？", "answer_slide": 2},
-    {"question": "速率提高是热效应还是结构效应？", "answer": "Fig. 4a 的变温对照排除了热效应"}
   ]
 }

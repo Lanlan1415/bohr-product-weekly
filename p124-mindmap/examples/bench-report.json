@@ -112,7 +112,8 @@
         "extract.missing_condition"
       ],
       "fired": [
-        "extract.missing_condition"
+        "extract.missing_condition",
+        "extract.source_not_covered"
       ],
       "missing": [],
       "pass": true
@@ -124,7 +125,8 @@
         "extract.missing_locator"
       ],
       "fired": [
-        "extract.missing_locator"
+        "extract.missing_locator",
+        "extract.source_not_covered"
       ],
       "missing": [],
       "pass": true
@@ -136,7 +138,8 @@
         "extract.hedge_dropped"
       ],
       "fired": [
-        "extract.hedge_dropped"
+        "extract.hedge_dropped",
+        "extract.source_not_covered"
       ],
       "missing": [],
       "pass": true
@@ -160,7 +163,9 @@
         "verify.evidence_unrelated"
       ],
       "fired": [
-        "verify.evidence_unrelated"
+        "verify.evidence_no_locator",
+        "verify.evidence_unrelated",
+        "verify.quote_not_in_source"
       ],
       "missing": [],
       "pass": true
@@ -196,6 +201,8 @@
         "compare.field_missing"
       ],
       "fired": [
+        "compare.cell_metadata_missing",
+        "compare.cell_no_locator",
         "compare.field_missing"
       ],
       "missing": [],
@@ -232,6 +239,8 @@
         "formula.variable_undefined"
       ],
       "fired": [
+        "formula.variable_no_locator",
+        "formula.variable_not_extracted",
         "formula.variable_undefined"
       ],
       "missing": [],
@@ -268,7 +277,10 @@
         "repro.no_tolerance"
       ],
       "fired": [
-        "repro.no_tolerance"
+        "repro.no_comparison_basis",
+        "repro.no_statistic",
+        "repro.no_tolerance",
+        "repro.stage_missing"
       ],
       "missing": [],
       "pass": true
@@ -301,10 +313,12 @@
       "scenario": "pd_missing",
       "section": "paper_draft",
       "expected": [
-        "draft.section_missing"
+        "pd.sections_missing"
       ],
       "fired": [
-        "draft.section_missing"
+        "pd.figure_uncited",
+        "pd.material_unused",
+        "pd.sections_missing"
       ],
       "missing": [],
       "pass": true
@@ -313,10 +327,12 @@
       "scenario": "pd_uncited",
       "section": "paper_draft",
       "expected": [
-        "draft.uncited_claim"
+        "pd.uncited_claim"
       ],
       "fired": [
-        "draft.uncited_claim"
+        "pd.figure_uncited",
+        "pd.material_unused",
+        "pd.uncited_claim"
       ],
       "missing": [],
       "pass": true
@@ -352,7 +368,9 @@
         "rd.causal_overreach"
       ],
       "fired": [
-        "rd.causal_overreach"
+        "rd.causal_overreach",
+        "rd.conflicting_literature_ignored",
+        "rd.negative_result_omitted"
       ],
       "missing": [],
       "pass": true
@@ -364,6 +382,7 @@
         "rd.unitless_number"
       ],
       "fired": [
+        "rd.statistic_missing",
         "rd.unitless_number"
       ],
       "missing": [],
@@ -394,20 +413,145 @@
       "pass": true
     },
     {
+      "scenario": "mm_edge_dangling",
+      "section": "mindmap",
+      "expected": [
+        "map.edge_dangling"
+      ],
+      "fired": [
+        "map.edge_dangling"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_edge_notype",
+      "section": "mindmap",
+      "expected": [
+        "map.edge_type_missing"
+      ],
+      "fired": [
+        "map.edge_type_missing"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_edge_nobasis",
+      "section": "mindmap",
+      "expected": [
+        "map.edge_no_basis"
+      ],
+      "fired": [
+        "map.edge_no_basis"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_kind_missing",
+      "section": "mindmap",
+      "expected": [
+        "map.kind_undeclared"
+      ],
+      "fired": [
+        "map.kind_undeclared"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "mm_decorative",
+      "section": "mindmap",
+      "expected": [
+        "map.decorative_label"
+      ],
+      "fired": [
+        "map.decorative_label"
+      ],
+      "missing": [],
+      "pass": true
+    },
+    {
       "scenario": "ld_dangling",
       "section": "longdoc",
       "expected": [
         "long.dangling_crossref"
       ],
       "fired": [
-        "long.dangling_crossref"
+        "long.dangling_crossref",
+        "long.outline_item_unwritten"
       ],
       "missing": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_rd_pointer",
+      "section": "results_discussion",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_rd_stats",
+      "section": "results_discussion",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_rd_dataref",
+      "section": "results_discussion",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_pd_pointer",
+      "section": "paper_draft",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_pd_material",
+      "section": "paper_draft",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_qa_stats",
+      "section": "qa",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_diss_stats",
+      "section": "dissemination",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fp_map_labels",
+      "section": "mindmap",
+      "expected": [],
+      "fired": [],
+      "spurious": [],
       "pass": true
     }
   ],
   "totals": {
-    "passed": 38,
-    "of": 38
+    "passed": 51,
+    "of": 51
   }
 }

@@ -16,6 +16,7 @@ audit takes both and cross-references them.
 
 from __future__ import annotations
 
+import json
 import posixpath
 import re
 import xml.etree.ElementTree as ET
@@ -34,6 +35,29 @@ MIN_BODY_PT = 14
 MAX_BULLETS = 6
 MAX_TITLE_CHARS = 80
 MAX_BODY_PT = 24
+
+
+def write_refused(out_dir, message: str, case_id=None) -> dict:
+    """Write a standalone refusal; never call the normal contract-echo path.
+
+    A malformed spec may not define the nested objects that echoing requires.
+    Only an explicitly supplied scalar case id is retained here.
+    """
+    result = {"schema_version": "deckbuild/v3", "status": "undetermined",
+              "findings": [{"rule": "audit.no_section", "severity": "high",
+                            "message": message}],
+              "severity_counts": {"high": 1},
+              "limits": ["the case could not be run as declared"]}
+    if case_id is not None:
+        result["case_id"] = case_id
+    try:
+        out_dir = Path(out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "result.json").write_text(
+            json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    except OSError as exc:
+        result["limits"].append(f"result.json could not be written: {exc}")
+    return result
 
 
 def _font_path() -> str | None:
@@ -87,25 +111,27 @@ def measure_text(text: str, size_pt: float, max_width_px: float, dpi: int = 96,
 
     px = max(size_pt * dpi / 72.0, 1.0)
     use = font_path or _FONT
+    measure = None
     if use:
         try:
             from PIL import ImageFont
             font = ImageFont.truetype(use, int(round(px)))
             measure = lambda s: font.getbbox(s)[2] - font.getbbox(s)[0]
-            line_h = px * 1.22
-            measured = True
-        except (ImportError, OSError):
-            # Pillow absent or the font file unreadable: fall through to the
-            # declared estimate instead of crashing the build.
-            use = None
+        except (ImportError, OSError, ValueError):
+            try:
+                import glyphmetrics
+                metric = glyphmetrics.load(use)
+                measure = lambda s: metric.width(s, px)
+            except Exception:
+                measure = None
+    if measure is not None:
+        line_h = px * 1.22
+        measured = True
     else:
-        # Average advance of a proportional Latin face, ~0.52 em. CJK glyphs are
-        # full width, so they are counted at 1.0 em.
+        # Last-resort estimate is named as such; optional imaging packages never
+        # turn a valid deck run into a ModuleNotFoundError refusal.
         def measure(s: str) -> float:
-            w = 0.0
-            for ch in s:
-                w += (1.0 if ord(ch) > 0x2E80 else 0.52) * px
-            return w
+            return sum((1.0 if ord(ch) > 0x2E80 else 0.52) * px for ch in s)
         line_h = px * 1.25
         measured = False
 
@@ -172,7 +198,11 @@ def _path_for(family: str) -> str | None:
         from matplotlib import font_manager
         return font_manager.findfont(family, fallback_to_default=False)
     except Exception:
-        return None
+        try:
+            import fontsel
+            return fontsel.find_family(family)
+        except Exception:
+            return None
 
 
 def _installed(family: str) -> bool:
@@ -184,7 +214,7 @@ def _installed(family: str) -> bool:
             return True
         return _path_for(family) is not None
     except Exception:
-        return False
+        return _path_for(family) is not None
 
 
 def _emu(px: float, dpi: int = 96) -> float:
@@ -208,10 +238,11 @@ def read_deck(path) -> list[dict]:
                 ext = xfrm.find("a:ext", NS) if xfrm is not None else None
                 paras = []
                 for p in sp.findall(".//a:p", NS):
-                    runs = p.findall("a:r", NS)
+                    runs = p.findall("a:r", NS) + p.findall("a:fld", NS)
                     text = "".join((r.find("a:t", NS).text or "") for r in runs
                                    if r.find("a:t", NS) is not None)
                     sz = None
+                    colors = []
                     if runs:
                         rpr = runs[0].find("a:rPr", NS)
                         if rpr is not None and rpr.get("sz"):
@@ -228,39 +259,88 @@ def read_deck(path) -> list[dict]:
                             el = rpr.find(tag, NS)
                             if el is not None and el.get("typeface"):
                                 fonts.append(el.get("typeface"))
+                        rgb = rpr.find("a:solidFill/a:srgbClr", NS)
+                        if rgb is not None and rgb.get("val"):
+                            colors.append(rgb.get("val").upper())
                     ppr = p.find("a:pPr", NS)
                     lvl = int(ppr.get("lvl", "0")) if ppr is not None else 0
                     if text.strip():
                         paras.append({"text": text, "size_pt": sz, "level": lvl,
-                                      "fonts": fonts})
+                                      "fonts": fonts, "colors": colors})
+                ph = sp.find(".//p:nvPr/p:ph", NS)
                 shapes.append({
                     "kind": "sp",
                     "name": sp.find(".//p:cNvPr", NS).get("name", "") if sp.find(".//p:cNvPr", NS) is not None else "",
+                    "placeholder": (ph.get("type") or "body") if ph is not None else "",
                     "x": int(off.get("x")) if off is not None else 0,
                     "y": int(off.get("y")) if off is not None else 0,
                     "cx": int(ext.get("cx")) if ext is not None else 0,
                     "cy": int(ext.get("cy")) if ext is not None else 0,
+                    "has_xfrm": xfrm is not None,
                     "paras": paras,
                 })
             pics = []
             for pic in root.iter(f"{{{NS['p']}}}pic"):
                 xfrm = pic.find(".//a:xfrm", NS)
+                off = xfrm.find("a:off", NS) if xfrm is not None else None
                 ext = xfrm.find("a:ext", NS) if xfrm is not None else None
                 blip = pic.find(".//a:blip", NS)
                 cnv = pic.find(".//p:cNvPr", NS)
                 pics.append({
+                    "kind": "pic", "name": cnv.get("name", "") if cnv is not None else "",
                     "rel": blip.get(f"{{{NS['r']}}}embed") if blip is not None else None,
                     "descr": cnv.get("descr", "") if cnv is not None else "",
+                    "x": int(off.get("x")) if off is not None else 0,
+                    "y": int(off.get("y")) if off is not None else 0,
                     "cx": int(ext.get("cx")) if ext is not None else 0,
                     "cy": int(ext.get("cy")) if ext is not None else 0,
+                    "has_xfrm": xfrm is not None, "paras": [], "placeholder": "",
                 })
             notes = ""
             nname = f"ppt/notesSlides/notesSlide{idx}.xml"
             if nname in z.namelist():
                 nroot = ET.fromstring(z.read(nname))
                 notes = " ".join((t.text or "") for t in nroot.iter(f"{{{NS['a']}}}t"))
-            slides.append({"index": idx, "shapes": shapes, "pics": pics, "notes": notes.strip()})
+            bg = root.find("p:cSld/p:bg//a:srgbClr", NS)
+            slide_number = any(sh.get("placeholder") == "sldNum" for sh in shapes)
+            slides.append({"index": idx, "shapes": shapes, "pics": pics,
+                           "notes": notes.strip(),
+                           "background": bg.get("val").upper() if bg is not None and bg.get("val") else None,
+                           "has_slide_number": slide_number})
     return slides
+
+
+def _luminance(rgb: str) -> float | None:
+    try:
+        channels = [int(rgb[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    except (TypeError, ValueError):
+        return None
+    linear = [v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4 for v in channels]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def _contrast_ratio(a: str, b: str) -> float | None:
+    la, lb = _luminance(a), _luminance(b)
+    if la is None or lb is None:
+        return None
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+
+def _intersection(a: dict, b: dict) -> tuple[int, int]:
+    return (max(0, min(a["x"] + a["cx"], b["x"] + b["cx"]) - max(a["x"], b["x"])),
+            max(0, min(a["y"] + a["cy"], b["y"] + b["cy"]) - max(a["y"], b["y"])))
+
+
+def _slide_size(pptx_path) -> tuple[int, int] | None:
+    try:
+        with zipfile.ZipFile(pptx_path) as z:
+            root = ET.fromstring(z.read("ppt/presentation.xml"))
+            size = root.find("p:sldSz", NS)
+            if size is not None:
+                return int(size.get("cx")), int(size.get("cy"))
+    except (OSError, KeyError, ET.ParseError, TypeError, ValueError, zipfile.BadZipFile):
+        return None
+    return None
 
 
 def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict:
@@ -274,55 +354,152 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
     deck_text = "".join(p["text"] for sl in slides for sh in sl["shapes"] for p in sh["paras"])
     measure_font = measure_font_for(deck_text) if deck_text else _FONT
 
-    spec_slides = spec.get("slides") if isinstance(spec.get("slides"), (list, tuple)) else []
-    try:
-        min_pt = float(spec.get("min_font_pt", MIN_BODY_PT))
-    except (TypeError, ValueError):
-        min_pt = float(MIN_BODY_PT)
-    try:
-        max_bullets = int(spec.get("max_bullets_per_slide", MAX_BULLETS))
-    except (TypeError, ValueError):
-        max_bullets = int(MAX_BULLETS)
+    spec_slides = spec.get("slides") or []
+    min_pt = float(spec.get("min_font_pt", MIN_BODY_PT))
+    max_bullets = int(spec.get("max_bullets_per_slide", MAX_BULLETS))
     require_notes = bool(spec.get("require_notes", False))
-    evidence_list = ({str(e).strip().lower() for e in spec.get("available_evidence")}
-                     if isinstance(spec.get("available_evidence"), (list, tuple)) else set())
+    evidence_list = {str(e).strip().lower() for e in (spec.get("available_evidence") or [])}
     measured_any = False
+    glyph_coverage = "not_checked"
+    geometry_checked = 0
+    contrast_checked = 0
+    canvas = _slide_size(pptx_path)
+    style = spec.get("style") if isinstance(spec.get("style"), dict) else {}
+    footer = style.get("footer") if isinstance(style.get("footer"), dict) else {}
+    logo = footer.get("logo")
+    if logo and not Path(str(logo)).is_file():
+        add("image.logo_missing", "high",
+            "the declared footer logo does not exist and was not embedded", logo=str(logo))
 
-    # --- deliverable exists and respects the declared page budget ---------
-    # A deck with no slides is not a deliverable: the package opens and every
-    # per-slide rule is vacuously silent, which is exactly how an empty deck
-    # would otherwise pass. And the page budget ("页数超限") is only checkable
-    # when the case declares one: max_slides on the spec or in the goal block.
+    # A file that opens but contains no pages is not a presentation deliverable.
     if not slides:
+        add("deck.no_slides", "high",
+            "the written presentation contains no slides, so there is no talk to deliver")
+        # Backward-compatible rule name retained for the original p31 contract.
         add("deck.empty_deck", "high",
-            "the written deck contains no slides, so there is nothing to present and "
-            "nothing to audit")
-    limit_raw = spec.get("max_slides")
-    if limit_raw is None and isinstance(spec.get("goal"), dict):
-        limit_raw = spec["goal"].get("max_slides")
+            "the written presentation contains no slides, so there is no talk to deliver")
+    max_slides = spec.get("max_slides", (spec.get("goal") or {}).get("max_slides")
+                          if isinstance(spec.get("goal"), dict) else None)
+    min_slides = spec.get("min_slides")
     try:
-        slide_limit = int(limit_raw) if limit_raw is not None else None
+        if max_slides is not None and len(slides) > int(max_slides):
+            add("deck.slide_count_over_limit", "medium",
+                "the written deck exceeds the declared slide budget",
+                slides=len(slides), limit=int(max_slides))
+        if min_slides is not None and len(slides) < int(min_slides):
+            add("deck.slide_count_under_limit", "medium",
+                "the written deck does not meet the declared minimum slide count",
+                slides=len(slides), minimum=int(min_slides))
     except (TypeError, ValueError):
-        slide_limit = None
-    if slide_limit and len(slides) > slide_limit:
-        add("deck.slide_count_over_limit", "medium",
-            "the deck exceeds the declared page budget, so slides will be cut in a "
-            "hurried pass at the end instead of folded into the story",
-            slides=len(slides), limit=slide_limit)
+        add("deck.slide_budget_invalid", "low",
+            "the declared slide budget is not an integer and could not be enforced",
+            max_slides=max_slides, min_slides=min_slides)
+
+    # Missing figures become an honest partial slide, never a build-time traceback.
+    for index, meta in enumerate(spec_slides, 1):
+        image = meta.get("image") if isinstance(meta, dict) else None
+        if image and not Path(str(image)).is_file():
+            add("image.source_missing", "high",
+                "a declared source figure does not exist; the slide was delivered without it",
+                slide=index, image=str(image))
+
+    # The per-slide evidence map the brief asks the delivered record to carry:
+    # claim, evidence locator and caption from the authoring spec, each cross-checked
+    # against what the written deck actually contains (caption_landed).
+    deck_text_by_slide = {}
+    for sl in slides:
+        deck_text_by_slide[sl["index"]] = "".join(
+            p_txt["text"] for sh in sl["shapes"] for p_txt in sh["paras"])
+    evidence_map = []
+    for i, ss in enumerate(spec_slides):
+        cap = str(ss.get("caption") or "").strip()
+        landed = (cap == "") or (cap in deck_text_by_slide.get(i + 1, ""))
+        evidence_map.append({
+            "slide": i + 1,
+            "claim": str(ss.get("claim") or ss.get("title") or ""),
+            "evidence": str(ss.get("evidence") or ""),
+            "caption": cap,
+            "caption_landed": landed,
+        })
+    if evidence_map and not all(e["caption_landed"] for e in evidence_map):
+        add("deck.caption_not_landed", "high",
+            "a caption the spec declares never landed in the written deck, so the "
+            "evidence locator is missing from the deliverable")
 
     for sl in slides:
         i = sl["index"]
         texts = [p for sh in sl["shapes"] for p in sh["paras"]]
-        title = next((p["text"] for sh in sl["shapes"] if sh["name"].lower().startswith("title")
+        title = next((p["text"] for sh in sl["shapes"]
+                      if sh["name"].lower().startswith("title")
+                      or sh.get("placeholder") in ("title", "ctrTitle")
                       for p in sh["paras"]), "")
         body_paras = [p for sh in sl["shapes"]
-                      if sh["name"].lower() in ("body",) for p in sh["paras"]]
+                      if sh["name"].lower() == "body" or sh.get("placeholder") == "body"
+                      for p in sh["paras"]]
+
+        # --- geometry: bounds, overlap and explicit RGB contrast ------------
+        objects = list(sl["shapes"]) + list(sl["pics"])
+        for obj in objects:
+            if obj.get("has_xfrm") and obj.get("paras") and (obj["cx"] <= 0 or obj["cy"] <= 0):
+                add("layout.missing_geometry", "medium",
+                    "a text shape has an explicit but unusable zero-size box",
+                    slide=i, shape=obj.get("name"))
+            if obj["cx"] <= 0 or obj["cy"] <= 0:
+                continue
+            geometry_checked += 1
+            if canvas and (obj["x"] < 0 or obj["y"] < 0 or
+                           obj["x"] + obj["cx"] > canvas[0] + 12700 or
+                           obj["y"] + obj["cy"] > canvas[1] + 12700):
+                add("layout.out_of_bounds", "high",
+                    "an element extends beyond the delivered slide canvas",
+                    slide=i, shape=obj.get("name"), box=[obj["x"], obj["y"], obj["cx"], obj["cy"]],
+                    canvas=list(canvas))
+            if obj.get("paras") and obj.get("name", "").lower() not in {"notes placeholder"}:
+                for p in obj["paras"]:
+                    for color in p.get("colors") or []:
+                        if sl.get("background"):
+                            ratio = _contrast_ratio(color, sl["background"])
+                            if ratio is not None:
+                                contrast_checked += 1
+                                threshold = 3.0 if (p.get("size_pt") or 0) >= 24 else 4.5
+                                if ratio + 1e-9 < threshold:
+                                    add("format.low_contrast", "medium",
+                                        "explicit text color has insufficient contrast with the slide background",
+                                        slide=i, shape=obj.get("name"), ratio=round(ratio, 2),
+                                        required=threshold, text=p["text"][:40])
+        visible = [o for o in objects if o["cx"] > 0 and o["cy"] > 0 and
+                   (o.get("paras") or o.get("kind") == "pic")]
+        for ai, a in enumerate(visible):
+            for b in visible[ai + 1:]:
+                iw, ih = _intersection(a, b)
+                if iw <= 45720 or ih <= 45720:
+                    continue
+                smaller = min(a["cx"] * a["cy"], b["cx"] * b["cy"])
+                ratio = (iw * ih / smaller) if smaller else 0
+                if ratio < 0.08:
+                    continue
+                image_involved = a.get("kind") == "pic" or b.get("kind") == "pic"
+                add("layout.figure_overlap" if image_involved else "layout.overlap",
+                    "medium" if image_involved else "high",
+                    "visible elements overlap substantially" +
+                    ("; verify whether this is an intentional figure annotation" if image_involved else ""),
+                    slide=i, shapes=[a.get("name"), b.get("name")], smaller_shape_fraction=round(ratio, 3))
+
+        # --- declared footer/page-number outcomes --------------------------
+        slide_text = "".join(p["text"] for p in texts)
+        if footer.get("text") and str(footer["text"]) not in slide_text:
+            add("format.footer_missing", "high", "the declared footer text did not land on the slide", slide=i)
+        if footer.get("page_numbers") and not sl.get("has_slide_number"):
+            add("format.page_number_missing", "high", "a dynamic slide-number placeholder is missing", slide=i)
+        if footer.get("logo") and Path(str(logo)).is_file() and not any(
+                str(p.get("name") or "").lower() == "logo" for p in sl["pics"]):
+            add("format.logo_missing", "high", "the declared logo was not embedded on the slide", slide=i)
 
         # --- structure ----------------------------------------------------
         if not title:
             add("deck.no_title", "high", "the slide has no title text", slide=i)
-        if not [p for p in texts if p["text"].strip()]:
-            add("deck.empty_slide", "high", "the slide carries no text at all", slide=i)
+        if not [p for p in texts if p["text"].strip()] and not sl["pics"]:
+            add("deck.empty_slide", "high", "the slide carries neither text nor a figure", slide=i)
         if len(body_paras) > max_bullets:
             add("deck.too_many_bullets", "medium",
                 "more bullets than the declared density limit, so the slide will be read "
@@ -355,16 +532,19 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
             inner_w = sh["cx"] - 2 * int(0.12 * EMU_IN)
             inner_h = sh["cy"] - 2 * int(0.08 * EMU_IN)
             total_px = 0.0
+            widest_px = 0.0
             for p in sh["paras"]:
                 m = measure_text(p["text"], p["size_pt"] or 18.0, inner_w / EMU_IN * 96,
                                  font_path=measure_font)
                 measured_any = measured_any or m["measured"]
                 total_px += m["height_px"]
-            if _emu(total_px) > inner_h:
+                widest_px = max(widest_px, m["width_px"])
+            if _emu(total_px) > inner_h or _emu(widest_px) > inner_w:
                 add("text.overflow", "high",
-                    "the text does not fit its box even with autofit, so it will be shrunk "
-                    "below the floor or spill", slide=i, shape=sh["name"] or "text",
-                    needed_emu=int(_emu(total_px)), box_emu=inner_h)
+                    "the text exceeds its usable width or height; it will wrap, shrink or spill",
+                    slide=i, shape=sh["name"] or "text",
+                    needed_emu=int(_emu(total_px)), box_emu=inner_h,
+                    widest_emu=int(_emu(widest_px)), usable_width_emu=inner_w)
 
         # --- images -------------------------------------------------------
         for pic in sl["pics"]:
@@ -384,8 +564,6 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
 
         # --- claim and evidence -------------------------------------------
         meta = spec_slides[i - 1] if i - 1 < len(spec_slides) else {}
-        if not isinstance(meta, dict):
-            meta = {}
         if not meta.get("claim"):
             add("deck.claim_missing", "medium",
                 "the slide declares no single claim, so it is a topic rather than an "
@@ -428,19 +606,20 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
     # --- font reality: declared, installed, and able to draw the text ------
     declared = (spec.get("font_ea"), spec.get("font_latin"))
     for fam in declared:
-        if fam and isinstance(fam, str) and not _installed(fam):
+        if fam and not _installed(fam):
             add("font.declared_missing", "medium",
                 "a declared typeface is not installed here, so the target application will "
                 "substitute and the layout will shift", family=fam)
     if deck_text:
         import fontsel as _fs
         resolved = _fs.resolve(deck_text)
-        if resolved.missing:
+        glyph_coverage = "measured" if resolved.measured else "unverifiable"
+        if resolved.missing and resolved.measured:
             add("export.missing_glyphs", "high",
                 "characters in the deck have no glyph in any installed font, so they will "
                 "render as empty boxes", characters="".join(resolved.missing)[:40],
                 count=len(resolved.missing))
-        elif declared[0] and isinstance(declared[0], str) and _installed(declared[0]):
+        elif declared[0] and _installed(declared[0]):
             # The declared East Asian face must itself cover the text, or the substitution
             # happens at render time even though the file is well formed.
             path = _path_for(declared[0])
@@ -537,6 +716,7 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
         "checked": {
             "slides": len(slides),
             "text_measured": measured_any,
+            "glyph_coverage": glyph_coverage,
             # Report the font the measurements actually used, not the module default:
             # the two differ for any deck containing Chinese. "checked.font_file" is
             # the output-contract field a reader relies on to interpret overflow
@@ -544,7 +724,13 @@ def audit_deck(pptx_path, spec: dict, image_aspects: dict | None = None) -> dict
             # different font than the reader will see.
             "font_file": measure_font,
             "minimum_font_pt": min_pt,
+            "canvas_emu": list(canvas) if canvas else None,
+            "geometry_checked": geometry_checked,
+            "contrast_checked": contrast_checked,
+            "layout_scope": "explicit slide shapes/pictures only; inherited and group transforms are not fully simulated",
             "note": ("overflow measured against glyph metrics" if measured_any else
                       "no font file found; overflow is an estimate and is reported as such"),
+            "evidence_map": evidence_map,
         },
+        "evidence_map_top": evidence_map,
     }

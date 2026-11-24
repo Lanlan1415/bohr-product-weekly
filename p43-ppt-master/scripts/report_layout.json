@@ -1,0 +1,99 @@
+{
+  "schema_version": "ppt-master-layout-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_geometry_provenance_contrast",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "detail": {
+        "noAutofit": true,
+        "contrast_checks": 3
+      },
+      "pass": true
+    },
+    {
+      "scenario": "horizontal_unbreakable_token",
+      "expected": [
+        "text.overflow"
+      ],
+      "fired": [
+        "text.overflow"
+      ],
+      "missing": [],
+      "spurious": [],
+      "detail": {},
+      "pass": true
+    },
+    {
+      "scenario": "text_outside_canvas",
+      "expected": [
+        "shape.out_of_bounds"
+      ],
+      "fired": [
+        "shape.out_of_bounds"
+      ],
+      "missing": [],
+      "spurious": [],
+      "detail": {},
+      "pass": true
+    },
+    {
+      "scenario": "picture_outside_canvas",
+      "expected": [
+        "shape.out_of_bounds"
+      ],
+      "fired": [
+        "shape.out_of_bounds"
+      ],
+      "missing": [],
+      "spurious": [],
+      "detail": {},
+      "pass": true
+    },
+    {
+      "scenario": "text_collision",
+      "expected": [
+        "shape.overlap"
+      ],
+      "fired": [
+        "shape.overlap"
+      ],
+      "missing": [],
+      "spurious": [],
+      "detail": {},
+      "pass": true
+    },
+    {
+      "scenario": "low_contrast",
+      "expected": [
+        "text.contrast_low"
+      ],
+      "fired": [
+        "text.contrast_low"
+      ],
+      "missing": [],
+      "spurious": [],
+      "detail": {},
+      "pass": true
+    },
+    {
+      "scenario": "evidence_not_landed",
+      "expected": [
+        "deck.evidence_not_landed"
+      ],
+      "fired": [
+        "deck.evidence_not_landed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "detail": {},
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 7,
+    "of": 7
+  }
+}

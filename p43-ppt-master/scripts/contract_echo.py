@@ -1,8 +1,8 @@
-"""Case identity and output-contract passthrough for successful audits.
+"""Case identity and output-contract passthrough for results and safe refusals.
 
-Refusal results deliberately do not import or call this module.  A refusal can
-happen before a spec exists; making it depend on nested contract structure would
-turn a recoverable input error into a NameError/TypeError.
+Successful audits derive fields from the delivered artifact. Refusals pass only
+an independently parsed case, never the absent/malformed spec; their caller
+also guards this module so a hostile contract cannot suppress result.json.
 """
 from __future__ import annotations
 

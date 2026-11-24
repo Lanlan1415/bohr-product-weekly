@@ -1,0 +1,253 @@
+{
+  "schema_version": "template-delivery-hostile/v4",
+  "probes": [
+    {
+      "probe": "01_clean_real_pptx",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "02_clean_repeat_idempotent",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "03_missing_spec",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "04_invalid_json",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "05_array_spec",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "06_unknown_section",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "07_section_wrong_type",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "08_slides_wrong_type",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "09_bullets_wrong_type",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "10_bad_spacing_limit",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "11_empty_deck",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "12_contract_object_list",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "13_contract_unknown_shape",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "14_missing_figure",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "15_missing_source",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "16_corrupt_source",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "17_missing_template",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "18_malformed_template",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "19_undeclared_layout",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "20_low_contrast_review",
+      "pass": true,
+      "exit": 3,
+      "status": "review",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "21_missing_logo_blocked",
+      "pass": true,
+      "exit": 4,
+      "status": "blocked",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "22_case_contract_passthrough",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "23_malformed_case_limit",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "24_refusal_keeps_contract",
+      "pass": true,
+      "exit": 5,
+      "status": "undetermined",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "25_real_source_batch",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "26_real_native_template",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    },
+    {
+      "probe": "27_audited_status_wins",
+      "pass": true,
+      "exit": 0,
+      "status": "clean",
+      "has_result": true,
+      "no_traceback": true,
+      "stderr": ""
+    }
+  ],
+  "totals": {
+    "passed": 27,
+    "of": 27
+  },
+  "temp_root": "C:\\Users\\lanlan\\AppData\\Local\\Temp\\p33_hostile4_y80qpf3i"
+}

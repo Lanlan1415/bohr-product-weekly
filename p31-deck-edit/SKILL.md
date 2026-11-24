@@ -1,479 +1,295 @@
 ---
 name: deck-edit
 description: >
-  Generate and revise an academic slide deck while keeping a reviewable record of every
-  change. Requires each revision to name the slide it touched, the instruction of the
-  round and why; keeps the before/after diff complete; snapshots removed text so it can
-  be restored; names the delivered revision; and checks each recorded change against the
-  written deck. Builds a real .pptx with the standard library (no python-pptx needed),
-  keeps terminology consistent across slides, measures text overflow on real glyph
-  metrics with Chinese line breaking, checks that declared typefaces exist, that
-  characters have glyphs, that every slide still resolves to the one slide master, that
-  the deck fits its declared page budget, that declared font embedding is really in the
-  package, and that two builds produce the same deck. Writes a structured result.json
-  carrying the case's output_contract fields verbatim plus case_id, and refuses with an
-  undetermined result (exit code 5) instead of crashing when the input cannot be read.
-  Use when a task asks to generate, edit, shorten, expand, re-target, translate, or
-  iterate on an academic deck.
+  Create and revise real academic PPTX files without losing evidence or version history.
+  Use for generating, editing, shortening, expanding, translating, re-templating or iterating
+  an academic presentation. Preserves a supplied source deck and applies DrawingML text,
+  geometry and style edits; creates editable slide layouts, notes, figures, theme colors,
+  footers, logos and dynamic slide numbers; verifies evidence locators, before/after records,
+  fonts, glyph coverage, canvas bounds, overlap, contrast and deterministic reruns; returns
+  case_id and every output_contract field with structured 0/3/4/5 exits.
 ---
 
-# deck-edit（学术 PPT 生成与编辑）
+# deck-edit：真实生成/编辑学术 PPT，并保留证据与版本
 
-迭代是汇报稿悄悄塌掉的地方。一轮"压缩到十分钟"删掉了承载主张的限定词；一轮
-"面向评审改写"把同一个实体换了三种叫法；两轮之后没有人说得清改了什么、为什么改，
-唯一可行的回应就是推倒重来。本 Skill 让每一次修改都留下可复核的记录，并对着
-写出来的文件核验记录本身。
+本技能交付的是 **可打开的 .pptx、实际导出件（渲染器可用时）和可复核记录**，不是内容建议。
+先看论文、研究材料、起始 deck 和模板，再写页面。材料没有支持的数字、图号、结论、模板状态、
+字体状态或预览不得补造。`clean` 是机械审计结论，不等于科学内容已经获得专家认可。
 
-## 五种"看起来成功"的失败
+## 固定运行入口
 
-**没有人能复核的修改。** 没有理由的改动无法被复议或撤销；没有页码的改动无法被
-定位。
+运行环境把技能装在 `/skills/weekly-skill`。输入是 `/input/case.json`、`/input/task.md` 及其实际附件；
+中间文件放 `/app/work`，正式产物放 `/app/output`。按以下顺序完成，不要先做长时间的文字规划而迟迟不落盘。
 
-**改写引入的术语漂移。** `signalling` 和 `signaling` 出现在相邻两条要点里，而且
-是同一轮引入的。
+0. **读输入和契约。** 读 case 的 `case_id`、原 `output_contract` 的每个字段；读 task 的受众、时长、
+   页数、编辑轮次、起始 deck、模板、语言和导出要求。枚举实际 PDF、数据、图、PPTX/POTX；标签不是证据。
+   PDF 要读原文件，不假设存在预抽取答案。
+1. **建立主线与页级计划。** 从材料提取研究问题、方法、结果和限制；指定 `goal.objective/audience/minutes`。
+   每页只承担一个可反驳 `claim`、一个 `role`、一个 `pace_minutes`（有时长时），标题直接写该页结论，
+   不写“结果”“方法概述”这类主题词。最后一页给可复述结论与局限/下一步，备用页不得挤掉结论。
+2. **先形成诚实版本。** 页级标题、claim、evidence、bullets、caption、notes 和修改记录写入
+   `/app/work/spec.json`。每页 evidence 精确命中 `available_evidence` 中真实存在的图、表、公式、章节或数据定位。
+   图页同时给 `image/image_alt/caption/evidence`；caption 保留条件、样本和面板含义，不生成替代曲线。
+   speaker notes 写讲述顺序、解释和过渡，不复读标题。
+3. **选择真实产物路径。** 无起始稿时从零生成；有 `source_deck` 时先抽取源稿并保包编辑；有
+   `template.file` 时测量并套用实际母版/版式/主题。三条路径可组合，但 spec 的 slides 必须描述交付版。
+4. **生成并读回审计。** 在技能目录执行下述 CLI。引擎先写 `/app/output/deck.pptx`，读取最终 OPC/XML
+   部件检查，再写 result、证据图、版本台账和可用的 PDF。不得把 spec 或 result.json 当作 PPT 的替代品。
+5. **修发现并重跑。** 修页面或台账，不得为消除 finding 编造材料。溢出应删要点或拆页，不能缩到可读下限以下；
+   母版、模板、图号或修改落位有误要修文件。剩余材料缺口写入 `uncertainty`、`gaps` 和 `limits`。
+6. **核对交付。** 确认 deck 非空且可打开、result 含 case 的全字段、主要文件路径真实存在、案例角色/页数/时长
+   一致。渲染器不存在时禁止创建假 PDF；明确说明只能做结构几何检查。运行时产物可以是二进制，技能包只放文本资源。
 
-**无法重建的稿子。** 同一 spec 两次构建产出不同页面，意味着迭代历史描述的是一份
-已经不存在的文档。
+## 唯一真实 CLI
 
-**用拉丁度量丈量中文。** 两个复合缺陷，都曾让溢出检查对所有中文稿静默失效：
-
-1. 度量字体是 DejaVu Sans，没有 CJK 字形，宽度全错；
-2. 断行只按空白切分——中文没有空白——整段中文被当成一行，永远不会溢出：
-
-```
-before: shape=Body  paras=5  need_px≈72   box_h_px=474   (judged to fit)
-after:  shape=Body  paras=5  need_px=358  box_h_px=474   (overflow reported)
-```
-
-度量字体按实际出现的字符解析，每个 CJK 字符都是断行点。checked.font_file 记录
-实际用的字体——中文稿里它不该是拉丁默认字体，这个差别就是证据。
-
-**不能重放的记录。** 只留 before/after 单边的 diff 无法逐页比较；删除不留快照
-就无法回退——记录存在的意义就是回退。指向不存在页码的改动无法对文件核验。两个
-版本并存而没有指针时，没人说得清哪一版交付。母版链同样被核验：某页的 layout
-关系丢失、或整个稿子的一半挂在另一个母版上，正是"只想改一页却改坏了全部"的
-签名。
-
-## 运行时入口与输出契约（Harbor runtime contract）
-
-平台把本 Skill 安装在 /skills/weekly-skill，运行时输入固定为 /input/case.json 与
-/input/task.md；工作目录 /app/work，最终交付物与 result.json 必须写入 /app/output。
-实际输入文件和原论文是事实依据；不依据错误的领域标签补造数据。
-
-### 六步运行时入口（harness agent 按此执行）
-
-1. **读 case**：读 /input/case.json，取 case_id 与 output_contract 全部字段；读
-   task.md 拿任务措辞与约束（受众、时长、页数上限、模板要求）。
-2. **判形态路由**：生成 / 编辑 / 受众改写 / 模板适配，决定 section 与 spec 形态
-   （见下表）。论文缺图、图片为位图无法取数等材料边界在此登记 uncertainty。
-3. **先产出目标产物**：从论文主线提取页级主张与讲解顺序，先用引擎把 deck.pptx
-   （可编辑演示文件本体）构建出来——产物先于审计存在。
-4. **构造 spec**：页级结构（title/claim/evidence/bullets/notes/layout）、修改记录
-   （revisions + delivered_revision）、模板与字体声明写成 spec JSON（放 /app/work），
-   带上 case_id 与 output_contract 原文让引擎直通回填。抽不出的字段留空并登记
-   uncertainty，不臆造。
-5. **审计并修发现重跑**：跑引擎，按 rule 逐条修发现（页数超限砍页、溢出删要点、
-   证据缺位补定位）后重跑，直到 clean 或剩余发现全部属于"材料不支持、只能如实
-   声明"。
-6. **合并 result.json**：按下述合成规则合成最终 /app/output/result.json，把
-   deck.pptx 与真实渲染出的 PDF/PNG 预览一并放入 /app/output；预览渲染器不在时
-   在 limits 里如实声明，不谎称渲染过。
-
-### 任务措辞 → 路由决策表
-
-| 任务措辞 / 材料形态 | 路由 | 依据 |
-|-|-|-|
-| 从论文/提纲生成一版可讲稿 | section 免填（或按内容取舍），主路径 deckbuild.py；每页声明 claim/evidence/notes | 页级证据映射是评分项，主张先行 |
-| "改一页"/"压缩第 N 页"/缩短篇幅 | section 为 deck_edit；revisions 记录本轮 instruction + 逐条 change（slide/before/after/reason） | 迭代是本题评分核心；半边 diff 是 medium 发现 |
-| 面向评审 / 面向导师改写 | section 为 deck_edit + talk_org；goal 声明 objective/audience/minutes | 受众与时长是主张强度与节奏的裁判依据 |
-| "10 分钟" / 页数上限 / "不超过 N 页" | goal.minutes 或 max_slides 进 spec | 页数超限与节奏过快/过慢各有一条规则 |
-| 模板适配（母版/字号阶梯/页脚） | section 为 template_fit；template.layouts + spacing + 字体声明 | 未声明 layout 会回落默认并丢主题；字号阶梯必须真是阶梯 |
-| 论文图表插入 | slides[].image + image_alt + caption；section 为 paper_to_deck | 图片必须指名论文对象（Fig./Table/Eq.）；无 caption 报 medium |
-| 中文内容 / 中英混排 | 主路径（度量字体按字符解析，CJK 逐字断行） | 拉丁度量会漏掉全部中文溢出 |
-| 多轮迭代（≥2 轮历史） | revisions 多轮 + delivered_revision 指针 | 没有交付指针的迭代史无法判定哪版交付 |
-| 论文缺图 / 图片为位图 | 登记 uncertainty；不凭空生成曲线占位 | 题面点名的失败模式：占位图与凭空曲线 |
-| case.json / task.md 缺失或不可解析 | 拒绝路径（见下） | 结构化 result.json，状态 undetermined 或 failed，绝不裸崩 |
-| 任务要求 PDF/讲义导出 | 交付 deck.pptx + limits 声明预览能力边界 | 渲染器在 PATH 时产出 PDF 预览，不在时如实说明 |
-
-### result.json 合成规则（顺序即覆盖优先级）
-
-```
-result.json =
-  1. case.json 中 output_contract 的全部原始字段 —— 逐字段原文保留：
-     引擎已产出的字段保持审计值（审计值优先于 spec 携带值），
-     spec 携带值的字段逐字直通，
-     两边都产不出的字段填 null 并在 limits 里点名 —— 绝不编造
-  2. case_id —— 取自 case.json（经 spec 直通或 CLI --case-id）
-  3. 主结果 —— deck.pptx（页级结构 + 主张 + 图表 + 讲稿/备注 + 模板结果）
-  4. 引擎审计字段 —— status, findings, severity_counts, deck, preview,
-     reproducibility, checked
-  5. sources —— 页级证据映射：每页 evidence/caption → 论文图、表、章节或数据，
-     由 available_evidence 清单背书
-  6. uncertainty —— 待复核项：缺图、位图不可取数、槽位不足、默认参数、需人工确认项
-  7. change_records —— 逐轮台账：instruction + 每条 change 的 slide/before/after/
-     reason，即 spec 的 revisions（审计已核其完整性）
-  8. limits —— 能力边界与"未检查项"的如实声明
+```bash
+python -I -X utf8 scripts/deckbuild.py \
+  --spec /app/work/spec.json \
+  --case /input/case.json \
+  --out /app/output
 ```
 
-### 题面输出字段对齐（用题面原词）
+可单独用 `--case-id` 在没有 case 文件时保留已知标识；CLI 没有其他隐式安装步骤。Python 3.10+，核心只用标准库。
+LibreOffice/soffice/office-renderer 是可选导出工具；Pillow/matplotlib 只用于可用的加速，字体测量可完全回退到标准库。
+`DECKBUILD_NO_RENDER=1` 只供作者快速回归，**正式案例不要设置**。
 
-| 题面要求 | 本包落点 |
-|-|-|
-| 输入标识 | result.json 顶部 case_id；schema_version 标注引擎版本 |
-| 主结果 | deck.pptx + result.json 的 deck 块（页数、页幅、字号阶梯、字体）；完成标准"能围绕论文主线讲清楚"由页级 claim/evidence/notes 审计背书 |
-| 页级证据映射 | 每页 evidence/caption → 论文图、表、章节；deck.evidence_missing（high）与 deck.evidence_unsupported（high）把关"引用准确，未改写事实" |
-| 渲染与版本记录 | preview（渲染器存在时真实 PDF）+ reproducibility（两遍构建一致）+ change_records（逐轮台账）+ checked.font_file（度量字体记录） |
-| 运行状态 | status：clean=完成；review=可交付但带发现；blocked=存在未修复 high；undetermined=输入不可运行（拒绝路径） |
-| 不确定性 | uncertainty 列表，逐条可复核 |
-| 可编辑演示文件 | deck.pptx 由标准库直写 PresentationML，PowerPoint/WPS/LibreOffice 可打开编辑；母版链审计保证"改一页不改坏全部" |
+正常路径写出：
 
-### 材料缺失时拒绝而不是崩溃
+- `deck.pptx`：可编辑 PresentationML；有 speakers notes 时，文字在实际 notes body placeholder 中；
+- `deck.pdf`：只在真实渲染成功且文件非空、文件头为 PDF 时存在；
+- `result.json`：审计、契约、页级 evidence_map、preview、source_record、template_application、版本与限制；
+- `evidence_map.json`、`presentation_plan.json`、`change_records.json`：从最终 spec/审计生成的复核件。
 
-材料缺失、无法判断、运行失败三种情形都必须落一份结构化 result.json 再退出；绝不
-裸抛异常，也绝不交一个空白输出目录。引擎层的拒绝路径（spec 不是可读 JSON / 不是
-JSON 对象 / 文件缺失 / 页面无法构建）由引擎直接落 result.json：状态 undetermined、
-发现规则 audit.no_section（high）、退出码 5。
-
-退出码全表：
-
-| status | exit | 含义 |
-|-|-|-|
-| clean | 0 | 零发现，直接交付 |
-| review | 3 | 带 medium/low 发现，可交付但须逐条处置或声明 |
-| blocked | 4 | 存在 high 发现，修复前不得交付 |
-| undetermined | 5 | 输入不可运行（坏 JSON / 非对象 / 文件缺失 / 构建失败），什么都没交付 |
-
-拒绝是自包含路径：它运行在任何审计存在之前，只依赖 json 模块，不调用契约回填
-（回填所依赖的 spec 恰恰是读不出来的那份输入）；CLI 显式传入的 case 标识仍然保留。
-
-| 情形 | status | 处置 |
-|-|-|-|
-| spec 不是可读 JSON / 不是 JSON 对象 / 文件缺失 | undetermined（引擎直接落盘） | 退出码 5，永不 traceback |
-| spec 能读但构不成页面（slides 类型错位、字段形状错误） | undetermined（引擎直接落盘） | 发现写明原因；不交半成品 |
-| 未知 section 名 | undetermined（引擎直接落盘） | 四个合法 section 见路由表；错误名拒绝而不是静默跳过 |
-| case.json 或 task.md 缺失/不可解析 | failed | harness 合成 result.json：reason=missing_input，uncertainty 写明缺什么 |
-| 论文缺图 / 图片为位图无法取数 | review | 照常成稿；该页登记 uncertainty，不画占位曲线 |
-| 模板槽位不足（layout 不在 template.layouts） | review | format.undeclared_layout（high）指出回落页；换声明内 layout 或在 limits 声明 |
-| 引擎依赖缺失（Pillow/matplotlib 字体） | 启动失败 | Python 导入层抛 ImportError——依赖在 Dependencies 声明；度量退化为估算并如实报告 |
-
-拒绝模板（**示例**，非正式案例结果）：
+## spec：公共骨架
 
 ```json
 {
-  "case_id": "（取自 case.json）",
-  "status": "failed",
-  "reason": "missing_input",
-  "sources": [],
-  "uncertainty": ["task.md 缺失，页数与受众约束未知；按 15 页默认预算不成立，需补充"],
-  "limits": ["拒绝构建：没有任务约束无法判定页级取舍"]
-}
-```
-
-## 完整 worked example（**示例**，非正式案例结果）
-
-最小输入（examples/spec.json，节选；完整字段以文件为准）：
-
-```json
-{
-  "case_id": "deck-example-001",
-  "output_contract": {"deliverable": "editable deck.pptx", "status": "audit verdict"},
-  "deliverable": "editable deck.pptx",
   "section": "deck_edit",
-  "max_slides": 5,
-  "min_font_pt": 14, "max_bullets_per_slide": 5, "require_notes": true,
+  "case_id": "demo-only",
+  "output_contract": ["case_id", "deck_file", "evidence_map", "version_record", "custom_note"],
+  "custom_note": {"kept": true},
   "spacing": {"title": 32, "body": 20},
-  "font_ea": "Microsoft YaHei", "font_latin": "Arial",
-  "available_evidence": ["Fig. 3b, p.7"],
-  "revisions": [
-    {"n": 2, "instruction": "压缩到十分钟", "changes": [
-      {"slide": 2, "before": "吸收速率明显提高", "after": "吸收速率提高 3 倍",
-       "reason": "把模糊的程度词换成实测倍数"}]}
-  ],
-  "delivered_revision": 2,
+  "font_latin": "Arial",
+  "font_ea": "Microsoft YaHei",
+  "min_font_pt": 14,
+  "max_bullets_per_slide": 5,
+  "require_notes": true,
+  "min_slides": 4,
+  "max_slides": 8,
+  "goal": {"objective": "让评审理解证据与外推边界", "audience": "同行评审", "minutes": 8},
+  "available_evidence": ["Sec. 2, p.3", "Fig. 3b, p.7", "Sec. 5, p.12"],
   "slides": [
-    {"title": "多孔涂层加速吸收", "layout": "title", "claim": "吸收速率是当前工艺的瓶颈",
-     "evidence": "Fig. 3b, p.7", "notes": "引入问题；不读标题。"},
-    {"title": "吸收速率提高 3 倍", "layout": "content", "claim": "涂层使吸收速率提高三倍",
-     "evidence": "Fig. 3b, p.7",
-     "bullets": ["对照组 12.4 a.u.", "涂层组 31.2 a.u.", "每组 n = 6"],
-     "notes": "停顿；对比的是速率，不是终点。"}
+    {"title": "涂层解决吸收速率瓶颈", "layout": "title", "role": "question",
+     "claim": "吸收速率是要解决的问题", "evidence": "Sec. 2, p.3", "pace_minutes": 1,
+     "notes": "先立问题，再进入对照。"},
+    {"title": "等温对照分离结构效应与热效应", "layout": "content", "role": "method",
+     "claim": "对照设计区分了两种解释", "evidence": "Sec. 2, p.3", "pace_minutes": 2,
+     "bullets": ["两组等温", "每组 n = 6"], "notes": "说明对照条件。"},
+    {"title": "涂层组速率为对照组 2.52 倍", "layout": "content", "role": "result",
+     "claim": "31.2 / 12.4 = 2.52", "evidence": "Fig. 3b, p.7", "pace_minutes": 3,
+     "caption": "Fig. 3b, p.7 — 两组，n = 6", "bullets": ["对照 12.4 a.u.", "涂层 31.2 a.u."],
+     "notes": "直接指向面板与精确数值。"},
+    {"title": "单一厚度结果不能外推", "layout": "content", "role": "limit",
+     "claim": "厚度边界限制外推", "evidence": "Sec. 5, p.12", "pace_minutes": 2,
+     "bullets": ["仅测一个厚度", "长期稳定性未评估"], "notes": "以结论和限制收束。"}
   ]
 }
 ```
 
-调用（本机实跑）：
+正式运行必须用材料中的真实值替换演示文字。每页（包括封面和结束页）都要有 claim/evidence；
+若封面只含论文题目，也把论文题名/任务说明的真实定位加入证据白名单。不得沿用示例数字。
+
+### 图与图像
+
+`slides[].image` 是实际 PNG/JPEG 路径。生成器从文件头读取尺寸并 fit-and-centre，不拉伸；`image_alt` 写给屏幕阅读器
+和图像比例审计使用的文字，不能只在文件名中暗示来源。位图不可取数时报告不确定性，不重绘假数据。
+本引擎不声称生成原生 PowerPoint 图表对象；原图/位图始终保持可编辑位置和尺寸，图表内部不变成可编辑系列。
+
+## 起始 deck：真实保包编辑
+
+先抽取工作骨架（它不是 result.json）：
 
 ```bash
-python scripts/deckbuild.py --spec examples/spec.json --out examples/out --case-id deck-example-001
+python -I -X utf8 scripts/decksource.py --source /input/start.pptx --out /app/work/source.json
 ```
 
-实跑输出（示意，非正式案例结果）：
+在 spec 写 `"source_deck": "/input/start.pptx"`，并根据真实源稿补齐每页 claim/evidence/layout/notes。
+引擎复制源包全部部件，只修改明确的 slide/notes DrawingML，不按记忆重建幻灯片。源文件和交付文件 SHA-256、
+执行状态及包部件是否保持完整在 `source_record` 中。`delivered_revision` 之前的修改按顺序应用，之后不进入交付版。
 
-```
-{"status": "clean", "case_id": "deck-example-001", "findings": [],
- "slides": 2, "preview": false, "wrote": "examples\\out\\result.json"}
-```
+### 文本替换或删除
 
-实跑 result.json 关键字段（示意，非正式案例结果；本机无 office 渲染器，预览如实
-声明未渲染）：
-
-```
-schema_version   deckbuild/v1
-case_id          deck-example-001
-status           clean
-deliverable      editable deck.pptx                  <- output_contract 字段直通
-deck             slides=2, size_emu=[12192000, 6858000],
-                 spacing={title:32, body:20},
-                 fonts={latin:Arial, ea:Microsoft YaHei}
-reproducibility  deterministic=true（两遍构建按页文本与几何比对）
-checked          slides=2, text_measured=true（真实字形度量）,
-                 font_file=<度量字体路径>, minimum_font_pt=14
-limits           ["preview not rendered: no office renderer on PATH (soffice / office-renderer)"]
+```json
+{
+  "slide": 3, "target": "slide", "before": "结果",
+  "after": "涂层组速率为对照组 2.52 倍", "reason": "标题写结论并绑定 Fig. 3b"
+}
 ```
 
-## Workflow
+- `target` 可为 `slide` 或 `notes`；替换可跨 split runs，保留首个 run 格式；删除用 `action: "delete"`、
+  保留完整 `before`、`after: ""`，以便回滚。
+- before 不在源稿但 after 已存在时，视为幂等的 `already_present`，不误报；两者都没有则 high。
+- 任意记录的 after 必须能在指定最终页或 notes 中读回；仅有建议而未落文件会得到 `edit.change_not_in_deck`。
 
-### 1. 修改记录随改随记
+### 实际几何与样式修改
 
-记录形状规则，全部是检查项而不是倡议：
-
-- 一条文本修改必须带 **before 与 after 两边**，或——对删除——声明 action 为删除并
-  把被删文本放进 before；
-- 一条修改的 slide 指向稿子实际包含的页；
-- 两轮以上时 delivered_revision 指出交付哪一轮（按 n 标签或列表位置；单轮天然就是
-  交付版）；
-- 每轮声明 instruction（这轮要做什么），每条 change 声明 reason（为什么这么改）；
-- change 的 after 文本必须真的落在所指页面的正文或演讲备注里——审计读的是写出来
-  的文件，记录描述了没做过的修改会被点名。
-
-### 2. Run it
-
-```bash
-python scripts/deckbuild.py --spec spec.json --out /app/output
+```json
+{"slide": 3, "action": "set_geometry", "shape": "Title", "unit": "in",
+ "geometry": {"x": 0.5, "y": 0.35, "w": 12.33, "h": 1.0}, "reason": "对齐版心"}
 ```
 
-退出码：0 clean / 3 review / 4 blocked / 5 undetermined。写出 result.json、
-deck.pptx，以及 office 渲染器在 PATH 时的 PDF 预览。
+```json
+{"slide": 3, "action": "set_style", "shape": "Title",
+ "font_size_pt": 32, "color": "17365D", "bold": true,
+ "font_latin": "Arial", "font_ea": "Microsoft YaHei", "reason": "恢复标题层级"}
+```
 
-**页面本体，不只是记录，是交付物。** 标题陈述该页的主张（"涂层使吸收速率提高
-三倍"），不是该页的主题（"结果"）；每页都带主张所依据的来源定位（evidence 缺失
-是 high 发现）；演讲备注讲要点之外的话，而不是复读要点；修改记录指明交付版本，
-复核者打开的一定是交付的那版。
+`shape` 也可为唯一 `title`/`body` 占位符名。`geometry_emu` 可替代 `geometry` 并省略 unit；形状缺失、重名、
+非法尺寸会写 `edit.source_change_unapplied` 并阻断。重复应用相同样式为 `already_present`。
+动画、OLE、SmartArt 内部和不受支持的形状操作只能成为 `structural_record_only` 加 limits，不能宣称已修改。
+`style.footer` 是从零生成页的设置，不会在保包编辑中擅自给整个源稿注入页脚/Logo；起始稿应保留其原有母版，
+或用上述明确 action 完成局部格式修改。
 
-### 3. Build 先于信任
+## 从零生成：主题、页边距、页脚、Logo 与动态页码
 
-- reproducibility.deterministic — 两遍构建按页文本与几何比对；
-- checked.font_file — 度量实际用的字体（中文稿里不是拉丁默认字体才是对的）；
-- findings 里 edit.* — 修改记录的完整性；
-- findings 里 master.* — 每页仍解析到同一个母版；
-- findings 里 embed.missing — 仅当 spec 声明 embed_fonts 且包里没有字体部件时触发。
+在 spec 顶层加 `style`；省略时采用稳定默认值。
 
-## 六类要素检查表（逐项落点）
+```json
+{
+  "style": {
+    "slide_in": [13.3333333333, 7.5],
+    "margins_in": [0.35, 0.5, 0.9, 0.5],
+    "title_height_in": 1.0,
+    "gap_in": 0.15,
+    "image_ratio": 0.38,
+    "colors": {
+      "background": "FFFFFF", "text": "1A1A1A", "title": "17365D",
+      "accent": "0072B2", "muted": "5F6B76"
+    },
+    "footer": {
+      "text": "Methods Group · measured results",
+      "page_numbers": true,
+      "logo": "/input/group-logo.png",
+      "logo_alt": "Methods Group logo"
+    }
+  }
+}
+```
 
-交付前逐项核对；任何一项缺失都要么补齐、要么在 limits 里写明原因。
+- `margins_in` 顺序固定为 **TRBL：上、右、下、左**，不是 CSS 的四边缩写猜测；颜色用六位 RGB。
+- 标题、正文、图注与页脚都由同一组页边距派生。无图 caption 会预留独立带区；图像和 Logo 保持源宽高比。
+- 动态页码写为 `p:ph type="sldNum"` + `a:fld type="slidenum"`，不是逐页硬编码一段普通数字。
+- 缺 Logo、缺图、页脚/页码未落文件都有 finding。`embed_fonts: true` 时，包中没有真实字体部件也会报告。
+- 样式类型或 RGB 无效时安全回退并写 limits；不得把低对比背景/文字组合写成可读。正文和标题显式 RGB 均已知时，
+  引擎检查 WCAG 对比度；继承主题色无法解析时不猜测。
 
-| 题面六类要素 | spec/交付落点 | 引擎检查 |
+## 真实模板套用
+
+```json
+{
+  "template": {"file": "/input/university.pptx", "name": "university-v2",
+               "layouts": ["Title Slide", "Title and Content"]},
+  "require_title_placeholder": true
+}
+```
+
+`template.file` 接受实际 PPTX/POTX。`templatecheck.py` 测量页面尺寸、布局 name/type、layout→master 关系、
+主题字体/主题色、标题/正文占位符的几何/字号/正文内边距；layout 自身缺几何时，仅在该占位符确实存在的前提下沿母版继承。
+
+应用时复制真实 master/layout/theme 和内部依赖、调整画布、重连每页 layout；标题/正文在模板有对应占位符时转为原生
+`p:ph` 并应用实测 `xfrm`、字号和字体，删除会遮挡模板背景的默认背景。blank layout 无占位符时，文本框回退在
+`template_application.placeholder_records` 中如实记录；只有明确要求 `require_title_placeholder` 才将缺 title ph 视为 high。
+不会把“模板文件名相同”冒充已套用，也不会把普通文本框冒充原生占位符。
+
+## 最终文件实际检查什么
+
+| 层面 | 实际检查/产物 |
 |-|-|
-| 论文主线 | 页序 + 每页 claim + goal.objective | deck.claim_missing, org.goal_missing, org.claim_is_topic, org.pace_too_fast, org.pace_too_slow |
-| 页结构 | slides[].layout/title/bullets、max_slides、max_bullets_per_slide | deck.no_title, deck.empty_slide, deck.too_many_bullets, deck.slide_count_over_limit, deck.empty_deck, deck.title_too_long |
-| 图表引用 | slides[].image/image_alt/caption/evidence + available_evidence | paper.figure_unattributed, paper.caption_missing, deck.evidence_missing, deck.evidence_unsupported, format.figure_mismatch, image.no_alt_text, image.aspect_distorted |
-| 讲解逻辑 | slides[].notes、require_notes、org.strength | deck.notes_missing, deck.notes_repeat_title, org.evidence_strength_missing, org.audience_missing |
-| 模板约束 | template.layouts/name、spacing、font_ea/font_latin、embed_fonts | format.size_ladder_flat, format.size_ladder_steep, format.undeclared_layout, format.template_unnamed, format.font_drift, format.title_drift, font.declared_missing, embed.missing |
-| 导出渲染 | deck.pptx + preview + checked.font_file | text.overflow, text.font_too_small, text.size_missing, text.body_too_large, text.term_inconsistent, export.missing_glyphs, export.missing_glyphs_in_declared_font, master.layout_missing, master.inconsistent, export.invalid_package, export.no_master, export.no_theme, repro.nondeterministic |
+| 叙事与科学映射 | 每页单一 claim、role、evidence 白名单、caption↔locator、主线/时长/受众计划、结束页与限制由 Agent 按上文安排 |
+| 版本 | 每轮 instruction、每条 slide/before/after/reason、删除快照、交付指针、before/after 执行状态、源/产物 hash、包成员完整性 |
+| 模板 | 真实 master/layout/theme 链、layout 匹配、原生占位符、标题几何与字号、页面尺寸、字体/颜色 |
+| 可读性 | CJK 断行和字形 advance width 的宽/高双向溢出、字号下限、要点密度、图片比例、空白页、空白 deck、明确 RGB 对比度 |
+| 几何 | 显式形状/图片的负坐标、越过画布、零尺寸文本框、正/反向重叠；图片上有意注记单列 medium，不与正文重叠混淆 |
+| 导出 | 真实 PDF 和渲染器、字体发现/缺字、master/import 包完整性、两遍 slide 文本/几何/notes 一致性、动态页码/Logo/页脚落位 |
+| 契约 | case_id 优先取 case 文件；原 output_contract 对象保留，所有同名字段回填，审计值优先，无法推导为 null + limits |
 
-## Rules
+几何范围是显式 slide shape/picture；不模拟全部 group transform、PowerPoint 自动布局和字体替换。文字测量不含
+kerning/ligature。真实 PDF 记录表示文件成功导出，不自动证明像素级一致；应把 PDF 光栅化后查看关键页，无法查看时明确限制。
+科学 claim 的语义、图片内部数值和引文真实性仍须 Agent 回读原材料，不能用规则通过代替判断。
 
-### 修改记录（演示稿迭代）
+## 修改记录与版本台账规则
 
-| rule | severity | what it proves |
+- 多轮必须 `delivered_revision`，每条变更必须有 slide、reason；每轮应有 instruction、changes，否则按级别报告。
+- 文本 prior/after 不能只有半边；删除保存 before；noop 记 low；指向不存在页或 after 未落文件记 high。
+- `deck.empty_deck`/`deck.no_slides`、`deck.empty_slide`、`deck.no_title`、`deck.evidence_missing`、
+  `deck.evidence_unsupported`、`deck.caption_not_landed`、`image.source_missing`、`text.overflow` 是主要 high。
+- `layout.out_of_bounds`、`layout.overlap`、`layout.figure_overlap`、`layout.missing_geometry`、
+  `format.low_contrast`、`format.footer_missing`、`format.page_number_missing`、`format.logo_missing` 读取最终文件。
+- `template.*`、`format.*`、`master.*`、`font.*`、`export.*` 的精确发现都保留在 findings[]，不得从最终 result 静默删除。
+
+## 状态、拒绝与退出码
+
+| status | exit | 用法 |
 |-|-|-|
-| `edit.change_without_reason` | high | 一条改动没有理由，无法复核或撤销 |
-| `edit.change_without_slide` | high | 一条改动没有页码，无法定位 |
-| `edit.change_slide_out_of_range` | high | 改动指向稿子不存在的页，记录无法映射到文件 |
-| `edit.delete_without_snapshot` | high | 删除没有留存被删文本，无法回退 |
-| `edit.change_not_in_deck` | high | 记录的新文本没有落在所指页或其备注里 |
-| `edit.change_half_diff` | medium | 文本修改只留单边 before/after，无法逐页比较 |
-| `edit.delivered_revision_missing` | medium | 两轮以上没有交付指针 |
-| `edit.revision_without_changes` | medium | 一轮记录没有任何改动 |
-| `edit.revision_instruction_missing` | low | 一轮没有 instruction，本轮意图丢失 |
-| `edit.change_is_noop` | low | before 与 after 相同 |
+| clean | 0 | 无 findings；仍须人工核对科学语义 |
+| review | 3 | 只有 medium/low；可交付，但必须说明并处置 |
+| blocked | 4 | 至少一个 high；不得把未完成品写成完成 |
+| undetermined | 5 | spec 缺失/坏 JSON/非对象/路由或源文件无法运行；结构化拒绝 |
 
-### 文本、术语与字体
+拒绝路径独立工作，永远没有 bare traceback；只有可读 case（或显式 case-id）而不依赖坏 spec。case 可读时，
+连拒绝 result 也保留原 output_contract 及全部同名字段；不存在的推导值为 null。case 不可读时如实标 limits，case_id 为 null。
+`task.md` 或材料丢失由 Agent 在 spec/uncertainty/limits 中区分说明，不把文件名写成结论。
 
-| rule | severity | what it proves |
-|-|-|-|
-| `text.overflow` | high | 文本装不进文本框，按 CJK 断行的真实字形度量 |
-| `text.font_too_small` | high | 低于可读下限 |
-| `text.term_inconsistent` | medium | 同一术语全稿两种拼法 |
-| `export.missing_glyphs` | high | 字符在任何已装字体里都无字形 |
-| `export.missing_glyphs_in_declared_font` | medium | 声明的字体本身画不出部分字符 |
-| `font.declared_missing` | medium | 声明的字体本机未安装 |
-| `embed.missing` | medium | 声明了字体嵌入而包里没有嵌入字体 |
+`output_contract` 支持名称数组、name→说明对象、含 field/name/key 的对象数组和单字符串。正常/拒绝路径都以案例中的
+case_id/contract 为准；审计已有字段不被 spec 的 `status` 或自报 deck 覆盖。自定义可推导字段可放 case/spec 顶层直通；
+无法得到的字段保留原名并写 null，不改名、不漏字段。
 
-### 稿面卫生与构建
+## 完整最小示例
 
-| rule | severity | what it proves |
-|-|-|-|
-| `deck.empty_deck` | high | 写出的稿子没有任何页面，没有可讲的东西 |
-| `deck.slide_count_over_limit` | medium | 页数超过声明预算，收尾会被迫砍页 |
-| `deck.no_title` | high | 一页没有标题 |
-| `deck.evidence_missing` | high | 一页没有来源定位 |
-| `deck.too_many_bullets` | medium | 要点超过声明的密度上限 |
-| `deck.notes_missing` | medium | 没有演讲备注，报告变成念稿 |
-| `master.layout_missing` | high | 一页没有 layout 或其 layout 解析不到母版 |
-| `master.inconsistent` | high | 各页解析到多个母版——改一页改坏了模板 |
-| `repro.nondeterministic` | high | 两遍构建不一致 |
-| `audit.no_section` | high | 输入不可运行（拒绝路径的发现规则） |
-
-### 完整规则索引（引擎规则已按严格验收全部入档）
-
-| rule | severity |
-|-|-|
-| `deck.claim_missing` | medium |
-| `deck.empty_slide` | high |
-| `deck.evidence_unsupported` | high |
-| `deck.notes_repeat_title` | low |
-| `deck.title_too_long` | medium |
-| `export.invalid_package` | high |
-| `export.no_master` | high |
-| `export.no_theme` | high |
-| `format.content_dropped` | high |
-| `format.figure_mismatch` | high |
-| `format.font_drift` | medium |
-| `format.size_ladder_flat` | medium |
-| `format.size_ladder_steep` | low |
-| `format.template_unnamed` | low |
-| `format.title_drift` | medium |
-| `format.undeclared_layout` | high |
-| `image.aspect_distorted` | high |
-| `image.no_alt_text` | low |
-| `org.audience_missing` | medium |
-| `org.claim_is_topic` | medium |
-| `org.evidence_strength_missing` | medium |
-| `org.goal_missing` | high |
-| `org.pace_too_fast` | medium |
-| `org.pace_too_slow` | low |
-| `paper.caption_missing` | medium |
-| `paper.figure_unattributed` | high |
-| `text.body_too_large` | low |
-| `text.size_missing` | medium |
-
-## 异常处置表
-
-| 异常 | 识别 | 处置动作 |
-|-|-|-|
-| 修改没有理由 | edit.change_without_reason | 意图还在记忆里时立刻补写 reason |
-| 修改只留单边 diff | edit.change_half_diff | 补齐 before/after 两边；半条记录无法比较或回退 |
-| 删除不留快照 | edit.delete_without_snapshot | 把被删文本放进 before，否则内容不可恢复 |
-| 记录与文件不符 | edit.change_not_in_deck | 应用该修改或更正记录——两者必居其一 |
-| 页码越界 | edit.change_slide_out_of_range | 页码写错或页面没写——修记录或修稿 |
-| 迭代无交付指针 | edit.delivered_revision_missing | 在 delivered_revision 里点名交付轮 |
-| 轮次无 instruction | edit.revision_instruction_missing | 补写本轮指令；每轮"为什么改"是台账的一部分 |
-| 压缩后溢出 | text.overflow | 继续删要点，不要缩字号（缩到下限以下会另报 high） |
-| 术语两种拼法 | text.term_inconsistent | 选定一种并全稿重跑；发现清单列出了两种形式 |
-| 中文变方框 | export.missing_glyphs | 安装覆盖这些字符的字体——这是题面点名的失败 |
-| 声明字体本机没有 | font.declared_missing | 换已装字体，或随稿发布字体 |
-| 声明嵌入却没嵌 | embed.missing | 真正把字体打进包里，或撤回 embed_fonts 声明 |
-| 页数超预算 | deck.slide_count_over_limit | 按 claim 强度砍页并补一轮 revision 记录，不要临场删 |
-| 母版被改坏 | master.layout_missing / master.inconsistent | 重建稿子，不要手补 XML |
-| slides/spacing/字体字段类型错位 | 拒绝路径或 limits 说明 | 构不成立面拒绝（undetermined）；可安全回退的数值字段用默认值并在 limits 声明 |
-| spec 是坏 JSON / 非对象 / 文件缺失 | audit.no_section | 状态 undetermined、退出码 5、落盘 result.json，永不 traceback |
-| 导出预览渲染器不在 | preview.rendered=false | limits 如实声明"预览未渲染"，不谎称产出过 PDF |
-| 任务给的是位图无数据 | 抽取阶段 | 登记 uncertainty；不凭空生成曲线占位 |
-
-## 创新增益
-
-本 Skill 的新增能力，全部围绕"迭代可复核"这一题面点名的突破方向：
-
-1. **修改记录即合同**：每轮 revision 带 instruction、每条 change 带
-   slide/before/after/reason，多轮必有交付指针；审计读写出来的 .pptx 逐条核对
-   记录（新文本必须真的落在所指页或备注里）。通用 Agent 的"我改好了"没有这层
-   可复核性。
-2. **先建包再审计**：生成器用标准库直写 PresentationML（zipfile + XML），不依赖
-   python-pptx；审计再解包读回页面 XML——字体大小丢失、备注占位符丢失、图片
-   被拉伸这类"生成器自己的病"是被审计抓出来的，不是靠 spec 自证。
-3. **真实度量而非估算**：溢出判定用真实字形宽度（按实际字符解析字体、CJK 逐字
-   断行）对真实文本框计算；没有字体文件时退化为估算并在 checked 里如实标注。
-4. **母版链守护**：逐页解析 layout→master 关系，"改一页改坏全部"以
-   master.layout_missing / master.inconsistent 两条 high 规则落地。
-5. **确定性构建**：同一 spec 两遍构建按页文本与几何指纹比对，deterministic=true
-   是交付条件；多轮迭代因此可回到任何一版。
-6. **页预算约束**：声明 max_slides（或 goal 内）后超页是 medium 发现——页数取舍
-   从临场砍页提前到成稿前。
-
-增益边界（创新证据的适用范围）：增益在"可证明"一侧——记录完整性、溢出度量、
-母版一致性、构建确定性、页预算。不在"讲得好"：叙事顺序的优劣、翻译质量、
-母版样式是否好看，都不是引擎能判断的（见 Limits）。
-
-## 生态贡献
-
-- **使用说明**：本 SKILL.md 即完整使用说明——用途、适用条件、调用方式、输入输出、
-  异常处理、限制和自查方法齐全；其他人或 Agent 可按说明独立复跑。
-- **依赖**：生成器纯标准库（zipfile + xml），审计可选 matplotlib（字体解析）与
-  Pillow（字形测量）；一行 pip 安装（见 Dependencies）；无网络依赖、无作者个人
-  文件依赖。
-- **配置**：全部行为由 spec JSON 配置（页预算、字号上下限、要点密度、备注开关、
-  证据清单、模板 layouts、嵌入声明），按案例调整不需要改引擎代码。
-- **示例**：examples/spec.json 是含 case_id 与 output_contract 的最小输入示例（把
-  上节 worked example 的命令指向任意可写目录即可实跑复现）；examples/bench-report.json
-  是示意输出。
-- **资源可复用**：scripts/ 各模块可独立导入——deckaudit.py（解包审计）、
-  pptxgen.py（标准库 OOXML 生成）、deckbuild.py（spec→稿→审计→result）、
-  fontsel.py（逐字符字体解析）、contract_echo.py（契约回填）；references/deck-engine.md
-  记录引擎的设计约束与已知教训，可单独取用。
-- **适用范围**：学术汇报稿的生成、压缩、扩写、受众改写、翻译后重建与多轮迭代；
-  不适用于动画编排、演讲计时器与在线协作编辑。
-- **限制**：见 Limits 一节，逐条写明能力边界。
-- **维护信息**：规则集以 rule id 固化，bench 回归套件（4 个 bench 文件、67 个场景）
-  即版本门槛；任何规则改动必须同步本文件并重跑 bench。
-
-## Verification
+`examples/spec.json` 是演示接口，不是正式案例答案，四页分别承担问题、方法、结果、限制，包含动态页码、版本和全字段契约。
+其中数字只用于说明映射，正式任务必须替换为源材料真实值。
 
 ```bash
-python scripts/bench_deck.py     # 11/11 scenarios: 稿面卫生，真实写出再读回
-python scripts/bench_deck2.py    # 16/16: 修改记录、CJK 度量、字体、母版链、嵌入
-python scripts/bench_extra.py    # 27/27: 四个 section，每条缺陷带假阳性守卫
-python scripts/bench_edit3.py    # 13/13: 页预算与记录规则、契约回填、拒绝路径
+python -I -X utf8 scripts/deckbuild.py --spec examples/spec.json --case-id deck-example-001 --out /app/output
 ```
 
-四个 bench 在本机全量通过。缺字体、无字形、不可复现构建、母版链断裂、声明嵌入
-缺包这类缺陷无法用 spec 表达，对应场景通过 patch 注入或对写出的真实包打补丁——
-测的是审计器对真实缺陷的反应，不是 mock。拒绝路径（坏 JSON / 非对象 / 文件缺失
-/ 未知 section → 状态 undetermined + 退出码 5 + 落盘 result.json）由 bench_edit3
-与外部探针双重覆盖。
+本机作者回归曾对该类规格得到非空 deck、真实 PDF、0 findings；平台实际导出以运行环境中的 `preview` 为准，
+不沿用作者机器的状态。`examples/bench-report.json` 是早期公共示例回归摘要；最新能力报告见 `scripts/report_delivery4.json` 和
+`scripts/report_probe_delivery4.json`，都不是平台正式案例成绩。
 
-## Dependencies
+## 开源机制如何落地，而非只附链接
 
-本包对第三方库的依赖刻意最小化：
+- **PptxGenJS**：采用其 master/layout 对象关系、TRBL margins、主题字体/`solidFill`、`bodyPr` insets/wrap，
+  以及 `sldNum` placeholder + `slidenum` field 的具体结构；见 `pptxgen.py`、`templatecheck.py`。
+  源码未提供通用文本溢出/越界检测，所以本包另写 `deckaudit.py`，没有宣称复用不存在的能力。
+- **python-pptx**：按其 slide→layout 占位符克隆原则，date/footer/slide number 不盲目克隆；标题/正文 ph 保留类型和 idx，
+  几何沿 layout/master本来继承；notes 放在真正的 body placeholder。见 `templatecheck.py`、`pptxgen.py`。
+- **reveal.js**：采用固定画布约束、按剩余空间布局、媒体内在比例 fit 的做法；正式产物仍是 PPTX，不是 reveal HTML。
+  reveal 不负责 OOXML 级重叠/越界，本包独立实现几何检查。
 
+参考实现：PptxGenJS（gitbrent/PptxGenJS）、python-pptx（scanny/python-pptx）、reveal.js（hakimel/reveal.js）。
+这里没有引入它们的运行时依赖；上述机制均在目标包中实际实现并接受 defect + clean guard 回归。
+
+## 作者侧复核（不进入正式运行主路径）
+
+```bash
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_deck.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_deck2.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_edit3.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_extra.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/bench_delivery4.py
+DECKBUILD_NO_RENDER=1 python -I -X utf8 scripts/probe_delivery4.py
 ```
-pip install matplotlib numpy Pillow
-```
 
-- **（核心，无依赖）** deckbuild.py + pptxgen.py + deckaudit.py + extra_rules.py：
-  纯 Python 标准库即可生成与审计完整的 .pptx——评测镜像不提供 python-pptx，
-  因此本包不用它，生成器直写 OOXML。
-- **matplotlib**：字体查找与逐字符字形覆盖检查（fontsel）。缺失时溢出度量退化为
-  估算并在 checked 如实标注。
-- **Pillow (PIL)**：字形宽度测量。缺失时同样退化为估算。
+新增 `bench_delivery4` 对 styled deck、真实源稿文本/几何/样式、低对比、越界、重叠、空白页和真实模板原生占位符做产物断言；
+`probe_delivery4` 对实际 CLI 的拒绝、契约、退出码、幂等和无 traceback 做探针。测试二进制只进临时目录，不进提交包。
+正式用例不要运行 bench 来代替生成结果。
 
-If these packages are not available, the deck still builds and the audit still
-runs; only glyph measurement degrades to an estimate (reported in checked and
-limits). A failed import cannot produce a result.json — install the packages
-before running any command documented above.
+## 适用边界
 
-## Limits
-
-- **台账是结构不是文采。** 审计核验一条修改有页码、有理由、有完整 before/after
-  对（或删除快照）、指向存在的页、交付轮有指针。它无法判断理由好不好。
-- **记录只验一个方向。** after 文本必须落在所指页或备注里；before 文本是否真的
-  在改前存在，流水线没有留底，验不了。结构性修改（无文本对）不做落点核验。
-- **术语折叠是短清单。** 连字符与英式/美式词尾。自造同义词对（tumour/neoplasm）
-  抓不到。
-- **语言切换不验证。** 翻译稿只查几何与一致性，不查翻译质量。
-- **嵌入按声明检查。** 只有声明 embed_fonts 为真时才读包内字体部件；不声明时
-  该风险作为 limit 报告而不是发现。
-- **母版链是结构性的。** 每页必须经 layout 解析到唯一母版；内容相同但无关系
-  损伤的页面查不出，母版样式好不好不在范围内。
-- **确定性按页文本与几何比对**，不按字节：core properties 合法地随构建变化。
-- **叙事质量不在引擎内。** 引擎能证明一页不可溯源，不能证明论证顺序排错了。
+- Agent 负责论文精读、科学取舍、视觉复核和源值核对；引擎不替 Agent 发明 claim 或证据定位。
+- 支持 DrawingML 文本替换/删除、指定形状几何/字体/RGB 样式；不重写动画、OLE/SmartArt 内部、复杂组合变换。
+- 模板套用是 master/layout/theme 与 title/body 占位符的真实连接，不是 PowerPoint 全部版式引擎的复刻。
+- 图片可编辑位置/尺寸，但位图内部不是可编辑数据系列；不会把原图重绘为伪造的原生 chart。
+- 字体“声明”不等于“嵌入”。缺字体、缺字形和未嵌入风险均记录；目标机环境不同仍可能回流。
+- 无渲染器时只保留 preview.rendered=false 和结构几何检查，绝不声称已完成视觉验收。

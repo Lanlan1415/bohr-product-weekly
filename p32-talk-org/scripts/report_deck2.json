@@ -188,6 +188,7 @@
         "deck.no_slides"
       ],
       "fired": [
+        "deck.empty_deck",
         "deck.no_slides"
       ],
       "missing": [],
@@ -202,12 +203,12 @@
       ],
       "fired": [
         "image.file_missing",
-        "org.pace_too_slow"
+        "image.source_missing"
       ],
       "missing": [],
       "spurious": [],
       "pass": true,
-      "status": "review"
+      "status": "blocked"
     },
     {
       "scenario": "font_missing",

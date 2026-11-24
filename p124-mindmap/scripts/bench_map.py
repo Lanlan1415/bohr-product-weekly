@@ -103,6 +103,15 @@ SCEN = [
         {"id": "x", "label": "其他", "parent": "c", "evidence_exempt": True}]),
         ["map.decorative_label"])),
     ("too_many_nodes", lambda: (d(max_nodes=3), ["map.too_many_nodes"])),
+    ("duplicate_node_id", lambda: (d(nodes=BASE["nodes"] + [
+        {"id": "b", "label": "reused id", "parent": "r", "evidence": "p.2", "kind": "fact"}]),
+        ["map.duplicate_node_id"])),
+    ("parent_relation_unknown", lambda: (d(nodes=[{**n, "parent_kind": "perhaps_related"} if n["id"] == "b" else n
+                                                   for n in BASE["nodes"]]),
+        ["map.parent_relation_unknown"])),
+    ("label_missing", lambda: (d(nodes=BASE["nodes"] + [
+        {"id": "unlabelled", "label": "", "parent": "c", "evidence": "p.3", "kind": "fact"}]),
+        ["map.label_missing"])),
     # false-positive guards: standard map content must stay silent
     ("fp_real_labels", lambda: (d(nodes=BASE["nodes"] + [
         {"id": "m", "label": "方法", "parent": "b", "evidence": "p.3", "kind": "fact"},

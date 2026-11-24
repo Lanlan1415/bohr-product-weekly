@@ -1,4 +1,4 @@
-"""Twenty-six hostile CLI probes: valid exit, JSON result, and no traceback."""
+"""Twenty-nine hostile CLI probes: valid exit, JSON result, and no traceback."""
 from __future__ import annotations
 
 import copy
@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPTS))
 CLI = SCRIPTS / "deckbuild.py"
 BASE = {
     "section": "paper_to_deck", "case_id": "probe-p43",
@@ -132,9 +133,9 @@ def main() -> int:
     # Real source-deck and real-template CLI runs, generated only in the temp root.
     import pptxgen as P
     source_spec = copy.deepcopy(BASE)
-    P.write_deck([P.Slide(title="问题", notes="引入。"),
+    P.write_deck([P.Slide(title="问题", evidence="Fig. 3b, p.7", notes="引入。"),
                   P.Slide(title="旧标题", bullets=[P.Bullet("n = 6"), P.Bullet("3 倍")],
-                          notes="强调对照。")], root / "source.pptx",
+                          evidence="Fig. 3b, p.7", notes="强调对照。")], root / "source.pptx",
                  spacing={"title": 32, "body": 20}, fonts=("Arial", "Microsoft YaHei"))
     bad = copy.deepcopy(BASE); bad["section"] = "deck_edit"; bad["source_deck"] = str(root / "source.pptx")
     bad["revisions"] = [{"n": 1, "instruction": "改题", "changes": [
@@ -147,6 +148,30 @@ def main() -> int:
     for slide in bad["slides"]:
         slide["layout"] = "blank"
     add("26_real_template_shell", execute(root, "26_real_template_shell", bad), expected=0)
+
+    refusal_case = {"case_id": "refusal-contract",
+                    "output_contract": {"case_id": "id", "status": "status",
+                                        "deck_file": "pptx", "evidence_map": "map",
+                                        "custom_unknown": "honest null"}}
+    row = execute(root, "27_refusal_case_contract", missing=True, case=refusal_case)
+    refused = row["result"] or {}
+    add("27_refusal_case_contract", row,
+        refused.get("case_id") == "refusal-contract"
+        and refused.get("output_contract") == refusal_case["output_contract"]
+        and set(refused.get("output_contract_fields") or []) == set(refusal_case["output_contract"])
+        and "deck_file" in refused and "evidence_map" in refused
+        and "custom_unknown" in refused and refused["custom_unknown"] is None,
+        expected=5)
+    row = execute(root, "28_invalid_spec_case_contract", raw="{bad", case=refusal_case)
+    add("28_invalid_spec_case_contract", row,
+        (row["result"] or {}).get("case_id") == "refusal-contract"
+        and set((row["result"] or {}).get("output_contract_fields") or [])
+        == set(refusal_case["output_contract"]), expected=5)
+    bad = copy.deepcopy(BASE)
+    bad["goal"] = {"objective": "评审理解主要结论", "audience": "评审", "minutes": 0.1}
+    row = execute(root, "29_paper_goal_pace", bad)
+    fired = {f.get("rule") for f in (row["result"] or {}).get("findings", [])}
+    add("29_paper_goal_pace", row, "org.pace_too_fast" in fired, expected=3)
 
     passed = sum(1 for x in checks if x["pass"])
     report = {"schema_version": "ppt-master-hostile/v1", "probes": checks,

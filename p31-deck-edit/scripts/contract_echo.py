@@ -1,48 +1,112 @@
-"""Echo the case's delivery contract into a result dict.
+"""Case identity and output-contract passthrough for successful audits.
 
-A case declares, in its output_contract, the fields its result must carry. This
-helper carries each declared field into the result:
-
-  a field the audit already produced is kept (the audited value wins);
-  a field the spec itself carries a value for is copied verbatim (bulky inputs
-  excluded -- a contract field is an assertion about the deliverable, not a
-  place to dump the whole slide list);
-  a field neither can fill becomes null with a note in limits, so a reviewer
-  finds the key and an honest gap instead of a silent omission.
-
-The case identifier is echoed at the top level. The refusal path never calls
-into this module: a refusal runs before any audit exists and keeps only what
-the command line explicitly carried.
+Refusal results deliberately do not import or call this module.  A refusal can
+happen before a spec exists; making it depend on nested contract structure would
+turn a recoverable input error into a NameError/TypeError.
 """
 from __future__ import annotations
 
-# Spec keys that carry bulk material. Copying them into the result would make
-# every result.json a second copy of the input, so a contract field with one of
-# these names is filled as null and named in limits instead.
-_BULKY = ("output_contract", "section", "spec", "text", "manuscript_text", "rows",
-          "records", "documents", "references", "evidence", "materials", "paragraphs",
-          "taxonomy", "slides", "template", "nodes", "edges", "components",
-          "mechanism_text", "bom", "stages", "revisions", "goal")
+import json
+from pathlib import Path
+from typing import Any
+
+BULKY = {
+    "slides", "revisions", "goal", "template", "available_evidence", "spec",
+    "output_contract", "materials", "documents", "records", "source_text",
+}
 
 
-def apply(result: dict, spec: dict) -> dict:
-    """Merge the declared contract fields into `result`, in place. Returns result."""
-    if not isinstance(spec, dict):
-        return result
-    cid = spec.get("case_id")
-    if cid is not None and "case_id" not in result:
-        result["case_id"] = str(cid)
-    contract = spec.get("output_contract")
-    if not isinstance(contract, dict):
-        return result
+def read_case(path: str | Path | None) -> tuple[dict[str, Any], str | None]:
+    if not path:
+        return {}, None
+    try:
+        value = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return {}, f"case file could not be read as UTF-8 JSON: {exc}"
+    if not isinstance(value, dict):
+        return {}, "case file is not a JSON object; case identity/contract unavailable"
+    return value, None
+
+
+def contract_keys(contract: Any) -> tuple[list[str], str | None]:
+    """Accept the case shapes used by Harbor without guessing at unknown ones."""
+    if contract is None:
+        return [], None
+    if isinstance(contract, str):
+        return [contract], None
+    if isinstance(contract, dict):
+        return [str(k) for k in contract], None
+    if isinstance(contract, (list, tuple)):
+        keys: list[str] = []
+        for item in contract:
+            if isinstance(item, str):
+                keys.append(item)
+            elif isinstance(item, dict):
+                key = item.get("field", item.get("name", item.get("key")))
+                if key is not None:
+                    keys.append(str(key))
+                else:
+                    return keys, "an output_contract entry has no field/name/key"
+            else:
+                return keys, "an output_contract list entry is neither text nor an object"
+        return list(dict.fromkeys(keys)), None
+    return [], f"unsupported output_contract shape: {type(contract).__name__}"
+
+
+def merged_spec(spec: dict, case: dict) -> dict:
+    """Case values provide identity/contract; explicitly constructed spec values win."""
+    out = dict(case)
+    out.update({k: v for k, v in spec.items() if v is not None or k not in case})
+    # The actual case file is authoritative for platform identity and field list.
+    if case.get("case_id") is not None:
+        out["case_id"] = case["case_id"]
+    if "output_contract" in case:
+        out["output_contract"] = case["output_contract"]
+    if "case_id" not in spec and isinstance(spec.get("case"), dict):
+        if spec["case"].get("case_id") is not None:
+            out["case_id"] = spec["case"]["case_id"]
+    if "output_contract" not in spec and isinstance(spec.get("case"), dict):
+        if "output_contract" in spec["case"]:
+            out["output_contract"] = spec["case"]["output_contract"]
+    return out
+
+
+def apply(result: dict, spec: dict, case: dict | None = None) -> dict:
+    """Backfill every requested field; audited values always beat spec claims."""
+    source = merged_spec(spec, case or {})
+    if source.get("case_id") is not None:
+        result["case_id"] = source["case_id"]
+    else:
+        result.setdefault("case_id", None)
+    contract = source.get("output_contract")
+    keys, problem = contract_keys(contract)
     limits = result.setdefault("limits", [])
-    for key in contract:
-        k = str(key)
-        if k in result:
+    if problem:
+        limits.append(problem)
+    if contract is not None:
+        result["output_contract"] = contract
+    result["output_contract_fields"] = keys
+
+    # Common names are derived from actual outputs, not copied from self-claims.
+    derived = {
+        "deck_file": (result.get("deck") or {}).get("path"),
+        "editable_presentation": (result.get("deck") or {}).get("path"),
+        "evidence_map": result.get("evidence_map"),
+        "slide_evidence_map": result.get("evidence_map"),
+        "render_record": result.get("preview"),
+        "version_record": result.get("reproducibility"),
+        "change_records": result.get("change_records"),
+        "sources": result.get("sources"),
+        "uncertainty": result.get("uncertainty"),
+    }
+    for key in keys:
+        if key in result and key not in {"output_contract", "output_contract_fields"}:
             continue
-        if k in spec and k not in _BULKY:
-            result[k] = spec[k]
-            continue
-        result[k] = None
-        limits.append(f"output_contract field '{k}' was not derivable by this audit")
+        if key in derived and derived[key] is not None:
+            result[key] = derived[key]
+        elif key in source and key not in BULKY:
+            result[key] = source[key]
+        else:
+            result[key] = None
+            limits.append(f"output_contract field '{key}' was not derivable; null retained")
     return result

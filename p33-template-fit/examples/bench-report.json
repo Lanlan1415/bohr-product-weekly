@@ -1,26 +1,37 @@
 {
-  "schema_version": "template-fit-bench/v1",
-  "benches": {
-    "bench_deck.py": {
+  "schema_version": "template-verification-summary/v4",
+  "author_verification_only": true,
+  "totals": [
+    {
+      "report": "report_deck.json",
       "passed": 11,
       "of": 11
     },
-    "bench_deck2.py": {
+    {
+      "report": "report_deck2.json",
       "passed": 13,
       "of": 13
     },
-    "bench_extra.py": {
+    {
+      "report": "report_template.json",
+      "passed": 18,
+      "of": 18
+    },
+    {
+      "report": "report_extra.json",
       "passed": 28,
       "of": 28
     },
-    "bench_template.py": {
-      "passed": 9,
-      "of": 9
+    {
+      "report": "report_delivery4.json",
+      "passed": 12,
+      "of": 12
+    },
+    {
+      "report": "report_probe_delivery4.json",
+      "passed": 27,
+      "of": 27
     }
-  },
-  "note": "Aggregated bench totals; each scripts/report_*.json carries per-scenario rows. All run in a standard-library-only environment (python -I -X utf8).",
-  "totals": {
-    "passed": 61,
-    "of": 61
-  }
+  ],
+  "note": "Not official platform scores. Binaries are generated only in temporary directories."
 }
