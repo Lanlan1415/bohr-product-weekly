@@ -6,7 +6,8 @@ RNG seed does not prove allocation randomisation/blinding, and an invented 99 is
 and most method categories are deliberately absent, so the honest status is `partial`, not success.
 
 ```bash
-python3 -I scripts/run_example.py
+SKILL="${SKILL:-/skills/weekly-skill}"
+python3 -B -I "$SKILL/scripts/run_example.py"
 ```
 
 The runner also validates result.json and refreshes example_result.json with an EXAMPLE ONLY label.

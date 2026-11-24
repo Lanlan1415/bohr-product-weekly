@@ -52,10 +52,13 @@ ethics approval, or turn missing values into defaults.
 
    `not_applicable` without both a case-specific rationale and locatable source is rejected as a
    gap. Never use an override to hide inconvenient missing evidence.
-4. **Run extraction and audit.** From the installed skill directory:
+4. **Run extraction and audit.** The evaluator installs this skill at
+   `/skills/weekly-skill`; commands run from `/app/work`, so always address the installed
+   entry point explicitly rather than assuming the current directory:
 
    ```bash
-   python3 -I scripts/methodflow.py \
+   SKILL="${SKILL:-/skills/weekly-skill}"
+   python3 -I "$SKILL/scripts/methodflow.py" \
      --case /input/case.json --input-root /input \
      --prose /app/work/methods.md --spec /app/work/method-spec.json \
      --work /app/work --out /app/output
@@ -72,8 +75,9 @@ ethics approval, or turn missing values into defaults.
    ethics questions only when evidence exists. Re-run until clean or honestly partial. Then check:
 
    ```bash
-   python3 -I scripts/validate_result.py /app/output/result.json \
-     --contract resources/output_contract.json --case /input/case.json
+   SKILL="${SKILL:-/skills/weekly-skill}"
+   python3 -I "$SKILL/scripts/validate_result.py" /app/output/result.json \
+     --contract "$SKILL/resources/output_contract.json" --case /input/case.json
    ```
 
 ## What is actually extracted
@@ -143,7 +147,8 @@ honest; do not upgrade it by deleting gap records.
 ## Minimal example（示例，非正式案例）
 
 ```bash
-python3 -I scripts/run_example.py
+SKILL="${SKILL:-/skills/weekly-skill}"
+python3 -I "$SKILL/scripts/run_example.py"
 ```
 
 The toy config has seed/lr/epochs/batch_size/dropout and deliberately lacks a dataset and most
@@ -154,8 +159,9 @@ It refreshes `examples/minimal/example_result.json`, clearly labelled as a toy o
 ## Verification
 
 ```bash
-python3 -I scripts/bench_methodflow.py  # 12 end-to-end scenarios
-python3 -I scripts/run_example.py       # toy-case and numeric guard
+SKILL="${SKILL:-/skills/weekly-skill}"
+python3 -B -I "$SKILL/scripts/bench_methodflow.py"  # 12 end-to-end scenarios
+python3 -B -I "$SKILL/scripts/run_example.py"       # toy-case and numeric guard
 ```
 
 The 12 scenarios cover a complete evidence-rich clean case, nested JSON, unsupported values,
@@ -174,8 +180,8 @@ decide whether it can ship. 本环境无法稳定获取 paperswithcode/releasing
 
 ## Requirements and honest limits
 
-Python 3.8+（3.14 实测），standard library only; no network, model call, YAML package, or experiment
-runtime. This is not a full YAML evaluator, statistical reanalysis, citation verifier, visual PDF
+Python 3.10+（3.14 实测），standard library only; no network, model call, YAML package, or
+experiment runtime. The pinned evaluator entry point is `/skills/weekly-skill`. This is not a full YAML evaluator, statistical reanalysis, citation verifier, visual PDF
 review, or reproduction runner. Keyword coverage locates evidence; it does not prove scientific
 adequacy. Rounded numeric matches require human review. Different experimental conditions sharing
 a key remain explicit conflicts until the author scopes them. Formula/equation semantics and actual

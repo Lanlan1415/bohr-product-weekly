@@ -13,7 +13,7 @@ EXAMPLE = ROOT / "examples" / "minimal"
 
 
 def run_script(script, *argv):
-    return subprocess.run([sys.executable, "-I", str(ROOT / "scripts" / script), *argv],
+    return subprocess.run([sys.executable, "-B", "-I", str(ROOT / "scripts" / script), *argv],
                           check=False, text=True, capture_output=True)
 
 

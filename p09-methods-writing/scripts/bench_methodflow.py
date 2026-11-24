@@ -138,7 +138,7 @@ def main() -> int:
 
         # CLI malformed case: structured exit 5 and no traceback.
         d, cp, case = fixture("bad_json"); cp.write_text("{broken", encoding="utf-8")
-        p = subprocess.run([sys.executable, "-I", str(HERE / "methodflow.py"), "--case", str(cp),
+        p = subprocess.run([sys.executable, "-B", "-I", str(HERE / "methodflow.py"), "--case", str(cp),
                             "--input-root", str(d), "--work", str(d), "--out", str(d / "badout")],
                            capture_output=True, text=True, timeout=30)
         try:
@@ -154,7 +154,7 @@ def main() -> int:
         # Idempotency and engine-over-case contract precedence through the actual CLI.
         d, cp, case = fixture("idempotent"); case["status"] = "pretend-success"
         cp.write_text(json.dumps(case), encoding="utf-8")
-        cmd = [sys.executable, "-I", str(HERE / "methodflow.py"), "--case", str(cp),
+        cmd = [sys.executable, "-B", "-I", str(HERE / "methodflow.py"), "--case", str(cp),
                "--input-root", str(d), "--work", str(d), "--out", str(d / "out")]
         a = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
         first = (d / "out" / "result.json").read_bytes()
