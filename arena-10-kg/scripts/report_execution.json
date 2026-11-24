@@ -1,0 +1,130 @@
+{
+  "schema_version": "kg-executable-bench/v1",
+  "synthetic": true,
+  "scenarios": [
+    {
+      "scenario": "first_doi_not_attached_to_second",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "manifest_hashes_actually_verified",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "valid_graph_schema_and_conditions",
+      "pass": true,
+      "detail": "(0, '{\"status\": \"success\", \"rc\": 0, \"schema_ok\": true, \"nodes\": 6, \"edges\": 5, \"queries\": 3, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\kg_micro_two_papers_wxll01s9\\\\\\\\out1\\\\\\\\result.json\"}\\n', '')"
+    },
+    {
+      "scenario": "verbatim_source_quotes_verified",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "instance_identity_stays_separate",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "duplicate_assertion_evidence_merged",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "same_condition_conflicts_not_averaged",
+      "pass": true,
+      "detail": "[{'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E4', 'E5'], 'value': 0.00032, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}, {'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E6'], 'value': 0.00044, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}]"
+    },
+    {
+      "scenario": "three_real_queries_with_source_evidence",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "conflict_query_returns_actual_both_sides",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "contract_preserved_and_deterministic",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "graphml_export_with_evidence",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "different_conditions_do_not_conflict",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "scenario": "hostile_bad_direction_rejected",
+      "pass": true,
+      "detail": "('{\"status\": \"partial\", \"rc\": 3, \"schema_ok\": true, \"nodes\": 6, \"edges\": 5, \"queries\": 3, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\kg_micro_two_papers_wxll01s9\\\\\\\\out-bad_direction\\\\\\\\result.json\"}\\n', {'nodes': [], 'edges': [{'edge': {'edge_id': 'BAD-DIR', 'subject': 'N-mat', 'predicate': 'prepares', 'object': 'N-s1', 'evidence': [{'source_id': 'S1', 'paragraph_id': 'sec1-p1', 'quote': '制备 LLZO', 'evidence_strength': 'direct', 'confidence': 0.97}], 'status': 'accepted', 'confidence': 0.97, 'supporting_edge_ids': ['BAD-DIR']}, 'index': 5, 'errors': ['edge BAD-DIR direction/type error: N-mat(Material) -prepares-> object has an invalid subject type']}]}, {'ok': True, 'schema_version': 'literature-evidence-graph/v1', 'errors': [], 'warnings': [], 'node_count': 6, 'edge_count': 5, 'entity_candidates_checked': 1, 'merge_decisions': [{'node_ids': ['N-s1', 'N-s2'], 'action': 'keep_separate', 'justification': 'Different physical batches B1/B2 in two independent papers; same label is insufficient identity evidence.', 'evidence_count': 2, 'identifiers_shared': []}], 'unresolved_entity_candidates': [], 'duplicates': [], 'conflicts': [{'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E4', 'E5'], 'value': 0.00032, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}, {'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E6'], 'value': 0.00044, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}], 'quote_validation': {'verified_against_actual_material': True, 'passages': 4, 'papers': 2, 'errors': [], 'sources': [{'source_id': 'S1', 'doi': '10.synthetic/primary', 'title': None, 'paragraphs': 2, 'hash_verified': True}, {'source_id': 'S2', 'doi': '10.synthetic/secondary', 'title': None, 'paragraphs': 2, 'hash_verified': True}]}})"
+    },
+    {
+      "scenario": "hostile_bad_direction_not_clean",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "hostile_missing_condition_rejected",
+      "pass": true,
+      "detail": "('{\"status\": \"partial\", \"rc\": 3, \"schema_ok\": true, \"nodes\": 6, \"edges\": 5, \"queries\": 3, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\kg_micro_two_papers_wxll01s9\\\\\\\\out-missing_condition\\\\\\\\result.json\"}\\n', {'nodes': [], 'edges': [{'edge': {'edge_id': 'BAD-COND', 'subject': 'N-mat', 'predicate': 'compares', 'object': 'N-latp', 'evidence': [{'source_id': 'S2', 'paragraph_id': 'z-p4', 'quote': 'LATP', 'evidence_strength': 'direct', 'confidence': 0.97}], 'status': 'accepted', 'confidence': 0.97, 'supporting_edge_ids': ['BAD-COND']}, 'index': 5, 'errors': ['edge BAD-COND is comparative/qualified but has no condition']}]}, {'ok': True, 'schema_version': 'literature-evidence-graph/v1', 'errors': [], 'warnings': [], 'node_count': 6, 'edge_count': 5, 'entity_candidates_checked': 1, 'merge_decisions': [{'node_ids': ['N-s1', 'N-s2'], 'action': 'keep_separate', 'justification': 'Different physical batches B1/B2 in two independent papers; same label is insufficient identity evidence.', 'evidence_count': 2, 'identifiers_shared': []}], 'unresolved_entity_candidates': [], 'duplicates': [], 'conflicts': [{'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E4', 'E5'], 'value': 0.00032, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}, {'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E6'], 'value': 0.00044, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}], 'quote_validation': {'verified_against_actual_material': True, 'passages': 4, 'papers': 2, 'errors': [], 'sources': [{'source_id': 'S1', 'doi': '10.synthetic/primary', 'title': None, 'paragraphs': 2, 'hash_verified': True}, {'source_id': 'S2', 'doi': '10.synthetic/secondary', 'title': None, 'paragraphs': 2, 'hash_verified': True}]}})"
+    },
+    {
+      "scenario": "hostile_missing_condition_not_clean",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "hostile_bad_quote_rejected",
+      "pass": true,
+      "detail": "('{\"status\": \"partial\", \"rc\": 3, \"schema_ok\": true, \"nodes\": 6, \"edges\": 4, \"queries\": 3, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\kg_micro_two_papers_wxll01s9\\\\\\\\out-bad_quote\\\\\\\\result.json\"}\\n', {'nodes': [], 'edges': [{'edge': {'edge_id': 'E1', 'subject': 'N-method', 'predicate': 'prepares', 'object': 'N-s1', 'evidence': [{'source_id': 'S1', 'paragraph_id': 'sec1-p1', 'quote': 'a quote absent from the real paragraph', 'evidence_strength': 'direct', 'confidence': 0.97}], 'status': 'accepted', 'confidence': 0.97, 'supporting_edge_ids': ['E1']}, 'index': 0, 'errors': ['edge E1 evidence invalid: quote does not occur at S1:sec1-p1']}]}, {'ok': True, 'schema_version': 'literature-evidence-graph/v1', 'errors': [], 'warnings': [], 'node_count': 6, 'edge_count': 4, 'entity_candidates_checked': 1, 'merge_decisions': [{'node_ids': ['N-s1', 'N-s2'], 'action': 'keep_separate', 'justification': 'Different physical batches B1/B2 in two independent papers; same label is insufficient identity evidence.', 'evidence_count': 2, 'identifiers_shared': []}], 'unresolved_entity_candidates': [], 'duplicates': [], 'conflicts': [{'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E4', 'E5'], 'value': 0.00032, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}, {'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E6'], 'value': 0.00044, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}], 'quote_validation': {'verified_against_actual_material': True, 'passages': 4, 'papers': 2, 'errors': [], 'sources': [{'source_id': 'S1', 'doi': '10.synthetic/primary', 'title': None, 'paragraphs': 2, 'hash_verified': True}, {'source_id': 'S2', 'doi': '10.synthetic/secondary', 'title': None, 'paragraphs': 2, 'hash_verified': True}]}})"
+    },
+    {
+      "scenario": "hostile_bad_quote_not_clean",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "hostile_invalid_confidence_rejected",
+      "pass": true,
+      "detail": "('{\"status\": \"partial\", \"rc\": 3, \"schema_ok\": true, \"nodes\": 6, \"edges\": 4, \"queries\": 3, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\kg_micro_two_papers_wxll01s9\\\\\\\\out-invalid_confidence\\\\\\\\result.json\"}\\n', {'nodes': [], 'edges': [{'edge': {'edge_id': 'E1', 'subject': 'N-method', 'predicate': 'prepares', 'object': 'N-s1', 'evidence': [{'source_id': 'S1', 'paragraph_id': 'sec1-p1', 'quote': '制备 LLZO', 'evidence_strength': 'direct', 'confidence': 8.0}], 'status': 'accepted', 'supporting_edge_ids': ['E1']}, 'index': 0, 'errors': ['edge E1: confidence must be a finite number in [0,1]']}]}, {'ok': True, 'schema_version': 'literature-evidence-graph/v1', 'errors': [], 'warnings': [], 'node_count': 6, 'edge_count': 4, 'entity_candidates_checked': 1, 'merge_decisions': [{'node_ids': ['N-s1', 'N-s2'], 'action': 'keep_separate', 'justification': 'Different physical batches B1/B2 in two independent papers; same label is insufficient identity evidence.', 'evidence_count': 2, 'identifiers_shared': []}], 'unresolved_entity_candidates': [], 'duplicates': [], 'conflicts': [{'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E4', 'E5'], 'value': 0.00032, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}, {'subject': 'N-mat', 'predicate': 'has_metric', 'object': 'N-metric', 'condition': '25 C', 'edge_ids': ['E6'], 'value': 0.00044, 'unit': 'S/cm', 'disposition': 'retained independently; not merged numerically/averaged'}], 'quote_validation': {'verified_against_actual_material': True, 'passages': 4, 'papers': 2, 'errors': [], 'sources': [{'source_id': 'S1', 'doi': '10.synthetic/primary', 'title': None, 'paragraphs': 2, 'hash_verified': True}, {'source_id': 'S2', 'doi': '10.synthetic/secondary', 'title': None, 'paragraphs': 2, 'hash_verified': True}]}})"
+    },
+    {
+      "scenario": "hostile_invalid_confidence_not_clean",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "merge_requires_shared_identifier",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "all_unsourced_nodes_blocked_not_success",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "unknown_query_is_undetermined",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "corrupt_second_paper_explicit_error",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "totals": {
+    "passed": 24,
+    "of": 24
+  }
+}

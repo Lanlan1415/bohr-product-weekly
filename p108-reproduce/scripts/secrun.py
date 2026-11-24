@@ -49,6 +49,23 @@ def _refused(out_dir, message: str) -> dict:
     return result
 
 
+def _contract_fields(contract):
+    if isinstance(contract, dict):
+        return list(contract)
+    if isinstance(contract, list):
+        out = []
+        for item in contract:
+            if isinstance(item, str):
+                out.append(item)
+            elif isinstance(item, dict):
+                for key in ("name", "field", "key", "id"):
+                    if item.get(key) is not None:
+                        out.append(str(item[key]))
+                        break
+        return out
+    return []
+
+
 def _echo_contract(result: dict, spec: dict) -> dict:
     """Echo case_id and every output_contract field into the result."""
     if not isinstance(spec, dict):
@@ -60,13 +77,15 @@ def _echo_contract(result: dict, spec: dict) -> dict:
     contract = spec.get("output_contract")
     if contract is None:
         return result
-    if not isinstance(contract, dict):
-        limits.append("output_contract is not an object, so no field was echoed")
+    keys = _contract_fields(contract)
+    if not keys:
+        limits.append("output_contract is not a usable dict/list declaration, so no field was echoed")
         return result
-    for key in contract:
+    for key in keys:
         if key in result:
             continue
-        if key in spec and key not in _BULKY:
+        if key in spec:
+            # All declared deliverables pass through, including complete run records/packages.
             result[key] = spec[key]
             continue
         result[key] = None
@@ -116,10 +135,16 @@ def build_and_audit(spec_path, out_dir, section=None) -> dict:
     sec = section or spec.get("section")
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
 
-    if not sec:
-        return _refused(out_dir, "no section declared, so no rules apply")
+    if not sec or not isinstance(sec, str):
+        result = _refused(out_dir, "no valid string section declared, so no rules apply")
+        _echo_contract(result, spec)
+        (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        return result
     if sec not in S.SECTIONS:
-        return _refused(out_dir, f"unknown section '{sec}', so no rules apply")
+        result = _refused(out_dir, f"unknown section '{sec}', so no rules apply")
+        _echo_contract(result, spec)
+        (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        return result
 
     findings, status, counts = S.run(spec, sec)
 

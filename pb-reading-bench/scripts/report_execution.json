@@ -1,0 +1,125 @@
+{
+  "schema_version": "reading-evaluation-bench/v2",
+  "synthetic": true,
+  "scenarios": [
+    {
+      "scenario": "group_disjoint_splitting",
+      "pass": true,
+      "detail": "{'train': ['g1', 'g1', 'g2', 'g3'], 'dev': [], 'test': []}"
+    },
+    {
+      "scenario": "source_overlap_is_hard_failure",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "gold_and_rubric_absent_from_model_view",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "reference_leak_in_prompt_detected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "structured_output_does_not_leak_quote_into_text",
+      "pass": true,
+      "detail": "[40.0, 100.0]"
+    },
+    {
+      "scenario": "nan_weight_refused",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "catastrophic_regex_refused_before_grading",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "explicit_ci_variant_works",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "known_ndcg_at_1_and_3",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "known_map_recall_precision_mrr",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "missing_qrels_not_forged_into_zero_or_perfect",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "real_bm25_baseline_retrieves_relevant_text",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "paired_bootstrap_deterministic_and_computed",
+      "pass": true,
+      "detail": "{'seed': 99, 'iterations': 200, 'unit': 'item (paired resampling)', 'confidence': 0.95, 'intervals': {'base': {'method': 'percentile-bootstrap', 'confidence': 0.95, 'iterations': 200, 'low': 100.0, 'high': 100.0, 'estimated_mean': 100.0, 'observed_mean': 100.0}, 'weak': {'method': 'percentile-bootstrap', 'confidence': 0.95, 'iterations': 200, 'low': 0.0, 'high': 0.0, 'estimated_mean': 0.0, 'observed_mean': 0.0}}, 'paired_deltas': [{'method': 'percentile-bootstrap', 'confidence': 0.95, 'iterations': 200, 'low': -100.0, 'high': -100.0, 'estimated_mean': -100.0, 'pair': ['base', 'weak'], 'observed_delta': -100.0, 'not_a_proof_of_causality': True}], 'warnings': ['Small item count: interval is descriptive and does not establish low variance.'], 'items': 2, 'itemset_digest': '0bf424174e59a336'}"
+    },
+    {
+      "scenario": "fairness_and_seed_stability_are_visible",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "unfair_budget_cannot_be_silently_ranked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "cli_contract_and_all_fields",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "cli_reproducible",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "scenario": "cli_reports_actual_retrieval_and_baseline",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "cli_raw_output_and_failure_trace",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "cli_computed_bootstrap_and_pair_fairness",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "cli_never_scores_train_as_heldout",
+      "pass": true,
+      "detail": "{'scope': 'held_out_test', 'primary': 100.0, 'per_item': [{'item_id': 'R2', 'score': 100.0, 'score_012': None}]}"
+    },
+    {
+      "scenario": "missing_output_is_partial_not_fake_model_score",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "invalid_case_structured_refusal",
+      "pass": true,
+      "detail": "(5, '{\"status\": \"undetermined\", \"rc\": 5, \"error\": \"case.json must be an object\"}\\n', '')"
+    }
+  ],
+  "totals": {
+    "passed": 23,
+    "of": 23
+  }
+}

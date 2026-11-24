@@ -1,0 +1,135 @@
+{
+  "schema_version": "formula-executable-bench/v1",
+  "synthetic": true,
+  "scenarios": [
+    {
+      "scenario": "mathml_fraction_scripts_greek_number",
+      "pass": true,
+      "detail": "{'source_id': 'm1', 'number': None, 'latex': '{E=\\n      \\\\frac{{h c}}{\\\\lambda _{0}}\\n      +\\\\beta _{1}^{2}}', 'display': None}"
+    },
+    {
+      "scenario": "mathml_symbol_catalog",
+      "pass": true,
+      "detail": "{'h', 'E', 'β_1', 'λ_0', 'c'}"
+    },
+    {
+      "scenario": "mathml_matrix_and_number",
+      "pass": true,
+      "detail": "{'source_id': 'm9', 'number': '9', 'latex': '\\\\begin{pmatrix}x_{1} & \\\\alpha ^{2}\\\\end{pmatrix}', 'display': None}"
+    },
+    {
+      "scenario": "known_arithmetic_F_ma",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "known_fraction_and_implicit_multiply",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "greek_subscript_numeric_alias",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "full_greek_subscript_alias_both_directions",
+      "pass": true,
+      "detail": "({'λ_1'}, {'λ_1'})"
+    },
+    {
+      "scenario": "conflicting_aliases_are_not_silently_overwritten",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "unsupported_integrals_are_not_zero",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "real_units_numeric_match",
+      "pass": true,
+      "detail": "{'status': 'match', 'computed': 6.0, 'expected': 6.0, 'absolute_delta': 0.0, 'tolerance': {'abs': 1e-12, 'rel': 0.0}, 'bound': 1e-12, 'expression_latex': 'm a', 'input_units_normalised': True}"
+    },
+    {
+      "scenario": "prefix_unit_conversion_before_substitution",
+      "pass": true,
+      "detail": "{'status': 'match', 'computed': 6.0, 'expected': 6.0, 'absolute_delta': 0.0, 'tolerance': {'abs': 1e-12, 'rel': 0.0}, 'bound': 1e-12, 'expression_latex': 'm a', 'input_units_normalised': True}"
+    },
+    {
+      "scenario": "automatic_dimension_derivation",
+      "pass": true,
+      "detail": "{'status': 'match', 'lhs': (1, 1, -2, 0, 0, 0, 0), 'rhs': (1, 1, -2, 0, 0, 0, 0), 'detail': 'derived from declared variable units; no units were invented'}"
+    },
+    {
+      "scenario": "dimension_mismatch_is_explicit",
+      "pass": true,
+      "detail": "{'status': 'mismatch', 'side': 'rhs', 'declared': (1, 1, -2, 0, 0, 0, 0), 'derived': (0, 1, -1, 0, 0, 0, 0)}"
+    },
+    {
+      "scenario": "unknown_units_are_undetermined",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "derivation_match_has_numeric_delta",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "derivation_error_location_and_delta",
+      "pass": true,
+      "detail": "{'step': 0, 'from': 'm a + 1', 'to': 'm a + 2', 'status': 'mismatch', 'from_value': 7.0, 'to_value': 8.0, 'absolute_delta': -1.0, 'bound': 1e-12}"
+    },
+    {
+      "scenario": "derivation_cannot_compute_is_undetermined",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "legacy_no_false_positive_guard",
+      "pass": true,
+      "detail": "['formula.derivation_missing']"
+    },
+    {
+      "scenario": "sections_emits_real_step_error",
+      "pass": true,
+      "detail": "{'formula.step_math_mismatch'}"
+    },
+    {
+      "scenario": "equation_number_conflict_detected",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "complete_indexed_symbol_not_false_positive",
+      "pass": true,
+      "detail": "{'formula.boundary_conditions_missing', 'formula.derivation_missing'}"
+    },
+    {
+      "scenario": "index_loss_is_rejected_in_strict_mode",
+      "pass": true,
+      "detail": "{'formula.variable_not_extracted', 'formula.boundary_conditions_missing', 'formula.derivation_missing'}"
+    },
+    {
+      "scenario": "recognition_cli_contract_and_exit",
+      "pass": true,
+      "detail": "(3, '{\"status\": \"partial\", \"rc\": 3, \"sources\": 1, \"formulas\": 1, \"wrote\": \"C:\\\\\\\\Users\\\\\\\\lanlan\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\formula_math_smoke_3796jqcg\\\\\\\\out1\\\\\\\\result.json\"}\\n', '')"
+    },
+    {
+      "scenario": "recognition_deterministic_and_partial_honest",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "malformed_case_structured_refusal",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "totals": {
+    "passed": 25,
+    "of": 25
+  }
+}

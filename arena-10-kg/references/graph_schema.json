@@ -1,0 +1,24 @@
+{
+  "schema_version": "literature-evidence-graph/v1",
+  "node_types": ["Material", "Method", "Task", "Metric", "Claim", "Researcher", "Sample", "Condition", "Dataset", "Model", "Experiment", "Study"],
+  "instance_types": ["Sample", "Condition", "Dataset", "Model", "Experiment"],
+  "directed_relations": {
+    "uses": {"subject_types": ["Study", "Method", "Task"], "object_types": ["Material", "Method", "Dataset", "Sample", "Model"], "condition_required": false},
+    "prepares": {"subject_types": ["Method"], "object_types": ["Material", "Sample"], "condition_required": false},
+    "characterizes": {"subject_types": ["Method"], "object_types": ["Material", "Sample", "Dataset"], "condition_required": false},
+    "has_metric": {"subject_types": ["Material", "Sample", "Dataset", "Method", "Model"], "object_types": ["Metric"], "condition_required": false},
+    "reports_value": {"subject_types": ["Claim"], "object_types": ["Metric"], "condition_required": true},
+    "outperforms": {"subject_types": ["Material", "Method", "Sample", "Model"], "object_types": ["Material", "Method", "Sample", "Model"], "condition_required": true},
+    "more_stable_than": {"subject_types": ["Material", "Method", "Sample", "Model"], "object_types": ["Material", "Method", "Sample", "Model"], "condition_required": true},
+    "supports": {"subject_types": ["Claim", "Study", "Experiment"], "object_types": ["Claim", "Task", "Method", "Material", "Model"], "condition_required": false},
+    "contradicts": {"subject_types": ["Claim", "Material", "Sample", "Model", "Dataset"], "object_types": ["Claim", "Material", "Sample", "Model", "Dataset"], "condition_required": true},
+    "compares": {"subject_types": ["Claim", "Study", "Material", "Method", "Sample", "Model", "Experiment"], "object_types": ["Claim", "Material", "Method", "Sample", "Model", "Experiment"], "condition_required": true},
+    "proposes": {"subject_types": ["Researcher", "Study"], "object_types": ["Method", "Claim", "Model", "Task"], "condition_required": false}
+  },
+  "required_node_fields": ["node_id", "label", "type"],
+  "required_evidence_fields": ["source_id", "paragraph_id", "quote"],
+  "evidence_strength": ["direct", "cited", "inferred"],
+  "max_quote_chars": 40,
+  "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0, "meaning": "extraction confidence supplied and justified by the reader; not an empirical accuracy score"},
+  "merge_policy": "No automatic same-name merge.  Explicit alias/shared identifiers and source locators are required.  Instance entities additionally require a shared source identifier.  Separate assertions may coexist with independent evidence."
+}

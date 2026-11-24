@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from pathlib import Path
 
@@ -90,13 +91,37 @@ def validate_itemset(items: list[dict]) -> dict:
                 continue
             weight = crit.get("weight", 1)
             try:
-                total += float(weight)
+                measured = float(weight)
+                if not math.isfinite(measured) or measured < 0:
+                    raise ValueError("weight must be finite and non-negative")
+                total += measured
             except (TypeError, ValueError):
-                problems.append({"id": iid, "criterion": j, "reason": "weight is not numeric"})
+                problems.append({"id": iid, "criterion": j, "reason": "weight is not finite and non-negative"})
             if kind in ("contains", "any_of", "not_contains") and not crit.get("values"):
                 problems.append({"id": iid, "criterion": j, "reason": "contains needs values"})
-            if kind == "regex" and not crit.get("pattern"):
-                problems.append({"id": iid, "criterion": j, "reason": "regex needs a pattern"})
+            if kind in ("regex", "min_count"):
+                pattern = str(crit.get("pattern") or (r"\d+(?:\.\d+)?" if kind == "min_count" else ""))
+                if not pattern:
+                    problems.append({"id": iid, "criterion": j, "reason": "regex needs a pattern"})
+                elif len(pattern) > 512 or re.search(r"\([^)]*[+*][^)]*\)[+*{]", pattern):
+                    problems.append({"id": iid, "criterion": j, "reason": "regex is too long or uses an unbounded nested quantifier"})
+                else:
+                    try:
+                        re.compile(pattern)
+                    except re.error as exc:
+                        problems.append({"id": iid, "criterion": j, "reason": f"invalid regex: {exc}"})
+            if kind == "min_count":
+                try:
+                    if int(crit.get("min", 1)) < 0:
+                        raise ValueError("negative")
+                except (TypeError, ValueError):
+                    problems.append({"id": iid, "criterion": j, "reason": "min_count needs a non-negative integer min"})
+            if kind == "max_words":
+                try:
+                    if int(crit.get("limit", 10**9)) < 0:
+                        raise ValueError("negative")
+                except (TypeError, ValueError):
+                    problems.append({"id": iid, "criterion": j, "reason": "max_words needs a non-negative integer limit"})
             if kind == "anchor" and not crit.get("field"):
                 problems.append({"id": iid, "criterion": j,
                                  "reason": "anchor needs the output field holding the quote"})
@@ -129,6 +154,23 @@ def _field(output, path: str):
     return cur
 
 
+def _grading_text(output, criterion):
+    """Structured outputs are graded on answer text, not incidental evidence fields."""
+    if isinstance(output, dict):
+        path = criterion.get("output_field") or criterion.get("text_field") or "text"
+        value = _field(output, path)
+        if value is None and path == "text":
+            value = _field(output, "answer")
+        return "" if value is None else str(value)
+    return str(output or "")
+
+
+def _lexical(text, options, case_insensitive):
+    if case_insensitive:
+        return [str(option) for option in options if str(option).casefold() in text.casefold()]
+    return [str(option) for option in options if str(option) in text]
+
+
 def grade_item(item: dict, output) -> dict:
     """Score one output against one item's rubric, recording the evidence per criterion."""
     criteria = []
@@ -150,12 +192,15 @@ def grade_item(item: dict, output) -> dict:
             review.append(name)
             continue
         possible += weight
-        text = str(output or "")
+        text = _grading_text(output, crit)
+        insensitive = crit.get("ci") is True
+        if insensitive:
+            text = text.casefold()
         evidence, passed = "", False
 
         if kind == "contains":
             wanted = [str(v) for v in crit.get("values") or []]
-            found = [v for v in wanted if v in text]
+            found = _lexical(text, wanted, insensitive)
             passed = len(found) == len(wanted)
             evidence = f"found {len(found)}/{len(wanted)}: {found}"
         elif kind == "any_of":
@@ -163,12 +208,12 @@ def grade_item(item: dict, output) -> dict:
             # Passing any one of the declared alternatives counts, which is what keeps two
             # graders from disagreeing over phrasing rather than content.
             options = [str(v) for v in crit.get("values") or []]
-            hit = [v for v in options if v in text]
+            hit = _lexical(text, options, insensitive)
             passed = bool(hit)
             evidence = f"accepted variant: {hit[0]!r}" if hit else f"none of {len(options)} variants"
         elif kind == "not_contains":
             banned = [str(v) for v in crit.get("values") or []]
-            hit = [v for v in banned if v in text]
+            hit = _lexical(text, banned, insensitive)
             passed = not hit
             evidence = f"forbidden present: {hit}" if hit else "none present"
         elif kind == "regex":

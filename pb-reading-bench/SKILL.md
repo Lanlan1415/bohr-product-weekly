@@ -11,6 +11,78 @@ description: >
 
 # reading-benchmark
 
+## v2 · source-conditioned workorder, held-out evaluation and reproducible evidence
+
+Run the actual workorder (or its supplied `--items` 或 `--outputs` overrides), keeping `case_id` and
+all `output_contract` fields intact:
+
+```bash
+python3 /skills/weekly-skill/scripts/evalrun.py --case /input/case.json --out /app/output
+```
+
+The tool evaluates supplied raw outputs; **it does not call a model or invent outputs**. Items
+written with `workorder`, `items` or `itemset` are accepted, as are `item_id`、`question_id`,
+`instruction`、`question`, `input_text`、`source_text`、`context`、`passage`, and
+`reference_answer`、`gold_answer`、`reference_output`、`answer_key`. Each final item still needs a valid
+observable rubric. If it cannot be graded, the CLI returns structured `undetermined` with exit 5,
+not an average of undefined scores. `0` = complete valid run, `3` = partial output/leakage/fairness
+coverage, `5` = unreadable/malformed/undecidable workorder. Every branch writes result.json.
+
+**Data split and leakage.** Explicit `train`、`dev`、`test` declarations are respected; the primary
+score and paired bootstrap use **test only** (`metrics.scope=held_out_test`), with train/dev kept
+out of that claim. An unpartitioned benchmark-DRAFT is explicitly an
+`unpartitioned_workorder_diagnostic`, not held-out validation. Alternatively,
+`evalkit.py::make_split` deterministically assigns **whole source groups** by hash with a saved
+seed. `leakage_audit` reports source-group overlap, identical normalised input, and duplicate
+query IDs across splits, plus pretraining/semantic-duplicate uncertainty. These are hard audit errors, not silent warnings. Findings have explicit IDs:
+`benchmark.leakage_duplicate_query_id_within_split`, `benchmark.leakage_declared_split_mismatch`,
+`benchmark.leakage_source_group_overlap`, `benchmark.leakage_query_id_overlap`,
+`benchmark.leakage_exact_input_overlap`, and `benchmark.leakage_other` for a future unclassified kind.
+`model_view.json` is a sorted, whitelisted model view with reference
+answers/rubrics/qrels excluded. A reference appearing in actual source text is not leakage; the
+model needs that evidence. It appearing as extra answer-scoring hints is flagged.
+
+**Task and metric implementation.** `benchkit.py` preserves the lexical reading graders and
+0/1/2 records but grades structured output on `text`/`answer` only (optional `output_field`),
+never on an embedded golden quote. Weights must be finite/non-negative and sum 100 by default;
+`regex`、`min_count`、`max_words` parameters are validated before grading, nested unbounded quantifiers
+are refused, and explicit `ci:true` accepts case variants. `anchor` still requires a real quote
+in given input. These are lexical judgments, not claimed semantic equivalence.
+
+For retrieval tasks, `evalkit.py::evaluate_retrieval` independently implements the BEIR
+(https://github.com/beir-cellar/beir) conventions: `qrels={qid:{docid:relevance}}` and
+`results={qid:{docid:score}}` produce **nDCG/MAP/Recall/Precision/MRR@1,3,5,10** per item and
+macro means. Stable tie ordering, graded nDCG ideal ranking, `min(#relevant,k)` denominator for
+MAP, and skipped-not-positive/missing-result queries are explicit. No missing qrels becomes 0 or
+100 as a convenience. `bm25_baseline` really tokenises the supplied corpus, computes document
+scores and is evaluated against the same qrels and metrics, so `delta_vs_candidate` is a fair
+metric calculation when the corpus is present; no baseline name-only placeholder or invented
+retrieval score. The corpus, queries and both raw rankings stay in `retrieval_evaluation`.
+
+**Variation, confidence and fair comparison.** `paired_bootstrap` resamples item indices with
+a fixed seed (default 2026, 1000 iterations), computes percentile intervals of each agent's
+observed metric and the paired difference; paired inputs must have identical ordered IDs and the
+same item-set digest. Small item counts are marked descriptive, not proof of low variance.
+`run_stability` records repeat-run mean/stdev/min/max; `fairness` refuses silent like-for-like
+comparison if tool permissions, prompt, budget or item set differ. A baseline is a declared
+condition, not evidence of causality. `bootstrap_iterations` needs to be in 100..100000.
+
+`result.json` includes: full item-set validation/version, data split and leakage audit, raw output
+and per-criterion decisions, trace for every item ID, held-out primary metrics and per-item
+scores, BEIR per-query/mean metrics when supplied, real baseline comparison, bootstrap intervals,
+fairness/stability, typed failure sample library, and command/config digests for rerun.
+`evaluation.json` and `evaluation_report.md` accompany local case results. Reporter and fixtures
+explicitly label technical synthetic checker results as **not DSH scores or independent semantic
+validation**. Unknown output-contract fields become null with a limit reason, rather than fake data.
+
+Example CLI declarations for an explicit retrieval workorder can be used standalone:
+
+```bash
+python3 /skills/weekly-skill/scripts/evalrun.py \
+  --case /input/case.json --qrels /app/work/qrels.json --results /app/work/results.json \
+  --corpus /app/work/corpus.json --out /app/output
+```
+
 The four properties this task names are the four things the harness enforces:
 
 | property | mechanism |
@@ -116,11 +188,13 @@ item and lists the unchanged items whose historical scores remain comparable.
 
 ## Output contract
 
-`/app/output/result.json` should carry, per case: the item set with its digest, the run record with
-per-item and per-criterion results and evidence, each raw output as retained in the record, the
-reproduction comparison, the failure tally by type (with the failure sample library for anything
-non-zero), the declared score scale if one was used, and for any retarget the two version digests
-and the recompute list.
+`/app/output/result.json` should carry, per case: the item set with its digest, held-out scope,
+model-view and leakage audits, raw run record with per-item/per-criterion results and evidence,
+raw outputs, reproducible command/config/seed, retrieval metrics and real baseline (when supplied),
+bootstrap intervals, fairness/stability records, and failure types/samples. With `evalrun.py`,
+per-field case contracts are satisfied and unknown fields get null + explicit limits; fatal work-
+order failures use `benchmark.workorder_refused` and exit 5, not traceback-only. Versions and
+failure classes are not swapped after inspecting results.
 
 ## Limits
 
@@ -162,14 +236,17 @@ and the recompute list.
 ## Verification
 
 ```bash
-python scripts/bench_benchkit.py   # 27 behavioural scenarios
+python3 /skills/weekly-skill/scripts/bench_benchkit.py      # 27 legacy behavioural scenarios
+python3 /skills/weekly-skill/scripts/bench_eval_execution.py # 23 metric/leakage/CI/CLI checks
 ```
 
-About half assert a refusal or a zero-finding guard, and every new rule ships with both a defect
-scenario and its false-positive guard (correct input must find nothing): an ungradable criterion,
-an unsourced quote, a retarget with no failure, an empty and a malformed output, an unsupported
-declared scale, a manual criterion without a note, a declared-but-empty card field — each paired
-with the clean-run guard for the same rule. All 27 pass on this machine.
+About half of the legacy scenarios assert a refusal or a zero-finding guard; clean baselines must
+find no finding. The second suite independently hand-computes nDCG/MAP/Precision/Recall/MRR,
+uses qrels with a non-positive/missing query, detects identical source input across splits, checks
+a real BM25 baseline, repeats bootstrap with identical results, keeps train out of test-only CLI
+primary outputs, covers structured refusal, idempotence and full contract passthrough, and tests
+that an embedded quote cannot enlarge content scores. All local benches pass; examples and reports
+are synthetic interface checks, never platform-scored results or independent semantic validation.
 ## Requirements
 
 Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
@@ -178,11 +255,13 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
 
 本 Skill 相比通用 Agent 的核心新增能力：
 
-1. **规则优先级库**：每条修改有规则 id、优先级、适用条件和理由，两个规则冲突时由优先级决定胜者且双方都留痕——通用 Agent 无法自证规则一致性。
-2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改动——如果仍有改动说明规则间存在冲突，这是一个可计算的 self-check。
-3. **逐条变更台账**：每个值的修改记录规则/行/列/原值/新值/理由，审计者可以逐条复核或撤销任何单条修改。
+1. **source-group disjoint split + model-view 隔离**：真实可复跑的 held-out 评分和泄漏硬审计，而不是把 train 也计入展示总分。
+2. **BEIR 指标与真实 BM25 基线**：不是截图或名为基线的数字；同一 qrels 下实际 rank/score/mean/delta 可复算。
+3. **确定性 paired bootstrap + 公平性/失败样例库**：相同 item 抽样化为各 agent 成绩与差值置信区间，实际重复运行波动与不公平配置保留，不把缺失答案当科学语义零分。
+4. **可溯源且防 quote 泄漏的 structured-output grader**：原始 output 和 criterion evidence 随分数保存，默认只看 text/answer，避免附带 quote 偶然补足内容短语。
 
-bench 目录下的 benchkit 是上述能力的回归证据（见 Verification 节 场景，clean 基线必须零发现）。
+所有能力由 scripts/evalkit.py 与 evalrun.py 真实实现，并以 bench_eval_execution.py 的 23 项本地
+合成测试验证。旧 benchkit 的 rubric 与 retarget 路径保持回归覆盖（bench_benchkit.py 的 27 项）。
 
 ## 生态贡献
 

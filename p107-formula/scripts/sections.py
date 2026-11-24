@@ -19,6 +19,8 @@ import re
 
 import guard as G
 import units as U
+import latexmath as LM
+import formula_checks as FX
 
 DIM = ("mass", "length", "time", "current", "temperature", "amount", "luminous")
 
@@ -889,8 +891,7 @@ def _symbol_of(key) -> str:
     and the spelling the numeric inputs use must meet at one normal form
     (`lambda` and the character it names are the same symbol).
     """
-    k = str(key or "").strip()
-    return LATEX_GREEK.get(k, k)
+    return LM.canonical_symbol(str(key or "").strip())
 
 
 def _env_balance(latex: str) -> list[str]:
@@ -976,7 +977,8 @@ def formula(spec: dict, findings: list[dict]) -> None:
                  found=bare[:6])
 
         # --- symbols the reader must be able to look up -------------------
-        missing_syms = sorted(_latex_symbols(latex) - declared)
+        declared_bases = {name.split("_", 1)[0] for name in declared_norm if name}
+        missing_syms = sorted(_latex_symbols(latex) - declared_bases) if it.get("preserve_scripts") is not True else []
         if missing_syms:
             _add(findings, "formula.variable_not_extracted", "high",
                  "the expression uses symbols that the variable table never defines",
@@ -1071,10 +1073,6 @@ def formula(spec: dict, findings: list[dict]) -> None:
             expr = str(num.get("expression") or "")
             expected = num.get("expected")
             inputs = num.get("inputs") if isinstance(num.get("inputs"), dict) else {}
-            try:
-                tol = float(num.get("tolerance") or 1e-9)
-            except (TypeError, ValueError):
-                tol = 1e-9  # a non-numeric tolerance cannot be measured; use the default
             if not expr or expected is None:
                 _add(findings, "formula.numeric_incomplete", "high",
                      "a numeric check is declared without both an expression and an expected "
@@ -1085,16 +1083,22 @@ def formula(spec: dict, findings: list[dict]) -> None:
                          "the numeric check states no tolerance, so the pass bound is the "
                          "engine default rather than a declared one", formula=label)
                 try:
-                    got = _safe_eval(expr, inputs)
-                    if abs(got - float(expected)) > tol:
+                    tol_value = num.get("tolerance") or 1e-9
+                    evaluated = LM.numeric_check(it)
+                    if evaluated.get("status") == "mismatch":
+                        got = evaluated["computed"]
                         _add(findings, "formula.substitution_mismatch", "high",
                              "substituting the stated values does not reproduce the stated "
-                             "result", formula=label, computed=got, expected=float(expected),
-                             tolerance=tol)
+                             "result", formula=label, computed=got,
+                             expected=evaluated["expected"],
+                             tolerance=tol_value, absolute_delta=evaluated["absolute_delta"])
+                    elif evaluated.get("status") != "match":
+                        raise ValueError(str(evaluated.get("reason") or "not evaluable"))
                 except Exception as exc:
                     _add(findings, "formula.substitution_not_evaluable", "medium",
                          "the numeric check could not be evaluated, so it proves nothing",
                          formula=label, reason=str(exc)[:120])
+
                 # every substituted symbol must be anchored in the variable table, and a
                 # declared value must not contradict the substituted one: either mismatch
                 # means the substitution proves nothing about the formula as defined
@@ -1138,6 +1142,11 @@ def formula(spec: dict, findings: list[dict]) -> None:
             _add(findings, "formula.verification_missing", "medium",
                  "no verification verdict is recorded, so a reader does not know whether the "
                  "expression was checked or merely transcribed", formula=label)
+
+    # Actual unit-aware parsing, substitution and explicitly requested step checks.
+    # Unlike the presence checks above, these emit a delta or an undetermined reason,
+    # never a guessed zero.  A pure-symbol case without units remains permissive.
+    FX.enrich_findings(spec, findings)
 
 
 STAGES = ("materials", "environment", "parameters", "run", "results", "verdict")
@@ -3115,7 +3124,18 @@ def evidence_map(spec: dict, section: str) -> list[dict]:
             latex = str(it.get("latex") or "")
             variables = list(_records(it.get("variables")))
             declared = {str(v.get("name") or "").strip() for v in variables}
-            missing = sorted(_latex_symbols(latex) - declared)
+            declared_norm = {_symbol_of(n) for n in declared if n}
+            if it.get("preserve_scripts") is True:
+                try:
+                    exact_declared = {LM.GREEK.get(str(v.get("name") or "").strip().lstrip("\\"), str(v.get("name") or "").strip().lstrip("\\")) for v in variables}
+                    missing = sorted(LM.symbols(latex) - exact_declared)
+                except LM.MathUndetermined:
+                    missing = ["unparsed_expression"]
+            else:
+                missing = sorted(_latex_symbols(latex) - declared_norm)
+            math_details = {"dimensional": LM.dimensional_check(it),
+                            "numeric": LM.numeric_check(it),
+                            "steps": LM.derivation_check(it)}
             lhs_unit, rhs_unit = it.get("lhs_unit"), it.get("rhs_unit")
             dimension = "undeclared"
             if lhs_unit and rhs_unit:
@@ -3128,21 +3148,17 @@ def evidence_map(spec: dict, section: str) -> list[dict]:
                     dimension = "mismatch"
             numeric = "absent"
             num = it.get("numeric")
-            if isinstance(num, dict) and num.get("expression") \
-                    and num.get("expected") is not None:
-                try:
-                    got = _safe_eval(str(num.get("expression")),
-                                     num.get("inputs") or {})
-                    tol = float(num.get("tolerance") or 1e-9)
-                    numeric = ("match" if abs(got - float(num.get("expected"))) <= tol
-                               else "mismatch")
-                except Exception:
-                    numeric = "not_evaluable"
+            if isinstance(num, dict):
+                interpreted = math_details["numeric"].get("status")
+                numeric = {"undetermined": "not_evaluable", "not_requested": "absent"}.get(interpreted, interpreted)
+            if math_details["dimensional"].get("status") in {"match", "mismatch"}:
+                dimension = math_details["dimensional"]["status"]
             out.append({"kind": "formula", "id": it.get("id"),
                         "symbols_missing": missing[:8], "dimension": dimension,
                         "numeric": numeric,
                         "verified": it.get("verified")
                         if isinstance(it.get("verified"), bool) else None,
+                        "math_checks": math_details,
                         "variables": [{"name": str(v.get("name") or ""),
                                        "source": str(v.get("source") or "") or None,
                                        "has_locator":

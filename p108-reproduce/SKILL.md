@@ -17,6 +17,72 @@ description: >
 
 # reproduce-paper（论文复现与方法验证）
 
+## v4 · execute the supplied candidate methods before making a reproduction claim
+
+The official revised task says that two supplied candidate numerical methods must actually run.
+The old report-only checklist is therefore not sufficient. Use this real runner once the actual
+case files have been inventoried:
+
+```bash
+python3 /skills/weekly-skill/scripts/rerun.py \
+  --manifest /app/work/execution.json --workspace /app/work/materials \
+  --out /app/work/execution --case /input/case.json
+```
+
+`rerun.py` verifies every declared file SHA-256 before launching. Each command has a unique id,
+one **workspace-local, hash-declared** Python `.py` entry script and explicit argument array. It
+runs `sys.executable -I`, no shell, `stdin=DEVNULL`, a timeout and declared seed (`PYTHONHASHSEED`
+and `SEED` environment variables); options such as `--seed` must also be declared in the command.
+There is no automatic `pip` installation, external executable, `-c`, `-m` or out-of-workspace path.
+A missing file/hash/dependency refuses with exit 5; an actual nonzero exit or timeout writes its
+real status/logs and exits 4; completed metric mismatches exit 3; checks that all completed and
+all matched exit 0. Every branch writes `result.json`. This is a controlled argument runner,
+**not a malware sandbox or a container claim**; reviewed scientific methods only, no downloaded
+arbitrary executable.
+
+Minimal manifest (values must come from the real paper/repository, not from this illustrative
+example; the expected number and tolerance are decided before execution):
+
+```json
+{
+  "schema_version": "candidate-execution/v1",
+  "code_version": "ACTUAL COMMIT OR LOCAL SNAPSHOT ID",
+  "data_version": "ACTUAL DATASET VERSION", "seed": 41, "timeout_s": 60,
+  "files": {"candidate.py": {"sha256": "ACTUAL SHA256", "license": "ACTUAL LICENSE"}},
+  "dependencies": ["numpy==ACTUAL.VERSION"],
+  "parameters": [{"name": "n", "source": "paper", "value": 64, "locator": "Table 1"}],
+  "commands": [{"id": "method-A", "seed": 41,
+    "argv": ["{python}", "candidate.py", "--seed", "41"],
+    "metrics": [{"name": "integral", "paper": 0.3333333333333333,
+      "paper_locator": "analytic/source value", "statistic": "single deterministic grid",
+      "tolerance": {"abs": 0.00005, "rel": 0}, "json_path": "integral"}]}]
+}
+```
+
+A repeated command may declare the same `"series"` for genuine seed-variation aggregation. Never
+pool different algorithms and call their disagreement random variation. Use `output:"result.json"`
+when a candidate writes a JSON file; without it the runner parses only the **last non-empty stdout
+line** as JSON. `json_path` uses dotted paths or JSON Pointer. Not-created/malformed/missing
+output is undetermined/failure evidence, not 0 and not a fabricated reproduction metric.
+
+The actual outputs are `result.json`, `run-manifest.json`, and
+`runs/<command-id>/stdout.log + stderr.log`. They include real interpreter/platform/dependency
+versions, actual file hashes, argv, seed, return code, metric source, raw metric value, and
+predeclared abs+relative tolerance. No runtime identities or result scores are fabricated. Put
+the result path or its JSON object in `actual_run` before running `secrun.py`; the audit will
+reject a `reproducible` verdict over no actual launch, differing code/data versions, failure,
+missing metrics or a tolerance miss. `execution_records`, `environment_snapshot`,
+`comparison_metrics` and `run_manifest` are available contract aliases.
+
+Failure classification is separate from scientific mismatch: `dependency_error`,
+`missing_material`, `declaration_or_output_error`, `timeout`, `execution_error`,
+`metric_undetermined`, `metric_out_of_tolerance` (methodological), plus an actionable next step.
+The runner records `paper_reproduction_claim:false` for this candidate-only verification: it can
+prove what this snapshot did, never recreate a missing original repository/dataset/container or
+physical experiment. The `run-manifest.json` manifests a local synthetic candidate in benches;
+it does not constitute an official-paper replication. `secrun.py` continues to audit a complete
+report when no execution has been claimed; it does not turn planning into completed execution.
+
 A reproduction report is only useful if a second person can act on it. The rubric states
 this as four questions, and the loop as seven links — every link is mechanically
 checkable, and a missing link is a finding, not an opinion:
@@ -76,7 +142,7 @@ material did not provide (缺失原始数据/仓库时显式登记，不冒充�
 **Step 4 · 运行审计.**
 
 ```bash
-python scripts/secrun.py --spec /app/work/spec.json --out /app/output
+python3 /skills/weekly-skill/scripts/secrun.py --spec /app/work/spec.json --out /app/output
 ```
 
 Exit codes: `0` clean, `3` review (medium/low findings), `4` blocked (any high), `5`
@@ -166,7 +232,7 @@ is examples/spec.json and the run below is the verified output of this machine:
 ```
 
 ```bash
-python scripts/secrun.py --spec examples/spec.json --out /app/output   # exit 0
+python3 /skills/weekly-skill/scripts/secrun.py --spec /skills/weekly-skill/examples/spec.json --out /app/output   # exit 0
 ```
 
 Illustrative result.json (示例示意，字段以实际运行为准):
@@ -263,11 +329,29 @@ explanation, and the graded verdict must name the gap that justifies it.
 | `repro.verdict_without_basis` | high | the grade carries no reason |
 | `repro.verdict_inconsistent_with_missing` | high | "reproducible" over declared-missing materials |
 | `repro.partial_verdict_without_gaps` | medium | "partial" names no metric miss, no missing material, no conflict |
+| `repro.execution_claim_unsupported` | high | reproducible verdict without actual launch/completion |
+| `repro.execution_revision_mismatch` | high | code/data version differs between actual run and report |
+| `repro.execution_record_unreadable` / `repro.execution_record_incomplete` | high | actual record is unreadable or lacks command, return-code/log evidence |
+| `repro.execution_command_failed` | high | actual command did not complete; classify failure, never suppress it |
+| `repro.execution_metric_malformed` | high | alleged computed metric record is not an object |
+| `repro.execution_metric_undetermined` | medium | actual metric cannot be compared and must not be presented as passing |
+| `repro.execution_difference_unexplained` | medium | actual out-of-tolerance difference has no concrete explanation |
+| `repro.execution_without_comparison` | medium | zero exit alone; no metrics compared |
+| `repro.verdict_inconsistent_execution` | high | declared reproducible or within-family verdict conflicts with execution/tolerances |
+| `repro.env_version_conflict` | high | actual dependency version differs from declared run requirement |
+| `repro.log_truncation_review` | medium | a retained stdout/stderr file exceeds the review cap |
+| `repro.execution_failed` / `repro.run_incomplete` / `repro.metric_spec_malformed` | high | actual runner error evidence with next action |
+| `repro.metric_out_of_tolerance` / `repro.metric_undetermined` | high / medium | actual metric gap or inability to compare |
+| `repro.refused` | high | no attempt is made until declaration/material/hash errors are corrected |
 
 ## Limits
 
-- **The audit reads the report; it does not run the code.** Whether the reproduction
-  actually executed is taken from the recorded run block, not observed.
+- **There are two entry points with different evidence.** `secrun.py` without `actual_run`
+  audits a report, not execution. `rerun.py` actually launches declared methods; with
+  `actual_run`, execution_checks revalidates that the report matches the record.
+- **This is not container isolation.** The runner restricts paths/argv and uses `python -I`, but
+  cannot prove arbitrary candidate code is harmless. Run only reviewed declared scientific
+  materials; no package installation or external shell commands are provided.
 - **Hardware and version adequacy is not judged**, only presence and conflict.
 - **delta_class is declared.** The audit requires a class and an explanation; it cannot
   decide which one is right without the numbers and the method.
@@ -331,12 +415,19 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖、无网�
 ## Verification
 
 ```bash
-python scripts/bench_reproduce.py  # 33 scenarios: one per rule on the loop plus FP guards
-python scripts/bench_sections.py   # 57 scenarios: cross-section regression plus FP guards
+python3 /skills/weekly-skill/scripts/bench_reproduce.py  # 33 scenarios: checklist plus FP guards
+python3 /skills/weekly-skill/scripts/bench_sections.py   # shared cross-section regression
+python3 /skills/weekly-skill/scripts/bench_execution.py  # 19 real-run/exit/hash/determinism checks
 ```
 
-Both pass in full on this machine. The clean baseline in each must report nothing.
-Snapshots: examples/bench-report.json and examples/bench-sections-report.json.
+The clean baseline in each must report nothing. The executable bench really runs two distinct
+methods (trapezoid and Simpson) plus one same-series trapezoid seed repeat for `∫₀¹x²dx`, and
+independently verifies `1/3 + 1/(6·64²)` for trapezoid and `1/3` for Simpson, rather than trusting
+its own stdout. It also tests an actual timeout, an actual nonzero exit, missing/hash-mismatched
+materials, dependency absence, a forbidden `-c`/outside path, malformed declaration, byte-
+identical results and full case contract passthrough. Reports remain synthetic verification,
+not an original paper or platform score. Snapshots: examples/bench-report.json,
+examples/bench-sections-report.json and scripts/report_execution.json.
 
 ## 创新增益（真实能力，bench 可复跑验证）
 
@@ -376,9 +467,14 @@ Snapshots: examples/bench-report.json and examples/bench-sections-report.json.
 - **限制**：见 Limits——读报告不跑代码、版本冲突是字符串比较、容差不校验合理性、
   delta_class 申报制等。
 - **维护**：规则与场景一一对应（新增规则必须带 bench 场景 + clean 守卫）；改脚本后必须
-  重跑 bench_reproduce.py（33）与 bench_sections.py（57）并保持全过；规则 id 变更须同步
-  本文档规则表（自查方法：跑两套 bench 并核对 clean 基线零发现）。
+  重跑 bench_reproduce.py（33）、bench_sections.py（全部共享回归）与 bench_execution.py（19）
+  并保持全过；规则 id 变更须同步本文档规则表（自查方法：跑全部 bench 并核对 clean 基线
+  零发现）。方法参考 https://github.com/mlcommons/mlcube 和 mlcube_examples 的固定任务/runner
+  思路；真实落地是 rerun.py::execute / finalize、execution_checks.py::audit 的哈希/命令/
+  环境/日志/容差记录，不声称采用了未运行的 MLCube 容器或原训练代码。
 
-引擎已实现输出契约：spec 顶层提供的 case_id 原样回填 result.json；output_contract 的每
-个字段——result 已携带的保留、spec 顶层提供同名值的原样拷入（大体积输入字段除外）、
-推导不出的置 null 并在 limits 说明。因此把交付字段值放进 spec 顶层即直通最终 result.json。
+引擎已实现输出契约：spec 顶层提供的 case_id 原样回填 result.json；output_contract 支持 dict
+及 list 中的 name/field/key/id 声明。result 已携带的保留，spec 顶层同名完整值按原类型直通
+（包括 formulas/run 等数组对象），无法推导的置 null 并在 limits 说明。已知 case 的
+undetermined/unknown-section 退出 5 也保留 case_id 和全契约字段；不可解析 JSON 则结构化
+refusal，不伪造不存在的标识。因此把交付字段值放进 spec 顶层即直通最终 result.json。

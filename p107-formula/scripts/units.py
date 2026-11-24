@@ -107,6 +107,18 @@ def parse_compound(text: str, depth: int = 0) -> Unit | None:
     if simple is not None:
         return simple
 
+    # Both common scientific forms (m2, s-2) and LaTeX-like powers (m^2, s^{-2}) are
+    # accepted.  Exponents are integers by design; ambiguity about a fractional physical
+    # unit stays unresolved rather than silently rounding it.
+    power = (re.fullmatch(r"([A-Za-zµμ]+)\^(?:\{)?([+-]?\d+)\}?", t)
+             or re.fullmatch(r"([A-Za-zµμ]+?)([+-]?\d+)", t))
+    if power:
+        base = parse_simple(power.group(1))
+        exponent = int(power.group(2))
+        if base is not None and abs(exponent) <= 100:
+            return Unit(raw=t, factor=base.factor ** exponent,
+                        dimension=tuple(x * exponent for x in base.dimension), kind="power")
+
     if "/" in t:
         parts = t.split("/")
         if len(parts) != 2:
@@ -167,12 +179,12 @@ def convert(value: float, src: str, dst: str) -> dict:
 
 RANGE = re.compile(
     r"^\s*(?P<a>[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*(?:-|\u2013|\u2014|to|~)\s*"
-    r"(?P<b>[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*(?P<u>[A-Za-z%\u00b5\u03bc/*]+)?\s*$")
+    r"(?P<b>[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*(?P<u>[^\s]+)?\s*$")
 PLUSMINUS = re.compile(
     r"^\s*(?P<v>[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*(?:\u00b1|\+/-|\+-)\s*"
-    r"(?P<e>\d*\.?\d+(?:[eE][-+]?\d+)?)\s*(?P<u>[A-Za-z%\u00b5\u03bc/*]+)?\s*$")
+    r"(?P<e>\d*\.?\d+(?:[eE][-+]?\d+)?)\s*(?P<u>[^\s]+)?\s*$")
 SINGLE = re.compile(
-    r"^\s*(?P<v>[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*(?P<u>[A-Za-z%\u00b5\u03bc/*]+)?\s*$")
+    r"^\s*(?P<v>[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*(?P<u>[^\s]+)?\s*$")
 NOT_REPORTED = re.compile(
     r"^\s*(n\.?r\.?|not\s+(?:reported|stated|given)|n/?a|--?|\u2014|"
     r"\u672a\u62a5\u544a|\u672a\u7ed9\u51fa|\u4e0d\u8be6)\s*$", re.IGNORECASE)

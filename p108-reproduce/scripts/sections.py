@@ -19,6 +19,7 @@ import re
 
 import guard as G
 import units as U
+import execution_checks as EX
 
 DIM = ("mass", "length", "time", "current", "temperature", "amount", "luminous")
 
@@ -1224,6 +1225,10 @@ def reproduce(spec: dict, findings: list[dict]) -> None:
         if not str(run_blk.get("exit_status") or "").strip():
             _add(findings, "repro.no_exit_status", "medium",
                  "the run stage does not record whether the code finished successfully")
+
+    # Where supplied, a rerun.py result is independent evidence: the verdict must
+    # agree with the code/data version, real exit codes, logs and computed tolerances.
+    EX.audit(spec, findings)
 
 
 def qa(spec: dict, findings: list[dict]) -> None:
