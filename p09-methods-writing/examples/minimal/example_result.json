@@ -9,7 +9,7 @@
       {
         "source_id": "SRC-0001",
         "parameter": "seed",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 1",
         "quote": "seed: 7",
         "value": 7,
@@ -18,7 +18,7 @@
       {
         "source_id": "SRC-0002",
         "parameter": "lr",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 2",
         "quote": "lr: 0.001",
         "value": 0.001,
@@ -27,7 +27,7 @@
       {
         "source_id": "SRC-0003",
         "parameter": "epochs",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 3",
         "quote": "epochs: 12",
         "value": 12,
@@ -36,7 +36,7 @@
       {
         "source_id": "SRC-0004",
         "parameter": "batch_size",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 4",
         "quote": "batch_size: 32",
         "value": 32,
@@ -45,7 +45,7 @@
       {
         "source_id": "SRC-0005",
         "parameter": "dropout",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 5",
         "quote": "dropout: 0.5",
         "value": 0.5,
@@ -162,7 +162,7 @@
         "name": "seed",
         "value": 7,
         "unit": "",
-        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "source": "examples\\minimal\\config.yaml",
         "line": 1,
         "locator": "line 1",
         "quote": "seed: 7"
@@ -171,7 +171,7 @@
         "name": "lr",
         "value": 0.001,
         "unit": "",
-        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "source": "examples\\minimal\\config.yaml",
         "line": 2,
         "locator": "line 2",
         "quote": "lr: 0.001"
@@ -180,7 +180,7 @@
         "name": "epochs",
         "value": 12,
         "unit": "",
-        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "source": "examples\\minimal\\config.yaml",
         "line": 3,
         "locator": "line 3",
         "quote": "epochs: 12"
@@ -189,7 +189,7 @@
         "name": "batch_size",
         "value": 32,
         "unit": "",
-        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "source": "examples\\minimal\\config.yaml",
         "line": 4,
         "locator": "line 4",
         "quote": "batch_size: 32"
@@ -198,7 +198,7 @@
         "name": "dropout",
         "value": 0.5,
         "unit": "",
-        "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "source": "examples\\minimal\\config.yaml",
         "line": 5,
         "locator": "line 5",
         "quote": "dropout: 0.5"
@@ -236,7 +236,7 @@
     },
     "reproducibility": {
       "config_files": [
-        "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml"
+        "examples\\minimal\\config.yaml"
       ],
       "parameters_extracted": 5,
       "command": "python train.py --config config.yaml",
@@ -372,7 +372,7 @@
             "name": "seed",
             "value": 7,
             "unit": "",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "locator": "line 1",
             "quote": "seed: 7"
           },
@@ -381,7 +381,7 @@
             "name": "lr",
             "value": 0.001,
             "unit": "",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "locator": "line 2",
             "quote": "lr: 0.001"
           },
@@ -390,7 +390,7 @@
             "name": "epochs",
             "value": 12,
             "unit": "",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "locator": "line 3",
             "quote": "epochs: 12"
           },
@@ -399,7 +399,7 @@
             "name": "batch_size",
             "value": 32,
             "unit": "",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "locator": "line 4",
             "quote": "batch_size: 32"
           },
@@ -408,27 +408,27 @@
             "name": "dropout",
             "value": 0.5,
             "unit": "",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "locator": "line 5",
             "quote": "dropout: 0.5"
           },
           {
             "kind": "source_excerpt",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "line": 2,
             "locator": "line 2",
             "quote": "lr: 0.001"
           },
           {
             "kind": "source_excerpt",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "line": 3,
             "locator": "line 3",
             "quote": "epochs: 12"
           },
           {
             "kind": "source_excerpt",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "line": 4,
             "locator": "line 4",
             "quote": "batch_size: 32"
@@ -481,13 +481,13 @@
             "name": "seed",
             "value": 7,
             "unit": "",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "locator": "line 1",
             "quote": "seed: 7"
           },
           {
             "kind": "source_excerpt",
-            "source": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+            "source": "examples\\minimal\\config.yaml",
             "line": 1,
             "locator": "line 1",
             "quote": "seed: 7"
@@ -565,7 +565,7 @@
       {
         "source_id": "SRC-0001",
         "parameter": "seed",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 1",
         "quote": "seed: 7",
         "value": 7,
@@ -574,7 +574,7 @@
       {
         "source_id": "SRC-0002",
         "parameter": "lr",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 2",
         "quote": "lr: 0.001",
         "value": 0.001,
@@ -583,7 +583,7 @@
       {
         "source_id": "SRC-0003",
         "parameter": "epochs",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 3",
         "quote": "epochs: 12",
         "value": 12,
@@ -592,7 +592,7 @@
       {
         "source_id": "SRC-0004",
         "parameter": "batch_size",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 4",
         "quote": "batch_size: 32",
         "value": 32,
@@ -601,7 +601,7 @@
       {
         "source_id": "SRC-0005",
         "parameter": "dropout",
-        "path": "C:\\Users\\lanlan\\.zcode\\workspace\\1af5c7ed-669c-418e-b4a0-ea894ffa677f\\p3work\\stage\\p09-methods-writing\\examples\\minimal\\config.yaml",
+        "path": "examples\\minimal\\config.yaml",
         "locator": "line 5",
         "quote": "dropout: 0.5",
         "value": 0.5,

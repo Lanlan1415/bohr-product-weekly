@@ -1,0 +1,27 @@
+# p09-methods-writing resource manifest
+# Resource entry point required by the Harbor runtime contract.
+# All bundled paths are relative to the Skill root (the parent of environment/).
+entry_point: SKILL.md
+files:
+  - SKILL.md
+  - USAGE.md
+  - GITHUB_URL.txt
+  - references/16-full-method-chapter.md
+  - resources/output_contract.json
+  - scripts/methodflow.py
+  - scripts/assemble_result.py
+  - scripts/numeric_consistency.py
+  - scripts/validate_result.py
+  - scripts/run_example.py
+  - scripts/bench_methodflow.py
+  - scripts/report_methodflow.json
+  - examples/minimal/README.md
+  - examples/minimal/case.json
+  - examples/minimal/config.yaml
+  - examples/minimal/prose.md
+  - examples/minimal/task.md
+  - examples/minimal/example_result.json
+runtime:
+  python: ">=3.9"
+  stdlib_only: true
+  network: false
