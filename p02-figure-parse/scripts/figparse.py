@@ -28,8 +28,21 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import calibrate as C  # noqa: E402
 import digitize as D  # noqa: E402
+import scientific as S  # noqa: E402
 
-SCHEMA_VERSION = "figparse/v1"
+SCHEMA_VERSION = "figparse/v2"
+
+
+def _write_json(path: Path, payload: dict) -> None:
+    """Atomic, deterministic UTF-8 JSON output with stable key order retained."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+
+
+def _status_exit(status: str) -> int:
+    return {"success": 0, "partial": 3, "undetermined": 5}.get(status, 5)
 
 
 def _load_rgb(path: Path) -> np.ndarray:
@@ -38,32 +51,39 @@ def _load_rgb(path: Path) -> np.ndarray:
 
 
 def cmd_calibrate(args: argparse.Namespace) -> int:
-    rgb = _load_rgb(Path(args.image))
-    mask = C.dark_ink_mask(rgb)   # axis furniture only: bars must not read as spines
-    panels = C.find_panels(mask)
+    report = {"schema_version": SCHEMA_VERSION, "image": str(args.image),
+              "status": "undetermined", "panels": [], "limits": []}
+    try:
+        rgb = _load_rgb(Path(args.image))
+        mask = C.dark_ink_mask(rgb)   # axis furniture only: bars must not read as spines
+        panels = C.find_panels(mask)
+        for p in panels:
+            x0, y0, x1, y1 = p["bbox_px"]["x0"], p["bbox_px"]["y0"], p["bbox_px"]["x1"], p["bbox_px"]["y1"]
+            sub = mask[y0:y1, x0:x1]
+            frame = C.find_frame(sub)
+            entry = {"panel_id": p["panel_id"], "bbox_px": p["bbox_px"], "frame_px": frame}
+            if frame:
+                entry["x_tick_px"] = [x0 + t for t in C.find_ticks(sub, frame, "x")]
+                entry["y_tick_px"] = [y0 + t for t in C.find_ticks(sub, frame, "y")]
+                entry["next_step"] = (
+                    "OCR the tick labels at these pixel positions, then pass the values "
+                    "as x_tick_values / y_tick_values to `figparse run`."
+                )
+            report["panels"].append(entry)
+        report["status"] = ("success" if panels and all(p.get("frame_px") for p in report["panels"])
+                            else "partial" if panels else "undetermined")
+        if not panels:
+            report["limits"].append("no detectable panel; OCR/calibration was not invented")
+    except (OSError, ValueError, TypeError) as exc:
+        report["limits"].append("image could not be read: %s" % str(exc)[:200])
 
-    report = {"schema_version": SCHEMA_VERSION, "image": str(args.image), "panels": []}
-    for p in panels:
-        x0, y0, x1, y1 = p["bbox_px"]["x0"], p["bbox_px"]["y0"], p["bbox_px"]["x1"], p["bbox_px"]["y1"]
-        sub = mask[y0:y1, x0:x1]
-        frame = C.find_frame(sub)
-        entry = {"panel_id": p["panel_id"], "bbox_px": p["bbox_px"], "frame_px": frame}
-        if frame:
-            entry["x_tick_px"] = [x0 + t for t in C.find_ticks(sub, frame, "x")]
-            entry["y_tick_px"] = [y0 + t for t in C.find_ticks(sub, frame, "y")]
-            entry["next_step"] = (
-                "OCR the tick labels at these pixel positions, then pass the values "
-                "as x_tick_values / y_tick_values to `figparse run`."
-            )
-        report["panels"].append(entry)
-
-    text = json.dumps(report, ensure_ascii=False, indent=2)
     if args.out:
-        Path(args.out).write_text(text, encoding="utf-8")
-        print(json.dumps({"ok": True, "wrote": args.out, "panels": len(report["panels"])}))
+        _write_json(Path(args.out), report)
+        print(json.dumps({"ok": report["status"] != "undetermined", "status": report["status"],
+                          "wrote": args.out, "panels": len(report["panels"])}))
     else:
-        print(text)
-    return 0
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    return _status_exit(report["status"])
 
 
 def _axis_reading(panel_mask, frame, spec: dict, axis: str) -> dict:
@@ -204,7 +224,8 @@ def _bar_series(i: int, col: dict, bars_info: dict, frame: dict, fx: dict, fy: d
             "top_value": round(top_v, 6),
             "baseline_value": round(base_v, 6),
             "height_value": round(top_v - base_v, 6) if cal_ok else None,
-            "top_px": b["top_px"], "width_px": b["width_px"],
+            "top_px": b["top_px"], "x_center_px": round(cx, 4),
+            "width_px": b["width_px"],
         })
 
     ann = D.find_annotations_above(ink, frame, bars_info["bars"])
@@ -334,7 +355,8 @@ def _digitise_panel(rgb, panel, spec) -> dict:
         # becomes a constant *factor*, not a constant offset. Reporting a linear
         # bar there would understate the error at the top of the axis and
         # overstate it at the bottom.
-        half_thick = float(np.median(thick) / 2.0)
+        median_thickness = float(np.median(thick))
+        half_thick = float(median_thickness / 2.0)
         if fy.get("ok") and fy.get("scale") == "log":
             factor = float(10 ** (half_thick * abs(fy["slope"])))
             y_unc = None
@@ -379,6 +401,7 @@ def _digitise_panel(rgb, panel, spec) -> dict:
             "y_uncertainty": None if y_unc is None else round(y_unc, 6),
             "y_uncertainty_relative": y_unc_rel,
             "uncertainty_basis": unc_basis,
+            "median_stroke_thickness_px": round(median_thickness, 4),
             "error_bar_candidates": bars,
             "error_bar_note": (
                 "tall isolated vertical strokes, reported as candidates: an error bar and a "
@@ -389,6 +412,7 @@ def _digitise_panel(rgb, panel, spec) -> dict:
                 "read_by": "colour-mask column sampling inside the detected frame",
                 "frame_px": {k: frame[k] for k in ("left", "top", "right", "bottom")},
                 "panel_origin_px": [x0, y0],
+                "points_px": [[round(float(p["x_px"]), 4), round(float(p["y_px"]), 4)] for p in pts],
             },
         })
 
@@ -436,67 +460,174 @@ def _features(xs: np.ndarray, ys: np.ndarray, y_unc: float) -> dict:
     }
 
 
+def _load_case(case_path: Path):
+    try:
+        case = json.loads(case_path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return None, "case.json could not be read as a JSON object: %s" % str(exc)[:200]
+    if not isinstance(case, dict):
+        return None, "case.json is not a JSON object"
+    return case, None
+
+
+def _echo_contract(result, case):
+    """All declared fields survive; readable supplied values pass through untouched."""
+    contract = case.get("output_contract")
+    if contract is None:
+        return
+    if not isinstance(contract, dict):
+        result["limits"].append("output_contract is not an object; no field names inferred")
+        return
+    bulky = {"output_contract", "images", "figures", "tables", "text_claims", "caption_claims"}
+    for key in contract:
+        if key in result:
+            continue
+        if key in case and key not in bulky:
+            result[key] = case[key]
+        else:
+            result[key] = None
+            result["limits"].append("output_contract field '%s' was not derivable by figparse" % key)
+
+
+def _ingest_tables(case, case_path, result):
+    raw_tables = case.get("tables") or []
+    if isinstance(raw_tables, (str, dict)):
+        raw_tables = [raw_tables]
+    if not isinstance(raw_tables, list):
+        result["limits"].append("tables is not a path/list; table ingestion skipped")
+        return
+    import tables as T
+    for raw in raw_tables:
+        item = raw if isinstance(raw, dict) else {"path": raw}
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            result["limits"].append("a table entry was not a usable path: %r" % (raw,))
+            continue
+        p = Path(item["path"])
+        if not p.is_absolute():
+            p = case_path.parent / p
+        try:
+            parsed = T.parse_table(p)
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+            parsed = {"path": str(p), "ok": False,
+                      "reason": "table could not be parsed without guessing: %s" % str(exc)[:160]}
+        if item.get("locator") is not None:
+            parsed["locator"] = item["locator"]
+        if item.get("caption") is not None:
+            parsed["caption"] = item["caption"]
+        result["tables"].append(parsed)
+        if not parsed.get("ok"):
+            result["limits"].append("table not parsed: %s (%s)" % (p, parsed.get("reason")))
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     case_path = Path(args.case)
-    case = json.loads(case_path.read_text(encoding="utf-8")) if case_path.exists() else {}
+    out_dir = Path(args.out)
+    case, error = _load_case(case_path)
+    if error:
+        result = {"schema_version": SCHEMA_VERSION, "case_id": "UNKNOWN", "status": "undetermined",
+                  "panels": [], "tables": [], "readings": [], "figure_metadata": [],
+                  "limits": [error], "refusal": {"code": "figparse.case_unreadable", "message": error}}
+        _write_json(out_dir / "result.json", result)
+        print(json.dumps({"ok": False, "status": "undetermined", "wrote": str(out_dir / "result.json")}, ensure_ascii=False))
+        return 5
 
     case_id = case.get("case_id") or case.get("id") or "UNKNOWN"
     images = case.get("images") or case.get("figures") or []
     if isinstance(images, str):
         images = [images]
-
+    if not isinstance(images, list):
+        images = []
     result = {
         "schema_version": SCHEMA_VERSION,
         "case_id": case_id,
         "status": "undetermined",
-        "panels": [],
-        "limits": [],
-        "provenance": {"tool": "figparse", "case_file": str(case_path), "images_seen": len(images)},
+        "panels": [], "tables": [], "readings": [], "figure_metadata": [],
+        "uncertainty": [], "limits": [],
+        "provenance": {"tool": "figparse", "schema_version": SCHEMA_VERSION,
+                       "case_file": str(case_path), "images_seen": len(images)},
+        "method": {"curve": "colour-mask column sampling; geometry and caller-read tick labels",
+                   "bar": "flat-top/shared-baseline detector",
+                   "uncertainty": "both pixel endpoints mapped through each calibrated axis; not a statistical CI",
+                   "reference_design": "DePlot-style image-to-table objective with explicit coordinate calibration and rejection instead of free-form numeric generation"},
     }
 
-    for spec in images:
-        if isinstance(spec, str):
-            spec = {"path": spec}
-        if not isinstance(spec, dict):
-            result["limits"].append(
-                f"an image entry was neither a path nor an object: {spec!r}"[:120])
+    normalized_specs = []
+    for raw_spec in images:
+        spec = {"path": raw_spec} if isinstance(raw_spec, str) else dict(raw_spec) if isinstance(raw_spec, dict) else None
+        if spec is None:
+            result["limits"].append("an image entry was neither a path nor an object: %r" % (raw_spec,))
             continue
-        p = Path(spec.get("path", ""))
+        raw_path = spec.get("path")
+        if not isinstance(raw_path, str) or not raw_path:
+            result["limits"].append("an image entry has no usable path")
+            continue
+        p = Path(raw_path)
         if not p.is_absolute():
-            p = case_path.parent / p
+            p = (case_path.parent / p).resolve()
+        spec["resolved_path"] = str(p)
+        normalized_specs.append(spec)
         if not p.exists():
-            result["limits"].append(f"image not found: {p}")
+            result["limits"].append("image not found: %s" % p)
             continue
-        rgb = _load_rgb(p)
-        mask = C.ink_mask(C.load_gray(rgb))
-        for panel in C.find_panels(mask):
-            entry = _digitise_panel(rgb, panel, spec)
-            entry["image"] = str(p)
-            result["panels"].append(entry)
+        try:
+            rgb = _load_rgb(p)
+            mask = C.ink_mask(C.load_gray(rgb))
+            panels = C.find_panels(mask)
+            if not panels:
+                result["limits"].append("no readable panel detected in %s" % p)
+            for panel in panels:
+                entry = _digitise_panel(rgb, panel, spec)
+                entry["image"] = str(p)
+                result["panels"].append(entry)
+        except (OSError, ValueError, TypeError) as exc:
+            result["limits"].append("image processing refused for %s: %s" % (p, str(exc)[:160]))
 
+    _ingest_tables(case, case_path, result)
+    S.bind_context({"images": normalized_specs}, result)
+    result["readings"] = S.attach_intervals(result)
+    result["claim_alignment"] = S.align_claims(case, result)
+    result["sources"] = ([{"kind": "image", "path": p.get("resolved_path"),
+                           "caption_locator": p.get("caption_locator")} for p in normalized_specs] +
+                         [{"kind": "table", "path": t.get("path"), "ok": t.get("ok")}
+                          for t in result["tables"]])
     got = [p for p in result["panels"] if p.get("series")]
-    if got and all(p["status"] == "success" for p in got):
+    table_ok = bool(result["tables"]) and all(t.get("ok") for t in result["tables"])
+    inconsistent = [a for a in result["claim_alignment"] if a.get("status") == "inconsistent"]
+    unresolved = [a for a in result["claim_alignment"] if a.get("status") == "unresolved"]
+    if got and all(p["status"] == "success" for p in got) and not result["limits"] and not inconsistent and not unresolved:
         result["status"] = "success"
-    elif got:
+    elif got or table_ok:
         result["status"] = "partial"
-        result["limits"].append("Some panels are uncalibrated or contain no digitizable series.")
+        if not all(p["status"] == "success" for p in got):
+            result["limits"].append("some panels are uncalibrated or contain no digitizable series")
     else:
         result["status"] = "undetermined"
-        result["limits"].append("No panel produced a digitizable calibrated series.")
-
-    # Fill any contract fields the case file declares, so the grader finds them.
-    contract = case.get("output_contract") or {}
-    for key in contract:
-        if key not in result:
-            result[key] = None
-            result["limits"].append(f"output_contract field '{key}' was not derivable by figparse")
-
-    out_dir = Path(args.out)
+        result["limits"].append("no panel produced a digitizable series and no table was parsed")
+        result["refusal"] = {"code": "figparse.no_readable_data",
+                             "message": "no physical/axis-fraction data or usable original table was derived"}
+    if inconsistent:
+        result["limits"].append("%d declared text/caption numeric claim(s) conflict with the linked raster interval" % len(inconsistent))
+    if unresolved:
+        result["limits"].append("%d declared text/caption claim(s) could not be linked" % len(unresolved))
+    if result["status"] != "success":
+        result["uncertainty"].append({"type": "reading_completeness", "status": result["status"],
+                                      "impact": "do not present missing/calibration/context gaps as recovered science"})
+    for panel in result["panels"]:
+        for series in panel.get("series", []):
+            if series.get("value_status") == "estimated_from_raster_not_exact":
+                result["uncertainty"].append({"type": "raster_estimate", "panel_id": panel.get("panel_id"),
+                                              "series_index": series.get("series_index"),
+                                              "basis": series.get("uncertainty_note")})
+    _echo_contract(result, case)
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"ok": True, "status": result["status"], "panels": len(result["panels"]),
+    _write_json(out_dir / "result.json", result)
+    if result["readings"]:
+        S.write_readings_csv(result["readings"], out_dir / "digitized.csv")
+    print(json.dumps({"ok": result["status"] != "undetermined", "status": result["status"],
+                      "panels": len(result["panels"]), "tables": len(result["tables"]),
+                      "readings": len(result["readings"]),
                       "wrote": str(out_dir / "result.json")}, ensure_ascii=False))
-    return 0
+    return _status_exit(result["status"])
 
 
 def main(argv: list[str] | None = None) -> int:

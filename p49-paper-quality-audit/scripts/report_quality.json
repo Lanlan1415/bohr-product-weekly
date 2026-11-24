@@ -1,0 +1,329 @@
+{
+  "schema_version": "quality-bench/v1",
+  "scenarios": [
+    {
+      "scenario": "clean_qualified_design",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "all_dimensions_must_be_assessed",
+      "expected": [
+        "pqa.dimension_not_assessed"
+      ],
+      "fired": [
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed",
+        "pqa.dimension_not_assessed"
+      ],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "review_incomplete",
+      "expected_grade": "review_incomplete",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "rating_requires_evidence",
+      "expected": [
+        "pqa.assessment_without_evidence"
+      ],
+      "fired": [
+        "pqa.assessment_without_evidence"
+      ],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "review_incomplete",
+      "expected_grade": "review_incomplete",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "fabricated_review_quote_rejected",
+      "expected": [
+        "pqa.review_evidence_not_in_source"
+      ],
+      "fired": [
+        "pqa.review_evidence_not_in_source",
+        "pqa.assessment_without_evidence"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "review_incomplete",
+      "expected_grade": "review_incomplete",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "substantiated_concern_is_not_template",
+      "expected": [
+        "pqa.reviewer_substantiated_issue"
+      ],
+      "fired": [
+        "pqa.reviewer_substantiated_issue"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_revision",
+      "expected_grade": "major_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "novelty_needs_prior_contrast",
+      "expected": [
+        "pqa.novelty_without_contrast"
+      ],
+      "fired": [
+        "pqa.novelty_without_contrast"
+      ],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_revision",
+      "expected_grade": "minor_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "design_question_mismatch",
+      "expected": [
+        "pqa.design_question_mismatch"
+      ],
+      "fired": [
+        "pqa.design_question_mismatch"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_revision",
+      "expected_grade": "major_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "observational_causal_overreach",
+      "expected": [
+        "pqa.causal_conclusion_exceeds_design"
+      ],
+      "fired": [
+        "pqa.design_question_mismatch",
+        "pqa.causal_conclusion_exceeds_design"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_revision",
+      "expected_grade": "major_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "qualified_observational_association",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "comparative_design_without_control",
+      "expected": [
+        "pqa.comparative_design_no_control"
+      ],
+      "fired": [
+        "pqa.comparative_design_no_control"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_revision",
+      "expected_grade": "major_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "impossible_sample_accounting_recomputed",
+      "expected": [
+        "pqa.sample_accounting_impossible"
+      ],
+      "fired": [
+        "pqa.sample_accounting_impossible"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_revision",
+      "expected_grade": "major_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "numeric_conflict_recomputed",
+      "expected": [
+        "pqa.numeric_reporting_inconsistent"
+      ],
+      "fired": [
+        "pqa.numeric_reporting_inconsistent"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_revision",
+      "expected_grade": "major_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "numeric_match_is_quiet",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "required_sections_missing",
+      "expected": [
+        "pqa.full_article_sections_missing"
+      ],
+      "fired": [
+        "pqa.full_article_sections_missing"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_revision",
+      "expected_grade": "major_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "references_unresolved",
+      "expected": [
+        "pqa.references_section_unresolved"
+      ],
+      "fired": [
+        "pqa.references_section_unresolved"
+      ],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_revision",
+      "expected_grade": "major_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "ethics_reporting_gap_not_method_error",
+      "expected": [
+        "pqa.ethics_statement_missing"
+      ],
+      "fired": [
+        "pqa.ethics_statement_missing"
+      ],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_revision",
+      "expected_grade": "minor_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "excerpt_does_not_force_article_structure",
+      "expected": [],
+      "fired": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "missing": [],
+      "spurious": [],
+      "pass": true
+    },
+    {
+      "scenario": "byte_stable_audit",
+      "pass": true
+    },
+    {
+      "scenario": "eleven_dimension_coverage",
+      "pass": true
+    },
+    {
+      "scenario": "clean_has_no_findings",
+      "pass": true
+    },
+    {
+      "scenario": "clean_has_all_contract_keys",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 21,
+    "of": 21
+  },
+  "clean_baseline_findings": [],
+  "note": "Qualified RCT and observational designs cross-check false positives; numeric fixtures are actually recomputed."
+}

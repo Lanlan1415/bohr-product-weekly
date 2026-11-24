@@ -1,0 +1,45 @@
+{
+  "schema_version": "screening-rank-v2-smoke/v1",
+  "official_score": false,
+  "scenarios": [
+    {
+      "scenario": "cold_copy_nine_rows_full_replay",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "pure_chinese_criteria_and_verbatim_evidence",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "english_cross_language_same_protocol",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_member_label_group_consistency",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "zero_retained_not_remote_or_blocked",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cold_import_no_private_paths_or_pyc",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "clean_real_metadata_exit0_artifacts_hashes",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 7,
+    "of": 7
+  }
+}

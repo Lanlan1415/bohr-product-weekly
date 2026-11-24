@@ -1,0 +1,24 @@
+{
+  "case_id": "question-synthetic-cross-language-v2",
+  "research_question": "固态电解质中，晶界如何影响离子电导率？阻抗谱如何表征界面电阻？是否已有分子动力学模拟证据？",
+  "records_path": "records.json",
+  "concepts": [
+    {"id": "object", "label": "固态电解质", "role": "object", "terms": ["固态电解质", "固体电解质"],
+     "synonyms": ["solid electrolyte", "solid-state electrolyte"], "required": true},
+    {"id": "grain", "label": "晶界", "role": "mechanism", "terms": ["晶界"],
+     "synonyms": ["grain boundary", "grain boundaries", "grain-boundary"], "required": true},
+    {"id": "conductivity", "label": "离子电导率", "role": "outcome", "terms": ["离子电导率"],
+     "synonyms": ["ionic conductivity", "ion conductivity"], "required": true},
+    {"id": "impedance", "label": "阻抗谱", "role": "method", "terms": ["阻抗谱"],
+     "synonyms": ["impedance spectroscopy", "electrochemical impedance spectroscopy", "EIS"], "required": true},
+    {"id": "interface", "label": "界面电阻", "role": "outcome", "terms": ["界面电阻"],
+     "synonyms": ["interfacial resistance", "interface resistance"], "required": true},
+    {"id": "simulation", "label": "分子动力学模拟", "role": "method", "terms": ["分子动力学模拟"],
+     "synonyms": ["molecular dynamics simulation", "molecular dynamics"], "required": true}
+  ],
+  "start_date": "2022-01-01",
+  "end_date": "2026-11-24",
+  "languages": ["zh", "en"],
+  "output_contract": ["case_id", "检索结果", "证据记录", "状态说明", "candidate_set", "query_log", "uncertainty", "change_records"],
+  "note": "All article-like rows and stance values are explicitly synthetic interface fixtures, not real paper abstracts, DOI records, organizer cases, formal answers or research conclusions. The repeated export tests deduplication. Missing DOI/journal stays missing."
+}

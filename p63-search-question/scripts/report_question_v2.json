@@ -1,0 +1,125 @@
+{
+  "schema_version": "question-search-v2-bench/v1",
+  "official_score": false,
+  "scenarios": [
+    {
+      "scenario": "clean_baseline_zero_findings",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "facets_keep_object_all_scope",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "pure_chinese_recalls_english",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "negation_partial_not_promoted",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "conflict_only_comparable_set",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unflagged_stance_not_conflict",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "same_comparison_key_conflict",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "dependency_execution_topological",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "dependency_cycle_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "unknown_dependency_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_subquestion_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "all_any_not_no_broad_or",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "structured_query_no_natural_language_broadening",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "evidence_fields_slice_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "negated_then_positive_quote",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_rows_all_accounted",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "shared_work_all_subquestions",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "bounded_stop_remote_null",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "time_language_explicit_exclusion",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "metadata_missing_stays_incomplete",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "output_contract_passthrough",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "deterministic_result_bytes",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "source_plans_reproducible",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 23,
+    "of": 23
+  }
+}

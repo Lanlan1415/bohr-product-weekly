@@ -1,0 +1,120 @@
+{
+  "schema_version": "academic-search-v2-hostile/v1",
+  "official_score": false,
+  "probes": [
+    {
+      "probe": "missing_case_exit5_structured_no_trace",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "scalar_case_exit4_no_trace",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "empty_corpus_exit4_contract_preserved",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "invalid_records_shape_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "missing_query_exit4_structured",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "missing_material_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "pdf_requires_real_text_tool_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "invalid_time_not_silently_dropped_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "invalid_language_not_dropped_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "negative_top_k_exit4_not_zeroed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "punctuation_only_query_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "bom_clean_exit0_zero_findings",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "refusal_not_misreported_empty",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_types_unknown_null_status_safe",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "honest_zero_hits_review_not_blocked",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "two_output_dirs_byte_identical_all_files",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "same_output_dir_second_run_idempotent",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "cold_isolated_import_from_other_cwd",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "socket_audit_proves_no_network_attempt",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "real_metadata_example_cross_language_review3",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "stdout_is_structured_single_json",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "artifact_sha256_manifest_exact",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 22,
+    "of": 22
+  }
+}

@@ -48,6 +48,7 @@ RULES = [
     Rule("R01", 10, "strip surrounding whitespace from every cell"),
     Rule("R02", 20, "treat the not-reported tokens as a missing value, never as 0"),
     Rule("R03", 30, "parse a value into number / error / unit / range structure"),
+    Rule("R12", 35, "refuse a bare number when explicit unit provenance is required"),
     Rule("R04", 40, "convert a unit to the column's target unit, recording the factor"),
     Rule("R05", 50, "flag a value outside the declared plausible range"),
     Rule("R06", 60, "normalise the entity key for duplicate detection"),
@@ -197,6 +198,35 @@ def standardise_column(rows: list[dict], column: str, target_unit: str | None,
                            "converted": None})
             continue
 
+        if semantic == "boolean":
+            folded = cell.lower()
+            logical = (True if folded in ("true", "yes", "1", "是") else
+                       False if folded in ("false", "no", "0", "否") else None)
+            if logical is None:
+                changes.append({"rule": "R03", "priority": 30, "row": i, "column": column,
+                                "original": cell, "new": None,
+                                "why": "boolean cell is outside the declared true/false vocabulary"})
+                values.append({"row": i, "kind": "unparsed", "value": None,
+                               "original": cell, "converted": None})
+            else:
+                values.append({"row": i, "kind": "boolean", "value": int(logical),
+                               "original": cell, "converted": None})
+            continue
+
+        # If a column declares a target unit but no header/alias supplies it and
+        # no explicit opt-in exists, a bare number is not silently assigned that
+        # unit. This is R12: reviewable unit provenance, not a conversion guess.
+        if (target_unit and bool((spec_ref or {}).get("require_explicit_unit"))
+                and not bool((spec_ref or {}).get("assume_unitless_values_in_target_unit"))):
+            probe = U.parse_measurement(cell)
+            if probe.get("kind") != "unparsed" and not probe.get("unit"):
+                changes.append({"rule": "R12", "priority": 35, "row": i, "column": column,
+                                "original": cell, "new": None,
+                                "why": "target unit declared but cell has no unit; set assume_unitless_values_in_target_unit only if the source schema justifies it"})
+                values.append({"row": i, "kind": "unit_refused", "value": None,
+                               "original": cell, "converted": None,
+                               "refusal": "missing_unit"})
+                continue
         parsed = U.parse_measurement(cell)
         if parsed["kind"] == "not_reported":
             changes.append({"rule": "R02", "priority": 20, "row": i, "column": column,
@@ -301,7 +331,8 @@ def standardise_column(rows: list[dict], column: str, target_unit: str | None,
 def find_duplicates(rows: list[dict], key_columns: list[str],
                     value_columns: list[str] | None = None,
                     synonyms: dict | None = None,
-                    source_column: str | None = None) -> dict:
+                    source_column: str | None = None,
+                    context_columns: list[str] | None = None) -> dict:
     """Split exact duplicates from same-entity records with different values.
 
     A duplicate *record* is the same key with identical values: a copy-paste.
@@ -317,6 +348,14 @@ def find_duplicates(rows: list[dict], key_columns: list[str],
     """
     synonyms = synonyms or {}
     source_column = str(source_column or "").strip()
+    if not isinstance(value_columns, list):
+        value_columns = []
+    context_columns = ([str(c) for c in context_columns] if isinstance(context_columns, list) else [])
+    if source_column and source_column not in context_columns:
+        context_columns.append(source_column)
+    # Context is part of the duplicate identity, never averaged away. The source
+    # column is included automatically so same-looking values from two papers do
+    # not become a delete-one recommendation.
     if not key_columns:
         # Without declared keys every row would collapse into one "" bucket and a
         # fully distinct table would report as duplicate experiments. No keys, no
@@ -360,16 +399,19 @@ def find_duplicates(rows: list[dict], key_columns: list[str],
         # Group the bucket by value tuple first. A bucket can hold both an exact
         # pair and a differing run of the same entity; collapsing the whole bucket
         # to one label loses the exact pair, which is the actionable one.
-        if not value_columns:
+        compare_columns = list(value_columns)
+        if not compare_columns:
             # Undeclared value columns default to every non-key column: comparing
             # full values is what "same record" means, and an empty signature would
-            # collapse a genuinely differing run into one exact duplicate.
-            value_columns = sorted({c for i in idxs for c in rows[i].keys()
-                                    if isinstance(rows[i], dict)}
-                                   - {str(k) for k in key_columns})
+            # collapse a genuinely differing run into one exact duplicate. Keep this
+            # local to the bucket rather than mutating value_columns for later rows.
+            compare_columns = sorted({c for i in idxs for c in rows[i].keys()
+                                      if isinstance(rows[i], dict)}
+                                     - {str(k) for k in key_columns})
+        compare_columns += [c for c in context_columns if c not in compare_columns]
         subgroups: dict[tuple, list[int]] = {}
         for i in idxs:
-            sig = tuple(str(rows[i].get(c, "")).strip() for c in value_columns)
+            sig = tuple(str(rows[i].get(c, "")).strip() for c in compare_columns)
             subgroups.setdefault(sig, []).append(i)
         for sig, group in subgroups.items():
             if len(group) > 1:
@@ -649,7 +691,8 @@ def clean(rows: list[dict], spec: dict) -> dict:
     synonyms = synonym_table(spec)
     dupes = find_duplicates(mapped_rows, spec.get("key_columns") or [],
                             spec.get("value_columns") or [],
-                            synonyms=synonyms, source_column=source_column)
+                            synonyms=synonyms, source_column=source_column,
+                            context_columns=spec.get("context_columns") or [])
     anomalies = anomaly_report(mapped_rows, spec)
     report = quality_report(mapped_rows, spec, column_runs, dupes)
 
@@ -696,6 +739,12 @@ def clean(rows: list[dict], spec: dict) -> dict:
         findings.append({"rule": "clean.unparsed_values", "severity": "medium",
                          "message": "some cells could not be parsed and are kept as named gaps",
                          "columns": anomalies["columns_with_unparsed"]})
+    refused_columns = [name for name, value in anomalies.get("per_column", {}).items()
+                       if value.get("unit_refused")]
+    if refused_columns:
+        findings.append({"rule": "clean.unit_refused", "severity": "medium",
+                         "message": "unit is unknown, incompatible, or missing when explicit unit provenance was required; no numeric substitution was made",
+                         "columns": refused_columns})
     if dupes["duplicate_records"]:
         findings.append({"rule": "clean.duplicate_records", "severity": "low",
                          "message": "identical rows found; safe to drop after review",

@@ -1,0 +1,775 @@
+{
+  "schema_version": "method-statistics-bench/v2",
+  "scenarios": [
+    {
+      "scenario": "clean_qualified_design",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "correct_reported_summary_quiet",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "known_wrong_p_detected",
+      "expected": [
+        "msv.reported_p_recompute_mismatch"
+      ],
+      "fired": [
+        "msv.reported_p_recompute_mismatch",
+        "msv.p_ci_decision_conflict"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "known_wrong_t_detected",
+      "expected": [
+        "msv.reported_statistic_recompute_mismatch"
+      ],
+      "fired": [
+        "msv.reported_statistic_recompute_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "reported_p_ci_conflict_detected",
+      "expected": [
+        "msv.p_ci_decision_conflict"
+      ],
+      "fired": [
+        "msv.reported_ci_recompute_mismatch",
+        "msv.reported_p_recompute_mismatch",
+        "msv.p_ci_decision_conflict"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "different_ci_alpha_levels_not_false_conflict",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "power_n_required_recomputed",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "power_report_mismatch_detected",
+      "expected": [
+        "msv.power_recompute_mismatch"
+      ],
+      "fired": [
+        "msv.power_recompute_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "power_missing_input_not_method_error",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "review_incomplete",
+      "expected_grade": "review_incomplete",
+      "contract_ok": true,
+      "numeric_ok": [
+        {
+          "index": 1,
+          "name": "insufficient",
+          "type": "power",
+          "reason": "numeric effect_size, nobs1 and ratio are required"
+        }
+      ],
+      "pass": [
+        {
+          "index": 1,
+          "name": "insufficient",
+          "type": "power",
+          "reason": "numeric effect_size, nobs1 and ratio are required"
+        }
+      ]
+    },
+    {
+      "scenario": "correct_bh_recomputed_quiet",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "wrong_bh_detected",
+      "expected": [
+        "msv.adjusted_p_recompute_mismatch"
+      ],
+      "fired": [
+        "msv.adjusted_p_recompute_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "confirmatory_multiplicity_gap",
+      "expected": [
+        "msv.multiplicity_unaddressed"
+      ],
+      "fired": [
+        "msv.multiplicity_unaddressed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "pseudoreplication_design_detected",
+      "expected": [
+        "msv.pseudoreplication_independence_conflict",
+        "msv.pseudoreplication_count_confirmed"
+      ],
+      "fired": [
+        "msv.pseudoreplication_count_confirmed",
+        "msv.pseudoreplication_independence_conflict"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "cluster_aware_design_quiet",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "design_question_mismatch_detected",
+      "expected": [
+        "msv.design_question_mismatch"
+      ],
+      "fired": [
+        "msv.design_question_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "model_outcome_mismatch_detected",
+      "expected": [
+        "msv.model_outcome_mismatch",
+        "msa.model_type_mismatch"
+      ],
+      "fired": [
+        "msa.model_type_mismatch",
+        "msv.model_outcome_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "randomization_reporting_gap_preserved",
+      "expected": [
+        "msa.randomisation_unstated"
+      ],
+      "fired": [
+        "msa.randomisation_unstated"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "missing_handling_gap_not_method_error",
+      "expected": [
+        "msv.missing_assumption_unreported"
+      ],
+      "fired": [
+        "msv.missing_assumption_unreported"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "missing_count_conflict_recomputed",
+      "expected": [
+        "msv.missing_count_inconsistent"
+      ],
+      "fired": [
+        "msv.missing_count_inconsistent"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "data_driven_outlier_exclusion_detected",
+      "expected": [
+        "msv.data_driven_outlier_exclusion"
+      ],
+      "fired": [
+        "msv.data_driven_outlier_exclusion"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "prespecified_outlier_policy_quiet",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "p_as_probability_of_null_detected",
+      "expected": [
+        "msv.p_probability_of_null_misread"
+      ],
+      "fired": [
+        "msv.p_probability_of_null_misread"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "nonsignificant_as_equivalence_detected",
+      "expected": [
+        "msv.nonsignificant_as_no_effect"
+      ],
+      "fired": [
+        "msv.nonsignificant_as_no_effect"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "significance_as_magnitude_detected",
+      "expected": [
+        "msv.significance_equated_with_importance"
+      ],
+      "fired": [
+        "msv.significance_equated_with_importance"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "difference_in_significance_detected",
+      "expected": [
+        "msv.significance_difference_without_direct_test"
+      ],
+      "fired": [
+        "msv.significance_difference_without_direct_test"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "causal_correlation_detected",
+      "expected": [
+        "msv.correlation_causal_overreach"
+      ],
+      "fired": [
+        "msv.correlation_causal_overreach"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "qualified_observational_association_quiet",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "sensitivity_gap_detected",
+      "expected": [
+        "msv.sensitivity_analysis_missing"
+      ],
+      "fired": [
+        "msv.sensitivity_analysis_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "reanalysis_version_gap_detected",
+      "expected": [
+        "msv.reanalysis_fields_missing"
+      ],
+      "fired": [
+        "msv.reanalysis_fields_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "reanalysis_value_mismatch_computed",
+      "expected": [
+        "msv.reanalysis_value_mismatch"
+      ],
+      "fired": [
+        "msv.reanalysis_value_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "linear_model_qualified",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "nonlinearity_reset_detected",
+      "expected": [
+        "msv.model_specification_signal"
+      ],
+      "fired": [
+        "msv.model_specification_signal"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "wrong_ols_coefficients_detected",
+      "expected": [
+        "msv.regression_coefficient_recompute_mismatch"
+      ],
+      "fired": [
+        "msv.regression_coefficient_recompute_mismatch",
+        "msv.regression_coefficient_recompute_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "levene_assumption_signal_quantified",
+      "expected": [
+        "msv.equal_variance_assumption_signal"
+      ],
+      "fired": [
+        "msv.equal_variance_assumption_signal"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "jb_normality_signal_quantified",
+      "expected": [
+        "msv.residual_normality_signal"
+      ],
+      "fired": [
+        "msv.residual_normality_signal"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "minor_methods_revision",
+      "expected_grade": "minor_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "pearson_computed_without_causal_claim",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "clean",
+      "expected_status": "clean",
+      "grade": "no_major_defect_detected",
+      "expected_grade": "no_major_defect_detected",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "insufficient_t_inputs_incomplete_not_defect",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "status": "review",
+      "expected_status": "review",
+      "grade": "review_incomplete",
+      "expected_grade": "review_incomplete",
+      "contract_ok": true,
+      "numeric_ok": [
+        {
+          "index": 0,
+          "name": "missing SD",
+          "type": "independent_t",
+          "reason": "two groups with numeric means, sample SDs and n>1 are required"
+        }
+      ],
+      "pass": [
+        {
+          "index": 0,
+          "name": "missing SD",
+          "type": "independent_t",
+          "reason": "two groups with numeric means, sample SDs and n>1 are required"
+        }
+      ]
+    },
+    {
+      "scenario": "invented_source_quote_rejected",
+      "expected": [
+        "msv.evidence_not_in_source"
+      ],
+      "fired": [
+        "msv.evidence_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "review_incomplete",
+      "expected_grade": "review_incomplete",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "substantiated_reviewer_issue_preserved",
+      "expected": [
+        "msv.reviewer_substantiated_issue"
+      ],
+      "fired": [
+        "msv.reviewer_substantiated_issue"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "major_methods_revision",
+      "expected_grade": "major_methods_revision",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "unverified_reviewer_issue_rejected",
+      "expected": [
+        "msv.reviewer_issue_unverified"
+      ],
+      "fired": [
+        "msv.reviewer_issue_unverified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "review_incomplete",
+      "expected_grade": "review_incomplete",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "coverage_flag_cannot_fabricate_clean",
+      "expected": [
+        "msv.reviewer_issue_unverified"
+      ],
+      "fired": [
+        "msv.reviewer_issue_unverified"
+      ],
+      "missing": [],
+      "spurious": [],
+      "status": "blocked",
+      "expected_status": "blocked",
+      "grade": "review_incomplete",
+      "expected_grade": "review_incomplete",
+      "contract_ok": true,
+      "numeric_ok": true,
+      "pass": true
+    },
+    {
+      "scenario": "math_t_tail_known_reference",
+      "pass": true
+    },
+    {
+      "scenario": "math_t_quantile_known_reference",
+      "pass": true
+    },
+    {
+      "scenario": "math_chi2_df2_exact",
+      "pass": true
+    },
+    {
+      "scenario": "clean_zero_findings",
+      "pass": true
+    },
+    {
+      "scenario": "all_fourteen_dimensions",
+      "pass": true
+    },
+    {
+      "scenario": "all_clean_recalculations_computable",
+      "pass": true
+    },
+    {
+      "scenario": "deterministic_repeat",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "passed": 48,
+    "of": 48
+  },
+  "clean_baseline_findings": [],
+  "anchors": {
+    "welch_p": 0.29033248197735895,
+    "welch_df": 59.61035784930767,
+    "normal_power_nobs1": 62.79088407460955,
+    "bh_adjusted": [
+      0.03,
+      0.03,
+      0.04
+    ]
+  },
+  "note": "Qualified designs and known numeric/model errors cross-check false positives; non-computable inputs never become method defects."
+}

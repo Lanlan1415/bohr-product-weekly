@@ -1,0 +1,8 @@
+Synthetic Methods
+This is a deliberately fictitious passage for software verification only.
+
+Synthetic Results
+MoS2 after 60 s plasma had an overpotential of 178 mV at 10 mA cm-2 in 0.5 M H2SO4.
+The stability measurement retained 92% of the initial current after 10 h at 10 mA cm-2.
+
+No other scientific conclusion is supplied by this synthetic source.

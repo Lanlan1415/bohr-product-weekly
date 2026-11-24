@@ -2,7 +2,9 @@
 name: clean-literature-data
 description: >
   Clean and standardise an extracted literature data table with a numbered,
-  prioritised, re-runnable rule set. Normalises units through a real dimension
+  prioritised, re-runnable rule set and a Frictionless-style data dictionary.
+  Produces typed analysis_table/analysis.csv, cell-addressed required/unique/
+  enum/pattern/range schema errors, and a before/after provenance manifest.  Normalises units through a real dimension
   model (ranges convert both endpoints, error bars convert with the value),
   maps aliased source columns to canonical fields and reports the unmapped ones,
   merges declared synonyms under a reviewable key while listing spellings outside
@@ -16,6 +18,8 @@ description: >
 ---
 
 # clean-literature-data
+
+正式挑战：文献数据清洗与标准化（`challenge-f4bca185`）。
 
 The failure this prevents is not a crash. It is a table that looks clean and is
 wrong: `12 mV` averaged with `1.2 V`, `not reported` counted as zero, a range
@@ -72,8 +76,14 @@ missing_tokens. See examples/spec-contract.json for the full shape.
 **Step 4 — audit.** Run the engine once:
 
 ```bash
-python scripts/cleandata.py --spec examples/spec-contract.json --out /app/output
+python /skills/weekly-skill/scripts/cleandata.py \
+  --spec /app/work/spec.json --case /input/case.json --out /app/output
+# When case.json itself contains rows/records or table_path + data_dictionary:
+python /skills/weekly-skill/scripts/cleandata.py \
+  --case /app/work/case/case.json --out /app/output
 ```
+
+`data_dictionary.fields[]` accepts Frictionless-like `name`、`type`、`semantic`、`description`、`target_unit` plus `constraints` (`required`, `unique`, `enum`, `pattern`, `minimum`, `maximum`). Native `columns[]` uses the same semantics with `allowed_values` or `enum`. `source_encoding` defaults to `utf-8-sig`; an explicitly selected encoding such as `gb18030` is decoded strictly, never silently “repaired.”
 
 Exit codes: 0 clean, 3 review (only low/medium findings — including a non-empty
 to-confirm list's causes), 4 blocked (any high finding), 5 undetermined (the case
@@ -81,19 +91,23 @@ could not be run as declared — unreadable or non-object spec, no table, no rec
 rows, unreadable table file). Every exit writes a result file; exit never comes
 from a traceback.
 
-**Step 5 — fix findings and rerun.** Each finding names a rule and its evidence.
+**Step 5 — review, never silently rewrite.** Each finding names a rule and its evidence.
 Fix the data or the declaration (restore the declared range, alias the stray
-column, extend missing_tokens), never the audit, and rerun into the same output
-directory. An unchanged input re-run into the same directory is refused with the
-already-cleaned rule (exit 4), so a second pass can never stack on the first —
-that guard is the rerun discipline, not an obstacle.
+column, extend missing_tokens), then rerun. The fingerprint covers both rows and
+rules, so correcting a schema is a legitimate new run. An identical input+rules
+re-run into the same directory writes byte-identical results and never stacks a
+second conversion. Duplicate records/experiments remain in the output as review
+recommendations (`merged:false`); the tool never deletes, averages or merges them.
 
 **Step 6 — merge the result.** The result file written by the engine already
 carries: the case identifier, every field of the declared output contract (values
 the case carried pass through untouched; keys the engine computes are filled by
 the audit; anything else is null with a limits note — never a fabricated value),
-the change ledger, the to-confirm list, and limits. Keep that file as the
-structured result of the case, next to cleaned.csv.
+the change ledger, the to-confirm list, data dictionary, schema validation,
+before/after census, integrity checks and limits. Keep that file as the
+structured result of the case, next to `cleaned.csv` (display form) and
+`analysis.csv` (typed form). The latter puts scalar numbers in target units;
+range/± cells remain structured objects and unavailable values remain empty.
 
 ## The spec, field by field
 
@@ -124,8 +138,15 @@ structured result of the case, next to cleaned.csv.
   entity spellings to a canonical name for duplicate detection only (R11) —
   cells stay untouched, spellings outside the table are listed, not guessed.
 - missing_tokens extends the built-in not-reported set (ND, n/a, 未检出, -999, …).
-- source_column stamps the ledger and the duplicate entries with each row's
-  origin, so an edit traces past the row index back toward the literature.
+- source_column stamps the ledger and duplicate entries with each row's origin.
+  It also participates in duplicate identity, preventing cross-paper merges.
+- `row_id_column` names stable supplied row identity; `context_columns` adds
+  dose/annealing/protocol context to duplicate identity.
+- `require_explicit_unit:true` turns a bare number in a unit-bearing column into
+  `clean.unit_refused` (R12), not an assumed measurement. Only set
+  `assume_unitless_values_in_target_unit:true` when the source schema proves that convention.
+- Fields may declare required/unique/enum/pattern/minimum/maximum constraints. An
+  alias collision with different values becomes `field-alias-conflict`, never an overwrite.
 
 ## Worked example（示例）
 
@@ -183,7 +204,15 @@ The result file written by the engine on every exit path:
 | changes_by_rule | ledger volume per rule |
 | duplicates | duplicate records vs duplicate experiments, synonym-unmapped spellings |
 | anomalies | per-column missing / unparsed / unit_refused / changes census |
-| cleaned_table | the analysable table (also written as cleaned.csv); each cell equals the ledger's recorded new value |
+| cleaned_table | the display table (also cleaned.csv); each rewritten cell equals the ledger's recorded new value |
+| data_dictionary | field names, logical types, units, declared missing markers and constraints |
+| analysis_table / analysis.csv | typed statistics-ready values: scalar numbers, structured range/± objects, true/false, ISO dates, and null gaps |
+| measurements[] | per-cell original, converted, kind, unit and typed value with row identity/source |
+| schema_validation | Frictionless-style valid/errors/error_counts; errors name row+field+code+message |
+| conversion_ledger | immutable change_id, input row, record id/source, old/new value, formula and transformation kind |
+| before_after | input/output counts, missing/null/conversion/constraint counts; records_dropped is always 0 |
+| dedupe_recommendations | duplicate groups with `merged:false`; no averaging/deletion |
+| input_manifest / integrity_checks | raw row fingerprint, record ids and non-silent-change invariants |
 | pending_review | the to-confirm list: unparsed, refused conversions, out-of-range, duplicate experiments, unmapped spellings |
 | unmapped_columns / declared_fields_absent | columns nobody declared; schema fields no row carries |
 | provenance | source column name and the source values seen |
@@ -209,6 +238,7 @@ The result file written by the engine on every exit path:
 | R01 | 10 | strip surrounding whitespace from every cell |
 | R02 | 20 | treat the not-reported tokens as a missing value, never as 0 |
 | R03 | 30 | parse a value into number / error / unit / range structure |
+| R12 | 35 | refuse a bare number when explicit unit provenance is required |
 | R04 | 40 | convert a unit to the column's target unit, recording the factor |
 | R05 | 50 | flag a value outside the declared plausible range |
 | R06 | 60 | normalise the entity key for duplicate detection |
@@ -230,12 +260,15 @@ sits in that order.
 | `clean.report_inconsistent` | medium | the supplied quality report disagrees with the table-derived one |
 | `clean.missing_values` | medium | not-reported cells exist; they are missing, not zero |
 | `clean.unparsed_values` | medium | cells could not be parsed and are kept as named gaps |
+| `clean.unit_refused` | medium | unknown/incompatible unit, or missing unit under R12; no assumed value |
+| `clean.schema_constraints` | medium | required/unique/enum/pattern/range or alias-collision errors in schema_validation |
 | `clean.duplicate_experiments` | medium | one entity, several measurements — do not merge silently |
 | `clean.duplicate_records` | low | identical rows, safe to drop after review |
 | `clean.unmapped_columns` | low | columns present in rows but neither declared nor aliased |
 | `clean.declared_fields_absent` | low | schema fields no row carries |
 | `clean.synonym_unmapped` | low | entity spellings outside the declared synonym table |
-| `clean.already_cleaned` | high | this exact input was already cleaned into this output directory (exit 4) |
+| `clean.case_unreadable` | high | case file missing, unreadable, or not an object (exit 5) |
+| `clean.processing_error` | high | malformed declarations prevented honest completion (exit 5) |
 | `clean.spec_unreadable` | high | the spec is not readable JSON or not a JSON object (exit 5) |
 | `clean.no_table` | high | the case supplies neither rows nor a table path (exit 5) |
 | `clean.no_rows` | high | the table has no record rows at all (exit 5) |
@@ -252,7 +285,8 @@ sits in that order.
 | neither rows nor a table path | 5 | refused with clean.no_table; point the spec at the table |
 | table file missing or unreadable | 5 | refused with clean.table_unreadable; fix the path |
 | table file in another encoding (GBK, mojibake) | 5 | refused with clean.table_unreadable, byte position named; re-encode as UTF-8 |
-| rerun of an unchanged input into the same output directory | 4 | refused with clean.already_cleaned; the first pass is preserved, use a fresh directory for a new pass |
+| rerun of identical rows+rules into same output directory | original status | byte-identical overwrite; no stacked conversion, no stale already-cleaned refusal |
+| changed rules with the same rows | original status | fingerprint includes rules, so corrected schemas run rather than being mistaken for an old input |
 | unknown unit (`psi`, `min`) | 3 | R04 refuses by name; cell kept, entry lands in pending_review; name the unit or extend the schema |
 | dimension mismatch (`mg` → `mm`) | 3 | refused with both dimension vectors; this is a schema error, not a data error |
 | temperature offset (`degC` → `K`) | 3 | refused as a non-multiplicative conversion; declare a reference scale instead |
@@ -300,20 +334,28 @@ sits in that order.
 | `clean.spec_unreadable` (exit 5) | the spec file is missing, not readable JSON, or not an object — fix the input, rerun |
 | `clean.no_table` / `clean.no_rows` (exit 5) | no table or no record rows — supply them before the run means anything |
 | `clean.table_unreadable` (exit 5) | re-encode the table as UTF-8 text and rerun |
-| `clean.already_cleaned` (exit 4) | the first pass is preserved; use a fresh output directory for genuinely new work |
+| `clean.case_unreadable` / `clean.processing_error` (exit 5) | inspect the structured refusal code and original declaration; result still preserves readable case_id/output_contract fields |
+| `clean.schema_constraints` (exit 3) | inspect schema_validation.errors row+field+code; no automatic enum, pattern or uniqueness repair |
+| unchanged rerun | deterministic idempotent overwrite; there is no separate already-cleaned refusal |
 | unit refusal (R04, new 为 null) | unknown or incompatible unit; name it in pending_review terms, never silently drop the row |
 
 ## Verification
 
 ```bash
-python scripts/bench_cleaning.py   # 20 scenarios: one planted defect or FP guard each
+python scripts/bench_cleaning.py   # 28 scenarios: defects, FP guards, types, schema and idempotent CLI
 ```
 
-20/20 pass on this machine (3.14). The clean baseline must report nothing, so a
+28/28 pass on this machine (3.14). The clean baseline must report nothing, so a
 detector cannot pass by flagging everything. Every rule above is covered by a
 defect scenario or a repaired-twin guard; the CLI scenarios prove every refusal
 path ends undetermined with a written result file and no traceback. Reruns are
 deterministic. Full report: scripts/report_cleaning.json.
+
+## Method reference and added verification
+
+The v2 schema path implements the mechanism documented by [Frictionless Table Schema](https://specs.frictionlessdata.io/table-schema/) and the [Frictionless framework](https://github.com/frictionlessdata/framework): declared fields/types, missingValues applied before logical conversion, required/unique/enum/pattern/minimum/maximum constraints, and row/field/code/message validation records. It is a local standard-library implementation, not a bundled dependency or a claim of Frictionless conformance. Unit conversion remains the package's dimension-aware implementation; Frictionless does not decide units or scientific conflicts.
+
+Independent real-CSV smoke additionally verifies `12 mV -> 0.012 V`, `12±0.5 mV -> 0.012±0.0005 V`, and `3.0–3.4 eV -> 3000–3400 meV`; unknown `psi` is not silently converted to bar. Both result and analysis.csv are checked on repeat, and fresh-copy stdlib cold import is exercised.
 
 ## Requirements
 
@@ -324,21 +366,21 @@ references/units-and-rules.md。
 
 本 Skill 相比通用 Agent 的核心新增能力（全部为引擎真实运行的机制，bench 覆盖）：
 
-1. **规则优先级库**：12 条规则带 id 与优先级，冲突由优先级裁决且双方都留痕——通用 Agent 无法自证规则一致性。
+1. **规则优先级库**：13 条规则带 id 与优先级，冲突由优先级裁决且双方都留痕——通用 Agent 无法自证规则一致性。
 2. **幂等二遍检查**：同一规则跑两遍，第二遍必须零改写——是可计算的 self-check，false 即 high finding。
 3. **字段映射与未映射清单**：spec.field_aliases 显式映射同义列名（R10），映射动作进台账；无人声明的列进 unmapped_columns 清单——"规得齐"从记忆变成可审计的声明。
 4. **同义词归一与表外清单**：spec.synonyms 按可解释判定键归一实体拼写（R11），只动分组键不动数据；表外拼写进 synonym_unmapped 待确认——"合得对"的合并建议与人审分界在同一份输出里。
 5. **结构保持的单位换算**：区间换算双端（3.0-3.4 eV → 3000-3400 meV）、±误差随值换算；源单位等于目标单位时单元格原样保留，清洗后单元格恒等于台账记录值——"换得准"且精度不被 :g 重排吃掉。
 6. **来源溯源**：声明 source_column 后每条台账与重复记录带来源值，改动可沿规则号+行+来源回到原始文献——"追得回"。
 7. **待确认清单**：pending_review 把不可解析、换算被拒、越界、重复实验、表外拼写集中列出，工具不敢确认的值单独成册而非静默裁决。
-8. **契约直通的 result**：case_id 与 output_contract 全字段回填——案例自带值原样直通、引擎可推导键由引擎填写、其余置 null 并写 limits；拒绝路径（exit 5）不带契约回显，拒绝不被包装成完成。
+8. **契约直通的 result**：case_id 与 output_contract 全字段回填——案例自带值原样直通、引擎可推导键由引擎填写、其余置 null 并写 limits；可读取 case 的拒绝路径同样保留契约，但 status=undetermined 且有结构化 refusal，绝不包装成完成。
 
 ## 生态贡献
 
 1. **SKILL.md**：用途、适用条件、六步调用方式、逐字段 spec 说明、路由表、异常处置表、限制与自查方法齐备。
 2. **scripts/**：纯标准库（Python 3.9+，3.14 实测），模块可独立导入；本包为独立副本，不依赖其他包的文件。
 3. **examples/**：examples/spec.json（最小示例）与 examples/spec-contract.json（带契约回填的完整示例），示意输出标注为示例。
-4. **bench_cleaning.py**：20 个场景，每条规则一个缺陷场景或修复孪生守卫，clean 基线零发现；report_cleaning.json 为可复跑证据。
+4. **bench_cleaning.py**：28 个场景，每条规则一个缺陷场景或修复孪生守卫，clean 基线零发现；另覆盖类型/schema/确定性复跑，report_cleaning.json 为可复跑证据。
 5. **规则库可扩展**：missing_tokens、field_aliases、synonyms、plausible 范围全部经 spec 配置，他人换成自己的数据直接使用。
 6. **单位换算表**：22 基准单位 × 7 维度的量纲模型随 units.py 复用，含拒绝语义（dimension_mismatch / unknown_unit / special_unit）。
 7. **清洗类型词汇**：duplicate record vs duplicate experiment、missing vs zero、unparsed vs unit_refused 等稳定命名，可作为同类清洗任务的共享词汇。

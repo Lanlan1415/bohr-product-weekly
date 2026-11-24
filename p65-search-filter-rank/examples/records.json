@@ -1,0 +1,94 @@
+[
+  {
+    "id": "synth-relevant-a",
+    "source": "Explicit synthetic screening fixture; no publication claim",
+    "title": "Additive manufacturing of Ti-6Al-4V lattices",
+    "abstract": "Synthetic abstract: cooling rate controls microstructure and columnar grains.",
+    "authors": ["Synthetic Author A"],
+    "year": 2024,
+    "journal": "Synthetic fixture record",
+    "language": "en"
+  },
+  {
+    "id": "synth-relevant-b",
+    "source": "Explicit synthetic screening fixture; no publication claim",
+    "title": "3D printing process windows for 316L steel",
+    "abstract": "Synthetic abstract: solidification mapping predicts the microstructure in additive manufacturing.",
+    "authors": ["Synthetic Author B"],
+    "year": 2023,
+    "journal": "Synthetic fixture record",
+    "language": "en"
+  },
+  {
+    "id": "synth-guide-exclude",
+    "source": "Explicit synthetic screening fixture; no publication claim",
+    "title": "Additive manufacturing machine calibration guide",
+    "abstract": "Synthetic abstract: only machine setup is described; no microstructure criterion is reported.",
+    "authors": ["Synthetic Author C"],
+    "year": 2022,
+    "journal": "Synthetic fixture record",
+    "language": "en"
+  },
+  {
+    "id": "synth-casting-offscope",
+    "source": "Explicit synthetic screening fixture; no publication claim",
+    "title": "Conventional casting of aluminium alloys",
+    "abstract": "Synthetic abstract: cooling rate and microstructure are measured in conventional casting.",
+    "authors": ["Synthetic Author D"],
+    "year": 2024,
+    "journal": "Synthetic fixture record",
+    "language": "en"
+  },
+  {
+    "id": "synth-version-preprint",
+    "source": "Explicit synthetic preprint-version fixture",
+    "title": "Additive manufacturing lattice version study",
+    "abstract": "Synthetic abstract: solidification mapping of additively manufactured lattice specimens.",
+    "authors": ["Synthetic Version Author"],
+    "year": 2023,
+    "journal": "Synthetic preprint fixture",
+    "publication_status": "preprint fixture",
+    "language": "en"
+  },
+  {
+    "id": "synth-version-formal",
+    "source": "Explicit synthetic formal-version fixture",
+    "title": "Additive manufacturing lattice version study",
+    "abstract": "Synthetic abstract: solidification mapping of additively manufactured lattice specimens with corrected wording.",
+    "authors": ["Synthetic Version Author"],
+    "year": 2024,
+    "journal": "Synthetic formal fixture",
+    "publication_status": "published fixture",
+    "language": "en"
+  },
+  {
+    "id": "synth-negated-offscope",
+    "source": "Explicit synthetic negative-scope fixture",
+    "title": "Casting process note",
+    "abstract": "This is not an additive manufacturing study; microstructure measurements concern conventional casting.",
+    "authors": ["Synthetic Author E"],
+    "year": 2024,
+    "journal": "Synthetic fixture record",
+    "language": "en"
+  },
+  {
+    "id": "synth-title-only",
+    "source": "Explicit synthetic title-only fixture",
+    "title": "Additive manufacturing maintenance note",
+    "abstract": null,
+    "authors": ["Synthetic Author F"],
+    "year": 2024,
+    "journal": "Synthetic fixture record",
+    "language": "en"
+  },
+  {
+    "id": "synth-metadata-only",
+    "source": "Explicit synthetic metadata-only fixture",
+    "title": null,
+    "abstract": null,
+    "authors": [],
+    "year": null,
+    "journal": null,
+    "language": null
+  }
+]

@@ -56,7 +56,7 @@ CLI = Path(__file__).resolve().parent / "search_cli.py"
 
 
 def _run_cli(out, query_file=None):
-    args = [sys.executable, str(CLI), "--corpus", str(EXAMPLES / "corpus.json"),
+    args = [sys.executable, "-B", "-I", "-X", "utf8", str(CLI), "--corpus", str(EXAMPLES / "corpus.json"),
             "--out", str(out)]
     args += ["--query-file", str(query_file or (EXAMPLES / "query.json"))]
     return subprocess.run(args, capture_output=True, text=True, timeout=120)

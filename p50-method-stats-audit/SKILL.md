@@ -1,16 +1,13 @@
 ---
 name: method-stats-audit
 description: >
-  研究方法与统计审查：把一篇稿子跑成一份作者可以逐条回复的审查单——问题出在哪个
-  字段/哪一句、属于哪类缺陷、严重到什么程度、依据是什么、怎么改。三道审查面：method
- _stats pass（研究设计、变量定义、统计方法、样本量四个 facets 的声明完整性，与
-  模型-结局类型匹配这类实质矛盾）、reproduce pass（复现链：材料、环境、参数、运行、
-  容差内比较、分级结论）、results_discussion pass（结果报告纪律：数值与图一致、误差
-  棒含义、显著性口径、阴性结果与冲突文献、局限分级）。"没有报告"与"做错了"按构造
-  分开：缺失声明是带 reporting_gap 标记的报告缺口，只有矛盾才判方法缺陷。每条发现
-  带规则 id、严重度与定位字段，确定性引擎保证同一 spec 重跑得到同一份审查单。Use
-  when a task asks for 研究方法与统计审查, 方法学审查, 统计报告审查, 样本量审查, or
-  a methods/stats pre-review of a manuscript.
+  研究方法与统计审查：按设计—问题匹配、独立单位/伪重复、随机盲法、样本量/功效、缺失、
+  异常值、分布/方差、模型、多重比较、效应量/CI、p值解释、相关/因果、敏感性/稳健性、
+  复现十四个检查面形成定位清楚的审查单。数值足够时真实重算 Welch/Student 检验、效应
+  量与 CI、Levene/JB、OLS/BP/RESET/VIF、Pearson、BH/BY/Holm/Bonferroni 与正态近似功效；
+  数据不足仅记 not_computable / reporting_gap，绝不等同方法错误。仍保留 method_stats /
+  results_discussion / reproduce 历史高分规则。Use for 研究方法、统计报告、伪重复、
+  多重比较、功效、p 值或模型诊断审查；不负责检索综述、翻译、代写结论或投稿决定。
 ---
 
 # method-stats-audit（研究方法与统计审查）
@@ -23,11 +20,145 @@ description: >
 - 比较复现结果不设容差，"接近"与"偏离"无法区分；
 - 超出容差的指标不说明差距是数值噪声还是方法学问题。
 
-每一条都可以对结构化读取做机械判定，所以每一条在这里都是规则。引擎不判断科学做得
-好不好——它审计方法与统计报告是否**声明了、分类了、可核对了**，并且按构造区分
-"方法缺陷"与"报告不全"。
+旧版把可由结构化读取判定的检查做成规则；本次新增的 v2 不把“字段填齐”冒充科学质量。
+它先完成十四面证据审查，再对数字/原始数据做实际计算，并按构造区分“方法缺陷”、
+“报告不全”、“数值不一致”、“诊断信号”和“审查自身不可判定”。
 
-## 六步运行时入口（Harbor）
+## 主工作流：十四面审查与真实统计重算（v2，正式案例优先）
+
+### 第 0–2 步：来源、适用性与先交付
+
+1. 读取 `/input/case.json`、`task.md`、实际稿件、统计表、补充材料与数据；保存 `case_id`、
+   `output_contract`、稿件/数据/代码版本。不得按领域标签补研究设计或数字。
+2. 先按 task 实际指定的方法学材料定位方法、结果、表格。`statsrun.py` 可直接读
+   TXT/MD/TEX；PDF 在运行环境内惰性尝试 PyMuPDF → pypdf → pdftotext。无文本层的扫描件
+   使用环境 OCR 后再审；仍不可读时把相关面列 not_checked，不制造清晰判断。
+3. 先把当前发现与不可计算项写到 `/app/work`。每个实质发现均带 `source_quote`（必须真实
+   出现在原稿）或 `source_locator`（具体节/页/表/行）；只有报告缺口可以仅给查过的范围。
+
+### 第 3 步：真正走完十四面，不用统一模板替代判断
+
+| dimension | 审查任务与不要误报之处 |
+|-|-|
+| design_question_match | 设计能否回答因果/诊断/预测/描述问题；观察性设计不是自动错误 |
+| independent_units | 分配/实验/观察/分析单位是否相同，重复测量与聚类是否被模型承认 |
+| randomization_blinding | 序列、隐藏、实施、开放/盲法与主要终点；开放标签是合法明确报告 |
+| sample_size_power | n 的独立单位、效应来源、α/把握度/失访；功效必须使用同一模型口径 |
+| missing_data | 缺失数量、位置、机制假设和处理；“未报告”不证明处理错误 |
+| outliers | 检出、保留/剔除依据、是否预设；合格预设处理不报警 |
+| distributions_variance | 分布与方差假设的图形/检验和稳健替代；非显著不等于“证明假设真” |
+| model_choice | 结局类型、链接函数、数据结构、函数形式、异方差/共线性匹配 |
+| multiplicity | 组族、方法、调整 p、探索/确证界限；探索性多终点不可硬套预设校正确证 |
+| effect_size_ci | 效应大小、尺度、CI、自由度、精度；显著性不是效应大小 |
+| p_value_interpretation | p 是 H0/模型下尾概率，不是 H0 后验概率；非显著不等于等效 |
+| correlation_causation | 线性相关/显著性不提供因果方向；有时间/设计/识别证据才可谈因果 |
+| sensitivity_robustness | 缺失、异常、模型、测量、未测混杂等结论敏感性及不一致解释 |
+| reproducibility | 数据/代码/版本/命令/环境/种子/容差与实算差值；无记录不虚构状态 |
+
+给已检查但不适用的面写 `dimension_coverage[dimension] = {status:"not_applicable",
+rationale:"具体设计与原稿依据"}`；无 rationale 的标记不算完成。`review_complete:true`
+只有在十四面确有输入/适用性决定、无 finding 且全部数值可算时才可能 clean，不能
+单独用以产生“全部通过”。缺材料的面保留 `not_assessable_from_supplied_materials`。
+
+### 第 4 步：录入可复核字段并真实计算
+
+**摘要统计量检验。** `statistical_checks[]` 支持：
+
+```json
+{
+  "type": "welch_t",                         // 或 independent_t / student_t
+  "name": "Results Table 1 primary contrast",
+  "source_locator": "Results Table 1",
+  "source_quote": "原稿真实句子",
+  "mean1": 5.2, "sd1": 1.2, "n1": 30,
+  "mean2": 4.8, "sd2": 1.8, "n2": 35,
+  "equal_var": false, "alternative": "two-sided", "confidence": 0.95,
+  "reported_p": 0.29033248197735895,          // 可省略；有则比对
+  "reported_statistic": 1.0668698993381636,
+  "reported_df": 59.61035784930767,
+  "reported_ci": [-0.3500696314290168, 1.1500696314290175],
+  "reported_effect_size": 0.25758631737822185, "effect_type": "cohens_d"
+}
+```
+
+必须给 `ddof=1` 的样本 SD。Welch 使用 \(SE=\sqrt{s_1^2/n_1+s_2^2/n_2}\) 与
+Satterthwaite df；Student 使用合并方差；输出真实 t、df、两侧/单侧 p、均值差 CI、
+Cohen d 与 Hedges g。`reported_p_operator` 可为 `< <= = >= >`，容差可声明；确实正确的
+报告值不误报。p/CI 决策一致性只在两侧检验且 `confidence = 1 - alpha` 时比较，90% CI
+配 α=0.05 不会被错判冲突。
+
+**功效。** 用 `power_analyses[]` 或 type=power：
+
+```json
+{"name":"sample-size planning", "effect_size":0.5, "power":0.8,
+ "alpha":0.05, "ratio":1.0, "alternative":"two-sided", "solve":"nobs1"}
+```
+
+`solve` 可选 power/effect_size/nobs1/ratio，`ratio=n2/n1`；nobs1 返回连续值、向上取整
+和总 N。采用两组独立正态近似（不是 noncentral-t 精确功效）：上例实得每组
+62.790884、向上各 63、总 N=126。`reported_power` 只在注明正态口径时比较，缺参只生成
+not_computable。若论文说精确 t 功效，应借助环境 statsmodels `TTestIndPower.solve_power`
+复核，不把本近似差值直接判为论文错误。
+
+**多重比较。** `comparison_families[]` 含 `{name,method:bonferroni|holm|bh|by,
+confirmatory:bool,comparisons:[{name,p,reported_adjusted_p}]}`。引擎按原 p 的真实值
+计算并恢复输入顺序，支持 Bonferroni/Holm/BH/BY；确证组族未声明校正时是报告缺口；
+未声明方法时默认 BH 仅标 hypothetical，绝不归属于作者。BY 记录一般依赖保守解释。
+
+**原始数据诊断。** `diagnostics[]` 支持：
+
+| type | 输入与真实输出 |
+|-|-|
+| levene | `groups:[[...],[...]]` 或 raw_data 的 group_column/value_column；center 为 median/mean/trimmed，以绝对偏差做单因素 ANOVA，输出 F、df、p |
+| normality | `values` 或 column；计算 Jarque–Bera、偏度、超额峰度、chi2(df=2) p；不冒充 Shapiro |
+| regression | `y`、`x`（可配 y_column/x_columns）；纯 Python OLS 系数/R²/RMSE，Durbin–Watson、BP、fitted-power RESET F、逐列 VIF |
+| correlation | 成对 x/y 或 x_column/y_column；Pearson r、t(df=n−2) p、Fisher-z CI |
+
+raw data 可直接放 `raw_data:[{column:value,...}]`；CSV 从 case 的 `data_path` 或用
+`--data /input/data.csv` 提供。BP 使用平方残差对给定设计矩阵的辅助回归并同时给 LM 与
+F 口径；RESET 加 fitted value 的二次/三次项并做 F 检验，拒绝不告知唯一正确模型；
+VIF = 1/(1−辅助回归 R²)，只作逐预测变量信号，阈值不是“模型无效证明”。只有附加
+`reported_*` 或调用方显式声明 alpha 阈值时，才产生数值不符/诊断 finding；不可拟合、
+秩亏或缺列只写 unevaluated 原因。
+
+**其他实算与解释：**
+- `independence` 记录分配/分析单位、n_observations、n_independent_units、模型和是否明确
+  处理聚类；实算 observations_per_independent_unit。独立单位少于观测且按行独立是高严重度。
+- `missing_data` 记录 expected_n/observed_n/missing_count，实算缺失数与比例，再核账目、
+  机制假设和处理；`outliers` 查预设、剔除与敏感性；`sensitivity_analyses` 记录真实结果。
+- `model` + `outcome_type` 检查 linear/continuous、logistic/binary、Poisson/count、
+  Cox/time_to_event 等；`conclusion` + `design` 门控因果过度。
+- `p_value_statements[]` 含 p/alpha/effect_size/claim，区分原假设后验概率、非显著等效、
+  显著即重大、用一个显著另一个不显著代替直接交互检验。
+- `reproducibility.reported_values[]` 逐值给 reported/recomputed/tolerance，实算差值；
+  `review_findings[]` 保留人工实质判断，但必须有源引/定位和有界 defect_class，伪引被拒。
+- `legacy_sections` 默认 auto（忠实字段齐备时跑旧 method_stats / results_discussion /
+  reproduce）；也可只挑选旧 pass，旧 finding 保留原 rule、严重度、reporting_gap 与定位。
+
+### 第 5 步：主入口与退出码
+
+```bash
+python scripts/statsrun.py --case /input/case.json --out /app/output
+python scripts/statsrun.py --case /input/case.json --manuscript /input/paper.pdf --data /input/data.csv --out /app/output
+# 标注为示例的最小等价输入：
+python scripts/statsrun.py --spec examples/spec-stats.json --out out_stats
+```
+
+0=clean；3=review（报告缺口、诊断信号、不可计算或面未查完）；4=blocked（高严重度
+矛盾或证据伪造）；5=undetermined（无可用稿件也无可审结构输入）。运行重复同一路径
+覆盖同一 result.json，不累积 findings；同输入字节级确定。
+
+### 第 6 步：result.json 与证据复核
+
+回原文复核每条 finding，修正错误 quote/抽取后重跑。最终自动保留 case_id 与
+output_contract 全键（额外非输入值原样直通、不可推导 null + limits），并交付：
+`audit_report[]`、`method_dimensions[14]`、`statistical_recalculations[]`、
+`evidence_and_boundaries{manuscript_quotes,field_evidence,pending_review,not_checked,
+not_computable}`、`result_status`、`overall_assessment`、两套 severity_counts、
+checked、sources、limits 和 review_receipt。高严重度数值矛盾与报告缺口不混；
+overall grade 不是 accept/reject，publication_decision 固定 null。
+
+## 六步兼容入口（Harbor / Legacy，保留原高分路径）
 
 运行时原始输入固定为 `/input/case.json` 与 `task.md`；中间产物写 `/app/work`，最终
 结果写 `/app/output`。依序执行：
@@ -133,6 +264,54 @@ model_type_mismatch、non_significant_claimed_as_effect 等）与报告不全（
 finding 带 reporting_gap: true）。判不了的事项标待复核，不编造判定，不悄悄丢条目。
 
 ## 规则库
+
+### statsrun v2 —— 实算、诊断、解释与证据（完整规则索引，40 条）
+
+| rule | severity / 类型 | 真实触发条件 |
+|-|-|-|
+| `msv.design_question_mismatch` | high / 方法缺陷 | 明确研究问题类型与设计无法匹配 |
+| `msv.pseudoreplication_independence_conflict` | high / 方法缺陷 | 分配/实验与分析单位不同且未处理依赖 |
+| `msv.pseudoreplication_count_confirmed` | high / 方法缺陷 | 实算观测/独立单位 >1 且按独立行分析 |
+| `msv.independent_unit_count_impossible` | high / 数值矛盾 | 独立单位数超过总观测数 |
+| `msv.model_outcome_mismatch` | high / 方法缺陷 | 声明模型与结局类型不兼容 |
+| `msv.reported_p_recompute_mismatch` | high / 数值矛盾 | 重算 p 与报告值/不等式在容差外不符 |
+| `msv.reported_statistic_recompute_mismatch` | high / 数值矛盾 | 实算检验统计量与报告值不符 |
+| `msv.reported_df_recompute_mismatch` | high / 数值矛盾 | 实算自由度与报告值不符 |
+| `msv.reported_ci_recompute_mismatch` | high / 数值矛盾 | 实算 CI 与报告值不符 |
+| `msv.reported_effect_recompute_mismatch` | high / 数值矛盾 | 实算 Cohen d/Hedges g 与报告效应不符 |
+| `msv.p_ci_decision_conflict` | high / 数值矛盾 | 同一 α/置信水平/原值下 p 与 CI 决策冲突 |
+| `msv.power_recompute_mismatch` | high / 数值矛盾 | 同一正态口径的功效与报告值不符 |
+| `msv.adjusted_p_recompute_mismatch` | high / 数值矛盾 | 重算 Bonferroni/Holm/BH/BY 与调整 p 不符 |
+| `msv.regression_coefficient_recompute_mismatch` | high / 数值矛盾 | OLS 按列顺序重算的系数与报告不符 |
+| `msv.diagnostic_p_recompute_mismatch` | high / 数值矛盾 | BP/RESET p 与同输入诊断重算不符 |
+| `msv.missing_count_inconsistent` | high / 数值矛盾 | 缺失数与 expected−observed 不一致 |
+| `msv.data_driven_outlier_exclusion` | high / 方法缺陷 | 非预设异常剔除且无敏感性分析 |
+| `msv.correlation_causal_overreach` | high / 解释错误 | 观察/相关设计配明确因果结论 |
+| `msv.p_probability_of_null_misread` | high / 解释错误 | p 被解释为原假设为真的后验概率 |
+| `msv.nonsignificant_as_no_effect` | high / 解释错误 | p≥alpha 被当作无效/等效证明 |
+| `msv.significance_difference_without_direct_test` | high / 解释错误 | 用显著/不显著之差代替效应差的直接检验 |
+| `msv.significance_equated_with_importance` | medium / 解释错误 | 只凭显著称重大/临床重要而无效应量 |
+| `msv.effect_size_missing_for_claim` | medium / 报告缺口 | 显著性声称未含效应估计 |
+| `msv.multiplicity_unaddressed` | medium / 报告缺口 | 多终点确证族无多重性方法 |
+| `msv.missing_handling_missing` | medium / 报告缺口 | 有缺失但无处理说明，不推断方法错误 |
+| `msv.missing_assumption_unreported` | medium / 报告缺口 | 命名缺失处理但无机制/假设依据 |
+| `msv.outlier_handling_missing` | medium / 报告缺口 | 检出异常但无处理说明 |
+| `msv.sensitivity_analysis_missing` | medium / 报告缺口 | 假设相关风险存在但无稳健性报告 |
+| `msv.reanalysis_fields_missing` | medium / 报告缺口 | 重跑缺数据/代码版本、命令或种子 |
+| `msv.reanalysis_value_mismatch` | high / 数值矛盾 | 已声明初值和复算值之差超过容差 |
+| `msv.equal_variance_assumption_signal` | medium / 诊断 | Levene 拒绝且模型声明依赖等方差 |
+| `msv.residual_normality_signal` | medium / 诊断 | JB 拒绝且模型声明依赖正态矩假设 |
+| `msv.model_specification_signal` | medium / 诊断 | RESET 拒绝，不据此指定唯一模型 |
+| `msv.heteroskedasticity_signal` | medium / 诊断 | BP 辅助回归显著，建议稳健方差/敏感性 |
+| `msv.collinearity_signal` | medium / 诊断 | 某预测变量 VIF 超调用方声明启发阈值 |
+| `msv.reviewer_substantiated_issue` | assessment 给定 | 有来源证据的实际方法学发现 |
+| `msv.evidence_not_in_source` | high / 审查错误 | 输入 source_quote 不在实际原稿中 |
+| `msv.reviewer_issue_unverified` | high / 审查错误 | 实质发现无来源且无报告缺口边界 |
+| `msv.legacy_audit_failed` | high / 审查错误 | 请求的旧 pass 执行失败，不静默跳过 |
+| `msv.input_not_readable` | undetermined | 既无可读原稿也无可审的结构化统计输入 |
+
+报告缺口集中在 medium；数值冲突与可证实方法/解释错误的严重度单独输出，不从漏洞
+数量推断总体质量。所有 non-computable 仅位于 evidence_and_boundaries，不列方法 finding。
 
 ### method_stats —— 研究设计·变量·统计方法·样本量（完整规则索引，19 条）
 
@@ -275,15 +454,15 @@ python scripts/secrun.py --spec examples/spec-contract.json --out out_example
 三个 contract 键引擎推导不出，置 null 并在 limits 说明——第 6 步由你把 findings 组装
 填充（完整形状见 `examples/result-example.json`，标注为示例，不冒充正式案例结果）。
 
-## Limits
+## Legacy Limits（旧 secrun 的边界；statsrun 已有独立重算能力）
 
 - **引擎审计 spec，不直接读 PDF。** 从稿件抽取设计、变量、样本量与结果文本是调用方
   的工作；抽不到的留在 spec 外，由报告缺口规则呈现为发现——不是被悄悄跳过。
 - **"报告不全"与"方法缺陷"按构造分开。** 声明缺失类 finding 带 reporting_gap: true，
   message 只断言"未声明"；只有矛盾类（模型-结局类型不匹配、安装版本与声明版本冲突、
   不显著被描述成效应）才判方法缺陷。引擎从不宣称"做法错了"除非声明本身矛盾。
-- **模型-结局匹配按声明值判定。** 引擎不重跑分析、不验证统计结论的正确性——它核对
-  声明的模型能否承载声明的结局类型。
+- **模型-结局匹配按声明值判定。** 旧 `msa` 引擎不重跑分析，它核对声明的模型能否承载
+  声明的结局类型；新 `statsrun` 在数值/原始数据齐备时另做真实重算，并把两种证据分层。
 - **对照/随机化/盲法检查只对比较型设计门控。** single_arm 等设计合法地没有对照组，
   不触发 control_missing。
 - **容差判断只在声明了 within_tolerance 时出现。** 引擎要求判定存在，不替你计算。
@@ -319,23 +498,29 @@ python scripts/secrun.py --spec examples/spec-contract.json --out out_example
   缺陷分级恰当率（方法缺陷与报告不全是否分开、严重度与性质是否相称）、报告缺口检出
   数（样本量依据、CI、脱落处理等声明的缺口抓到几条）、五检查面覆盖数。平台白板是对
   照基准，不是参赛者答案。
-- **增益证据形式**：`scripts/bench_method.py` 27 场景 + `scripts/bench_reproduce.py`
-  25 场景 + `scripts/bench_sections.py` 54 场景——每场景植入一个缺陷或钉住一个误报
-  守卫，clean 基线必须零发现；确定性引擎重跑同结果，增益可被第三方复跑验证。
+- **增益证据形式**：`scripts/bench_statsrun.py` 48 项检查（真实数值锚点、合格 RCT/
+  观察性与聚类模型交叉验证、已知统计错误、不可计算降级）+ `scripts/bench_method.py`
+  27 场景 + `scripts/bench_reproduce.py` 25 场景 + `scripts/bench_sections.py` 54 场景。
+  每个实质缺陷有对应无误报守卫，两个引擎 clean baseline 都必须零发现且可确定复跑。
 
 ## 验证
 
 ```bash
-python scripts/bench_method.py     # 27 scenarios: 五个 facets 每规则一场景加误报守卫
-python scripts/bench_reproduce.py  # 25 scenarios: 复现链每规则一场景加误报守卫
-python scripts/bench_sections.py   # 54 scenarios: 跨 section 回归加误报守卫
+python scripts/bench_statsrun.py   # 48 checks: 十四面主流程、数学锚点、已知错误交叉验证
+python scripts/bench_method.py     # 27 scenarios: 旧五 facets 每规则与误报守卫
+python scripts/bench_reproduce.py  # 25 scenarios: 旧复现链每规则与误报守卫
+python scripts/bench_sections.py   # 54 scenarios: 旧跨 section 回归与误报守卫
 ```
 
-本机全部通过；三个 bench 的 clean 基线必须零发现。
+本机全部通过；四个 bench 的 clean baseline 必须零发现。验证是作者维护工具，不是正式
+案例编号工作流中的强制步骤；正式入口直接读实际材料并交付 result.json。
 
 ## Requirements
 
-Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖，无安装步骤。
+Python 3.9+（3.14 实测）。统计公式、分布尾概率、OLS 和 CSV 均由标准库实现，
+NumPy/SciPy/statsmodels 不是冷导入依赖；正式环境若提供 statsmodels 可另用精确功效复核。
+TXT/CSV 无额外依赖；直接读 PDF 时惰性使用环境已有的 PyMuPDF、pypdf 或 pdftotext，
+都没有文字层则诚实记录不可读，不伪造原稿或分析结果。
 
 ## 创新增益
 
@@ -363,6 +548,32 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖，无安�
    *边界*：守卫是声明级启发，边界情形以 Limits 口径人工复核。
    *证据形式*：bench_method 中 7 个 fp_ 前缀场景全部零发现。
 
+## 方法学参考与实际落地
+
+以下不是附录链接装饰，而是本包接口和计算规则的来源；为避免复制第三方实现，数值由
+`statscore.py` 的标准库公式独立完成，并用 bench 中的数学锚点验证。
+
+1. **SciPy（官方 GitHub）**：<https://github.com/scipy/scipy/blob/main/scipy/stats/_stats_py.py>。
+   采用 `ttest_ind_from_stats` 的 Student/Welch SE 与 Welch–Satterthwaite df 定义、
+   Levene 的 center=median/mean/trimmed 绝对偏差 ANOVA 机制、Pearson 线性相关限制。
+   官方接口文档 <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind_from_stats.html>
+   与 <https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.levene.html>。
+   本项目已实际计算 t/df/p/CI/效应量和 Levene F；并非仅写链接。
+2. **statsmodels（官方 GitHub）**：诊断机制见
+   <https://github.com/statsmodels/statsmodels/blob/main/statsmodels/stats/diagnostic.py>，
+   功效接口见 <https://github.com/statsmodels/statsmodels/blob/main/statsmodels/stats/power.py>。
+   按 Breusch–Pagan 残差平方辅助回归（LM/F）、Ramsey fitted-power RESET F、VIF 的
+   1/(1−R_aux²) 与 `TTestIndPower.solve_power` 参数语义（effect_size/nobs1/ratio/alpha/
+   alternative）落地；官方约束与非证明性解释见
+   <https://www.statsmodels.org/stable/generated/statsmodels.stats.diagnostic.linear_reset.html>、
+   <https://www.statsmodels.org/stable/generated/statsmodels.stats.diagnostic.het_breuschpagan.html>。
+   本包的功效函数明确只到正态近似，不冒充精确 noncentral-t。
+3. **SAMPL / CONSORT**：<https://www.equator-network.org/reporting-guidelines/sampl/> 与
+   <https://www.equator-network.org/reporting-guidelines/consort/>。把研究设计、随机/盲法、
+   样本量、参与者流/独立单位、统计方法、效应量/CI、精确 p、缺失/异常、敏感性和复现作为
+   **报告完整性清单**，并显式保留这些指南“不是设计或质量评价证明”的边界；`msv.*`
+   方法错误只能在独立正证据出现时才触发。
+
 ## 生态贡献
 
 - **使用说明**：本文件含完整调用步骤（六步运行时入口与 Workflow）、输入输出解释
@@ -370,14 +581,14 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖，无安�
   限制（Limits）、失败处理（Failure handling 与异常处置表）和自查方法（验证一节）。
 - **依赖与配置**：Python 3.9+ 纯标准库、无第三方依赖、无安装步骤；比较型设计集合与
   模型-结局映射在引擎常量中声明，spec 字段全部可选、留空即报缺口。
-- **示例（标注为示例）**：examples/spec.json（reproduce 路由最小输入）、
-  examples/spec-contract.json（method_stats 路由 contract 化输入，实跑 exit 4 五条
-  发现）、result-example.json 为标注为示例的示意输出——不冒充正式案例结果。
-- **检查清单可复用**：64 条规则（method_stats 19、results_discussion 19、reproduce
-  25、audit 1）每条带 id、severity 与"证明什么"，可直接当作方法学审稿 checklist
-  人工使用。
-- **bench 回归门**：三个 bench 共 106 场景，独立复跑，改动引擎后必须全过——是他人
-  验证本 Skill 行为的最短路径。
+- **示例（标注为示例）**：examples/spec-stats.json 是十四面主接口与正确数值的本地输入；
+  examples/spec.json（旧 reproduce 路由）、examples/spec-contract.json（旧 method_stats
+  contract 输入，exit 4 五条发现）、result-example.json 均为示意，不冒充正式案例答案。
+- **检查清单可复用**：十四面 checklist + v2 40 条规则 + 历史 64 条规则
+  （method_stats 19、results_discussion 19、reproduce 25、audit 1），每条带 id、
+  severity 与证明/非证明边界，可直接人工复用。
+- **bench 回归门**：四个 bench 共 154 项检查/场景（48 + 27 + 25 + 54），独立复跑，
+  改动引擎后必须全过——是他人验证本 Skill 行为的最短路径。
 - **适用范围与不适用**：研究设计、变量定义、统计方法、样本量与结果报告审查；不负责
   文献检索与综述、全文翻译、语言润色、代写审稿结论或投稿决策（路由表末行明确拒识）。
 - **失败处理**：拒绝运行路径（exit 5 加 undetermined result.json）与 12 行异常处置表

@@ -107,6 +107,35 @@ An unrunnable case is refused with exit 5 and a written result file, never a
 traceback: missing or unreadable spec (clean.spec_unreadable), non-object spec,
 rows that are not a list, zero record rows (clean.no_rows), no rows and no table
 path (clean.no_table), and a table file that is missing, unreadable or not
-decodable text (clean.table_unreadable). Refusal results carry no contract echo:
-echoing an output contract into a refused run would dress the refusal up as a
-completed case.
+decodable text (clean.table_unreadable), unreadable case (clean.case_unreadable),
+or unsafe malformed declarations (clean.processing_error). For a readable case,
+a refusal still echoes case_id and all output_contract fields: derived values stay
+null with limits, `status=undetermined`, and a structured refusal explains why.
+It never claims success.
+
+## Typed schema validation (v2)
+
+`analysis_table` and `analysis.csv` contain logical values rather than formatted
+measurement strings. Scalars are numeric in their target units; range and ± cells
+are objects with converted endpoints/error; null means missing, unparsed or a
+refused conversion. `cleaned_table` / `cleaned.csv` intentionally retain the
+original/display representation for before/after review.
+
+The `data_dictionary` follows the Frictionless Table Schema processing order:
+missing markers, then logical types, then constraints. `schema_validation.errors`
+uses row, field, code and message entries for required, unique, enum, pattern and
+numeric bounds. Invalid enums/patterns are not auto-repaired. Alias collisions
+produce field-alias-conflict rather than overwriting one of two supplied values.
+
+R12 is optional (`require_explicit_unit:true`): a bare number in a target-unit
+column becomes a named unit refusal instead of silently acquiring that unit.
+The corresponding `assume_unitless_values_in_target_unit` flag is only for a
+source schema that explicitly proves the convention.
+
+Duplicates compare `context_columns` and `source_column` as well as key/value
+columns. Repeated values from different papers or experimental conditions are
+not exact records to delete; every recommendation has `merged:false`.
+
+The effective rerun fingerprint includes rows and rules. Identical input and
+rules produce a byte-identical overwrite; old already_cleaned blocking was
+removed because it also blocked corrected schemas and made repetition brittle.

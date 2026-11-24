@@ -1,0 +1,63 @@
+[
+  {
+    "id": "zh-grain-01",
+    "source": "Synthetic question-retrieval fixture, not a published article",
+    "title": "固态电解质晶界锂离子输运研究",
+    "abstract": "合成回归文本：grain-boundary lithium transport influences ionic conductivity；采用 impedance spectroscopy（阻抗谱）测量。",
+    "authors": ["合成测试作者甲"],
+    "year": 2024,
+    "language": "zh",
+    "stance": "grain-boundary transport is dominant in this synthetic fixture"
+  },
+  {
+    "id": "en-interface-02",
+    "source": "Synthetic question-retrieval fixture, not a published article",
+    "title": "Solid electrolyte interfacial resistance",
+    "abstract": "Explicit synthetic text: a solid-state electrolyte interface was measured by impedance spectroscopy; interfacial resistance is reported as a fixture assertion.",
+    "authors": ["Synthetic Author B"],
+    "year": 2023,
+    "language": "en",
+    "stance": "interface resistance matters in this synthetic fixture"
+  },
+  {
+    "id": "zh-liquid-03",
+    "source": "Synthetic off-scope fixture, not a published article",
+    "title": "液态电解质分子动力学模拟",
+    "abstract": "合成离题记录：molecular dynamics simulation of a liquid electrolyte，不是固态电解质证据。",
+    "authors": ["合成测试作者丙"],
+    "year": 2024,
+    "language": "zh",
+    "stance": "off-scope"
+  },
+  {
+    "id": "zh-dendrite-04",
+    "source": "Synthetic question-retrieval fixture, not a published article",
+    "title": "固态电解质晶界与枝晶穿透",
+    "abstract": "合成回归文本：grain boundary（晶界）与 dendrite penetration；operando microscopy。",
+    "authors": ["合成测试作者丁"],
+    "year": 2024,
+    "language": "zh",
+    "conflicting_opinion": true,
+    "stance": "grain-boundary transport is negligible in this deliberately conflicting synthetic fixture"
+  },
+  {
+    "id": "en-polymer-05",
+    "source": "Synthetic off-scope fixture, not a published article",
+    "title": "Polymer electrolyte molecular dynamics simulation",
+    "abstract": "Explicit synthetic off-scope text: molecular dynamics simulation of a polymer electrolyte.",
+    "authors": ["Synthetic Author E"],
+    "year": 2022,
+    "language": "en",
+    "stance": "off-scope"
+  },
+  {
+    "id": "zh-grain-01-reexport",
+    "source": "Synthetic repeated export, not a second study",
+    "title": "固态电解质晶界锂离子输运研究",
+    "abstract": "合成回归文本：grain-boundary lithium transport influences ionic conductivity；采用 impedance spectroscopy（阻抗谱）测量。",
+    "authors": ["合成测试作者甲"],
+    "year": 2024,
+    "language": "zh",
+    "stance": "grain-boundary transport is dominant in this synthetic fixture"
+  }
+]

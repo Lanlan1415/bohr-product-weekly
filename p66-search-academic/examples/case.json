@@ -1,0 +1,21 @@
+{
+  "case_id": "synthetic-orchestration-real-public-metadata-v2",
+  "section": "academic",
+  "research_question": "蛋白质结构预测中，Transformer 与注意力机制有哪些应用？",
+  "records_path": "records.json",
+  "top_k": 5,
+  "search_date": "2026-11-24",
+  "output_contract": [
+    "case_id",
+    {"field": "检索结果"},
+    {"name": "证据记录"},
+    {"key": "状态说明"},
+    "candidate_set",
+    "query_log",
+    "sources",
+    "uncertainty",
+    "change_records",
+    "unknown_review_field"
+  ],
+  "note": "Orchestration case is synthetic and local. Bibliographic values for AlphaFold were checked through Crossref; the arXiv DOI was identified as DataCite, not Crossref. This is not an organizer fixed case, not a live query, and not a complete literature set. Three export rows are intentional; the third repeats AlphaFold to test deduplication. Authors for AlphaFold are an explicit metadata excerpt, not the full author list."
+}

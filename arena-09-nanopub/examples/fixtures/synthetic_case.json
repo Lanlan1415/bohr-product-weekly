@@ -1,0 +1,15 @@
+{
+  "case_id": "SYNTHETIC-NANOPUB-DEMO",
+  "output_contract": {
+    "case_id": "echo",
+    "status": "computed",
+    "nanopub_file": "nanopubs.trig",
+    "assertion_count": "count",
+    "assertion_table_file": "table",
+    "evidence_map_file": "evidence map",
+    "rdf_validation": "graph integrity",
+    "sources": "source metadata",
+    "summary": "caller-provided field"
+  },
+  "summary": "synthetic fixture only; not an official case"
+}

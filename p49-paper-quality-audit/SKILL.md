@@ -1,15 +1,13 @@
 ---
 name: paper-quality-audit
 description: >
-  论文质量审查：把"这篇稿子哪里有问题"变成一组可定位、可核对、可交办的问题条目，
-  而不是一段评语。三道审查面覆盖期刊论文与学位论文：draft-and-citation pass（正文
-  论断与材料/文献逐条对照、摘要-正文-图表数值一致、声明齐备、术语统一、章节齐备且
-  顺序正确）、structure-logic pass（研究问题-论证链-结论闭环、诊断证据必须真实存在
-  于稿件原文、每条发现可定位可执行）、longdoc pass（学位论文章章衔接：大纲 vs 已写
-  章节、跨章术语与符号、章际矛盾、交叉引用、修改留痕）。每条发现带规则 id、严重度
-  与原文定位，确定性引擎保证同一稿子两次运行得到同一份清单。Use when a task asks
-  for 论文质量审查, 稿件质量审查, 结构与论证链审查, 学术规范审查, or a
-  pre-submission quality check of a manuscript.
+  论文质量审查：先对问题重要性、创新、设计、数据、分析、结果、论证、写作、引用、
+  复现、伦理合规十一维逐维形成有原文证据的评价，再按严重度汇总实质问题与总体分级；
+  绝不以低严重度模板问题代替审查。每条评价和 issue 带原句、定位、判断依据、缺陷类型
+  和可执行建议，审稿证据逐字回查，设计—问题错配、因果越界、数值冲突等可判定问题由
+  确定性引擎复核。仍保留 paper_draft / structure_logic / longdoc 三套历史高分规则。
+  Use when a task asks for 论文质量审查、稿件质量审查、pre-submission quality review、
+  可发表性证据审查；不要用于翻译、润色、查重、排版或直接替代期刊录用决定。
 ---
 
 # paper-quality-audit（论文质量审查）
@@ -25,7 +23,109 @@ description: >
 每一条都可以对稿件的结构化读取做机械判定，所以每一条在这里都是规则。引擎不评 prose
 好坏——它审计抽取出的结构化 spec，因此同一份稿子永远产出同一批发现、同一形状。
 
-## 六步运行时入口（Harbor）
+## 主工作流：十一维证据化审查（v2，正式案例优先）
+
+不能只看模板是否填完。内容正确性来自**真实通读与逐维判断**；脚本负责强制证据落地、
+数值重算、误报门控、稳定分级和契约完整性。`examples/spec-quality.json` 是明确标注的
+本地输入示例，不是组织方案例或预制答案。
+
+### 第 0–2 步：读原稿并先保存诚实的部分审查
+
+1. 读取 `/input/case.json`、`task.md` 和实际稿件/图表/附件，保留 `case_id`、
+   `output_contract`、稿件版本与来源路径。只允许从实际输入判断研究内容。
+2. PDF 优先使用环境提供的 PDF 文本工具；也可让 `qualityrun.py` 惰性调用
+   PyMuPDF → pypdf → pdftotext。扫描页没有文字层时必须进入 `limits` 与
+   `pending_review`，不能把 OCR 失败写成论文缺陷。
+3. 在 `/app/work` 先保存当前十一维审查单；缺页或读不到的维度标 `not_assessed`，
+   不为凑齐表格而编造评价。再逐段回查、补充实质发现。
+
+### 第 3 步：逐维形成 assessment，而不是套缺陷模板
+
+在 spec 中写 `manuscript_text`（或 `manuscript_path`）、`source_scope`、
+`manuscript_version` 和 `quality_assessments[]`。十一维必须逐一出现：
+
+| dimension | 需要真正判断什么 | 至少寻找的原稿证据 |
+|-|-|-|
+| problem_importance | 问题是否明确、重要、范围可回答 | 研究问题、意义、空白/需求原句 |
+| innovation | 新在何处，与最近工作相比是否真的不同 | 贡献声称 + 先行工作/基线对照 |
+| design | 设计能否回答问题，对照/单位/偏倚控制是否成立 | 设计、抽样、分组、主要终点 |
+| data | 来源、独立单位、选择/排除、数量账目是否一致 | 数据来源、样本流、版本、纳排 |
+| analysis | 指标/模型是否合适，假设、效应与不确定性是否可解释 | 模型、变量类型、假设、CI |
+| results | 主要结局是否完整，文/图/表数值是否一致 | 效应、精度、精确 p、图表定位 |
+| argumentation | 假设—证据—结论是否闭合，外推/因果是否越界 | 核心论断、支持、局限、结论 |
+| writing | 结构与术语是否服务论证（不是润色打分） | 章节、交叉引用、术语/序号 |
+| citations | 引用是否可解析且支持对应论断 | 论断原句与文献主张的对应证据 |
+| reproducibility | 独立读者能否重跑并比较结果 | 数据/代码版本、命令、环境、参数、容差 |
+| ethics_compliance | 伦理、知情同意、隐私、利益冲突、许可声明是否适用且充分 | 实际声明与适用性依据；不适用须说明理由 |
+
+每个 assessment 的形状：
+
+```json
+{
+  "dimension": "design",
+  "rating": "adequate | minor_concern | major_concern | not_applicable | not_assessable",
+  "rationale": "有界的实际判断，不是固定祝福或模板罪名",
+  "evidence": ["必须与 manuscript_text 逐字一致的原句（允许空白差异）"],
+  "concerns": [{
+    "finding": "具体实质问题",
+    "severity": "high | medium | low",
+    "evidence_quote": "触发该判断的原文；报告缺口可省略",
+    "basis": "为什么该证据支持这个判断；缺证据缺口须写清查过的范围",
+    "defect_class": "method_defect | numeric_inconsistency | reporting_gap | suggestion",
+    "suggestion": "可由作者执行且不编造事实的修复"
+  }]
+}
+```
+
+严重度锚点：`high` = 改变主要结论可信度/使关键分析无效/账目或因果矛盾；
+`medium` = 影响解释或复核的重要报告缺口；`low` = 不改变主要结论的局部改进。
+`method_defect` 需要正证据；仅“没有写”必须归为 `reporting_gap` 并有检索范围，绝不
+升级为“研究没做”。`scope=review_process` 表示审查自身未完成或证据伪造，不污染论文
+severity_counts。可声明某维 `not_applicable`，但需 rationale；无证据评级会触发
+`pqa.assessment_without_evidence`。
+
+### 第 4 步：构造可机械复核的字段，并运行旧规则（适用时）
+
+- `research_question_type` + `design`：仅在二者明确时检查设计—问题匹配；观察性研究不是
+  自动缺陷，但观察性设计 + 明确因果结论是实质问题。
+- `controls`、`recruited_n`、`analysed_n`：对照与样本账目；分析数大于入组数实际计算差值。
+- `reported_values[]`：`{name,value,comparator_value,tolerance,quote}`，引擎真实计算差值
+  并与声明容差比较；缺任意数值就写 `not_computable`，不编造。
+- `data_availability` / `code_availability` / `ethics_statement` / `competing_interests`：
+  原稿里已有声明就无需重复构造；只有 full_article 或明确适用时才触发缺口。
+- `legacy_sections: ["paper_draft", "structure_logic", "longdoc"]`：当选中的旧输入字段
+  已从原文忠实抽取时才运行。尤其是 `structure_logic.diagnosis[]` 是**旧审查输出结构**，
+  不应凭空白论文自动生成；不满足前置字段时不要硬跑留待新 assessment 判断。
+  旧 findings 原样保留 rule/severity/定位并映射到十一维，能力不回退。
+
+### 第 5 步：运行并逐条回原文核对
+
+```bash
+python scripts/qualityrun.py --case /input/case.json --out /app/output
+# 若稿件单独传入：
+python scripts/qualityrun.py --case /input/case.json --manuscript /input/manuscript.pdf --out /app/output
+# 本地等价输入：
+python scripts/qualityrun.py --spec examples/spec-quality.json --out out_quality
+```
+
+退出码 0=clean，3=review（次要问题或审查未完成），4=blocked（实质 high 或伪造审查
+证据），5=undetermined（输入不可运行）。只有成功完成内容审查且没有机械 finding 才可为
+clean；十一维 assessment 缺失会得到 `review_incomplete`，不是“论文只有 medium 缺陷”。
+
+### 第 6 步：复核并交付全字段 result.json
+
+1. 对每个 `pqa.review_evidence_not_in_source` 修正原句并重跑，不能保留伪造证据。
+2. 把发现从“泛泛建议”改成实际证据支持的结论；不删除合理 finding 以追求 clean。
+3. `result.json` 自动包含 `case_id`、`output_contract` 全键、`audit_report[]`、
+   `dimension_reviews[11]`、`overall_assessment`、`evidence_and_boundaries`、
+   `result_status`、`severity_counts`、`review_process_severity_counts`、
+   `recomputations[]`、`sources[]`、`limits[]`、`review_receipt`。调用方额外提供的
+   非输入型 contract 值原样直通；不能推导的键保留 null 并在 limits 中具名。
+4. `overall_assessment.grade` 仅取 `major_revision / minor_revision /
+   review_incomplete / no_major_defect_detected / not_assessable`；它由最高严重度的
+   **论文层面**问题决定，不是期刊 accept/reject，`publication_decision` 固定为 null。
+
+## 六步兼容入口（Harbor / Legacy，保留原高分路径）
 
 运行时原始输入固定为 `/input/case.json` 与 `task.md`；中间产物写 `/app/work`，最终
 结果写 `/app/output`。依序执行：
@@ -130,6 +230,30 @@ result.json 含 case_id、section、status、findings[]、severity_counts、chec
 造判定，不悄悄丢条目。
 
 ## 规则库
+
+### qualityrun v2 —— 十一维评价与证据 gate（完整规则索引，19 条）
+
+| rule | 默认 severity | 判定与边界 |
+|-|-|-|
+| `pqa.reviewer_substantiated_issue` | 由 assessment 给出并受锚点约束 | 经原文证据验证的实际逐维问题，不是模板 finding |
+| `pqa.novelty_without_contrast` | medium | 有创新声称但未定位先行工作/基线对照；报告缺口 |
+| `pqa.design_question_mismatch` | high | 明确声明的研究问题类型与设计不能回答彼此 |
+| `pqa.comparative_design_no_control` | high | 比较型实验设计无对照/比较组声明 |
+| `pqa.causal_conclusion_exceeds_design` | high | 非实验设计出现明确因果结论 |
+| `pqa.sample_accounting_impossible` | high | 实算 analysed_n − recruited_n > 0 |
+| `pqa.numeric_reporting_inconsistent` | high | 两个声明数值之差的绝对值实际超过容差 |
+| `pqa.full_article_sections_missing` | high | 明确 full_article 的必要章节缺失；先排查抽取完整性 |
+| `pqa.references_section_unresolved` | high | 有引用标记但 full article 未能解析参考文献节 |
+| `pqa.data_availability_missing` | medium | full article 无数据可用性声明（正文已有声明时不报） |
+| `pqa.code_availability_missing` | medium | 明确 computational study 无代码/伪代码声明 |
+| `pqa.ethics_statement_missing` | medium | 明确人/动物研究无伦理/知情声明，属于报告缺口 |
+| `pqa.competing_interests_missing` | medium | full article 无利益冲突声明 |
+| `pqa.dimension_not_assessed` | review_process | 十一维之一没有审查 assessment；不等于论文方法错误 |
+| `pqa.assessment_without_evidence` | review_process | 有维度评级但无原句，也无有界不可评说明 |
+| `pqa.review_evidence_not_in_source` | high / review_process | 审查所引原句经空白归一化后仍不在原稿，阻止提交 |
+| `pqa.concern_without_source` | high / review_process | 具体实质 concern 没有原句且无报告缺口边界 |
+| `pqa.legacy_audit_failed` | review_process | 已请求旧规则但该旧 pass 不能执行；不掩盖失败 |
+| `pqa.input_not_readable` | undetermined | 无原稿或原稿文字层不可读，十一维均未检查 |
 
 ### paper_draft —— 正文、引用、图、声明（完整规则索引，23 条）
 
@@ -329,22 +453,27 @@ python scripts/secrun.py --spec examples/spec-contract.json --out out_example
   证据可核验率（引用的原文是否真实存在）、误报数（学科惯例被判为缺陷的条数）、六检查
   项覆盖数（事实核验、引用支持、方法设计、统计报告、论证链、学术规范各自查没查）。
   平台白板是对照基准，不是参赛者答案。
-- **增益证据形式**：`scripts/bench_draft.py` 35 场景 + `scripts/bench_sections.py`
-  55 场景——每场景植入一个缺陷或钉住一个误报守卫，clean 基线必须零发现；确定性引擎
-  重跑同结果，增益可被第三方复跑验证。
+- **增益证据形式**：`scripts/bench_quality.py` 21 项检查（合格 RCT 与合格观察性设计
+  双向误报对照、伪造证据拒绝、十一维覆盖、真实差值重算）+ `scripts/bench_draft.py`
+  35 场景 + `scripts/bench_sections.py` 55 场景。每场景植入一个缺陷或钉住误报守卫，
+  两个引擎的 clean baseline 都必须零发现；确定性重跑同一结果，增益可第三方复跑。
 
 ## 验证
 
 ```bash
-python scripts/bench_draft.py     # 35 scenarios: 每规则一场景加误报守卫
-python scripts/bench_sections.py  # 55 scenarios: 跨 section 回归加误报守卫
+python scripts/bench_quality.py   # 21 checks: 十一维主工作流 + 合格设计交叉验证
+python scripts/bench_draft.py     # 35 scenarios: 旧 paper_draft 每规则与误报守卫
+python scripts/bench_sections.py  # 55 scenarios: 旧跨 section 回归与误报守卫
 ```
 
-本机全部通过；两个 bench 的 clean 基线必须零发现。
+本机全部通过；三套 bench 的 clean baseline 必须零发现。验证是作者维护工具，不是正式
+案例运行中的强制步骤；正式入口只做实际审查并交付 result.json。
 
 ## Requirements
 
-Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖，无安装步骤。
+Python 3.9+（3.14 实测），规则与数值比较使用标准库。TXT/MD/TEX 无额外依赖；直接读
+PDF 时惰性使用环境已有的 PyMuPDF、pypdf 或 pdftotext，三者都没有文字层则结构化拒绝，
+不伪造解析结果。旧规则路径不需要安装第三方包。
 
 ## 创新增益
 
@@ -380,10 +509,10 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖，无安�
 - **示例（标注为示例）**：examples/ 三个 route 的最小 spec 加 contract 化输入
   spec-contract.json；result-example.json 是标注为示例的示意输出——不冒充正式案例
   结果。
-- **检查清单可复用**：81 条规则（pd 23、struct 25、long 32、audit 1）每条带 id、
-  severity 与"证明什么"，可直接当作审稿 checklist 人工使用。
-- **bench 回归门**：两个 bench 共 90 场景，独立复跑（python scripts/bench_draft.py
-  等），改动引擎后必须全过——是他人验证本 Skill 行为的最短路径。
+- **检查清单可复用**：十一维评价结构 + v2 19 条规则 + 历史 81 条规则（pd 23、
+  struct 25、long 32、audit 1），每条带 id、severity 与判定边界，可直接人工复用。
+- **bench 回归门**：三个 bench 共 111 项检查/场景（21 + 35 + 55），独立复跑，
+  改动引擎后必须全过——是他人验证本 Skill 行为的最短路径。
 - **适用范围与不适用**：论文与学位论文的质量、引用、事实、结构、规范审查；不负责
   润色改写、翻译、查重、投稿排版（路由表末行明确拒识）。
 - **失败处理**：拒绝运行路径（exit 5 加 undetermined result.json）与 12 行异常处置

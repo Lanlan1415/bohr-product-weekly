@@ -30,8 +30,10 @@ _BULKY = {"output_contract", "spec", "rows", "columns", "table", "table_path",
           "synonyms", "source_column", "quality_report"}
 
 
-def load_rows(path: Path) -> list:
-    raw = Path(path).read_text(encoding="utf-8-sig")
+def load_rows(path: Path, encoding: str = "utf-8-sig") -> list:
+    """Decode only the explicitly selected encoding; never repair mojibake silently."""
+    encoding = encoding if isinstance(encoding, str) and encoding.strip() else "utf-8-sig"
+    raw = Path(path).read_bytes().decode(encoding, errors="strict")
     if Path(path).suffix.lower() == ".json":
         data = json.loads(raw)
         if isinstance(data, list):
@@ -46,19 +48,33 @@ def load_rows(path: Path) -> list:
     return list(csv.DictReader(io.StringIO(raw), delimiter=delim))
 
 
-def _refused(out_dir: Path, message: str, rule: str = "clean.spec_unreadable") -> dict:
-    """The undetermined refusal every unrunnable case gets: an exit code, not a crash.
+def _refused(out_dir: Path, message: str, rule: str = "clean.spec_unreadable",
+             source: dict | None = None) -> dict:
+    """Structured undetermined result, including every readable contract field.
 
-    Contract echo is deliberately NOT applied here: the case could not be run as
-    declared, so echoing a contract into a refused result would dress the refusal
-    up as a completed run.
+    A refusal never pretends to be a success; missing derived fields are null and
+    explicitly limited. Case values are echoed only when present and readable.
     """
-    result = {"schema_version": "cleandata/v1", "status": "undetermined",
-              "findings": [{"rule": rule, "severity": "high",
-                            "message": message}],
-              "limits": ["the case could not be run as declared"]}
+    source = source if isinstance(source, dict) else {}
+    result = {"schema_version": "cleandata/v2",
+              "case_id": source.get("case_id", "UNKNOWN"), "status": "undetermined",
+              "findings": [{"rule": rule, "severity": "high", "message": message}],
+              "limits": ["the case could not be run as declared"],
+              "refusal": {"code": rule, "message": message}}
+    contract = source.get("output_contract")
+    if isinstance(contract, dict):
+        for key in contract:
+            if key in result:
+                continue
+            if key in source and key not in _BULKY:
+                result[key] = source[key]
+            else:
+                result[key] = None
+                result["limits"].append("output_contract field '%s' was not derivable because the run was refused" % key)
+    elif contract is not None:
+        result["limits"].append("output_contract is not an object; field names were not guessed")
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
+    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n",
                                          encoding="utf-8")
     return result
 
@@ -115,78 +131,104 @@ def _merge_case(spec: dict, case_path) -> dict:
     return spec
 
 
+def _normalise_spec(spec):
+    """Accept either native columns or Frictionless-style data_dictionary.fields."""
+    if not spec.get("columns") and isinstance(spec.get("data_dictionary"), dict):
+        fields = spec["data_dictionary"].get("fields")
+        if isinstance(fields, list):
+            columns = []
+            for field in fields:
+                if not isinstance(field, dict) or not field.get("name"):
+                    continue
+                col = dict(field)
+                col["semantic"] = field.get("semantic") or field.get("type") or "numeric"
+                for key in (field.get("constraints") or {}):
+                    col[key] = field["constraints"][key]
+                columns.append(col)
+            spec["columns"] = columns
+    if spec.get("rows") is None and isinstance(spec.get("records"), list):
+        spec["rows"] = spec["records"]
+    return spec
+
+
 def build_and_audit(spec_path: Path, out_dir: Path, case_path=None) -> dict:
+    if spec_path is None and case_path is not None:
+        spec_path = Path(case_path)
+    out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    case = None
+    if case_path is not None:
+        try:
+            case = json.loads(Path(case_path).read_text(encoding="utf-8-sig"))
+            if not isinstance(case, dict):
+                return _refused(out_dir, "case.json is not a JSON object", rule="clean.case_unreadable")
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
+            return _refused(out_dir, "case.json could not be read: %s" % str(exc)[:200],
+                            rule="clean.case_unreadable")
     try:
         spec = json.loads(Path(spec_path).read_text(encoding="utf-8-sig"))
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
-        return _refused(out_dir, f"the spec file is not readable JSON: {exc}")
+        return _refused(out_dir, "the spec file is not readable JSON: %s" % exc, source=case)
     except OSError:
-        return _refused(out_dir, "the spec file could not be read (missing or inaccessible)")
+        return _refused(out_dir, "the spec file could not be read (missing or inaccessible)", source=case)
     if not isinstance(spec, dict):
-        return _refused(out_dir, "the spec file is not a JSON object")
+        return _refused(out_dir, "the spec file is not a JSON object", source=case)
     spec = _merge_case(spec, case_path)
-    out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    spec = _normalise_spec(spec)
 
     rows = spec.get("rows")
     if rows is None:
         table = spec.get("table") or spec.get("table_path")
         if not table:
             return _refused(out_dir, "the case supplies neither rows nor a table_path",
-                            rule="clean.no_table")
+                            rule="clean.no_table", source=spec)
         try:
             rows = load_rows(Path(table) if Path(table).is_absolute()
-                             else Path(spec_path).parent / table)
+                             else Path(spec_path).parent / table,
+                             encoding=spec.get("source_encoding") or "utf-8-sig")
         except OSError:
             return _refused(out_dir, "the table file could not be read: " + str(table),
-                            rule="clean.table_unreadable")
-        except UnicodeDecodeError as exc:
+                            rule="clean.table_unreadable", source=spec)
+        except (UnicodeDecodeError, LookupError) as exc:
+            detail = "byte %s" % exc.start if isinstance(exc, UnicodeDecodeError) else "unknown encoding"
             return _refused(out_dir,
-                            "the table file is not decodable text in the declared encoding "
-                            f"(byte {exc.start}): " + str(table),
-                            rule="clean.table_unreadable")
+                            "the table file is not decodable in the explicitly selected encoding "
+                            "(%s): %s" % (detail, table), rule="clean.table_unreadable", source=spec)
         except json.JSONDecodeError as exc:
             return _refused(out_dir, "the table file is not parseable JSON: " + str(exc),
-                            rule="clean.table_unreadable")
+                            rule="clean.table_unreadable", source=spec)
 
     if not isinstance(rows, list):
-        return _refused(out_dir, "spec.rows is not a list, so there is no table to clean")
+        return _refused(out_dir, "spec.rows is not a list, so there is no table to clean", source=spec)
     if not any(isinstance(r, dict) for r in rows):
         return _refused(out_dir,
-                        "the table has no record rows (empty list, or entries that are not "
-                        "JSON objects)", rule="clean.no_rows")
+                        "the table has no record rows (empty list, or entries that are not JSON objects)",
+                        rule="clean.no_rows", source=spec)
 
     spec["rows"] = rows
-    result = C.clean(rows, spec)
+    try:
+        result = C.clean(rows, spec)
+        import structured as S
+        result = S.enrich(result, rows, spec)
+    except (ValueError, TypeError, AttributeError, KeyError, OverflowError) as exc:
+        return _refused(out_dir, "normalisation could not be completed without guessing: %s" % str(exc)[:200],
+                        rule="clean.processing_error", source=spec)
+    result["schema_version"] = "cleandata/v2"
     result["limits"] = []
     if not spec.get("columns"):
-        result["limits"].append("no column schema declared; only duplicates were checked")
+        result["limits"].append("no column schema declared; only duplicates and identity were checked")
 
-    # already_cleaned: refuse re-cleaning the same input into the same output dir,
-    # so a second pass never stacks on top of the first (exit 4, not exit 0).
+    # The fingerprint covers both the raw rows and the effective rule declaration,
+    # so a corrected schema is a legitimate new run. Re-running identical input
+    # writes the same outputs again (true idempotence), not a second stacked edit.
     import hashlib as _hl
-    input_sha = _hl.sha256(json.dumps(rows, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+    rules_view = {k: v for k, v in spec.items() if k not in ("rows", "output_contract", "case_id")}
+    input_sha = _hl.sha256(json.dumps({"rows": rows, "rules": rules_view}, sort_keys=True,
+                                      ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
     result["original_sha256"] = input_sha
-    prior = out_dir / "result.json"
-    if prior.exists():
-        try:
-            prev = json.loads(prior.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            prev = {}
-        if prev.get("original_sha256") == input_sha:
-            result["status"] = "blocked"
-            result["findings"] = [{"rule": "clean.already_cleaned", "severity": "high",
-                                   "message": "this exact input was already cleaned into this "
-                                              "output directory; re-cleaning would stack a "
-                                              "second pass on top of the first",
-                                   "original_sha256": input_sha}]
-            result["severity_counts"] = {"high": 1}
-            (out_dir / "result-refused.json").write_text(
-                json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-            return result
+    result["rerun_policy"] = "same input + rules + output path is an idempotent overwrite, never a stacked conversion"
     _echo_contract(result, spec)
-    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
+    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n",
                                          encoding="utf-8")
-    # the cleaned table is the deliverable a reader can re-run statistics on
     if result.get("cleaned_table"):
         import csv
         cols = spec.get("columns") or []
@@ -197,6 +239,7 @@ def build_and_audit(spec_path: Path, out_dir: Path, case_path=None) -> dict:
             w = csv.DictWriter(fh, fieldnames=header, extrasaction="ignore")
             w.writeheader()
             w.writerows(result["cleaned_table"])
+    S.write_analysis_csv(result, out_dir / "analysis.csv")
     return result
 
 
@@ -204,13 +247,16 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="cleandata", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--spec", required=True)
+    ap.add_argument("--spec", default=None,
+                    help="native spec; when omitted, --case itself must contain rows/records or table_path")
     ap.add_argument("--out", required=True)
     ap.add_argument("--case", default=None,
                     help="runtime case file (/input/case.json) supplying case_id and "
                          "output_contract when the spec omits them")
     a = ap.parse_args(argv)
-    r = build_and_audit(Path(a.spec), Path(a.out), a.case)
+    if a.spec is None and a.case is None:
+        ap.error("supply --spec, or --case for a self-contained case")
+    r = build_and_audit(Path(a.spec) if a.spec is not None else None, Path(a.out), a.case)
     print(json.dumps({"status": r["status"],
                       "case_id": r.get("case_id"),
                       "findings": [f["rule"] for f in r["findings"]],

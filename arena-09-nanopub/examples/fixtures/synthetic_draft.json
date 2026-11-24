@@ -1,0 +1,60 @@
+{
+  "publication_info": {
+    "created": "2024-01-15",
+    "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "agent": "synthetic verification agent; ORCID unreported"
+  },
+  "source_metadata": {
+    "title": "Synthetic MoS2 fixture",
+    "authors": ["Synthetic Author"],
+    "year": 2024,
+    "version": "fixture-v1",
+    "identifier": "10.0000/syn.2024.001",
+    "material_file": "synthetic_source.txt"
+  },
+  "assertions": [
+    {
+      "id": "A1",
+      "statement": "MoS2 after 60 s plasma had an overpotential of 178 mV at 10 mA cm-2 in 0.5 M H2SO4.",
+      "subject": "MoS2-Plasma60s",
+      "predicate": "overpotentialAt10mAcm2",
+      "object": {"value": 178, "datatype": "integer"},
+      "qualifiers": [
+        {"predicate": "overpotentialUnit", "value": {"iri": "urn:nanopub:local:vocab:millivolt"}},
+        {"predicate": "electrolyte", "value": "0.5 M H2SO4"},
+        {"predicate": "currentDensity", "value": "10 mA cm-2"}
+      ],
+      "condition_scope": "0.5 M H2SO4 three-electrode system; synthetic example only",
+      "evidence": {
+        "quote": "MoS2 after 60 s plasma had an overpotential of 178 mV at 10 mA cm-2 in 0.5 M H2SO4.",
+        "locator": "synthetic_source.txt#paragraph=Synthetic Results#sentence=1",
+        "strength": "direct",
+        "form": "experimental"
+      },
+      "evidence_type": "direct",
+      "evidence_form": "experimental",
+      "confidence": {"level": "high", "basis": "unique verbatim quote in supplied synthetic source"}
+    },
+    {
+      "id": "A2",
+      "statement": "The synthetic stability measurement retained 92 percent of initial current after 10 h.",
+      "subject": "MoS2-Stability10h",
+      "predicate": "retainedInitialCurrentFractionPercent",
+      "object": {"value": 92, "datatype": "integer"},
+      "qualifiers": [
+        {"predicate": "durationHours", "value": 10},
+        {"predicate": "currentDensity", "value": "10 mA cm-2"}
+      ],
+      "condition_scope": "10 h at 10 mA cm-2; synthetic example only",
+      "evidence": {
+        "quote": "The stability measurement retained 92% of the initial current after 10 h at 10 mA cm-2.",
+        "locator": "synthetic_source.txt#paragraph=Synthetic Results#sentence=2",
+        "strength": "direct",
+        "form": "experimental"
+      },
+      "evidence_type": "direct",
+      "evidence_form": "experimental",
+      "confidence": {"level": "high", "basis": "unique verbatim quote in supplied synthetic source"}
+    }
+  ]
+}

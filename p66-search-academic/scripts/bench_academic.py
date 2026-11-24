@@ -4,7 +4,7 @@ Scenarios pin the academic-search behaviours on top of the shared file-search
 engine: a bare-string query ranks by distinct matched terms with index-order
 ties, an any-list expansion recalls the synonym phrasing while the scope term
 stays hard, a scope+topic probe keeps the off-domain record out, a duplicated
-export under the same id is skipped and named so the DOI probe counts one
+export under the same id is skipped and named so the source-id probe counts one
 record, evidence locators are verbatim slices, and the CLI ships a green
 example plus the exit-5 refusal contract.
 
@@ -26,23 +26,23 @@ CORPUS = [
     {"id": "a-001",
      "text": "id: a-001\n"
              "Attention-based transformers for protein structure prediction.\n"
-             "doi: doi-10-1038-s41592-021-0114-y\nyear: 2021\njournal: Nature Methods"},
+             "record-token: a-001\nyear: 2021\njournal: Synthetic compatibility fixture A"},
     {"id": "a-002",
      "text": "id: a-002\n"
              "Self-attention language models recover protein contact maps.\n"
-             "doi: doi-10-1126-science-abc1234\nyear: 2021"},
+             "record-token: a-002\nyear: 2021"},
     {"id": "a-003",
      "text": "id: a-003\n"
              "Deep learning for protein structure prediction: a survey.\n"
-             "doi: doi-10-1016-j-patcog-2022-109\nyear: 2022"},
+             "record-token: a-003\nyear: 2022"},
     {"id": "a-004",
      "text": "id: a-004\n"
              "Dietary protein intake and ageing: a cohort study.\n"
-             "doi: doi-10-1093-jn-nxac-0777\nyear: 2020"},
+             "record-token: a-004\nyear: 2020"},
     {"id": "a-001",
      "text": "id: a-001\n"
              "Attention-based transformers for protein structure prediction.\n"
-             "doi: doi-10-1038-s41592-021-0114-y\nyear: 2021\njournal: Nature Methods"},
+             "record-token: a-001\nyear: 2021\njournal: Synthetic compatibility fixture A"},
 ]
 
 EXPANSION = {"all": ["protein"], "any": ["transformer", "attention"]}
@@ -54,7 +54,7 @@ CLI = Path(__file__).resolve().parent / "search_cli.py"
 
 
 def _run_cli(out, query_file=None):
-    args = [sys.executable, str(CLI), "--corpus", str(EXAMPLES / "corpus.json"),
+    args = [sys.executable, "-B", "-I", "-X", "utf8", str(CLI), "--corpus", str(EXAMPLES / "corpus.json"),
             "--out", str(out)]
     args += ["--query-file", str(query_file or (EXAMPLES / "query.json"))]
     return subprocess.run(args, capture_output=True, text=True, timeout=120)
@@ -86,10 +86,10 @@ def scen_scope_guard(tmp, name):
 
 
 def scen_duplicate_export_named(tmp, name):
-    """The duplicated export is skipped and named; the DOI probe counts one record."""
+    """The duplicated export is skipped and named; the source-id probe counts one record."""
     f = None
     _, res = search.search({"corpus": CORPUS,
-                            "query": {"all": ["doi-10-1038-s41592-021-0114-y"]}})
+                            "query": {"all": ["a-001"]}})
     f = next((x for x in res.get("findings", []) if x["rule"] == "search.doc_skipped"), None)
     return res["ok"] and [h["doc_id"] for h in res["hits"]] == ["a-001"] \
         and f is not None and f["count"] == 1 \

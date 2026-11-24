@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p49-paper-quality-audit
+https://github.com/Lanlan1415/bohr-product-weekly
+p49-paper-quality-audit/

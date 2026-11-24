@@ -1,0 +1,125 @@
+{
+  "schema_version": "question-search-v2-hostile/v1",
+  "official_score": false,
+  "probes": [
+    {
+      "probe": "missing_case_exit5_no_trace",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "nonobject_case_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "empty_corpus_exit4_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "records_shape_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "no_subquestions_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "punctuation_question_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "empty_frozen_subquery_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "dependency_cycle_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "material_missing_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "pdf_not_pretended_text_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "time_boundary_type_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "language_boundary_type_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "clean_bom_exit0_zero_findings",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "zero_hits_review_not_blocked",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "refusal_not_empty_success",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_shapes_engine_wins",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "all_artifacts_two_dirs_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "same_directory_idempotent",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "cold_isolated_import",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "socket_audit_no_network",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "example_gap_not_padded_or_global",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "stdout_structured_json",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "artifact_hashes_exact",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 23,
+    "of": 23
+  }
+}

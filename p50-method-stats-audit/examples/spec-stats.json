@@ -1,0 +1,195 @@
+{
+  "case_id": "methods-local-fixture",
+  "manuscript_version": "methods-fixture-v1",
+  "source_scope": "full_methods_report",
+  "manuscript_text": "1 Introduction\nWe asked whether standardized feedback changed reaction time compared with sham feedback.\n2 Methods\nWe performed a randomized double-blind parallel trial in independent participants.\nThe statistician generated a block allocation sequence and concealed assignments.\nThe sham comparator and blinded outcome assessment were specified before recruitment.\nThe primary outcome was reaction time in milliseconds, a continuous measurement.\nWe recruited 64 participants and analysed all 64 without exclusions.\nSample size used Cohen d=0.5, alpha=0.05 and power=0.80 from the pilot study.\nThe primary analysis used linear regression with 95% confidence intervals.\nMultiplicity was controlled across the confirmatory family.\nThere were no missing outcomes and every observation was retained.\nNo outliers were detected by the prespecified residual rule.\nRobustness analyses used Welch estimation and complete-case sensitivity assumptions.\n3 Results\nThe mean reaction-time difference was 0.4 ms with a 95% confidence interval.\nThe effect estimate and exact p value are reported in Table 1.\nThe intervention improved mean reaction time in this randomized sample.\n4 Reproducibility\nThe data version is d64-v1 and analysis code version is commit abc123.\nThe frozen command was python analyse.py --seed 17; the recorded seed was 17.\nData and complete analysis outputs are archived for independent review.\nReferences\nDoe J (2020). Independent-unit design and reporting. Journal of Methods 2:3-9.\n",
+  "research_question_type": "causal_effect",
+  "design": "rct",
+  "controls": "sham parallel arm",
+  "randomisation": "concealed block allocation",
+  "blinding": "double blind",
+  "inferential": true,
+  "model": "linear_regression",
+  "outcome_type": "continuous",
+  "sample_size": "n=64 independent participants",
+  "sample_size_basis": "pilot d=0.5 alpha=0.05 power=0.80",
+  "recruited_n": 64,
+  "analysed_n": 64,
+  "attrition_handling": "no attrition",
+  "p_values_reported": true,
+  "confidence_intervals": "95% CI for the primary contrast",
+  "multiple_comparisons": "Benjamini-Hochberg within the declared confirmatory family",
+  "variables": [
+    {
+      "name": "feedback",
+      "role": "exposure",
+      "type": "binary",
+      "definition": "standardized versus sham feedback",
+      "missing_handling": "no missing exposure",
+      "cutpoint": "",
+      "cutpoint_basis": ""
+    },
+    {
+      "name": "reaction_time",
+      "role": "outcome",
+      "type": "continuous",
+      "definition": "milliseconds after cue",
+      "missing_handling": "no missing primary outcome",
+      "cutpoint": "",
+      "cutpoint_basis": ""
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "reaction_time",
+      "primary": true,
+      "timepoint": "end of session"
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "feedback versus sham",
+      "significant": true
+    }
+  ],
+  "independence": {
+    "name": "independent denominator",
+    "source_locator": "Methods participants",
+    "allocation_unit": "participant",
+    "analysis_unit": "participant",
+    "model": "linear regression of independent participants",
+    "n_observations": 64,
+    "n_independent_units": 64,
+    "treats_observations_as_independent": true
+  },
+  "missing_data": {
+    "name": "missing primary outcomes",
+    "source_locator": "Methods population",
+    "expected_n": 64,
+    "observed_n": 64,
+    "missing_count": 0,
+    "handling": "no missing outcome",
+    "mechanism_or_assumption": "complete records verified"
+  },
+  "outliers": {
+    "name": "outlier policy",
+    "source_locator": "Methods residual rule",
+    "detected": false,
+    "removed": false,
+    "prespecified": true,
+    "handling": "all observations retained",
+    "sensitivity_analysis": "all-observation analysis"
+  },
+  "statistical_checks": [
+    {
+      "type": "welch_t",
+      "name": "primary mean contrast",
+      "source_locator": "Results Table 1",
+      "source_quote": "The mean reaction-time difference was 0.4 ms with a 95% confidence interval.",
+      "mean1": 5.2,
+      "sd1": 1.2,
+      "n1": 30,
+      "mean2": 4.8,
+      "sd2": 1.8,
+      "n2": 35,
+      "alternative": "two-sided",
+      "confidence": 0.95
+    }
+  ],
+  "power_analyses": [
+    {
+      "name": "Pilot-based achieved power",
+      "source_locator": "Methods sample size",
+      "effect_size": 0.5,
+      "nobs1": 32,
+      "ratio": 1.0,
+      "alpha": 0.05,
+      "alternative": "two-sided",
+      "solve": "power"
+    }
+  ],
+  "comparison_families": [
+    {
+      "name": "confirmatory p family",
+      "source_locator": "Table 1",
+      "method": "bh",
+      "comparisons": [
+        {
+          "name": "primary",
+          "p": 0.29033248197735895
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "type": "levene",
+      "name": "parallel-arm variance check",
+      "source_locator": "Supplement S2",
+      "center": "median",
+      "model_requires_equal_variance": true,
+      "groups": [
+        [
+          10,
+          11,
+          9,
+          10,
+          11,
+          9,
+          10,
+          11
+        ],
+        [
+          10.2,
+          11.2,
+          9.2,
+          10.2,
+          11.2,
+          9.2,
+          10.2,
+          11.2
+        ]
+      ]
+    }
+  ],
+  "p_value_statements": [
+    {
+      "name": "bounded primary interpretation",
+      "source_locator": "Results paragraph 1",
+      "source_quote": "The intervention improved mean reaction time in this randomized sample.",
+      "p_value": 0.01,
+      "alpha": 0.05,
+      "significant": true,
+      "effect_size": "Hedges g=0.52",
+      "claim": "The intervention improved mean reaction time in this randomized sample."
+    }
+  ],
+  "conclusion": "The intervention improved mean reaction time in this randomized sample.",
+  "sensitivity_analyses": [
+    {
+      "name": "Welch robustness",
+      "result": "same direction and compatible CI"
+    }
+  ],
+  "computational_study": true,
+  "reproducibility": {
+    "name": "frozen analysis",
+    "source_locator": "Reproducibility",
+    "code_used": true,
+    "randomness_used": true,
+    "data_version": "d64-v1",
+    "code_version": "abc123",
+    "analysis_command": "python analyse.py --seed 17",
+    "seed": 17
+  },
+  "review_complete": true,
+  "output_contract": {
+    "audit_report": "array",
+    "statistical_recalculations": "array",
+    "evidence_and_boundaries": "object",
+    "result_status": "object",
+    "manuscript_version": "string",
+    "reviewer_note": "string"
+  },
+  "reviewer_note": "preserve-contract-value"
+}

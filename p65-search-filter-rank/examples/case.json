@@ -1,0 +1,25 @@
+{
+  "case_id": "screening-synthetic-nine-export-rows-v2",
+  "research_question": "筛选增材制造中说明冷却/凝固与微观组织关系的研究",
+  "records_path": "records.json",
+  "start_date": "2022-01-01",
+  "end_date": "2024-12-31",
+  "languages": ["en", "zh"],
+  "top_k": 2,
+  "screening_protocol": {
+    "criterion_priority": "exclusion_wins",
+    "inclusion_criteria": [
+      {"id": "INC-OBJECT", "description": "研究对象必须属于增材制造/3D打印",
+       "fields": ["title", "abstract"],
+       "terms": ["additive manufacturing", "3D printing", "additively manufactured", "增材制造", "3D打印"]},
+      {"id": "INC-EVIDENCE", "description": "至少一项冷却/凝固/微观组织证据",
+       "fields": ["title", "abstract"], "any": ["cooling rate", "solidification", "microstructure", "冷却速率", "凝固", "微观组织"]}
+    ],
+    "exclusion_criteria": [],
+    "human_review_thresholds": {"confidence_below": 0.70, "tie_margin": 0.05}
+  },
+  "query_history": [{"query_id": "fixture-scope", "query": {"all": ["additive manufacturing"], "any": ["microstructure", "solidification"]},
+                     "execution_status": "case-supplied historical query not re-executed as remote"}],
+  "output_contract": ["case_id", "检索结果", "证据记录", "状态说明", "screening_protocol", "human_review_history", "uncertainty", "change_records"],
+  "note": "All nine article-like export rows are explicit synthetic screening fixtures, not published articles, real abstracts, DOI records, organizer cases or formal answers. No human review is pre-populated. The two version rows deliberately test conflict/review handling. Null metadata stays null."
+}

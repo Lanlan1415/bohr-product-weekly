@@ -1,0 +1,116 @@
+{
+  "schema_version": "academic-search-v2-bench/v1",
+  "official_score": false,
+  "inputs": "public real DOI metadata plus explicitly synthetic no-DOI fixtures",
+  "scenarios": [
+    {
+      "scenario": "clean_baseline_zero_findings",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "pure_chinese_cross_language_expansion",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_fake_remote_or_recalled_counts",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_audit_covers_all_rows",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "preprint_formal_version_conflict",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "query_api_shapes_and_boundaries",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "date_and_unknown_year_boundary",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "all_any_gate_not_relaxed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "not_gate_excludes_without_padding",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "relevance_metadata_source_separate",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "openalex_inverted_abstract_and_authors",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "crossref_and_epmc_loaders",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ris_loader_no_fake_doi",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "verbatim_evidence_locators",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "ranking_tie_and_topk",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "candidate_metadata_missing_is_review",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "candidate_controlled_not_executed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "contract_shapes_engine_priority",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "engine_replay_byte_deterministic",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "invalid_doi_not_dedup_key",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "access_restriction_body_omitted",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 21,
+    "of": 21
+  }
+}

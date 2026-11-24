@@ -1,0 +1,45 @@
+{
+  "schema_version": "question-search-v2-smoke/v1",
+  "official_score": false,
+  "scenarios": [
+    {
+      "scenario": "cold_copy_full_example_idempotent",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "english_question_cross_language_execution",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "pure_chinese_bom_question_execution",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reverse_declared_queries_topological_execution",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "zero_hit_no_implicit_broadening",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cold_import_no_private_paths_or_pyc",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "clean_real_metadata_exit0_and_hashes",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 7,
+    "of": 7
+  }
+}

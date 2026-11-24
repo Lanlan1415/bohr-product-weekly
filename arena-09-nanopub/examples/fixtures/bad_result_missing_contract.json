@@ -1,0 +1,8 @@
+{
+  "case_id": "syn-009",
+  "status": "success",
+  "nanopub_file": "nanopubs.trig",
+  "sources": ["S1"],
+  "uncertainty": [],
+  "change_log": ["v1 落盘（负路径 fixture：故意缺少 output_contract 字段 assertion_count）"]
+}

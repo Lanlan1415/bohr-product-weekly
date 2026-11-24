@@ -1,0 +1,165 @@
+{
+  "schema_version": "screening-rank-v2-bench/v1",
+  "official_score": false,
+  "scenarios": [
+    {
+      "scenario": "clean_baseline_zero_findings",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "all_raw_rows_accounted",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "keyword_rich_wrong_object_excluded",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "required_criterion_not_relaxed",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "conservative_negation_not_positive",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "version_conflict_pending_grouped",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "near_and_exact_tie_review",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "topk_only_include",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "dimensions_separate_recomputable",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "derived_missing_pending_not_exclude",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_title_abstract_pending",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "missing_year_pending_not_exclude",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "outside_year_excluded",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "criterion_fields_invalid",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "protocol_missing_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "weights_sum_invalid_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_criterion_id_refused",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "evidence_locators_verbatim",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "valid_human_review_logged",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "invalid_human_review_not_fake",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "duplicate_member_review_work_group",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "conflicting_reviews_pending",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "adjudication_resolves_conflict",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "criteria_conflict_manual_pending",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "exclusion_wins_declared",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "no_retained_review_not_block",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "null_metadata_not_invented",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "caller_decision_not_human_proof",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "contract_engine_status_priority",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "deterministic_replay",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "negative_topk_refused",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 31,
+    "of": 31
+  }
+}

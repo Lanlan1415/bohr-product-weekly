@@ -68,19 +68,22 @@ ticks shift together. No pure-geometry method can catch that, which is why the
 run procedure ends by reading the extreme values back against the picture by
 eye.
 
-## Measured performance
+## Per-reading interval (v2)
 
-On the seven generated cases in `bench/` (see `references/bench-method.md`):
+Every calibrated point maps both ends of its pixel interval through the fitted
+axis. The current synthetic-benchmark maximum linear y error is 1.855 units on a
+0–100 axis and log-y worst relative error is 7.81%; all 10/10 geometry/context
+scenarios pass (see `references/bench-method.md`). These values are synthetic
+regression measurements, not accuracy on the platform's unpublished cases.
 
-- linear axes: worst error 1.9 units on a 0–100 axis (≈1.9% of span), set by
-  the steepest part of a sinusoid
-- log axes: worst relative error 7.8%
-- 7/7 pass; the forced-linear ablation passes 5/7, failing the two log cases by
-  refusing rather than by returning wrong numbers
-
-These are clean synthetic renders. Real published figures will be worse: JPEG
-artefacts, antialiased thin strokes, annotation overlays and clipping all push
-the error up. Treat the benchmark as a regression net, not an accuracy estimate.
+Unlike the compatibility field `y_uncertainty`, which only represents half the
+stroke width, `reading_intervals[].x/y` includes pixel quantisation, tick RMS
+and (for y) half the measured stroke thickness. For log axes, independently
+mapping the two endpoints retains multiplicative asymmetry. Frame-limit fits
+have no residual to measure, so a stated 2 px base allowance is used. These
+intervals do not cover wrong OCR/axis choice, a shared systematic frame offset,
+occlusion or experimental uncertainty. They are raster-reading intervals, never
+statistical confidence intervals.
 
 ## When to distrust the output
 

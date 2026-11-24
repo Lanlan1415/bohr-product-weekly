@@ -1,0 +1,116 @@
+{
+  "case_id": "quality-local-fixture",
+  "manuscript_version": "fixture-v1",
+  "source_scope": "full_article",
+  "manuscript_text": "Abstract\nThis two-arm randomized study evaluated reaction time after a brief intervention.\n1 Introduction\nReaction time is important for safe instrument operation.\nWe ask whether the prerecorded intervention changes reaction time.\nExisting reaction-time training studies provide mixed evidence.\nWe propose a standardized feedback protocol and compare it with the protocol of Doe et al. (2020).\n2 Methods\nThe randomized parallel design used a sham-feedback control group.\nA statistician generated the allocation sequence and outcome assessors were blinded.\nWe recruited 64 participants and analysed 64 independent participants.\nThe primary outcome was reaction time in milliseconds.\nReaction time was analysed with a linear model and 95% confidence intervals.\nDeidentified data are available in the project repository.\nThe analysis code is available with the archived workflow.\nThe ethics committee approved the protocol and participants gave informed consent.\nThe authors declare no competing interests.\n3 Results\nThe estimated mean difference was 12.0 ms (95% CI 4.0 to 20.0).\nThe primary analysis included all 64 participants.\n4 Discussion\nThe intervention group had faster responses under the tested conditions.\nThe observed estimate addresses the stated question and supports the proposed protocol within this sample.\nThe single-centre sample limits generalization to other settings.\n5 Conclusion\nThe intervention changed reaction time in this randomized sample.\nReferences\nDoe J (2020). Standardized reaction-time feedback. Journal of Measurement 10:1-8.\nData availability\nDeidentified data are available in the project repository.\nCode availability\nThe analysis code is available with the archived workflow.\nEthics\nThe ethics committee approved the protocol and participants gave informed consent.\nCompeting interests\nThe authors declare no competing interests.\n",
+  "research_question_type": "causal_effect",
+  "design": "rct",
+  "controls": "sham-feedback control group",
+  "recruited_n": 64,
+  "analysed_n": 64,
+  "human_or_animal_research": true,
+  "computational_study": true,
+  "data_availability": "project repository",
+  "code_availability": "archived workflow",
+  "competing_interests": "none",
+  "ethics_statement": "approved with informed consent",
+  "reference_section_present": true,
+  "quality_assessments": [
+    {
+      "dimension": "problem_importance",
+      "rating": "adequate",
+      "rationale": "Safety relevance and question are explicit.",
+      "evidence": [
+        "Reaction time is important for safe instrument operation."
+      ]
+    },
+    {
+      "dimension": "innovation",
+      "rating": "adequate",
+      "rationale": "Novel protocol is compared with prior work, not asserted in isolation.",
+      "evidence": [
+        "We propose a standardized feedback protocol and compare it with the protocol of Doe et al. (2020)."
+      ]
+    },
+    {
+      "dimension": "design",
+      "rating": "adequate",
+      "evidence": [
+        "The randomized parallel design used a sham-feedback control group."
+      ]
+    },
+    {
+      "dimension": "data",
+      "rating": "adequate",
+      "evidence": [
+        "We recruited 64 participants and analysed 64 independent participants."
+      ]
+    },
+    {
+      "dimension": "analysis",
+      "rating": "adequate",
+      "evidence": [
+        "Reaction time was analysed with a linear model and 95% confidence intervals."
+      ]
+    },
+    {
+      "dimension": "results",
+      "rating": "adequate",
+      "evidence": [
+        "The estimated mean difference was 12.0 ms (95% CI 4.0 to 20.0)."
+      ]
+    },
+    {
+      "dimension": "argumentation",
+      "rating": "adequate",
+      "evidence": [
+        "The observed estimate addresses the stated question and supports the proposed protocol within this sample."
+      ]
+    },
+    {
+      "dimension": "writing",
+      "rating": "adequate",
+      "evidence": [
+        "The single-centre sample limits generalization to other settings."
+      ]
+    },
+    {
+      "dimension": "citations",
+      "rating": "adequate",
+      "evidence": [
+        "Doe J (2020). Standardized reaction-time feedback. Journal of Measurement 10:1-8."
+      ]
+    },
+    {
+      "dimension": "reproducibility",
+      "rating": "adequate",
+      "evidence": [
+        "The analysis code is available with the archived workflow."
+      ]
+    },
+    {
+      "dimension": "ethics_compliance",
+      "rating": "adequate",
+      "evidence": [
+        "The authors declare no competing interests."
+      ]
+    }
+  ],
+  "reported_values": [
+    {
+      "name": "mean difference",
+      "value": 12.0,
+      "comparator_value": 12.0,
+      "tolerance": 1e-09,
+      "quote": "The estimated mean difference was 12.0 ms"
+    }
+  ],
+  "output_contract": {
+    "audit_report": "array",
+    "evidence_and_boundaries": "object",
+    "result_status": "object",
+    "manuscript_version": "string",
+    "reviewer_note": "string"
+  },
+  "reviewer_note": "preserve-this-contract-value"
+}

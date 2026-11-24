@@ -1,0 +1,140 @@
+{
+  "schema_version": "screening-rank-v2-hostile/v1",
+  "official_score": false,
+  "probes": [
+    {
+      "probe": "missing_case_exit5_no_trace",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "scalar_case_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "empty_candidates_exit4_contract",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "records_invalid_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "protocol_missing_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "criterion_bad_field_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "ranking_weights_not_one_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "invalid_time_not_dropped_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "invalid_language_not_dropped_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "negative_topk_exit4",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "pdf_not_extracted_exit5",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "clean_bom_exit0_zero_findings",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "zero_retained_review_not_blocked",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "refusal_not_empty_success",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "valid_review_applied_with_history",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "unknown_review_target_not_applied",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "conflicting_review_votes_pending",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "adjudication_is_explicit_and_replayable",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "contract_fields_and_engine_priority",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "all_outputs_two_dirs_identical",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "same_out_directory_idempotent",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "cold_isolated_import",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "socket_audit_no_network",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "nine_row_example_counting_and_no_fake_review",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "stdout_structured_single_json",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "probe": "artifact_hashes_exact",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 26,
+    "of": 26
+  }
+}

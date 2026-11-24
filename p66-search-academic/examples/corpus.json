@@ -2,23 +2,24 @@
  "documents": [
   {
    "id": "a-001",
-   "text": "id: a-001\nAttention-based transformers for protein structure prediction.\ndoi: doi-10-1038-s41592-021-0114-y\nyear: 2021\njournal: Nature Methods"
+   "text": "id: a-001\nAttention-based transformers for protein structure prediction.\nrecord-token: a-001\nyear: 2021\njournal: Synthetic compatibility fixture A"
   },
   {
    "id": "a-002",
-   "text": "id: a-002\nSelf-attention language models recover protein contact maps.\ndoi: doi-10-1126-science-abc1234\nyear: 2021"
+   "text": "id: a-002\nSelf-attention language models recover protein contact maps.\nrecord-token: a-002\nyear: 2021"
   },
   {
    "id": "a-003",
-   "text": "id: a-003\nDeep learning for protein structure prediction: a survey.\ndoi: doi-10-1016-j-patcog-2022-109\nyear: 2022"
+   "text": "id: a-003\nDeep learning for protein structure prediction: a survey.\nrecord-token: a-003\nyear: 2022"
   },
   {
    "id": "a-004",
-   "text": "id: a-004\nDietary protein intake and ageing: a cohort study.\ndoi: doi-10-1093-jn-nxac-0777\nyear: 2020"
+   "text": "id: a-004\nDietary protein intake and ageing: a cohort study.\nrecord-token: a-004\nyear: 2020"
   },
   {
    "id": "a-001",
-   "text": "id: a-001\nAttention-based transformers for protein structure prediction.\ndoi: doi-10-1038-s41592-021-0114-y\nyear: 2021\njournal: Nature Methods"
+   "text": "id: a-001\nAttention-based transformers for protein structure prediction.\nrecord-token: a-001\nyear: 2021\njournal: Synthetic compatibility fixture A"
   }
- ]
+ ],
+ "note": "Legacy lexical-only synthetic fixtures. record-token is not a DOI or publication identifier. No real work is claimed."
 }

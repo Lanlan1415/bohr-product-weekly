@@ -1,0 +1,45 @@
+{
+  "schema_version": "academic-search-v2-smoke/v1",
+  "official_score": false,
+  "scenarios": [
+    {
+      "scenario": "cold_copy_real_metadata_cross_language_deterministic",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "pure_chinese_question_and_verbatim_evidence",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "english_question_cross_language_seed_expansion",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "zero_hit_not_padded_or_called_remote",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "cold_import_no_private_path_or_bytecode",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "clean_case_exit0_and_all_artifacts",
+      "pass": true,
+      "why": ""
+    },
+    {
+      "scenario": "reported_artifact_hashes_recomputable",
+      "pass": true,
+      "why": ""
+    }
+  ],
+  "totals": {
+    "passed": 7,
+    "of": 7
+  }
+}

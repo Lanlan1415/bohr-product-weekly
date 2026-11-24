@@ -261,10 +261,109 @@
       "idempotent": true,
       "status": "clean",
       "pass": true
+    },
+    {
+      "scenario": "typed_analysis",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "schema_constraints",
+      "expected": [
+        "clean.schema_constraints",
+        "clean.duplicate_records"
+      ],
+      "fired": [
+        "clean.duplicate_records",
+        "clean.schema_constraints"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "alias_conflict",
+      "expected": [
+        "clean.schema_constraints"
+      ],
+      "fired": [
+        "clean.schema_constraints",
+        "clean.unmapped_columns"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "context_duplicate_guard",
+      "expected": [
+        "clean.duplicate_experiments"
+      ],
+      "fired": [
+        "clean.duplicate_experiments"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "explicit_unit_required",
+      "expected": [
+        "clean.unit_refused"
+      ],
+      "fired": [
+        "clean.unit_refused"
+      ],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "review",
+      "pass": true
+    },
+    {
+      "scenario": "declared_boolean_date",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "cli_idempotent_repeat",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
+    },
+    {
+      "scenario": "cli_data_dictionary",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "idempotent": true,
+      "status": "clean",
+      "pass": true
     }
   ],
   "totals": {
-    "passed": 20,
-    "of": 20
+    "passed": 28,
+    "of": 28
   }
 }

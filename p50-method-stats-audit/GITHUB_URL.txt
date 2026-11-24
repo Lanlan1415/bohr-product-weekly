@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p50-method-stats-audit
+https://github.com/Lanlan1415/bohr-product-weekly
+p50-method-stats-audit/

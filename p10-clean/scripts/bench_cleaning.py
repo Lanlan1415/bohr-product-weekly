@@ -149,6 +149,55 @@ def s_cli_case_contract():
              "summary": "contract echo demo", "notes_is_none": True}
 
 
+def s_typed_analysis():
+    """Frictionless-style typed analysis retains numeric zero and real null semantics."""
+    return "run", mk(copy.deepcopy(CLEAN_ROWS)), [], {"typed_values": {"bandgap": 3.2, "conc": 0.005}}
+
+
+def s_schema_constraints():
+    rows = [{"material":"A","bandgap":"3.20 eV","conc":"1 mM","grade":"A"},
+            {"material":"A","bandgap":"3.20 eV","conc":"1 mM","grade":"A"},
+            {"material":"A","bandgap":"3.20 eV","conc":"1 mM","grade":"B"}]
+    cols = copy.deepcopy(BASE["columns"]) + [{"name":"grade","semantic":"categorical","required":True,"unique":True,"allowed_values":["A"]}]
+    return "run", mk(rows, columns=cols), ["clean.schema_constraints","clean.duplicate_records"], {"schema_codes":{"constraint-enum","constraint-unique"}}
+
+
+def s_alias_conflict():
+    return "run", mk([{"material":"TiO2","bg":"3.10 eV","bandgap":"3.20 eV","conc":"1 mM"}], field_aliases={"bg":"bandgap"}), \
+        ["clean.schema_constraints"], {"schema_codes":{"field-alias-conflict"}}
+
+
+def s_context_duplicate_guard():
+    rows = [{"material":"TiO2","bandgap":"3.20 eV","conc":"1 mM","study":"S1"},
+            {"material":"TiO2","bandgap":"3.20 eV","conc":"1 mM","study":"S2"}]
+    return "run", mk(rows, source_column="study"), ["clean.duplicate_experiments"], {"no_exact_duplicate":True}
+
+
+def s_explicit_unit_required():
+    return "run", mk([{"material":"TiO2","bandgap":"3.20","conc":"1 mM"}], require_explicit_unit=True), \
+        ["clean.unit_refused"], {"pending_whats":{"unit_refused"}}
+
+
+def s_declared_boolean_date():
+    rows = [{"material":"TiO2","bandgap":"3.20 eV","conc":"1 mM","active":"yes","dated":"2024/03/02"}]
+    cols = copy.deepcopy(BASE["columns"]) + [{"name":"active","semantic":"boolean"},{"name":"dated","semantic":"date"}]
+    return "run", mk(rows, columns=cols), [], {"typed_bool_date":True}
+
+
+def s_cli_idempotent_repeat():
+    return "cli", {"repeat":True, "payload": {"case_id":"repeat", "columns":[{"name":"volt","target_unit":"V"}],
+                   "key_columns":["material"],"rows":[{"material":"TiO2","volt":"12 mV"}],
+                   "output_contract":{"case_id":"echo","status":"computed","analysis_table":"typed"}}}, \
+        [], {"status":"clean","outputs_deterministic":True}
+
+
+def s_cli_data_dictionary():
+    return "cli", {"payload":{"case_id":"dictionary","records":[{"material":"TiO2","volt":"12 mV"}],
+                   "key_columns":["material"], "data_dictionary":{"fields":[{"name":"volt","type":"number","semantic":"numeric","target_unit":"V"}]},
+                   "output_contract":{"case_id":"echo","analysis_table":"typed"}}}, \
+        [], {"status":"clean","typed_cli":0.012}
+
+
 SCEN = [("clean", s_clean), ("missing", s_missing), ("unparsed", s_unparsed),
         ("duplicate_record", s_dup_record), ("duplicate_experiment", s_dup_experiment),
         ("alias_mapped", s_alias_mapped), ("alias_unmapped", s_alias_unmapped),
@@ -158,7 +207,11 @@ SCEN = [("clean", s_clean), ("missing", s_missing), ("unparsed", s_unparsed),
         ("provenance", s_provenance), ("pending_review", s_pending_review),
         ("cli_missing_spec", s_cli_missing_spec), ("cli_rows_not_list", s_cli_rows_not_list),
         ("cli_empty_rows", s_cli_empty_rows), ("cli_no_table", s_cli_no_table),
-        ("cli_table_unreadable", s_cli_table_unreadable), ("cli_case_contract", s_cli_case_contract)]
+        ("cli_table_unreadable", s_cli_table_unreadable), ("cli_case_contract", s_cli_case_contract),
+        ("typed_analysis", s_typed_analysis), ("schema_constraints", s_schema_constraints),
+        ("alias_conflict", s_alias_conflict), ("context_duplicate_guard", s_context_duplicate_guard),
+        ("explicit_unit_required", s_explicit_unit_required), ("declared_boolean_date", s_declared_boolean_date),
+        ("cli_idempotent_repeat", s_cli_idempotent_repeat), ("cli_data_dictionary", s_cli_data_dictionary)]
 
 
 def run_cli(payload: dict, root: Path) -> dict:
@@ -177,7 +230,13 @@ def run_cli(payload: dict, root: Path) -> dict:
         case.write_text(json.dumps(payload["case"], ensure_ascii=False, indent=2),
                         encoding="utf-8")
         return CL.build_and_audit(sp, out, case)
-    return CL.build_and_audit(sp, out)
+    result = CL.build_and_audit(sp, out)
+    if payload.get("repeat"):
+        before = ((out / "result.json").read_bytes(), (out / "analysis.csv").read_bytes())
+        again = CL.build_and_audit(sp, out)
+        after = ((out / "result.json").read_bytes(), (out / "analysis.csv").read_bytes())
+        result["outputs_deterministic"] = before == after and again.get("status") == result.get("status")
+    return result
 
 
 def main() -> int:
@@ -195,6 +254,8 @@ def main() -> int:
         if kind == "run":
             spec, rows = payload
             r = C.clean(rows, spec)
+            import structured as S
+            r = S.enrich(r, rows, spec)
         else:
             r = run_cli(payload, root / name)
             got = extra_asserts.pop("status", None)
@@ -237,6 +298,27 @@ def main() -> int:
             missing.append("case_id:" + str(r.get("case_id")))
         if extra_asserts.get("summary") and r.get("summary") != extra_asserts["summary"]:
             missing.append("summary:" + str(r.get("summary")))
+        if extra_asserts.get("outputs_deterministic") and r.get("outputs_deterministic") is not True:
+            missing.append("outputs_deterministic")
+        if extra_asserts.get("typed_values"):
+            first = (r.get("analysis_table") or [{}])[0]
+            for field, expected in extra_asserts["typed_values"].items():
+                if abs(first.get(field, float("nan")) - expected) > 1e-12:
+                    missing.append("typed:" + field)
+        if extra_asserts.get("schema_codes"):
+            got = set((r.get("schema_validation") or {}).get("error_counts") or {})
+            if not extra_asserts["schema_codes"] <= got:
+                missing.append("schema_codes:" + str(sorted(got)))
+        if extra_asserts.get("no_exact_duplicate") and r.get("duplicates",{}).get("duplicate_records") != 0:
+            missing.append("cross_context_exact_duplicate")
+        if extra_asserts.get("typed_bool_date"):
+            first = (r.get("analysis_table") or [{}])[0]
+            if first.get("active") is not True or first.get("dated") != "2024-03-02":
+                missing.append("typed_bool_date")
+        if extra_asserts.get("typed_cli") is not None:
+            first = (r.get("analysis_table") or [{}])[0]
+            if abs(first.get("volt", float("nan")) - extra_asserts["typed_cli"]) > 1e-12:
+                missing.append("typed_cli")
         if extra_asserts.get("notes_is_none") and r.get("notes") is not None:
             missing.append("notes_not_none")
         ok = not missing and not spurious
