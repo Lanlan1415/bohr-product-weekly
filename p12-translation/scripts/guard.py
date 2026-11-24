@@ -181,7 +181,7 @@ HEDGE_LEVELS: list[tuple[int, tuple[str, ...]]] = [
          "可能", "似乎", "大致", "约", "推测", "倾向于")),
     (3, ("suggests", "suggest", "indicates", "indicate", "points to",
          "is consistent", "appears to indicate", "表明", "提示", "支持")),
-    (4, ("demonstrates", "demonstrate", "shows", "show", "confirms", "confirm",
+    (4, ("demonstrates", "demonstrate", "confirms", "confirm",
          "establishes", "establish", "we find", "reveals", "证明", "证实", "显示")),
     (5, ("proves", "prove", "clearly", "undoubtedly", "always", "never", "must",
          "definitively", "conclusively", "必然", "总是", "无疑", "显然", "绝对")),

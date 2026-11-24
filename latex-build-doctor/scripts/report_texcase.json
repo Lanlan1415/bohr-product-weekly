@@ -1,0 +1,146 @@
+{
+  "schema_version": "texcase-bench/v1",
+  "real_compile_requested": true,
+  "fixtures_are_synthetic": true,
+  "scenarios": [
+    {
+      "scenario": "cold_isolated_import",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "static_partial_no_pdf_claim",
+      "pass": true,
+      "detail": "exit=3"
+    },
+    {
+      "scenario": "contract_all_fields_direct",
+      "pass": true,
+      "detail": "keys=[]"
+    },
+    {
+      "scenario": "nested_contract_shape_preserved",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "real_editable_source_and_reports",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "static_rerun_byte_identical",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "stale_pdf_removed_on_static_rerun",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "hostile_static_localizes_defects",
+      "pass": true,
+      "detail": "checks=['env_mismatch', 'ref_undefined', 'table_column_mismatch']"
+    },
+    {
+      "scenario": "repaired_twin_no_static_error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "refusal_malformed_json",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "refusal_non_object_case",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "refusal_missing_project_keeps_contract",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "refusal_no_main",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "refusal_invalid_round_budget",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "log_blockers_unresolved_citation",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "log_blockers_catches_unresolved",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "state_hash_tracks_bibliography",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "auto_engine_respects_cjk",
+      "pass": true,
+      "detail": "latexmk/xelatex"
+    },
+    {
+      "scenario": "latexmk_dependency_flags",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "multifile_cross_reference_clean",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "real_tex_compiler_discovered",
+      "pass": true,
+      "detail": "pdflatex rounds=3"
+    },
+    {
+      "scenario": "real_source_strict_compile",
+      "pass": true,
+      "detail": "exit=0 status=success converged=True"
+    },
+    {
+      "scenario": "real_environment_and_repro_record",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "real_log_diagnostics_and_source_hash",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "real_template_packages_fonts_recorded",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "real_compile_error_line_localization",
+      "pass": true,
+      "detail": "errors=1"
+    },
+    {
+      "scenario": "real_repair_recompile_converges",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "totals": {
+    "passed": 27,
+    "of": 27
+  }
+}

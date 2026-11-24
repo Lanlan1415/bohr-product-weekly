@@ -2786,6 +2786,10 @@ def dissemination(spec: dict, findings: list[dict]) -> None:
              "promotional language is used where a measured claim belongs", term=m.group(0))
 
     evidence = [str(e) for e in _as_list(spec.get("evidence"))]
+    if "transfer_profile" in spec:
+        import commercial_transfer as CT
+        evidence.extend(CT.additional_source_ids(spec))
+        evidence = sorted(set(evidence))
     for i, s in enumerate(G.split_sentences(text)):
         if ABSOLUTE.search(s) and not re.search(r"\[[A-Za-z0-9:_\-]+\]", s):
             _add(findings, "diss.absolute_without_citation", "high",
@@ -2819,6 +2823,16 @@ def dissemination(spec: dict, findings: list[dict]) -> None:
 
         sq = _invariants(source_text)
         dq = _invariants(text)
+        if "transfer_profile" in spec:
+            import commercial_transfer as CT
+            # Counter union avoids counting the same paper excerpt twice. Only
+            # traceable external evidence or labelled business estimates can add values.
+            sq = sq | CT.supported_quantities(spec)
+            # A pitch often restates baseline -> target and its formula. Those
+            # repetitions are one evidence-bearing value, not new market data.
+            # Compare value+unit types here; ordinary outreach keeps multiset counts.
+            sq = Counter({key: 1 for key in sq})
+            dq = Counter({key: 1 for key in dq})
         dropped = list((sq - dq).elements())
         added = list((dq - sq).elements())
         if dropped:
@@ -2919,6 +2933,14 @@ def dissemination(spec: dict, findings: list[dict]) -> None:
                  "the rewrite uses a variant of a term the terminology table locks to one "
                  "form, so the same concept carries two names",
                  concept=f.get("concept"), found=f.get("found"), preferred=f.get("preferred"))
+
+    # Only declared technology-transfer profiles activate business checks; public
+    # outreach remains on the original dissemination rules above.
+    if "transfer_profile" in spec:
+        import commercial_transfer as CT
+        CT.audit(spec, source_text,
+                 lambda rule, severity, message, **extra: _add(
+                     findings, rule, severity, message, **extra))
 
 
 # The relation types the task names: causal, dependency, contrast, temporal, citation,

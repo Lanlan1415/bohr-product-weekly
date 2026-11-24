@@ -1,0 +1,195 @@
+{
+  "schema_version": "bilingual-deep-bench/v1",
+  "fixtures_are_synthetic": true,
+  "scenarios": [
+    {
+      "scenario": "clean_full_bilingual_zero_findings",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "scenario": "formula_semantics_changed",
+      "pass": true,
+      "detail": "['xlate.formula_added', 'xlate.formula_missing', 'xlate.invariant_added', 'xlate.invariant_broken']"
+    },
+    {
+      "scenario": "display_math_dropped",
+      "pass": true,
+      "detail": "['xlate.formula_added', 'xlate.formula_missing', 'xlate.language_pair_degenerate']"
+    },
+    {
+      "scenario": "persistent_doi_dropped",
+      "pass": true,
+      "detail": "['xlate.citation_identity_added', 'xlate.citation_identity_missing']"
+    },
+    {
+      "scenario": "manubot_alias_dropped",
+      "pass": true,
+      "detail": "['xlate.citation_identity_added', 'xlate.citation_identity_missing']"
+    },
+    {
+      "scenario": "segment_order_reversed",
+      "pass": true,
+      "detail": "['xlate.segment_order_changed']"
+    },
+    {
+      "scenario": "segment_duplicate_source",
+      "pass": true,
+      "detail": "['xlate.segment_duplicate_source']"
+    },
+    {
+      "scenario": "source_span_fabricated",
+      "pass": true,
+      "detail": "['xlate.formula_added', 'xlate.hedge_strength_changed', 'xlate.invariant_added', 'xlate.negation_changed', 'xlate.segment_hedge_changed', 'xlate.segment_limiter_changed', 'xlate.segment_negation_changed', 'xlate.segment_source_mismatch']"
+    },
+    {
+      "scenario": "only_scope_lost",
+      "pass": true,
+      "detail": "['xlate.segment_limiter_changed']"
+    },
+    {
+      "scenario": "approximation_added",
+      "pass": true,
+      "detail": "['xlate.segment_limiter_changed']"
+    },
+    {
+      "scenario": "segment_negation_lost",
+      "pass": true,
+      "detail": "['xlate.negation_changed', 'xlate.segment_negation_changed']"
+    },
+    {
+      "scenario": "segment_hedge_lost",
+      "pass": true,
+      "detail": "['xlate.segment_hedge_changed']"
+    },
+    {
+      "scenario": "ambiguity_unresolved",
+      "pass": true,
+      "detail": "['xlate.ambiguity_unresolved']"
+    },
+    {
+      "scenario": "ambiguity_orphan",
+      "pass": true,
+      "detail": "['xlate.ambiguity_orphaned']"
+    },
+    {
+      "scenario": "ambiguity_registry_wrong_type",
+      "pass": true,
+      "detail": "['xlate.ambiguity_registry_malformed']"
+    },
+    {
+      "scenario": "glossary_variants_wrong_type",
+      "pass": true,
+      "detail": "['xlate.glossary_variants_malformed']"
+    },
+    {
+      "scenario": "conversion_endpoint_arithmetic_not_arbitrary",
+      "pass": true,
+      "detail": "['xlate.conversion_arithmetic_mismatch', 'xlate.invariant_broken', 'xlate.invariant_added']"
+    },
+    {
+      "scenario": "conversion_factor_hint_audited",
+      "pass": true,
+      "detail": "['xlate.conversion_factor_mismatch']"
+    },
+    {
+      "scenario": "conversion_record_malformed_no_excuse",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "chinese_magnitude_to_comma_digits_clean",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "scenario": "wrong_language_scalar_types_never_crash",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "open_ambiguity_is_honest_review_not_silenced",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "repeated_source_paragraphs_no_alignment_fp",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "scenario": "doi_url_equivalence_and_formula_no_fp",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "scenario": "cross_language_figure_xref_equivalence",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "case_direct_clean_contract",
+      "pass": true,
+      "detail": "exit=0 findings=[]"
+    },
+    {
+      "scenario": "declared_target_text_not_nulled",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "output_has_symbol_and_citation_evidence",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "nested_contract_shape_preserved",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "case_rerun_byte_identical",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "nested_spec_case_entry",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "structured_refusal_retains_contract",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "list_section_refusal_no_traceback",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "malformed_case_refusal_no_traceback",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "missing_case_refusal",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "legacy_spec_compatibility",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "cold_isolated_import",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "totals": {
+    "passed": 37,
+    "of": 37
+  }
+}

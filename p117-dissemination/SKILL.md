@@ -1,368 +1,245 @@
 ---
 name: research-dissemination
 description: >
-  Produce and audit a research-to-outreach rewrite: does the dissemination text preserve the
-  source's numbers, units, figure references and key conclusions, and does it avoid inventing
-  results or causes the paper never stated? Requires a change list the author can review, with
-  an action and a reason per entry plus the open questions left for human confirmation. Flags
-  hype language, uncited absolute claims, unexpanded abbreviations and specialist jargon for a
-  general audience. Use when a task asks for outreach copy, a plain-language summary, a news
-  note, a proposal paragraph derived from a report, or any rewrite of research for a wider
-  audience.
+  Rewrite research for a declared reader and, when applicable, produce an evidence-bounded
+  technology-transfer document. Preserves scientific facts, numbers, units, figure references,
+  citations, limitations and change rationale. An opt-in transfer_profile additionally checks pain
+  points, TRL and validation scope, IP, application scenarios, sourced market/competitor evidence,
+  commercial assumptions, implementation stages, stop conditions, risks and baseline-relative
+  quantified value. Use for public summaries, project material derived from a report, research
+  commercialization drafts and technology pitch documents. Never invents TRL, IP rights, market
+  size or returns, and explicitly separates research facts from business hypotheses.
 ---
 
-# research-dissemination
+# 科研成果转化写作：可读、可证、可继续编辑、能决策
 
-The deliverable is a rewrite of research findings for a wider audience. The failure it prevents
-is not a crash but a drift: the summary says something the paper does not, drops a key finding
-or the pointer back to its figure, turns a reported relation into a cause, or uses a number the
-paper never reported. Every one of those is mechanically detectable, and none of them is visible
-by re-reading the rewrite alone.
+本 Skill 不仅问“稿子好读吗”，还问“哪些来自论文，哪些来自外部证据，哪些只是商业假设；作者和转化负责人能否逐项复核”。模型先完成真实改写，脚本再检查保真、受众、变更记录和（声明时的）转化决策要素。
 
-The scoring points this task states, each as a rule:
+## 1. 读取真实材料并选路由
 
-| scoring point (rubric wording) | rule |
+读取 `/input/case.json` 与 `/input/task.md`，保留 `case_id`、`output_contract`。抽取实际源文、目标读者、体裁、篇幅、必须保留的结论/数字/引用/图表、受众已有知识和未发表/涉密限制。
+
+| 任务 | 路由和必填内容 |
 |-|-|
-| 事实/数据/单位/图表编号/引用保留（留得住） | `diss.invariant_broken`, `diss.invariant_added`, `diss.xref_lost` |
-| 无源文不支持的新结论（说得准） | `diss.absolute_without_citation`, `diss.causal_overreach` |
-| 关键结论保留（留得住） | `diss.key_conclusion_lost` |
-| 原作者可复核的改动清单（接得住） | `diss.change_list_missing`, `diss.change_no_action`, `diss.change_no_reason`, `diss.open_questions_missing` |
-| 受众适配的术语与缩写（读得懂） | `diss.jargon_for_public`, `diss.abbr_unexpanded`, `diss.term_inconsistent` |
-| 限定条件在场（说得准） | `diss.limitations_omitted` |
-| 输入声明齐备 | `diss.audience_undeclared`, `diss.source_text_missing` |
+| 论文→科普/新闻/公众号/普通综述 | `section: dissemination`，不使用商业 profile，保留事实/numeric/xref 和 change list |
+| 报告→项目申报材料、产学研对接、技术推介 | `dissemination` + **显式** `transfer_profile`，同时满足科研保真和商业决策结构 |
+| 只有实验数据，先抽取关键结论 | 先使用相应提取工具，再进入写作；不得将空白材料写成转化稿 |
+| 没源文，只有“写一份某技术产业化方案” | 说明科研事实不可核验，提出待提供材料清单；不得编技术性能和市场数据 |
 
-## The seven failures this exists to catch
+**不得因为读者是产业界就删除实验室限定条件。** 成功建立中试愿景，不等于论文已经验证量产；“未发现相关”“初步结果”“单一材料”不能被改写成确定性效果。
 
-**A number that drifted.** `3-fold` becoming `9-fold`, or a cost figure appearing that the
-paper never stated. Values are compared as multisets between source and rewrite; a p-value, a
-sample size or a bare year may legitimately drop, a measured value may not.
+## 2. 先写真实目标稿，保存 early partial
 
-**A pointer that vanished.** The rewrite keeps the finding but loses the (Fig 3b) that lets a
-reader check it. Shape-normalised so "Fig. 3b" and "figure 3b" compare equal.
+在 `/app/work/deliverable.md` 写出完整目标稿、改动清单和开放问题，然后逐步完善。普通改写的每条 change 需有 `action` 和 `reason`；未确认项列 `open_questions`，没有则显式 `[]`。
 
-**A relation promoted to a cause.** The source reports that uptake rose under the coating; the
-rewrite announces the coating *causes* the rise. Detected when the rewrite carries a causal
-marker the supplied source text does not.
+成果推介稿至少按下列叙事完成实际文字，而非只有一张空表：
 
-**A key conclusion silently dropped.** The one finding the rewrite exists to convey, missing
-from the copy.
+1. **痛点与对象**：谁遇到什么实际问题，为什么值得做；
+2. **技术是什么、成熟到哪一步**：实验条件、TRL/未知状态、验证规模与负面/边界证据；
+3. **证据与权属**：哪些实测结果支持应用场景，专利/许可/保密状态能否确认；
+4. **应用与市场**：具体使用场景、外部客户/市场证据、可比替代方案、未知市场信息；
+5. **量化价值与假设**：基线、目标、单位、时间窗、计算方式；未证实就写假设，不能写成结果；
+6. **实施与风控**：分阶段负责人、里程碑、资源、验收阈值和停止条件；
+7. **待确认**：尚需第三方验证、法务核查、客户访谈或其他前置条件。
 
-**A reader blocked by wording.** An unexpanded abbreviation, a jargon term the audience was
-never given, or a second name for a concept the terminology table locks to one form.
+普通科普稿不需要这些商业字段，也不会触发商业规则。
 
-**Certainty the evidence does not carry.** Promotional hype, an absolute claim with no citation,
-or results stated with no limitation.
+## 3. 建立两套证据账本
 
-**A change the author cannot review.** No change list, an entry that says what but not why, or
-no declared answer to "what still needs human confirmation".
+### A. 科研事实与外部证据
 
-## Runtime: the six steps
+- `scientific_facts[]`：研究论断必须有 `claim_type: research_fact`、`claim` 和能在 `source_text` 找到的 `source_excerpt`；推荐加 `source_locator`。摘要用 NFKC/空白归一匹配，不忠实的小摘要不会被当成科学事实。
+- `market.evidence[]`：外部客户/市场论断必须有 `claim`、`source_excerpt`、`locator`，状态是 `external_evidence`（或真实科研事实）。论断中的数字必须能在自己的摘要中找到，不能只有“某报告说”。
+- `validation[]`：给出环境、样本/规模、基准和结果，`evidence_refs` 必须指向已登记的科研/外部证据 ID。
+- 论文实测、外部访谈/报告、计算推导的营销估算不能混写为同一“研究证明”。
 
-Run the same six steps for every case. They keep the deliverable and the audit separate: the
-audit checks structure, it never manufactures content.
+### B. 商业假设与开放问题
 
-**Step 0 — read the case.** Read the input case file (mounted at /input/case.json with a task
-statement alongside it) and the task text. Copy two things out of the case before anything
-else: the case identifier and the declared output contract (the field names the result must
-carry). Also copy the concrete material the case supplies — the source text, the audience and
-genre constraints, and any terminology, abbreviation or must-preserve lists; those become the
-spec's check inputs.
+- `commercial_assumptions[]`：假设必须有 `claim`、`basis`、`uncertainty`，`claim_type` 是 `commercial_assumption`。没有证据并不禁止提出方案，但必须标明依据和证伪条件。
+- `quantified_value[]`：可以有外部事实或假设，但非 unknown 时必须给出 `metric/baseline/target/unit/time_horizon/method`；事实还要给可查验 `evidence_refs`，假设还要给 basis 和 uncertainty。
+- 显式 `evidence_refs` 不能指向不存在的来源，假设和竞品同样不能有“幽灵引用”。
+- TRL/IP/量化价值可使用 `unknown`，须写 scope/notes 等当前边界；会返回 review 和人工确认项，不会包装成 clean fact。
 
-**Step 1 — route by the shape of the ask.** Match the task wording against the table below and
-pick a section. When in doubt, prefer the primary section of this skill: a dissemination
-rewrite.
+## 4. 可选 `transfer_profile` 的完整结构
 
-| task wording (representative) | route | spec essentials |
-|-|-|-|
-| 摘要/论文→科普文、公众号稿、新闻稿 | dissemination | source_text + audience: public + text |
-| 技术报告→项目申报材料段落 | dissemination | source_text + audience + changes 记录取舍 |
-| 论文→面向专家的通俗综述段落 | dissemination | audience 非 public，术语检查跳过 |
-| 同一成果的多文体改写（论文/报告/科普各一版） | dissemination | 每版一个 text，逐版审计 |
-| 改写前先抽取关键结论与数据 | conclusion_extract | fields + source_text + conclusions |
-| 就源文内容问答（改写素材确认） | qa | evidence + answers |
-| 多篇文献同一指标横向对比（改写素材整理） | compare_docs | documents + fields |
-| 与改写无关的请求（全新写作、全文翻译） | none | refused as undetermined, never guessed |
-
-**Step 2 — produce the target deliverable first.** Do the actual writing: read the source
-material, decide what must be kept, compressed or dropped for this audience, and write the
-rewrite itself, the change list and the open-questions list. The audit in later steps checks
-structure; it cannot read the paper for you, so a hollow spec with a tidy schema is still a
-failed case.
-
-**Step 3 — assemble the spec.** One JSON object holding the deliverable, the evidence base and
-the contract: the case identifier, the section name from step 1, the source text the invariant
-check runs against, the rewrite text, the audience, the key conclusions that must survive, the
-limitations, the change list (one action plus one reason per entry), the open-questions list
-(an explicit empty list is accepted), the citation keys used, and the case's declared output
-contract fields copied in as keys (such as the rewrite itself) so they can be echoed verbatim
-into the result. See `examples/spec-contract.json` for the full shape.
-
-**Step 4 — audit.** Run the engine once:
-
-```bash
-python scripts/secrun.py --spec examples/spec-contract.json --out /app/output
-```
-
-Exit codes: `0` clean, `3` review (only low/medium findings), `4` blocked (any high finding),
-`5` undetermined (the case could not be run as declared — unreadable spec, non-object spec,
-missing or unknown section). Every exit writes a result file; the exit code never comes from a
-traceback.
-
-**Step 5 — fix findings and rerun.** Each finding names a rule and an item. Fix the rewrite
-(restore the dropped value, repoint the figure reference, soften the causal verb, add the
-expansion, record the reason), never the audit, and rerun. Repeat until exit 0 or 3, or until a
-finding genuinely cannot be resolved — then leave it and record why in the run's limits,
-because an honest blocked status beats a silenced rule.
-
-**Step 6 — merge the result.** Write the deliverable files under the output directory. The
-result file written by the engine already carries: the case identifier, every field of the
-declared output contract (values the case carried pass through untouched; the audited status,
-findings and counts are filled by the audit; anything else is null with a limits note — never a
-fabricated value), findings, severity counts, and limits. Keep that file as the structured
-result of the case.
-
-## The spec, field by field
+以下字段名就是真实 CLI 检查的结构。复制结构，不复制示例事实。
 
 ```json
 {
-  "case_id": "demo-diss-001",
+  "case_id": "demo-transfer",
   "section": "dissemination",
-  "audience": "public",
+  "audience": "industry pilot team",
+  "source_text": "In the lab, uptake increased 3-fold from 2 mg/g to 6 mg/g (Fig 3b) [doe2020].",
+  "text": "完整、可编辑、面向具体用户的转化稿正文……包括实验条件和商业估算的边界。",
   "evidence": ["doe2020"],
-  "source_text": "The porous coating raised the uptake rate 3-fold (Fig 3b, p.7). ...",
-  "key_conclusions": ["A porous coating raises uptake 3-fold"],
-  "limitations": "only one coating thickness was tested",
-  "open_questions": ["whether the 3-fold effect holds at other thicknesses"],
-  "jargon_terms": ["adsorption isotherm"],
-  "abbreviations": {"XRD": "X-ray diffraction"},
-  "term_locks": {"uptake rate": {"preferred": "uptake rate", "variants": ["absorption speed"]}},
-  "text": "A porous coating raises uptake 3-fold (Fig. 3b) [doe2020]. ...",
-  "changes": [
-    {"action": "replaced the jargon with plain wording", "reason": "the audience is the general public"}
-  ],
-  "rewrite": {"genre": "plain-language science note", "body": "..."},
-  "output_contract": {"case_id": "...", "status": "...", "rewrite": "..."}
-}
-```
-
-`source_text` is what the invariant, cross-reference and causal checks run against — omitting
-it means the preservation checks cannot run and the gap is named. `key_conclusions` are the
-findings that must survive the rewrite. `audience` selects the wording checks: the value
-"public" turns on the jargon and limitation checks; any other declared value skips them
-deliberately (a specialist audience is allowed its terms). `jargon_terms`, `abbreviations` and
-`term_locks` are the three opt-in word tables; without them the corresponding checks stay
-silent rather than guessing. `open_questions` must be present — an explicit empty list is the
-accepted way to say "nothing needs confirmation".
-
-## Worked example（示例）
-
-Input `examples/spec-contract.json` — the spec shown above with a declared output contract of
-six fields, one of which (the rewrite itself) is a deliverable the case carries. Run:
-
-```bash
-python scripts/secrun.py --spec examples/spec-contract.json --out /tmp/out
-```
-
-Console output（示例，路径随机器不同）:
-
-```json
-{"status": "clean", "section": "dissemination", "case_id": "demo-diss-001",
- "findings": [], "wrote": "/tmp/out/result.json"}
-```
-
-The written result（示例节选，实跑所得）:
-
-```json
-{
-  "case_id": "demo-diss-001",
-  "status": "clean",
+  "key_conclusions": ["源文中真正需要保留的结论"],
+  "limitations": "only lab conditions; production behavior unverified",
+  "open_questions": ["是否有第三方中试验证"],
+  "changes": [{"action": "区分实验测量与估算", "reason": "避免把假设写成论文结论"}],
+  "transfer_profile": {
+    "scientific_facts": [
+      {"id": "lab01", "claim": "实验室吸附量提升 3 倍",
+       "claim_type": "research_fact", "source_excerpt": "increased 3-fold from 2 mg/g to 6 mg/g",
+       "source_locator": "paper Fig.3b"}
+    ],
+    "pain_points": [
+      {"id": "pain1", "problem": "缺少放大验证路径", "user": "中试团队",
+       "claim_type": "commercial_assumption", "basis": "由实验室局限提出的待访谈假设",
+       "uncertainty": "是否愿意付费还需客户访谈"}
+    ],
+    "technology_maturity": {"level": "TRL4", "status": "research_fact",
+      "scope": "实验室、12 个样本、单一涂层厚度", "evidence_refs": ["lab01"]},
+    "intellectual_property": [
+      {"type": "patent_application", "status": "unknown",
+       "notes": "权属/registry record 尚需法务确认"}
+    ],
+    "validation": [
+      {"id": "val01", "environment": "实验室、单一厚度", "sample_or_scale": "12 samples",
+       "baseline": "2 mg/g", "result": "6 mg/g (Fig.3b)", "evidence_refs": ["lab01"]}
+    ],
+    "applications": [
+      {"id": "app01", "scenario": "同类材料的中试吸附处理", "user": "中试团队",
+       "conditions": "同种材料和厚度，须先中试复测", "painpoint_refs": ["pain1"]}
+    ],
+    "market": {
+      "evidence": [
+        {"id": "mkt01", "claim": "外部访谈中 2 家中试用户各有 20 万元年度试验预算",
+         "status": "external_evidence", "source_excerpt": "两家中试用户各有 20 万元年度试验预算",
+         "locator": "真实访谈记录编号、页码或数据库定位"}
+      ],
+      "competitors": [
+        {"name": "现有工艺/替代方案", "comparison_axis": "相同条件下的吸附性能与成本",
+         "evidence_refs": ["lab01"]}
+      ],
+      "unknowns": ["目标区域购买转化率、竞争对手报价尚无材料"]
+    },
+    "commercial_assumptions": [
+      {"id": "a-value", "claim": "估算成本下降，但不是论文测量",
+       "status": "commercial_assumption", "basis": "1000 × 0.80 = 800 元",
+       "uncertainty": "规模、良率和报价变化会改变结果"}
+    ],
+    "roadmap": [
+      {"stage": "中试设计与复测", "owner": "技术负责人",
+       "milestone": "完成双方确认口径的中试和独立复测",
+       "resources": "装置、试样、分析人员、第三方检测",
+       "success_gate": "达到预设复测阈值并完成权属确认",
+       "stop_condition": "条件不兼容、复测不达标或权属不清则停止/回退"}
+    ],
+    "risks": [
+      {"risk": "实验室结果不能放大", "likelihood": "中高", "impact": "高",
+       "mitigation": "分阶段中试和独立复测", "trigger": "关键指标低于方案阈值", "owner": "技术负责人"}
+    ],
+    "quantified_value": [
+      {"id": "qv01", "metric": "单批处理成本", "baseline": "1000 元", "target": "800 元",
+       "unit": "元/批", "time_horizon": "2 年", "method": "1000 × 0.80 = 800 元",
+       "status": "commercial_assumption", "basis": "估算，不承诺实现",
+       "uncertainty": "规模和良率仍需中试确认", "evidence_refs": []}
+    ]
+  },
   "output_contract": {
-    "case_id": "demo-diss-001",
-    "status": "clean",
-    "section": "dissemination",
-    "rewrite": {"genre": "plain-language science note", "audience": "public", "body": "..."},
-    "findings": [],
-    "severity_counts": {}
-  }
+    "case_id": "identifier", "status": "state", "rewrite": "actual draft",
+    "target_text": "actual draft", "deliverable": "artifact", "evidence_map": "sources",
+    "technology_maturity": "TRL and scope", "intellectual_property": "IP",
+    "validation": "validation", "market": "market", "roadmap": "route", "risks": "risks",
+    "quantified_value": "value", "boundary": "limits"
+  },
+  "limits": []
 }
 ```
 
-The deliverable key passed through untouched, the audited keys were filled by the audit, and
-the case identifier is recorded — exit 0.
+`unknown` 的 TRL 应写 `{level:null,status:"unknown",scope:"实际验证范围",notes:"为什么未知",evidence_refs:[...]}`；无依据填 9 或写“国际领先”会失败。IP 使用真实登记/合同信息时才写授予/申请状态，否则保留 unknown 而非猜编号。
 
-## Output contract of the result
+## 5. 运行真实审计并修复
 
-`/app/output/result.json` (written by the engine on every exit path):
-
-| field | content |
-|-|-|
-| case_id | the case identifier, echoed from the spec or the command line |
-| status | clean / review / blocked / undetermined |
-| section | the audited section |
-| findings[] | one per rule hit: rule, severity, message, plus the span (term, dropped, added, lost, sentence, conclusion) |
-| severity_counts | findings by severity |
-| checked | items audited (word count of the rewrite text) |
-| limits | what this run could not verify, including any contract field left null |
-| output_contract | every declared contract field: case-carried values pass through, audited keys are filled by the audit, the rest are null with a limits note |
-
-## Mapping to the required result sections
-
-| 评分要求的字段（rubric 原词） | 本 Skill 的交付 |
-|-|-|
-| 目标产物 | 可编辑改写稿：rewrite 正文 + changes 清单 + open_questions 清单，随 result 一并交付 |
-| 事实与来源映射 | 数值/单位多重集比对（invariant_broken / invariant_added）、图表引用比对（xref_lost）、引用键校验（unknown_source）、逐条 changes 携带 action 与 reason |
-| 版本与边界 | status 四态 + findings + limits（不可核验处显式声明）+ open_questions（待人工确认项）+ case_id 回填 |
-
-## Rules
-
-### Preservation invariants（留得住）
-
-| rule | severity | what it proves |
-|-|-|-|
-| `diss.invariant_broken` | high | a number or unit in the source is absent from the rewrite |
-| `diss.invariant_added` | high | the rewrite introduces a number the source does not contain |
-| `diss.xref_lost` | high | a figure/table reference in the source is absent from the rewrite |
-| `diss.key_conclusion_lost` | high | a key finding from the source is missing |
-| `diss.unknown_source` | high | a citation outside the supplied set |
-
-### Claim strength（说得准）
-
-| rule | severity | what it proves |
-|-|-|-|
-| `diss.hype_language` | high | promotional language where a measured claim belongs |
-| `diss.absolute_without_citation` | high | an absolute claim with no citation |
-| `diss.causal_overreach` | medium | a causal link the supplied source does not state |
-| `diss.limitations_omitted` | medium | results stated with no limitation |
-
-### Audience fit（读得懂）
-
-| rule | severity | what it proves |
-|-|-|-|
-| `diss.jargon_for_public` | medium | specialist terms for a general audience |
-| `diss.abbr_unexpanded` | medium | an abbreviation used with no expansion anywhere in the text |
-| `diss.term_inconsistent` | medium | a second name for a concept the term locks table fixes |
-| `diss.audience_undeclared` | medium | no audience, so the wording checks cannot be matched to a reader |
-
-### Reviewable changes（接得住）
-
-| rule | severity | what it proves |
-|-|-|-|
-| `diss.change_list_missing` | high | no change list, so the author cannot review |
-| `diss.change_no_action` | medium | a change entry does not say what was done |
-| `diss.change_no_reason` | medium | a change entry does not say why |
-| `diss.open_questions_missing` | medium | no declared answer to what still needs human confirmation |
-
-### Inputs and refusal
-
-| rule | severity | what it proves |
-|-|-|-|
-| `diss.no_text` | high | no dissemination text supplied |
-| `diss.source_text_missing` | medium | no source text, so the preservation checks cannot run |
-| `audit.no_section` | high | the case could not be run as declared: no or unknown section, a non-object spec, or a spec that is not readable JSON — refused with exit 5, never a crash |
-
-## Exception handling
-
-| situation | exit | what happens / what to do |
-|-|-|-|
-| spec file missing or unreadable | 5 | refusal written with audit.no_section; re-check the path, rerun |
-| spec is valid JSON but not an object (array, string, number) | 5 | refusal; wrap the payload in one object and rerun |
-| section key missing, empty, or a list/dict instead of a string | 5 | refusal; declare the section from the routing table |
-| section name unknown (typo or wrong level) | 5 | refusal naming the section; pick a route from the table |
-| the rewrite text is empty or whitespace | 4 | no_text fires; write the rewrite first |
-| source_text omitted | 3 | source_text_missing fires; supply the source text to enable the invariants |
-| audience omitted | 3 | audience_undeclared fires; declare the intended reader |
-| open_questions key absent | 3 | open_questions_missing fires; list the items or declare the list empty |
-| changes slot carries a string or number instead of a list | 4 | degrades to change_list_missing; supply a list of objects |
-| a change entry is a bare string instead of an object | 4 | the entry is skipped and change_list_missing fires; supply objects |
-| a change entry has an action but no reason | 3 | change_no_reason; record the intent per entry |
-| numbers unbalanced against the source | 4 | invariant_broken / invariant_added name the exact value+unit pairs; restore or remove |
-| a figure reference is lost in the rewrite | 4 | xref_lost names the reference; repoint or restore it |
-| causal wording absent from the supplied source | 3 | causal_overreach; soften to the relation the source reports |
-| an abbreviation appears with no expansion | 3 | abbr_unexpanded; expand it or drop the short form |
-| a locked term appears as a declared variant | 3 | term_inconsistent; use the preferred form |
-| output_contract is a list instead of an object | 0/3/4 | the run completes; the limits name that the contract cannot be echoed |
-| a declared contract field the audit cannot derive | 0/3/4 | echoed as null with a limits note; fill it in the deliverable, never fabricate |
-| extremely long strings | 0–5 | accepted; messages truncate to 110 chars, nothing crashes |
-| rerun with an unchanged spec | — | byte-identical result; the audit is deterministic |
-
-## Limits
-
-- **Invariant comparison is value-normalised, not contextual.** It proves the same number
-  appears in both texts, not that the number is used the same way.
-- **Statistics and years are exempt from the invariant.** A p-value, a test statistic or a
-  sample size may be simplified away for a public audience; that is good practice, not a
-  broken invariant. A year may drop too. Measured values (3-fold, 50 yuan, 12 mM) must
-  survive the rewrite.
-- **Key conclusion matching is substring-based.** A paraphrased conclusion that means the same
-  thing but uses different words will be reported as lost; record it in the change list with
-  the reason.
-- **Hype and causal detection are word lists.** They catch the common promotional and causal
-  markers in English and Chinese; a link made absolute by phrasing rather than vocabulary
-  will pass. The causal check only compares against the source text as supplied.
-- **The wording tables are opt-in.** Jargon, abbreviation and term-lock checks run only when
-  the case declares the corresponding table; an undeclared term cannot be flagged by guessing.
-- **The change list is structural, not editorial.** It verifies that a change names an action
-  and a reason; it cannot judge whether the reason is good.
-- **Cross-reference comparison is shape-normalised** ("Fig. 3b" equals "figure 3b"); it does
-  not verify that the referenced figure exists in the source.
-- **Only the audience value "public" turns the jargon and limitation checks on.** Other
-  declared audiences skip them by design; an undeclared audience is reported instead.
-
-## Failure handling
-
-| symptom | what to do |
-|-|-|
-| `invariant_broken` | restore the number from the source |
-| `invariant_added` | remove the number the source never stated |
-| `xref_lost` | restore the figure/table pointer |
-| `key_conclusion_lost` | add the conclusion, or state why it was omitted in the change list |
-| `causal_overreach` | soften to the relation the source reports |
-| `hype_language` | replace with a measured claim |
-| `absolute_without_citation` | cite the source, or soften to the evidence level |
-| `jargon_for_public` | replace with plain wording, or re-declare the audience |
-| `abbr_unexpanded` | expand the abbreviation at first use |
-| `term_inconsistent` | use the locked preferred form |
-| `change_list_missing` | record what was changed and why, so the author can review |
-| `open_questions_missing` | name what needs confirmation, or declare the list empty |
-| `source_text_missing` | supply the source text the rewrite must preserve |
-| `audit.no_section` (exit 5) | the case could not be run as declared — fix the spec shape and rerun |
-
-## Verification
+正式入口：
 
 ```bash
-python scripts/bench_diss.py      # 25 scenarios: one per dissemination rule plus repaired-twin guards
-python scripts/bench_sections.py  # 51 scenarios: cross-section regression plus false-positive guards
-python scripts/bench_contract.py  # 17 scenarios: the delivery contract under clean, refusal and hostile inputs
+S=/skills/weekly-skill/scripts
+python -I -B "$S/secrun.py" --case /input/case.json --out /app/output
 ```
 
-All three pass in full on this machine. The clean baselines must report nothing, so a
-detector cannot pass by flagging everything; every new rule carries both a defect scenario
-and a repaired-twin guard.
+可在 case 根级包含 `transfer_profile` 或将 `spec` 嵌套。若需另行组装，旧接口保持兼容：
 
-## Requirements
+```bash
+python -I -B "$S/secrun.py" --spec /app/work/spec.json --out /app/output
+```
 
-Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖。
+先修复高严重级别事实问题，再修复 medium 的结构和可维护性问题，然后重新运行。不能删除原文限定或外部证据来消除发现，不能弄一个假 report/identifier 充当支持。
 
-## 创新增益
+退出码仍为：`0 clean / 3 review / 4 blocked / 5 undetermined`。所有返回路径写 `result.json`；可解析 case 的 identifier 和完整合同在拒绝路径也保留。
 
-本 Skill 相比通用 Agent 直接改写的核心新增能力（全部为引擎真实运行的机制，bench 覆盖）：
+## 6. 复核最终交付
 
-1. **双文本不变量多重集比对**：源文与改写稿的数值+单位各抽取为多重集做差，任何丢失、篡改或新增的测量值被点名（值+单位成对列出）；统计量、样本量与年份显式豁免，避免逼出删正确数字或补假数字——通用 Agent 无法对自己产出的改写自证数值未漂移。
-2. **图表引用保真比对**：图表/公式引用按形状归一化（Fig. 3b 与 figure 3b 等值）后做多重集差，改写丢失回看指针即报。
-3. **论断强度分级与因果越界检测**：绝对词检测（无引用即报）之外，对源文未含因果标记而改写含因果标记的句子报 causal_overreach——把"相关写成因果"变成可判定规则。
-4. **受众适配三表机制**：术语表（jargon_terms）、缩写展开表（abbreviations）、术语锁定表（term_locks）三个 opt-in 词表驱动"读得懂"检查：未展开缩写、未解释行话、一名二形均被点名；未声明词表时保持沉默而不是猜。
-5. **显式留白语义**：open_questions 必须在场——待人工确认项要么列名、要么显式声明为空列表，"没人决定过"在数据层面不可存在。
-6. **可复核改动台账**：每条 changes 必须携带 action 与 reason 两个结构化字段，审计者可逐条复核；台账与改写稿同文件交付。
-7. **契约直通的 result.json**：case_id 与 output_contract 全字段回填——案例自带的值原样直通、审计派生的键由审计填写、其余置 null 并写入 limits，拒绝路径（exit 5）同样保留 case_id，部分结果也保持交付契约。
-8. **引擎级崩溃免疫**：类型错位（section 放列表、changes 放字符串、spec 不是对象）一律降级为发现项或拒绝，退出码只有 0/3/4/5 五种，绝不以 traceback 收场。
+- **目标产物**：`deliverable.text` 是完整稿件；`target_text` 与 `rewrite` 按合同回填，不是审计报告代替正文。
+- **事实与来源映射**：`evidence_map` + `transfer_assessment` 分科研事实、外部证据和假设；profile 中同名 `technology_maturity/intellectual_property/validation/market/roadmap/risks/quantified_value` 可独立回填输出字段。
+- **版本与边界**：`boundary.open_questions`、`boundary.business_and_commercialization_review`、`open_questions`、`limitations`、`changes` 和 `limits` 说明还能否进入下一决策。
 
-## 生态贡献
+`case_id` 和 `output_contract` 每个字段都直接出现在根对象，另有 `output_contract` 汇总对象。已提供值原样传递，profile 子字段按同名映射；嵌套结构保留；未知字段置 `null`/[] 并在 limits 写具体路径。
 
-1. **SKILL.md**：用途、适用条件、六步调用方式、任务措辞路由表、输入输出契约、与评分要求三段的逐项映射、异常处置表（19 行）、限制与自查方法齐备。
-2. **scripts/**：纯标准库（Python 3.9+，3.14 实测），模块可独立导入，规则库可经 spec 配置扩展；本包为独立副本，不依赖其他包。
-3. **examples/spec.json 与 examples/spec-contract.json**：最小调用示例与带契约回填的完整示例，示意输出标注为示例且为实跑所得。
-4. **bench_diss.py**：25 个场景，每条 dissemination 规则一个缺陷场景加修复孪生守卫场景，clean 基线必须零发现；report_diss.json 为可复跑证据。
-5. **bench_sections.py**：51 个跨 section 回归场景，防误报守卫覆盖中文与类型错位输入。
-6. **bench_contract.py**：17 个契约回归场景（clean 契约回填、拒绝保契约、rerun 幂等、敌意输入拒收），report_contract.json 为可复跑证据。
-7. **规则词表**：rule id 稳定命名并与引擎一一对应（文档-引擎一致性由门禁检查），可作为同类改写保真任务的共享词汇。
-8. **可复用词表与模板**：缩写展开表、术语锁定表、open_questions 与 changes 清单格式均为 JSON 模板，可直接迁移到其他成果转化场景（科普、申报、新闻稿）。
+## 规则总览
+
+### 原有科研改写保真（不声明 profile 时也运行）
+
+| 方向 | 规则/检查 |
+|-|-|
+| 留得住 | `diss.invariant_broken/added` 数值+单位；`xref_lost` 图表/公式引用；`key_conclusion_lost` 关键结论 |
+| 说得准 | `causal_overreach` 相关写因果；`hype_language` 宣传腔；`absolute_without_citation` 无引用绝对断言；`unknown_source` 虚空引用 |
+| 读得懂 | 声明的 jargon/term_locks/abbreviations、受众未声明、公共读者缺 limitation |
+| 接得住 | `change_list_missing/no_action/no_reason`、`open_questions_missing` |
+| 运行边界 | `no_text/source_text_missing/audit.no_section`；统计量/样本量/年份的公共改写豁免按原逻辑保留 |
+
+普通改写的数字用多重集。声明 profile 后，基线→目标和其计算式允许合理重复，按“数值+单位类型”查是否被源文/外部证据/显式假设支持；完全未登记的新数字仍会触发 `diss.invariant_added`，不能借重复陈述绕过。
+
+### 商业转化新增规则（只在 `transfer_profile` 存在时）
+
+| 决策要素 | 主要失败发现 |
+|-|-|
+| 痛点/用户 | `pain_point_missing/incomplete`，没有依据的引用需补证据或转标假设 |
+| 事实/假设分界 | `scientific_facts_missing`、`research_fact_not_in_source/not_verifiable`、`fact_classification_invalid`、`assumption_basis/uncertainty_missing` |
+| 技术成熟度 | `maturity_missing/unjustified/scope_missing`，TRL 必须 1–9 或显式 unknown |
+| 知识产权 | `ip_missing/incomplete/evidence_missing`，owner/reference 不足不能声称权利；unknown 进人工确认 |
+| 验证 | `validation_missing/incomplete/validation_evidence_missing`，环境/样本/基准/结果必须齐备 |
+| 场景 | `application_missing/incomplete/unbound`，必须回接痛点并写必要条件 |
+| 市场/竞品 | `market_evidence_missing`、`external_evidence_unlocated/mismatch`、`competitor_missing/incomplete` |
+| 路线 | `roadmap_missing/incomplete`：负责人、里程碑、资源、验收和停止条件 |
+| 风险 | `risk_missing/incomplete`：风险、概率/影响、缓解、触发和 owner |
+| 量化价值 | `value_missing/incomplete`、`value_arithmetic_mismatch`；状态 unknown 有记录但不伪造数字 |
+| 诚实待定 | `unresolved_business_boundary` medium；缺市场信息写 `market.unknowns` 和人工问题，不猜 |
+
+### 简单算术不是装饰性执行
+
+`1000 × 0.80 = 800 元` 会通过受限数字表达式计算；也会核对左端是否 baseline、结果是否 target。`1000 × 0.70 = 800 元` 触发 `value_arithmetic_mismatch`。不支持自由定义模型或任意 Python eval；变量公式和复杂单位经济模型必须人工复核。
+
+## 结构参考如何落实
+
+参考公开 `VSR2025/Commercialization-Playbook` 的三个决策层，而不是照抄一句“做商业化”：
+
+1. **能否产品化** → 痛点/场景 + 成熟度 + 验证范围 + IP 权属；
+2. **是否值得做** → 市场/竞品 + 量化价值 + 商业假设与外部来源分开；
+3. **如何继续** → 里程碑、负责人、资源、风险、成功/停止阈值和未决事项。
+
+其仓库高层观点“可能没有市场、团队资源会被分散、竞争优势可能暴露”已落实为显式 `market.unknowns`、资源/stop condition 和风险台账，不把作者没有给出的 TRL/市场宣称当可靠证据。
+
+- https://github.com/VSR2025/Commercialization-Playbook
+
+## Requirements 与 Limits
+
+Python **3.10+**，纯标准库，本机 3.14 实测；无网络和第三方包，不进行市场/专利数据库检索。
+
+- excerpt/locator/ID 一致保证**可追溯性**，不自动证明外部文件真实、访谈无偏或检测可重复；需要时列出独立复核任务。
+- TRL 只做声明和证据范围审查，不给出官方成熟度认证；IP 审计不提供 FTO/法律意见。
+- 计算仅覆盖简单数字表达式，复杂成本/TAM/NPV/渗透率模型须附来源和人工审核；不生成无来源市场规模。
+- `key_conclusions` 仍是明确字符串匹配，同义改写需调整台账并说明，不得硬塞术语制造“保留”。
+- 对涉密/未发表材料，保留权限和披露边界；不要为了推介完整度公开实验秘密。
+- 普通科研保真词表是候选诊断，不替代作者语义核验。普通 `show` 不能被任意加强为商业化“已证明”。
+
+## Optional verification
+
+```bash
+python -I -B scripts/bench_diss.py       # 25
+python -I -B scripts/bench_sections.py   # 51
+python -I -B scripts/bench_contract.py   # 17
+python -I -B scripts/bench_commercial.py # 35
+```
+
+商业套件使用一份完整合成 fixture 及其敌意变体，运行干净的转化交付并检查嵌套 profile 合同、证据与 orphan 引用、算术、unknown、拒绝路径、冷导入和字节级幂等。所有材料均为合成示例，不是平台正式案例答案。

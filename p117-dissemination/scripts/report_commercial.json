@@ -1,0 +1,185 @@
+{
+  "schema_version": "commercial-transfer-bench/v1",
+  "fixtures_are_synthetic": true,
+  "scenarios": [
+    {
+      "scenario": "clean_commercial_profile",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "scenario": "ordinary_outreach_no_commercial_rules",
+      "pass": true,
+      "detail": "['diss.unknown_source', 'diss.unknown_source', 'diss.invariant_added']"
+    },
+    {
+      "scenario": "profile_wrong_type",
+      "pass": true,
+      "detail": "['diss.invariant_added', 'diss.unknown_source', 'transfer.profile_malformed']"
+    },
+    {
+      "scenario": "pain_point_removed",
+      "pass": true,
+      "detail": "['transfer.application_unbound', 'transfer.pain_point_missing']"
+    },
+    {
+      "scenario": "trl_not_invented",
+      "pass": true,
+      "detail": "['transfer.maturity_unjustified']"
+    },
+    {
+      "scenario": "maturity_evidence_orphan",
+      "pass": true,
+      "detail": "['transfer.validation_evidence_missing']"
+    },
+    {
+      "scenario": "ip_owner_missing",
+      "pass": true,
+      "detail": "['transfer.ip_evidence_missing']"
+    },
+    {
+      "scenario": "validation_evidence_removed",
+      "pass": true,
+      "detail": "['transfer.validation_missing']"
+    },
+    {
+      "scenario": "application_not_linked_to_pain",
+      "pass": true,
+      "detail": "['transfer.application_unbound']"
+    },
+    {
+      "scenario": "external_market_claim_unlocated",
+      "pass": true,
+      "detail": "['transfer.external_evidence_unlocated']"
+    },
+    {
+      "scenario": "external_market_value_mismatch",
+      "pass": true,
+      "detail": "['transfer.external_evidence_mismatch']"
+    },
+    {
+      "scenario": "competitor_and_unknown_both_absent",
+      "pass": true,
+      "detail": "['transfer.competitor_missing']"
+    },
+    {
+      "scenario": "assumption_basis_missing",
+      "pass": true,
+      "detail": "['transfer.assumption_basis_missing']"
+    },
+    {
+      "scenario": "assumption_cannot_cite_orphan",
+      "pass": true,
+      "detail": "['transfer.validation_evidence_missing']"
+    },
+    {
+      "scenario": "competitor_cannot_cite_orphan",
+      "pass": true,
+      "detail": "['transfer.validation_evidence_missing']"
+    },
+    {
+      "scenario": "unsupported_research_fact",
+      "pass": true,
+      "detail": "['transfer.research_fact_not_in_source']"
+    },
+    {
+      "scenario": "unregistered_new_market_number",
+      "pass": true,
+      "detail": "['diss.invariant_added']"
+    },
+    {
+      "scenario": "value_arithmetic_wrong",
+      "pass": true,
+      "detail": "['diss.invariant_added', 'diss.invariant_broken', 'transfer.value_arithmetic_mismatch']"
+    },
+    {
+      "scenario": "value_baseline_missing",
+      "pass": true,
+      "detail": "['transfer.value_incomplete']"
+    },
+    {
+      "scenario": "roadmap_owner_missing",
+      "pass": true,
+      "detail": "['transfer.roadmap_incomplete']"
+    },
+    {
+      "scenario": "risk_register_missing",
+      "pass": true,
+      "detail": "['transfer.risk_missing']"
+    },
+    {
+      "scenario": "malformed_validation_shape",
+      "pass": true,
+      "detail": "['transfer.validation_missing']"
+    },
+    {
+      "scenario": "unknown_trl_ip_routes_to_human_review",
+      "pass": true,
+      "detail": "['transfer.unresolved_business_boundary', 'transfer.unresolved_business_boundary']"
+    },
+    {
+      "scenario": "commercial_summary_distinguishes_fact_and_assumption",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "supported_numbers_never_duplicate_source",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "case_cli_clean_full_commercial_contract",
+      "pass": true,
+      "detail": "exit=0 findings=[]"
+    },
+    {
+      "scenario": "contract_derives_profile_sections",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "boundary_and_business_review_available",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "nested_contract_shape_preserved",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "commercial_rerun_byte_identical",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "nested_spec_and_profile_direct_entry",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "refusal_preserves_direct_contract",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "malformed_case_refusal",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "legacy_spec_compatibility",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "cold_isolated_import",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "totals": {
+    "passed": 35,
+    "of": 35
+  }
+}

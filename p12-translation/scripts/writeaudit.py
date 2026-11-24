@@ -32,16 +32,15 @@ _BULKY = {"output_contract", "section", "spec", "text", "manuscript_text", "draf
           "claims", "baseline_text", "anchors"}
 
 
-def _refused(out_dir: Path, message: str) -> dict:
-    """The undetermined refusal every unrunnable case gets: an exit code, not a crash.
-
-    Contract echo is deliberately NOT applied here: the spec never parsed, so
-    there is no case_id or output_contract to echo.
-    """
-    result = {"schema_version": "writeaudit/v1", "status": "undetermined",
+def _refused(out_dir: Path, message: str, spec: dict | None = None) -> dict:
+    """Structured undetermined refusal, preserving any parsed case contract."""
+    result = {"schema_version": "writeaudit/v1", "case_id": None,
+              "status": "undetermined",
               "findings": [{"rule": "audit.no_section", "severity": "high",
                             "message": message}],
               "limits": ["the case could not be run as declared"]}
+    if isinstance(spec, dict):
+        _echo_contract(result, spec)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
@@ -49,12 +48,26 @@ def _refused(out_dir: Path, message: str) -> dict:
     return result
 
 
+def _mirror_unknown(template, path: str, limits: list[str]):
+    """Preserve nested contract keys; never turn a field description into a result."""
+    if isinstance(template, dict):
+        return {str(k): _mirror_unknown(v, f"{path}.{k}" if path else str(k), limits)
+                for k, v in template.items()}
+    if isinstance(template, list):
+        if path:
+            limits.append(f"output_contract array '{path}' has no generated items")
+        return []
+    if path:
+        limits.append(f"output_contract field '{path}' was not derivable by this audit")
+    return None
+
+
 def _echo_contract(result: dict, spec: dict) -> dict:
-    """Echo case_id and every output_contract field into the result."""
+    """Echo case_id and every output_contract field directly and in a summary map."""
     if not isinstance(spec, dict):
         return result
     cid = spec.get("case_id")
-    if cid is not None and "case_id" not in result:
+    if cid is not None and result.get("case_id") is None:
         result["case_id"] = cid
     limits = result.setdefault("limits", [])
     contract = spec.get("output_contract")
@@ -63,14 +76,26 @@ def _echo_contract(result: dict, spec: dict) -> dict:
     if not isinstance(contract, dict):
         limits.append("output_contract is not an object, so no field was echoed")
         return result
+    echo = {}
     for key in contract:
-        if key in result:
-            continue
-        if key in spec and key not in _BULKY:
-            result[key] = spec[key]
-            continue
-        result[key] = None
-        limits.append(f"output_contract field '{key}' was not derivable by this audit")
+        if key in result and key != "case_id":
+            value = result[key]
+        elif key == "case_id" and result.get("case_id") is not None:
+            value = result["case_id"]
+        elif key in ("target_text", "translation") and (result.get("deliverable") or {}).get("target_text"):
+            value = (result.get("deliverable") or {})["target_text"]
+            result[key] = value
+        elif key in spec and key not in ("section", "output_contract"):
+            # A field explicitly named by output_contract is deliverable evidence,
+            # even when it is a long translation, pair list or glossary. Do not
+            # replace an actually supplied value with null merely for its size.
+            value = spec[key]
+            result[key] = value
+        else:
+            value = _mirror_unknown(contract[key], key, limits)
+            result[key] = value
+        echo[key] = value
+    result["output_contract"] = echo
     return result
 
 
@@ -98,12 +123,15 @@ def _deliverable(spec: dict, section: str) -> dict:
     return {"kind": "unknown"}
 
 
-def build_and_audit(spec_path: Path, out_dir: Path, section: str | None = None) -> dict:
-    try:
-        spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
-        # An unreadable spec is a refusal with the usual exit code, not a traceback.
-        return _refused(out_dir, f"the spec file is not readable JSON: {exc}")
+def build_and_audit(spec_path: Path | dict, out_dir: Path, section: str | None = None) -> dict:
+    if isinstance(spec_path, dict):
+        spec = spec_path
+    else:
+        try:
+            spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
+            # An unreadable spec is a refusal with the usual exit code, not a traceback.
+            return _refused(out_dir, f"the spec file is not readable JSON: {exc}")
     if not isinstance(spec, dict):
         return _refused(out_dir, "the spec file is not a JSON object")
 
@@ -111,10 +139,11 @@ def build_and_audit(spec_path: Path, out_dir: Path, section: str | None = None) 
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    if not sec:
-        return _refused(out_dir, "no section was declared, so no rules apply")
+    if not isinstance(sec, str) or not sec.strip():
+        return _refused(out_dir, "section must be a non-empty string", spec)
+    sec = sec.strip()
     if sec not in W.SECTIONS:
-        return _refused(out_dir, f"unknown section '{sec}', so no rules apply")
+        return _refused(out_dir, f"unknown section '{sec}', so no rules apply", spec)
 
     findings, status, counts = W.run(spec, sec)
 
@@ -137,6 +166,26 @@ def build_and_audit(spec_path: Path, out_dir: Path, section: str | None = None) 
     (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
                                          encoding="utf-8")
     return result
+
+
+def build_case(case_path: Path, out_dir: Path, section: str | None = None) -> dict:
+    """Accept case.json directly; nested spec and flat spec-shaped cases both work."""
+    try:
+        case = json.loads(Path(case_path).read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
+        return _refused(out_dir, f"the case file is not readable JSON: {exc}")
+    if not isinstance(case, dict):
+        return _refused(out_dir, "the case file is not a JSON object")
+    if "spec" in case and not isinstance(case.get("spec"), dict):
+        return _refused(out_dir, "case.spec is not an object", case)
+    spec = dict(case["spec"]) if isinstance(case.get("spec"), dict) else dict(case)
+    for key in ("case_id", "output_contract"):
+        if key in case:
+            spec[key] = case[key]
+    if "case_id" not in spec:
+        spec["case_id"] = case.get("id") or case.get("caseId")
+    spec.setdefault("section", section or "translation")
+    return build_and_audit(spec, out_dir, section)
 
 
 def _checked(spec: dict, section: str) -> dict:
@@ -177,11 +226,16 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="writeaudit", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--spec", required=True)
+    source = ap.add_mutually_exclusive_group(required=True)
+    source.add_argument("--spec", help="assembled section spec (legacy/explicit interface)")
+    source.add_argument("--case", help="actual case.json (flat or with nested spec)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--section", help="override the section declared in the spec")
     a = ap.parse_args(argv)
-    r = build_and_audit(Path(a.spec), Path(a.out), a.section)
+    if a.case:
+        r = build_case(Path(a.case), Path(a.out), a.section)
+    else:
+        r = build_and_audit(Path(a.spec), Path(a.out), a.section)
     print(json.dumps({"status": r["status"], "section": r.get("section"),
                       "case_id": r.get("case_id"),
                       "findings": [f["rule"] for f in r["findings"]],

@@ -1,1 +1,2 @@
-https://github.com/Lanlan1415/bohr-product-weekly/tree/main/p117-dissemination
+https://github.com/Lanlan1415/bohr-product-weekly
+p117-dissemination/

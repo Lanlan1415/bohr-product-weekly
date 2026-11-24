@@ -285,7 +285,8 @@ def evidence_writing(spec: dict, findings: list[dict]) -> None:
 MODES = ("plain", "bilingual", "tracked")
 NEGATION = re.compile(
     r"\b(not|no|never|without|none|neither|nor|cannot|can't|doesn't|does not|"
-    r"isn't|is not|aren't|are not|was not|were not)\b|(\u4e0d|\u65e0|\u672a|\u975e|\u6ca1\u6709)",
+    r"isn't|is not|aren't|are not|was not|were not)\b"
+    r"|并非|没有|不(?!超过|少于|仅|只|但|同|足|错)|无(?!论|限)|未(?!来)",
     re.IGNORECASE)
 CN_MAGNITUDE = ("\u4e07", "\u4ebf")          # 万, 亿
 EN_MAGNITUDE = ("million", "billion", "thousand")
@@ -470,9 +471,17 @@ def translation(spec: dict, findings: list[dict]) -> None:
              "one side of the pair is empty, so nothing can be compared")
         return
 
+    # Formula/citation identity, exact source anchoring, per-segment scope and
+    # editorial ambiguity are separate from the older document-level checks.
+    # Import locally so non-translation sections have no extra dependency.
+    import bilingual_extra as BX
+    BX.audit(spec, src_all, tgt, segments,
+             lambda rule, severity, message, **extra: _add(
+                 findings, rule, severity, message, **extra))
+
     # --- a degenerate language pair is named ------------------------------
-    src_lang = (spec.get("source_lang") or "zh").lower()
-    tgt_lang = (spec.get("target_lang") or "en").lower()
+    src_lang = str(spec.get("source_lang") or "zh").lower()
+    tgt_lang = str(spec.get("target_lang") or "en").lower()
     if src_lang.strip() and src_lang == tgt_lang:
         _add(findings, "xlate.language_pair_degenerate", "medium",
              "source_lang and target_lang name the same language, so no translation is "
@@ -486,9 +495,11 @@ def translation(spec: dict, findings: list[dict]) -> None:
 
     qty_src, qty_tgt = Counter(_quantity_pairs(src_all)), Counter(_quantity_pairs(tgt))
     mag_in_src = any(m in src_all for m in CN_MAGNITUDE) or         any(m in src_all.lower() for m in EN_MAGNITUDE)
-    conversions_declared = bool(spec.get("conversions"))
+    conversion_records = BX.conversion_records(
+        spec, lambda rule, severity, message, **extra: _add(
+            findings, rule, severity, message, **extra))
     excused = []
-    if (mag_in_src and conversions_declared):
+    if mag_in_src and conversion_records:
         # A recorded magnitude conversion (3万 -> 30,000) changes the digits by
         # design. When every changed value pairs with the same canonical unit
         # and a power-of-ten ratio, and the record exists, the change is the
@@ -509,7 +520,8 @@ def translation(spec: dict, findings: list[dict]) -> None:
                     # 3 million divides them by a hundred. Both are the declared
                     # record, not a broken invariant — as long as the change is
                     # exactly a power of ten and nothing else moved.
-                    if abs(ratio) == 10.0 ** k and k != 0 and -9 <= k <= 9:
+                    if (abs(ratio) == 10.0 ** k and k != 0 and -9 <= k <= 9
+                            and BX.conversion_allowed(conversion_records, v, av)):
                         hit = (av, au)
                         break
                 if hit is None:
@@ -524,7 +536,7 @@ def translation(spec: dict, findings: list[dict]) -> None:
     for label, extractor, human in (
         ("quantity", lambda t: _quantity_pairs(t), "numbers or units"),
         ("citation", G.extract_citations, "citation markers"),
-        ("xref", G.extract_xrefs, "figure/table/equation references"),
+        ("xref", BX.extract_xrefs, "figure/table/equation references"),
     ):
         if label == "quantity":
             cs, ct = qty_src, qty_tgt
@@ -542,7 +554,7 @@ def translation(spec: dict, findings: list[dict]) -> None:
                  invariant=label, added=added[:10], count=len(added))
 
     # --- negation scope ----------------------------------------------------
-    ns, nt = len(NEGATION.findall(src_all)), len(NEGATION.findall(tgt))
+    ns, nt = BX.negation_count(src_all), BX.negation_count(tgt)
     if ns != nt and (ns or nt):
         _add(findings, "xlate.negation_changed", "high",
              "the number of negations differs between source and target, so a claim may have "
@@ -648,13 +660,30 @@ def translation(spec: dict, findings: list[dict]) -> None:
 
     # --- terminology ------------------------------------------------------
     raw_glossary = spec.get("glossary")
-    glossary = {k: v for k, v in raw_glossary.items()
+    glossary = {k: dict(v) for k, v in raw_glossary.items()
                 if isinstance(v, dict)} if isinstance(raw_glossary, dict) else {}
     if isinstance(raw_glossary, dict) and len(glossary) < len(raw_glossary):
         _add(findings, "xlate.glossary_entry_malformed", "medium",
              "a glossary entry is not an object, so its preferred form and basis cannot be "
              "checked", count=len(raw_glossary) - len(glossary))
     if glossary:
+        for concept, entry in glossary.items():
+            raw_variants = entry.get("variants", [])
+            if raw_variants is None:
+                raw_variants = []
+            if not isinstance(raw_variants, list):
+                _add(findings, "xlate.glossary_variants_malformed", "medium",
+                     "glossary variants must be a list of strings; the malformed value was ignored",
+                     concept=concept)
+                raw_variants = []
+            bad_types = [v for v in raw_variants if not isinstance(v, str)]
+            if bad_types:
+                _add(findings, "xlate.glossary_variants_malformed", "medium",
+                     "non-string glossary variants were ignored", concept=concept,
+                     count=len(bad_types))
+            entry["variants"] = [str(v) for v in raw_variants if isinstance(v, str)]
+            entry["preferred"] = str(entry.get("preferred") or "")
+            entry["abbreviation"] = str(entry.get("abbreviation") or "")
         gl = G.Glossary.from_dict(glossary)
         for f in G.check_terms(tgt, gl):
             _add(findings, "xlate.term_variant", "medium",
@@ -1204,7 +1233,8 @@ def evidence_map(spec: dict, section: str) -> list[dict]:
                 verdict = ("match" if ct.get(k) and cs.get(k)
                            else "dropped" if cs.get(k) else "added")
                 out.append({"kind": "citation", "marker": k, "verdict": verdict})
-            xs, xt = Counter(G.extract_xrefs(src_all)), Counter(G.extract_xrefs(tgt))
+            import bilingual_extra as BX
+            xs, xt = Counter(BX.extract_xrefs(src_all)), Counter(BX.extract_xrefs(tgt))
             for k in sorted(set(xs) | set(xt)):
                 verdict = ("match" if xt.get(k) and xs.get(k)
                            else "dropped" if xs.get(k) else "added")
@@ -1227,6 +1257,8 @@ def evidence_map(spec: dict, section: str) -> list[dict]:
         for b in (raw_backcheck if isinstance(raw_backcheck, list) else [])[:20]:
             if isinstance(b, dict):
                 out.append({"kind": "backcheck", "segment": str(b.get("segment") or "")})
+        import bilingual_extra as BX
+        out.extend(BX.evidence(src_all, tgt))
     elif section == "evidence_writing":
         for c in _records(spec.get("claims")):
             out.append({"kind": "claim", "id": str(c.get("id") or ""),
@@ -1274,6 +1306,8 @@ def open_questions(spec: dict, section: str) -> list[dict]:
                 and spec.get("text_layer") is False:
             out.append({"type": "uncertainty",
                         "what": "source is a scanned PDF; text rests on OCR"})
+        import bilingual_extra as BX
+        out.extend(BX.open_questions(spec))
     elif section == "evidence_writing":
         for c in _records(spec.get("claims")):
             strength = str(c.get("strength") or "").strip().lower()

@@ -1,0 +1,32 @@
+# latex-build-doctor 资源清单
+# 入口约定：所有捆绑文件相对本目录（environment/ 的上级，即 Skill 根目录）。
+# 运行环境：Python >= 3.8，纯标准库；无网络访问；无第三方依赖。
+entry_point: SKILL.md
+files:
+  - SKILL.md                        # 主入口：7 步工作流、降级路径、异常表、自查清单
+  - USAGE.md                        # 使用与方法说明（依赖/步骤/输入输出/方法/限制/失败处理/自查）
+  - references/error-playbook.md    # 13 类错误 + 9 类警告的识别特征与修复模板（由 parse_log 规则生成）
+  - references/build-protocol.md    # 编译轮次协议与三条收敛判定细则
+  - references/output-contract.md   # result.json 信封与 build/error_table/source_changes/repro_record 结构
+  - references/rubric-checklist.md  # "编译得通/改得对/交得可用/复现得了"自查 + 5 维度对照
+  - scripts/detect_tex.py           # TeX 引擎探测（pdflatex/latexmk/xelatex/tectonic + 版本；全缺 exit 3）
+  - scripts/build_loop.py           # 编译轮次协议 + aux 标签哈希收敛判定 + 预算控制
+  - scripts/parse_log.py            # .log/.blg 全量解析 → 分类定位表（13+9 类）
+  - scripts/static_check.py         # 无 TeX 环境的降级静态检查（环境配对/引用/数学/编码/表格）
+  - scripts/repro_record.py         # 可复现构建记录（引擎/宏包/字体/命令/哈希/收敛）
+  - scripts/selftest.py             # 本地自测（样例 log 解析、静态检查、记录诚实性）
+  - examples/example-01.md          # 最小调用示例（标注为示例，非正式案例结果）
+runtime:
+  python: ">=3.8"
+  stdlib_only: true
+  network: false
+optional_tools:
+  - name: pdflatex
+    purpose: 编译引擎（首选）
+    missing_behavior: 尝试 latexmk/xelatex/tectonic；全缺则静态降级路径
+  - name: latexmk
+    purpose: 轮次调度（自动处理 bib 与多轮）
+    missing_behavior: 手动轮次 pdflatex → bibtex → pdflatex ×2
+  - name: bibtex / biber
+    purpose: 参考文献编译步
+    missing_behavior: 记录缺失；undefined_citation 警告按 playbook 处理
