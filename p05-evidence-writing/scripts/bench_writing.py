@@ -15,7 +15,9 @@ EV = {
          "uncertainty": "",
          "sources": [{"key": "doe2020",
                       "quote": "The coating increased the uptake rate three-fold.",
-                      "locator": "p.7"}]},
+                      "locator": "p.7", "support_relation": "supports",
+                      "support_strength": "strong",
+                      "support_basis": "The controlled experiment directly reports a three-fold increase."}]},
     ],
     "evidence": [
         {"key": "doe2020", "title": "Porous coatings for uptake", "year": 2020,

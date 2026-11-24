@@ -1,0 +1,40 @@
+{
+  "gap_chain": [
+    {
+      "step": 1,
+      "kind": "literature_gap",
+      "basis": "统计基线依赖平稳性假设，趋势漂移下误报率显著上升（Liu 2021 原文承认）",
+      "evidence_or_author_judgment": "evidence",
+      "evidence": {
+        "ref": "liu2021arimad",
+        "quote": "依赖平稳性假设，在趋势漂移场景下误报率显著上升"
+      }
+    },
+    {
+      "step": 2,
+      "kind": "cross_gap",
+      "basis": "免训练方法依赖人工窗口设定，长序列计算开销大（Chen 2020 原文承认）",
+      "evidence_or_author_judgment": "evidence",
+      "evidence": {
+        "ref": "chen2020mp",
+        "quote": "无需训练即可检测点异常与片段异常"
+      }
+    },
+    {
+      "step": 3,
+      "kind": "cross_gap",
+      "basis": "训练型方法依赖大样本与高算力，免训练型方法依赖人工窗口设定——低算力、少标注场景下同时满足低误报与低算力的方案缺失（作者判断）",
+      "evidence_or_author_judgment": "author_judgment"
+    },
+    {
+      "step": 4,
+      "kind": "this_work",
+      "basis": "本文提出 PathFuse，以统计残差与图信号的轻量融合填补该空白，仅用 CPU 即可推理",
+      "evidence_or_author_judgment": "evidence",
+      "evidence": {
+        "ref": "li2021gdnx",
+        "quote": "当拓扑缺失或频繁变更时需要重新标定"
+      }
+    }
+  ]
+}

@@ -2,6 +2,33 @@
   "schema_version": "rd-bench/v1",
   "scenarios": [
     {
+      "scenario": "effect_uncertainty_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "number_format_equivalent_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "rounded_effect_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
       "scenario": "clean",
       "expected": [],
       "fired": [],
@@ -104,6 +131,147 @@
       "status": "blocked"
     },
     {
+      "scenario": "effect_value_mismatch",
+      "expected": [
+        "rd.effect_value_mismatch"
+      ],
+      "fired": [
+        "rd.effect_value_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "effect_size_missing",
+      "expected": [
+        "rd.effect_size_missing"
+      ],
+      "fired": [
+        "rd.effect_size_missing",
+        "rd.uncertainty_absent_from_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "uncertainty_missing",
+      "expected": [
+        "rd.uncertainty_missing"
+      ],
+      "fired": [
+        "rd.effect_size_absent_from_results",
+        "rd.uncertainty_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "uncertainty_inconsistent",
+      "expected": [
+        "rd.uncertainty_inconsistent"
+      ],
+      "fired": [
+        "rd.effect_size_absent_from_results",
+        "rd.uncertainty_absent_from_text",
+        "rd.uncertainty_inconsistent"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "significance_misclassified",
+      "expected": [
+        "rd.significance_misclassified"
+      ],
+      "fired": [
+        "rd.effect_size_absent_from_results",
+        "rd.negative_result_absent_from_results",
+        "rd.negative_result_omitted",
+        "rd.significance_ci_conflict",
+        "rd.significance_misclassified",
+        "rd.uncertainty_absent_from_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "significance_ci_conflict",
+      "expected": [
+        "rd.significance_ci_conflict"
+      ],
+      "fired": [
+        "rd.effect_size_absent_from_results",
+        "rd.significance_ci_conflict",
+        "rd.uncertainty_absent_from_text"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "malformed_significance_degrades",
+      "expected": [
+        "rd.comparison_no_verdict"
+      ],
+      "fired": [
+        "rd.comparison_no_verdict"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "alternative_explanations_missing",
+      "expected": [
+        "rd.alternative_explanations_missing"
+      ],
+      "fired": [
+        "rd.alternative_explanations_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "extrapolation_boundary_missing",
+      "expected": [
+        "rd.extrapolation_boundary_missing"
+      ],
+      "fired": [
+        "rd.extrapolation_boundary_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "derivation_not_reproducible",
+      "expected": [
+        "rd.derivation_not_reproducible"
+      ],
+      "fired": [
+        "rd.derivation_not_reproducible"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
       "scenario": "interpretation_in_results",
       "expected": [
         "rd.interpretation_in_results"
@@ -124,6 +292,7 @@
         "rd.mechanism_as_fact"
       ],
       "fired": [
+        "rd.alternative_explanations_missing",
         "rd.conflicting_literature_ignored",
         "rd.mechanism_as_fact",
         "rd.negative_result_omitted"
@@ -139,6 +308,7 @@
         "rd.causal_overreach"
       ],
       "fired": [
+        "rd.alternative_explanations_missing",
         "rd.causal_overreach",
         "rd.conflicting_literature_ignored",
         "rd.negative_result_omitted"
@@ -169,6 +339,7 @@
         "rd.negative_result_omitted"
       ],
       "fired": [
+        "rd.alternative_explanations_missing",
         "rd.negative_result_omitted"
       ],
       "missing": [],
@@ -182,6 +353,7 @@
         "rd.conflicting_literature_ignored"
       ],
       "fired": [
+        "rd.alternative_explanations_missing",
         "rd.conflicting_literature_ignored"
       ],
       "missing": [],
@@ -195,6 +367,7 @@
         "rd.limitations_missing"
       ],
       "fired": [
+        "rd.extrapolation_boundary_missing",
         "rd.limitations_missing"
       ],
       "missing": [],
@@ -208,6 +381,7 @@
         "rd.limitation_vague"
       ],
       "fired": [
+        "rd.extrapolation_boundary_missing",
         "rd.limitation_vague"
       ],
       "missing": [],
@@ -221,6 +395,7 @@
         "rd.limitation_level_narrow"
       ],
       "fired": [
+        "rd.extrapolation_boundary_missing",
         "rd.limitation_level_narrow"
       ],
       "missing": [],
@@ -386,6 +561,7 @@
         "rd.causal_overreach"
       ],
       "fired": [
+        "rd.alternative_explanations_missing",
         "rd.causal_overreach",
         "rd.conflicting_literature_ignored",
         "rd.negative_result_omitted"
@@ -397,8 +573,8 @@
     }
   ],
   "totals": {
-    "passed": 32,
-    "of": 32
+    "passed": 45,
+    "of": 45
   },
   "note": "One scenario per rule, aligned to the results/discussion scoring points. Clean baselines must report nothing."
 }

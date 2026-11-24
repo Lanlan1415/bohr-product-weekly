@@ -368,6 +368,7 @@
         "rd.causal_overreach"
       ],
       "fired": [
+        "rd.alternative_explanations_missing",
         "rd.causal_overreach",
         "rd.conflicting_literature_ignored",
         "rd.negative_result_omitted"

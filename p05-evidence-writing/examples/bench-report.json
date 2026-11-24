@@ -11,12 +11,31 @@
       "status": "clean"
     },
     {
+      "scenario": "independent_moderate_triangulation_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
+      "scenario": "opposition_registered_clean",
+      "expected": [],
+      "fired": [],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "clean"
+    },
+    {
       "scenario": "claims_missing",
       "expected": [
         "ew.claims_missing"
       ],
       "fired": [
         "ew.claims_missing",
+        "ew.draft_claim_unregistered",
         "ew.source_unused"
       ],
       "missing": [],
@@ -43,6 +62,7 @@
         "ew.evidence_table_missing"
       ],
       "fired": [
+        "ew.claim_no_direct_support",
         "ew.evidence_table_missing",
         "ew.source_not_in_table"
       ],
@@ -57,7 +77,8 @@
         "ew.claim_no_id"
       ],
       "fired": [
-        "ew.claim_no_id"
+        "ew.claim_no_id",
+        "ew.draft_claim_unregistered"
       ],
       "missing": [],
       "spurious": [],
@@ -162,6 +183,7 @@
         "ew.source_not_in_table"
       ],
       "fired": [
+        "ew.claim_no_direct_support",
         "ew.source_not_in_table",
         "ew.source_unused"
       ],
@@ -203,6 +225,158 @@
       ],
       "fired": [
         "ew.quote_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "support_undeclared",
+      "expected": [
+        "ew.link_support_undeclared",
+        "ew.claim_no_direct_support"
+      ],
+      "fired": [
+        "ew.claim_no_direct_support",
+        "ew.link_support_undeclared"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "support_basis_missing",
+      "expected": [
+        "ew.support_basis_missing"
+      ],
+      "fired": [
+        "ew.support_basis_missing"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "link_strength_missing",
+      "expected": [
+        "ew.link_strength_missing",
+        "ew.support_weaker_than_claim"
+      ],
+      "fired": [
+        "ew.link_strength_missing",
+        "ew.support_weaker_than_claim"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "link_strength_unknown",
+      "expected": [
+        "ew.link_strength_unknown"
+      ],
+      "fired": [
+        "ew.link_strength_unknown",
+        "ew.support_weaker_than_claim"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "single_weak_source_cannot_carry_strong_claim",
+      "expected": [
+        "ew.support_weaker_than_claim"
+      ],
+      "fired": [
+        "ew.support_weaker_than_claim"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "counterevidence_cannot_be_support",
+      "expected": [
+        "ew.claim_no_direct_support"
+      ],
+      "fired": [
+        "ew.claim_no_direct_support",
+        "ew.opposition_not_addressed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "opposition_not_addressed",
+      "expected": [
+        "ew.claim_no_direct_support",
+        "ew.opposition_not_addressed"
+      ],
+      "fired": [
+        "ew.claim_no_direct_support",
+        "ew.opposition_not_addressed"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "locator_not_in_source",
+      "expected": [
+        "ew.locator_not_in_source"
+      ],
+      "fired": [
+        "ew.locator_not_in_source"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "quote_not_at_locator",
+      "expected": [
+        "ew.quote_not_at_locator"
+      ],
+      "fired": [
+        "ew.quote_not_at_locator"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "draft_claim_unregistered",
+      "expected": [
+        "ew.draft_claim_unregistered"
+      ],
+      "fired": [
+        "ew.draft_claim_unregistered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "malformed_link_degrades",
+      "expected": [
+        "ew.claim_no_support"
+      ],
+      "fired": [
+        "ew.claim_no_support",
+        "ew.source_unused"
       ],
       "missing": [],
       "spurious": [],
@@ -461,8 +635,8 @@
     }
   ],
   "totals": {
-    "passed": 37,
-    "of": 37
+    "passed": 50,
+    "of": 50
   },
   "note": "One scenario per rule, aligned to the three-part deliverable and the four graded elements. Clean baselines must report nothing."
 }

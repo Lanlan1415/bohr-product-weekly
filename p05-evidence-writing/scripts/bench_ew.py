@@ -27,7 +27,9 @@ BASE = {
          "strength": "strong",
          "strength_basis": "controlled experiment, n=6, replicated",
          "uncertainty": "",
-         "sources": [{"key": "doe2020", "quote": QUOTE, "locator": "p.7"}]},
+         "sources": [{"key": "doe2020", "quote": QUOTE, "locator": "p.7",
+                      "support_relation": "supports", "support_strength": "strong",
+                      "support_basis": "The controlled result directly reports the claimed three-fold uptake change."}]},
     ],
     "evidence": [
         {"key": "doe2020", "title": "Porous coatings for uptake", "year": 2020,
@@ -61,8 +63,38 @@ def ev(**over):
     return s
 
 
+def triangulated():
+    s = copy.deepcopy(BASE)
+    second_quote = "A second controlled study also found a three-fold increase."
+    second = {"key": "roe2021", "quote": second_quote, "locator": "Table 2",
+              "support_relation": "supports", "support_strength": "moderate",
+              "support_basis": "An independent controlled experiment reports the same direction and magnitude."}
+    first = s["claims"][0]["sources"][0]
+    first["support_strength"] = "moderate"
+    s["claims"][0]["sources"].append(second)
+    s["claims"][0]["strength_basis"] = "two independent controlled experiments, convergent results"
+    s["evidence"].append({"key": "roe2021", "title": "Independent coating trial", "year": 2021,
+                          "source_type": "primary", "text_quality": "native", "text": second_quote})
+    return s
+
+
+def opposing_registered():
+    s = triangulated()
+    counter_quote = "No uptake gain was detected below the solubility threshold."
+    s["claims"][0]["sources"].append(
+        {"key": "chen2022", "quote": counter_quote, "locator": "Results, paragraph 2",
+         "support_relation": "contradicts", "support_strength": "none",
+         "support_basis": "This is an opposing result retained as a scope boundary."})
+    s["claims"][0]["conflict_note"] = "The claim is restricted to conditions above the solubility threshold."
+    s["evidence"].append({"key": "chen2022", "title": "Boundary conditions for uptake", "year": 2022,
+                          "source_type": "primary", "text_quality": "native", "text": counter_quote})
+    return s
+
+
 SCEN = [
     ("clean", lambda: (d(), [])),
+    ("independent_moderate_triangulation_clean", lambda: (triangulated(), [])),
+    ("opposition_registered_clean", lambda: (opposing_registered(), [])),
 
     # the three parts
     ("claims_missing", lambda: (d(claims=[]), ["ew.claims_missing"])),
@@ -89,6 +121,40 @@ SCEN = [
     ("quote_not_in_source",
      lambda: (link(quote="The coating tripled uptake in every sample."),
               ["ew.quote_not_in_source"])),
+    ("support_undeclared",
+     lambda: (link(support_relation=""), ["ew.link_support_undeclared",
+                                        "ew.claim_no_direct_support"])),
+    ("support_basis_missing",
+     lambda: (link(support_basis=""), ["ew.support_basis_missing"])),
+    ("link_strength_missing",
+     lambda: (link(support_strength=""), ["ew.link_strength_missing",
+                                         "ew.support_weaker_than_claim"])),
+    ("link_strength_unknown",
+     lambda: (link(support_strength="decisive"), ["ew.link_strength_unknown"])),
+    ("single_weak_source_cannot_carry_strong_claim",
+     lambda: (link(support_strength="weak"), ["ew.support_weaker_than_claim"])),
+    ("counterevidence_cannot_be_support",
+     lambda: (link(support_relation="contradicts", support_strength="none",
+                   support_basis="", conflict_note="The claim is narrowed to the positive trial."),
+              ["ew.claim_no_direct_support"])),
+    ("opposition_not_addressed",
+     lambda: (link(support_relation="undercuts", support_strength="none", support_basis=""),
+              ["ew.claim_no_direct_support", "ew.opposition_not_addressed"])),
+    ("locator_not_in_source",
+     lambda: (d(claims=[dict(BASE["claims"][0],
+                            sources=[dict(BASE["claims"][0]["sources"][0], locator="p.999")])],
+                evidence=[dict(BASE["evidence"][0],
+                               passages=[{"locator": "p.7", "text": QUOTE}])]),
+              ["ew.locator_not_in_source"])),
+    ("quote_not_at_locator",
+     lambda: (d(evidence=[dict(BASE["evidence"][0],
+                               passages=[{"locator": "p.7", "text": "Unrelated method detail."}])]),
+              ["ew.quote_not_at_locator"])),
+    ("draft_claim_unregistered",
+     lambda: (d(draft="吸收速率提高到 3 倍 [C1]。另一个论断 [C9]。"),
+              ["ew.draft_claim_unregistered"])),
+    ("malformed_link_degrades",
+     lambda: (claim(sources=["doe2020"]), ["ew.claim_no_support"])),
 
     # source quality
     ("retracted_source", lambda: (ev(retracted=True), ["ew.retracted_source_used"])),

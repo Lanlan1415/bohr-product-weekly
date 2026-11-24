@@ -3,9 +3,11 @@ name: evidence-driven-writing
 description: >
   Turn a literature-supported writing task into a three-part deliverable — claim list,
   evidence table, manuscript — where every claim carries a strength label with a basis and
-  an uncertainty statement, every link carries a quoted passage and a locator, every citation
-  exists in the table and actually contains the quote, and a weak claim is not written as a
-  strong one. Handles the material forms that break naive quote matching: scanned sources
+  an uncertainty statement, and every claim-source link carries a quoted passage, a locator,
+  an explicit supports/contradicts/undercuts/context relation, its own support strength and an
+  entailment reason. Bibliographic matching never counts as factual support. A weak claim is
+  not written as a strong one, counterevidence requires a response, and passage-indexed quotes
+  must occur at the declared locator. Handles the material forms that break naive quote matching: scanned sources
   (OCR pass recorded), abstract-only records (cannot carry a strong claim), and text pulled
   from two-column PDFs with a repaired reading order (registered quote variants). Flags
   retracted sources, preprints used as strong support, and unregistered evidence conflicts.
@@ -34,7 +36,7 @@ mixed-case run stays one shape.
 
 | task asks for | section | what the audit proves |
 |-|-|-|
-| literature-supported draft | `evidence_writing` | every claim cited, every citation real, strength matched to prose |
+| literature-supported draft | `evidence_writing` | quote+locator, explicit support/counterevidence, strength and coverage |
 | translation or bilingual delivery | `translation` | numbers/units/citations/terms preserved across languages |
 | revision package / response letter | `review_response` | every comment answered, every claimed change locatable |
 | manuscript into a template | `format_template` | section order, heading styles, numbering, export checks |
@@ -55,7 +57,11 @@ Two more, both specific to this task:
 | failure | rule | what it proves |
 |-|-|-|
 | a quote that is not in the source | `ew.quote_not_in_source` | the passage is matched literally against the source text |
-| a claim written stronger than its evidence | `ew.draft_overstates_strength` | the draft uses proves/demonstrates/证明 while the claim is weak or moderate |
+| a claim written stronger than its evidence | `ew.draft_overstates_strength` | the sentence labelled with that claim id uses proves/demonstrates/证明 while the claim is weak or moderate |
+| a citation treated as entailment | `ew.link_support_undeclared`, `ew.support_basis_missing` | the writer must state relation and why the exact quote supports the claim's scope |
+| counterevidence hidden or counted as support | `ew.claim_no_direct_support`, `ew.opposition_not_addressed` | supports and objections are separate relations |
+| quote correct, locator wrong | `ew.locator_not_in_source`, `ew.quote_not_at_locator` | a passage-indexed source resolves the exact locator and its text |
+| draft claim missing from ledger | `ew.draft_claim_unregistered` | every explicit `[C#]` pointer resolves to a ledger claim |
 
 ## Material form: ask three questions before trusting any text
 
@@ -97,7 +103,9 @@ What each form changes mechanically:
   "evidence": [
     {"key": "doe2020", "title": "Porous coatings for uptake", "year": 2020,
      "source_type": "primary", "text_quality": "native",
-     "text": "The coating increased the uptake rate three-fold."}
+     "text": "The coating increased the uptake rate three-fold.",
+     "passages": [{"locator": "p.7",
+                   "text": "The coating increased the uptake rate three-fold."}]}
   ],
   "claims": [
     {"id": "C1",
@@ -107,7 +115,9 @@ What each form changes mechanically:
      "uncertainty": "",
      "sources": [{"key": "doe2020",
                   "quote": "The coating increased the uptake rate three-fold.",
-                  "locator": "p.7"}]}
+                  "locator": "p.7", "support_relation": "supports",
+                  "support_strength": "strong",
+                  "support_basis": "Controlled experiment directly reports the same three-fold outcome."}]}
   ],
   "draft": "吸收速率提高到 3 倍 [C1]。"
 }
@@ -119,6 +129,17 @@ What each form changes mechanically:
 contradicts other evidence registers `conflicts_with` (other keys), and one whose abstract
 disagrees with its full text registers `abstract_conflict` — either declaration obliges
 every claim citing it to carry a `conflict_note` saying how the contradiction was weighed.
+
+Following Manubot's citation-by-persistent-identifier and frozen-manual-reference approach, use a
+DOI/PMID/arXiv key when supplied and copy author/year/title/venue from the case's actual metadata;
+when no source text is available, keep the record unverified instead of resolving it from memory.
+This package does not silently fetch or invent metadata. Following Argdown, `support_relation`
+is separate from source identity: `supports` is positive evidence, `contradicts` attacks the
+claim, `undercuts` attacks the inference, and `context` supplies no entailment. Each `supports`
+link needs `support_strength` (`strong`/`moderate`/`weak`) and a short `support_basis`; an opposing
+link needs a claim-level `conflict_note`. The optional source `passages[]` index maps exact
+locators to exact source text and enables locator-specific quote verification. Without that index,
+whole-source quote checking is still performed and `checked.locator_indexed_links` remains zero.
 
 A claim may cite several sources and a source may support several claims; both directions
 are checked, so a source in the table that supports nothing is reported too
@@ -160,12 +181,23 @@ or unknown section — a written refusal, never a traceback).
 
 | rule | severity | what it proves |
 |-|-|-|
-| `ew.claim_no_support` | high | a claim cites nothing |
+| `ew.claim_no_support` | high | a claim has no usable source link |
+| `ew.claim_no_direct_support` | high | only context/counterevidence is present, not support |
+| `ew.link_support_undeclared` | high | a citation's argumentative relation is unstated |
+| `ew.link_support_unknown` | medium | relation outside supports/contradicts/undercuts/context |
+| `ew.support_basis_missing` | high | a supporting quote has no scope/entailment reason |
+| `ew.link_strength_missing` | high | a link has no strong/moderate/weak/none support strength |
+| `ew.link_strength_unknown` | medium | support strength is outside the four labels |
+| `ew.support_weaker_than_claim` | high | a single supporting source is weaker than the claim |
+| `ew.opposition_not_addressed` | high | counterevidence/undercut has no response or narrowed scope |
+| `ew.draft_claim_unregistered` | high | an explicit draft claim id is absent from the ledger |
 | `ew.link_no_source` | high | a link names no source key |
 | `ew.source_not_in_table` | high | a cited source does not exist in the table |
 | `ew.link_no_quote` | high | the link carries no quoted passage |
 | `ew.link_no_locator` | high | the passage has no section/page/paragraph locator |
 | `ew.quote_not_in_source` | high | the quote does not occur in that source's text |
+| `ew.locator_not_in_source` | high | a declared locator is absent from an available passage index |
+| `ew.quote_not_at_locator` | high | the quote is not in the passage at the declared locator |
 | `ew.quote_unverifiable` | medium | the source has no text, so the quote cannot be checked |
 | `ew.retracted_source_used` | high | a retracted source is supporting a claim |
 | `ew.preprint_as_strong` | medium | a preprint carries a strong claim |
@@ -195,10 +227,12 @@ or unknown section — a written refusal, never a traceback).
    files, not the labels. For each source ask the three form questions (scan? abstract
    only? two-column?) and register `source_type` and `text_quality` accordingly, with the
    OCR/order-repair notes those forms demand. Keep section/page/paragraph locators.
-3. Split the writing goal into claim units (C1, C2, …), match each to its supporting
-   sources and support scope, label strength with a basis per the grading scale in
-   `references/strength_scale.md`, leave `uncertainty` present, and carry any registered
-   source conflict into a `conflict_note` on the claim.
+3. Split the writing goal into claim units (C1, C2, …). For every link record exact `quote`,
+   `locator`, `support_relation`, `support_strength` and, for supports, `support_basis`. Label
+   overall claim strength with a basis per `references/strength_scale.md`; leave `uncertainty`
+   present for weak/moderate claims. Add contradictory and undercutting passages with the same
+   quote+locator precision and a `conflict_note`—never discard the losing side. Include all
+   explicit draft claim pointers in this ledger.
 4. Write the manuscript (draft) with `[C#]` markers to `/app/output/` as an editable file.
 5. Build the spec (draft + claims + evidence + case_id + output_contract array) and run the
    audit. Fix findings, rerun until clean or the remainder is declared.
@@ -230,28 +264,35 @@ Rubric mapping, so a reviewer can find each graded thing in one place:
 | rubric asks | where it lands |
 |-|-|
 | 论断清单 — 证据表 — 成稿 three-part delivery | spec keys `claims`, `evidence`, `draft`; paths in `deliverables[]` |
-| 引用真实存在且真的支持论断 | `source_not_in_table` / `quote_not_in_source` findings absent; quotes matched literally |
+| 引用真实存在且真的支持论断 | source identity, literal quote and locator checks remain separate from `support_relation` / `support_basis` / `support_strength`; missing or counter-only support blocks |
+| 反驳和覆盖 | `contradicts` / `undercuts` links + `conflict_note`; `checked.relation_counts`, `claim_coverage`, `locator_indexed_links`; unknown draft claim pointers rejected |
 | 强度标注与不确定性齐备 | `strength` + `strength_basis` + `uncertainty` per claim; scale in references/strength_scale.md |
 | 可独立复核（编号、摘录、定位、强度理由） | claim ids + `quote` + `locator` + `strength_basis`, all present in findings' shape |
 | 异常六态（不可得/仅摘要/自相矛盾/证据冲突/格式/权限） | Failure handling table below; first four also audited mechanically |
 
-Malformed or missing spec never raises. A missing or unknown section, or a non-object spec,
-is refused with a written result.json carrying `audit.no_section` and exit 5; malformed list
-entries (bare strings) are skipped safely and audited as "content absent" — findings such
-as `ew.claims_missing` appear and the exit is 3 or 4. Refusal and degradation are both
-recorded outcomes, never a traceback.
+Malformed or missing spec never raises. A non-object spec, missing section, or unreadable JSON
+returns `audit.no_section`; an unknown section returns `audit.section_unknown`; a caught audit
+failure returns `audit.section_error` (all exit 5). Every result path with a readable spec carries
+its case_id and every output_contract field, including deliverables/evidence values verbatim.
+Malformed list entries (bare strings) degrade to absent-content findings rather than tracebacks.
 
 | rule | severity | what it proves |
 |-|-|-|
-| `audit.no_section` | high | no section, unknown section, spec not readable JSON / not an object |
+| `audit.no_section` | high | no section or spec not readable JSON / not an object |
+| `audit.section_unknown` | high | section is not implemented (exit 5) |
+| `audit.section_error` | high | the audit could not complete; refusal replaces traceback (exit 5) |
 
 ## Limits
 
-- **Overlap and quoting are lexical.** A quote that appears in the source is not thereby
-  evidence *for* the claim; the `strength_basis` is where that judgement lives.
-- **`strength` and `uncertainty` are declared.** The audit enforces that they exist, have a
-  basis, and agree with the draft's verbs — not that they are correct. The grading scale
-  itself is documented in references/strength_scale.md and is a convention, not ground truth.
+- **Quoting is lexical; support is declared and reviewable.** A quote appearing in the source is
+  not automatically evidence for the claim. The audit requires a separate `support_relation` and
+  `support_basis` but does not claim semantic entailment is machine-proved; quote+locator+basis are
+  exposed for independent adjudication. Passage-index verification is available only when the
+  actual source provides `passages[]`; otherwise no locator-specific success is asserted.
+- **Strength is bounded, not computed from bibliometrics.** One source weaker than its claim is
+  rejected; two independent moderate studies may support a strong synthesis when `strength_basis`
+  documents convergence. `strength` and `uncertainty` remain grounded author judgements following
+  references/strength_scale.md, not scores invented from citation counts.
 - **The overstatement check is a verb list.** `proves`, `demonstrates`, `证明`, `证实`. A claim
   over-hedged into vagueness is not caught.
 - **Source quality is a flag, not a judgement.** Retraction, preprint status and text form
@@ -291,7 +332,7 @@ recorded outcomes, never a traceback.
 ## Verification
 
 ```bash
-python scripts/bench_ew.py        # 37 scenarios: one per rule, plus material-form paths
+python scripts/bench_ew.py        # 50 scenarios: support/counterevidence/locator rules + material-form paths
 python scripts/bench_writing.py   # 22 scenarios: cross-section regression
 ```
 
@@ -308,7 +349,7 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖，无网�
 1. **论断切分 + 强度分级（新增能力）**：稿件被拆成带 id 的论断单元，每条带 strong/moderate/weak
    标签与依据（设计、样本、重复），弱/中主张强制携带不确定性；分级口径沉淀在
    references/strength_scale.md，可被其他写作任务直接复用。边界：审计只证明标签存在、有依据、
-   与正文动词相称，不判定标签是否正确。证据形式：bench_ew 37 场景逐规则实测，同输入下
+   与正文动词相称，不判定标签是否正确。证据形式：bench_ew 50 场景逐规则实测，同输入下
    有/无本包的发现数差可复算。
 2. **引文逐字回链 + 材料形态豁免（方法改进）**：每个证据链接的引文按字面匹配 source text，
    改写/杜撰的引文被点名（`ew.quote_not_in_source`）；在 OCR 与双栏乱序来源上，失败发现携带
@@ -319,10 +360,12 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖，无网�
    （`ew.support_abstract_only`）——对应题目"从全文而非摘要中抽取"的硬约束；无全文来源的引文
    一律报 `ew.quote_unverifiable` 而不是静默通过。边界：形态由声明方登记。证据形式：
    abstract_only_strong / quote_unverifiable 场景。
-4. **冲突证据强制登记（方法改进）**：来源级 `conflicts_with` / `abstract_conflict` 声明把
-   义务传给引用它的主张——没有 `conflict_note` 就报发现，反面证据不会被支持方证据悄悄淹没。
-   对应题目"冲突证据不被隐藏"。证据形式：conflict_unregistered / abstract_conflict_unregistered
-   场景；对照运行时表现为草稿单边引用被检出。
+4. **论断关系图与冲突证据（方法改进）**：实际借鉴 Argdown 的支持/攻击/undercut 分离，
+   每条链接声明 supports/contradicts/undercuts/context、独立支持强度和理由；来源级
+   `conflicts_with` / `abstract_conflict` 与链接级反对证据共同要求 `conflict_note`。
+   result.checked 输出论断覆盖、关系计数和定位索引覆盖。书目存在不算支持，纯反对证据也不能
+   充当支撑。Manubot 式持久标识/冻结元数据用于回查，不冒充事实核验。证据形式：triangulated
+   与 opposition_registered 干净基线，以及 support_undeclared、opposition_not_addressed 等缺陷场景。
 5. **来源分级守卫**：撤稿来源直接拒绝（`ew.retracted_source_used`）、预印本支撑强主张被降权
    （`ew.preprint_as_strong`）。边界：状态由声明方登记，本工具不查期刊数据库。
 
@@ -334,7 +377,7 @@ Python 3.9+（3.14 实测）。纯标准库实现，无第三方依赖，无网�
   动词—强度对应表，跨任务可复用
 - **证据表结构**：spec 的 claims/evidence/draft 结构即论断切分模板与证据表结构，字段在
   SKILL.md 中逐一说明，可直接套用到新题
-- **题集**：bench_ew 37 场景 + bench_writing 22 场景（每规则一场景 + 形态路径 + FP 守卫），
+- **题集**：bench_ew 50 场景 + bench_writing 22 场景（每规则一场景 + 形态路径 + FP 守卫），
   `python scripts/bench_ew.py` 即可独立复跑，报告写入 report_ew.json
 - **示例**：examples/ 提供最小调用示例 spec.json 与示意输出 bench-report.json，标注为示例
 - **依赖与配置**：Python 3.9+ 纯标准库，无安装步骤、无网络、无个人文件依赖

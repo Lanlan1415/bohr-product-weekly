@@ -297,11 +297,77 @@
       "spurious": [],
       "pass": true,
       "status": "review"
+    },
+    {
+      "scenario": "promise_not_delivered",
+      "expected": [
+        "struct.promise_not_delivered"
+      ],
+      "fired": [
+        "struct.promise_not_delivered"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "abstract_overclaim",
+      "expected": [
+        "struct.abstract_overclaim"
+      ],
+      "fired": [
+        "struct.abstract_conclusion_mismatch",
+        "struct.abstract_overclaim"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "blocked"
+    },
+    {
+      "scenario": "abstract_conclusion_mismatch",
+      "expected": [
+        "struct.abstract_conclusion_mismatch"
+      ],
+      "fired": [
+        "struct.abstract_conclusion_mismatch"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "finding_locator_vague",
+      "expected": [
+        "struct.finding_locator_vague"
+      ],
+      "fired": [
+        "struct.finding_locator_vague"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
+    },
+    {
+      "scenario": "suggestion_not_executable",
+      "expected": [
+        "struct.suggestion_not_executable"
+      ],
+      "fired": [
+        "struct.suggestion_not_executable"
+      ],
+      "missing": [],
+      "spurious": [],
+      "pass": true,
+      "status": "review"
     }
   ],
   "totals": {
-    "passed": 23,
-    "of": 23
+    "passed": 28,
+    "of": 28
   },
   "note": "One scenario per rule, aligned to the structure-diagnosis scoring points. Clean baselines must report nothing."
 }

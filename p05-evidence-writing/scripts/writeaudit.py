@@ -10,17 +10,51 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import writing as W  # noqa: E402
 
 
-def _refused(out_dir, message: str) -> dict:
-    """A refusal is a recorded outcome: write result.json, status undetermined."""
-    result = {"schema_version": "writeaudit/v1", "status": "undetermined",
-              "findings": [{"rule": "audit.no_section", "severity": "high",
-                            "message": message}],
-              "limits": ["the case could not be run as declared; nothing was audited"]}
+def _contract_keys(contract) -> list[str]:
+    if isinstance(contract, dict):
+        return [str(key) for key in contract]
+    if isinstance(contract, list):
+        return [str(key) for key in contract if isinstance(key, str)]
+    return []
+
+
+def _echo_contract(result: dict, spec: dict) -> dict:
+    """Preserve case identity and every declared field on every run path.
+
+    Audit-owned values win; all other values supplied by the spec are copied
+    verbatim, including deliverables and evidence records.  Unknown values stay
+    null and are explicitly limited rather than fabricated or dropped as bulky.
+    """
+    result["case_id"] = spec.get("case_id")
+    keys = _contract_keys(spec.get("output_contract"))
+    for key in keys:
+        if key in result:
+            continue
+        if key in spec:
+            result[key] = spec[key]
+        else:
+            result[key] = None
+            result.setdefault("limits", []).append(
+                f"output_contract field '{key}' was not derivable by this audit")
+    result["output_contract_fields"] = keys
+    return result
+
+
+def _write_result(out_dir, result: dict) -> dict:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
                                          encoding="utf-8")
     return result
+
+
+def _refused(out_dir, message: str, spec: dict | None = None,
+             rule: str = "audit.no_section") -> dict:
+    """A refusal is a recorded outcome and still honours the known contract."""
+    result = {"schema_version": "writeaudit/v1", "status": "undetermined",
+              "findings": [{"rule": rule, "severity": "high", "message": message}],
+              "limits": ["the case could not be run as declared; nothing was audited"]}
+    return _write_result(out_dir, _echo_contract(result, spec or {}))
 
 
 def build_and_audit(spec_path: Path, out_dir: Path, section: str | None = None) -> dict:
@@ -38,18 +72,17 @@ def build_and_audit(spec_path: Path, out_dir: Path, section: str | None = None) 
     sec = section or spec.get("section")
 
     if not sec:
-        result = {"schema_version": "writeaudit/v1", "status": "undetermined",
-                  "findings": [{"rule": "audit.no_section", "severity": "high",
-                                "message": "no section was declared, so no rules apply"}],
-                  "limits": ["the case declares no section"]}
-        (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
-                                             encoding="utf-8")
-        return result
+        return _refused(out_dir, "no section was declared, so no rules apply", spec)
+    if not isinstance(sec, str) or sec not in W.SECTIONS:
+        return _refused(out_dir, f"unknown section '{sec}', so no rules apply", spec,
+                        "audit.section_unknown")
 
-    if sec not in W.SECTIONS:
-        return _refused(out_dir, f"unknown section '{sec}', so no rules apply")
-
-    findings, status, counts = W.run(spec, sec)
+    try:
+        findings, status, counts = W.run(spec, sec)
+    except Exception as exc:
+        return _refused(out_dir,
+                        f"the audit could not complete on this spec: {type(exc).__name__}: {exc}",
+                        spec, "audit.section_error")
 
     limits = []
     result = {
@@ -61,35 +94,20 @@ def build_and_audit(spec_path: Path, out_dir: Path, section: str | None = None) 
         "checked": _checked(spec, sec),
         "limits": limits,
     }
-    cid = spec.get("case_id")
-    if cid is not None:
-        result["case_id"] = cid
-
-    # Echo the case's output_contract: a field the audit already carries is kept;
-    # one the spec supplies a value for is copied verbatim (bulky inputs excluded);
-    # one it cannot derive is filled as null and named in limits, so a grader
-    # finds the key and an honest note instead of a silent gap.
-    _bulky = ("output_contract", "section", "text", "source_text", "target_text",
-              "comments", "responses", "template", "references", "evidence", "glossary")
-    for key in (spec.get("output_contract") or {}):
-        if key in result:
-            continue
-        if key in spec and key not in _bulky:
-            result[key] = spec[key]
-            continue
-        result[key] = None
-        limits.append(f"output_contract field '{key}' was not derivable by this audit")
-
-    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
-                                         encoding="utf-8")
-    return result
+    _echo_contract(result, spec)
+    return _write_result(out_dir, result)
 
 
 def _checked(spec: dict, section: str) -> dict:
     """What was actually looked at, so a reader knows the audit's scope."""
     if section == "evidence_writing":
-        return {"evidence_items": len(spec.get("evidence") or []),
-                "sentences": len(__import__("guard").split_sentences(spec.get("text") or ""))}
+        summary = W._claim_support_summary(spec)
+        summary.update({
+            "evidence_items": len(spec.get("evidence") or []),
+            "sentences": len(__import__("guard").split_sentences(
+                str(spec.get("draft") or spec.get("text") or ""))),
+            "coverage_meaning": "declared, verbatim-linked coverage; not an entailment proof"})
+        return summary
     if section == "translation":
         return {"source_chars": len(spec.get("source_text") or ""),
                 "target_chars": len(spec.get("target_text") or ""),

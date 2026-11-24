@@ -52,6 +52,7 @@ def split_clauses(sentence: str) -> list[str]:
 # Matched longest-first so "mM" wins over "m" and "kPa" over "Pa".
 UNITS = [
     "mol/L", "mmol/L", "µmol/L", "μmol/L", "nmol/L", "pmol/L",
+    "mmol", "µmol", "μmol", "nmol", "pmol", "mol",
     "kPa", "MPa", "GPa", "Pa", "mbar", "bar", "atm", "Torr",
     "keV", "MeV", "GeV", "TeV", "eV", "mV", "kV", "µV", "μV", "V",
     "kHz", "MHz", "GHz", "Hz",

@@ -95,6 +95,60 @@ HEDGE_WORDS = ("may", "might", "could", "suggest", "suggests", "indicate", "indi
 # (the full text was never obtained), or text pulled from a two-column PDF in
 # a reading order that was repaired after extraction.
 TEXT_QUALITIES = ("native", "ocr", "abstract_only", "two_column_reordered")
+# Bibliographic identity is deliberately separate from argumentative support.
+# The names mirror Argdown's support / attack / undercut distinction; "context"
+# records a relevant work without pretending that it entails the claim.
+SUPPORT_RELATIONS = ("supports", "contradicts", "undercuts", "context")
+SUPPORT_STRENGTHS = ("strong", "moderate", "weak", "none")
+DRAFT_CLAIM_POINTER = re.compile(r"\[([A-Z][A-Za-z0-9_\-]*\d+)\]")
+
+
+def _passage_for_locator(entry: dict, locator: str) -> str | None:
+    """Return the source text at a declared locator, or None if not indexed.
+
+    ``passages`` is an optional exact locator index.  Legacy whole-text entries
+    still receive literal-quote checking, but never claim locator verification.
+    """
+    passages = entry.get("passages")
+    if not isinstance(passages, list):
+        return None
+    wanted = re.sub(r"\s+", " ", locator or "").strip().casefold()
+    for passage in _records(passages):
+        here = re.sub(r"\s+", " ", str(passage.get("locator") or "")).strip().casefold()
+        if here == wanted:
+            return str(passage.get("text") or "")
+    return ""
+
+
+def _claim_support_summary(spec: dict) -> dict:
+    """Deterministic coverage counters used in result.json, not as a truth score."""
+    claims = list(_records(spec.get("claims")))
+    relation_counts = {name: 0 for name in SUPPORT_RELATIONS}
+    support_links = 0
+    locator_checked = 0
+    covered = 0
+    for claim in claims:
+        links = list(_records(claim.get("sources")))
+        has_support = False
+        for link in links:
+            relation = str(link.get("support_relation") or "").strip().lower()
+            if relation in relation_counts:
+                relation_counts[relation] += 1
+            if relation == "supports":
+                support_links += 1
+                has_support = True
+            entry = next((e for e in _records(spec.get("evidence"))
+                          if str(e.get("key") or e.get("id") or "") == str(link.get("key") or "")),
+                         None)
+            if entry is not None and _passage_for_locator(
+                    entry, str(link.get("locator") or "")):
+                locator_checked += 1
+        covered += bool(claim.get("id") and str(claim.get("claim") or "").strip() and has_support)
+    return {"claims": len(claims), "claims_with_support": covered,
+            "support_links": support_links, "counter_links": relation_counts["contradicts"] +
+            relation_counts["undercuts"], "relation_counts": relation_counts,
+            "locator_indexed_links": locator_checked,
+            "claim_coverage": round(covered / len(claims), 4) if claims else 0.0}
 
 
 def evidence_writing(spec: dict, findings: list[dict]) -> None:
@@ -191,6 +245,9 @@ def evidence_writing(spec: dict, findings: list[dict]) -> None:
         cid = str(c.get("id") or "").strip()
         text = str(c.get("claim") or "")
         sources = c.get("sources") or []
+        source_links = list(_records(sources))
+        supporting_links = []
+        opposing_links = []
 
         if not cid:
             _add(findings, "ew.claim_no_id", "high",
@@ -223,12 +280,39 @@ def evidence_writing(spec: dict, findings: list[dict]) -> None:
                  "a weak or moderate claim states no uncertainty, so the prose will read more "
                  "certainly than the evidence allows", claim=cid or i, strength=strength)
 
-        # --- the claim-to-source links ------------------------------------
-        if not sources:
+        # --- claim-to-source links: identity is not evidence ---------------
+        if not source_links:
             _add(findings, "ew.claim_no_support", "high",
-                 "a claim cites no source at all", claim=cid or i, text=text[:70])
-        for s in sources:
+                 "a claim cites no usable source link at all", claim=cid or i, text=text[:70])
+        for s in source_links:
+            relation = str(s.get("support_relation") or "").strip().lower()
+            link_strength = str(s.get("support_strength") or "").strip().lower()
             key = str(s.get("key") or "").strip()
+            if not relation:
+                _add(findings, "ew.link_support_undeclared", "high",
+                     "a citation link does not declare whether its quote supports, contradicts, "
+                     "undercuts or merely contextualises the claim; bibliographic matching is "
+                     "not factual support", claim=cid or i, key=key)
+            elif relation not in SUPPORT_RELATIONS:
+                _add(findings, "ew.link_support_unknown", "medium",
+                     "support_relation is outside supports/contradicts/undercuts/context",
+                     claim=cid or i, key=key, found=relation)
+            elif relation == "supports":
+                supporting_links.append(s)
+                if not str(s.get("support_basis") or "").strip():
+                    _add(findings, "ew.support_basis_missing", "high",
+                         "a supporting quote has no concise entailment/scope reason, so citation "
+                         "relevance is being mistaken for support", claim=cid or i, key=key)
+            else:
+                opposing_links.append(s)
+            if relation in SUPPORT_RELATIONS and not link_strength:
+                _add(findings, "ew.link_strength_missing", "high",
+                     "a claim-source link has no support_strength, so the claim's grade cannot "
+                     "be compared with the quoted support", claim=cid or i, key=key)
+            elif link_strength and link_strength not in SUPPORT_STRENGTHS:
+                _add(findings, "ew.link_strength_unknown", "medium",
+                     "support_strength is outside strong/moderate/weak/none",
+                     claim=cid or i, key=key, found=link_strength)
             if key:
                 used_keys.add(key)
             if not key:
@@ -249,6 +333,20 @@ def evidence_writing(spec: dict, findings: list[dict]) -> None:
                 _add(findings, "ew.link_no_locator", "high",
                      "a quoted passage has no section/page/paragraph locator",
                      claim=cid or i, key=key)
+            if quote and entry is not None and isinstance(entry.get("passages"), list):
+                passage = _passage_for_locator(entry, str(s.get("locator") or ""))
+                if passage == "":
+                    _add(findings, "ew.locator_not_in_source", "high",
+                         "the declared locator does not resolve in this source's passage index",
+                         claim=cid or i, key=key, locator=str(s.get("locator") or ""))
+                elif passage is not None:
+                    candidates = [quote] + [str(v).strip() for v in (s.get("quote_variants") or [])
+                                            if str(v or "").strip()]
+                    if not any(candidate in passage for candidate in candidates):
+                        _add(findings, "ew.quote_not_at_locator", "high",
+                             "the quote may occur elsewhere in the work but not at the locator "
+                             "declared for this claim", claim=cid or i, key=key,
+                             locator=str(s.get("locator") or ""))
             if quote and entry is not None:
                 src_text = str(entry.get("text") or "")
                 if not src_text.strip():
@@ -292,13 +390,37 @@ def evidence_writing(spec: dict, findings: list[dict]) -> None:
                          "(only the abstract), so the support was not extracted from the full "
                          "text the task requires", claim=cid or i, key=key)
 
+        valid_supports = [s for s in supporting_links if by_key.get(str(s.get("key") or ""))]
+        if source_links and not valid_supports:
+            _add(findings, "ew.claim_no_direct_support", "high",
+                 "the claim has context/counterevidence but no usable supporting source; a "
+                 "bibliography or an objection alone cannot establish it", claim=cid or i)
+        if valid_supports:
+            ranks = {"none": 0, "weak": 1, "moderate": 2, "strong": 3}
+            strongest = max(ranks.get(str(s.get("support_strength") or "").lower(), 0)
+                            for s in valid_supports)
+            # Only a single-source mismatch is deterministic.  Independent moderate
+            # studies can jointly warrant a strong synthesis; do not ban triangulation.
+            if len({str(s.get("key") or "") for s in valid_supports}) == 1 and \
+                    ranks.get(strength, 0) > strongest:
+                strongest_label = next(name for name in ("strong", "moderate", "weak", "none")
+                                       if ranks[name] == strongest)
+                _add(findings, "ew.support_weaker_than_claim", "high",
+                     "the only supporting link is graded weaker than the claim it must carry",
+                     claim=cid or i, claim_strength=strength, strongest_support=strongest_label)
+        if opposing_links and not str(c.get("conflict_note") or "").strip():
+            _add(findings, "ew.opposition_not_addressed", "high",
+                 "counterevidence or an inference objection is quoted but the claim gives no "
+                 "response, narrowed scope or reason to retain the claim", claim=cid or i,
+                 sources=sorted({str(s.get("key") or "") for s in opposing_links}))
+
         # --- registered conflicts ------------------------------------------
         # A table entry that declares a contradiction -- with another source
         # (conflicts_with) or between its own abstract and its full text
         # (abstract_conflict) -- passes a duty to every claim citing it: the
         # claim must say how the contradiction was handled, so opposing
         # evidence is registered rather than quietly outvoted.
-        for s in sources:
+        for s in source_links:
             e = by_key.get(str(s.get("key") or "").strip())
             if e is None:
                 continue
@@ -327,13 +449,23 @@ def evidence_writing(spec: dict, findings: list[dict]) -> None:
 
         # --- a weak claim written strongly -------------------------------
         if strength in ("weak", "moderate") and draft:
-            body = draft
+            body = "\n".join(sentence for sentence in _sentences(draft)
+                             if cid and cid in sentence)
             strong_words = ("prove", "proves", "demonstrate", "demonstrates", "confirm",
                             "confirms", "establish", "establishes", "证明", "证实")
             if any(w in body.lower() for w in strong_words):
                 _add(findings, "ew.draft_overstates_strength", "medium",
                      "the draft uses absolute verbs while the claim is labelled weak or "
                      "moderate", claim=cid or i, strength=strength)
+
+    # Draft-level coverage catches a substantive labelled claim omitted from the
+    # ledger.  Lower-case bracket citations are bibliographic markers, not claim ids.
+    unknown_pointers = sorted({key for key in DRAFT_CLAIM_POINTER.findall(draft)
+                               if key not in ids_seen})
+    for pointer in unknown_pointers:
+        _add(findings, "ew.draft_claim_unregistered", "high",
+             "the draft carries a claim identifier that is absent from the claim ledger",
+             claim=pointer)
 
     # --- many-to-many coverage in the other direction --------------------
     if by_key:

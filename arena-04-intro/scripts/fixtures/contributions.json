@@ -1,0 +1,28 @@
+{
+  "contributions_alignment": [
+    {
+      "claim": "提出 PathFuse：统计残差分支与图信号分支融合的时序异常检测框架",
+      "mapped_to": "方法章节 §3；Figure 1（框架图）",
+      "status": "aligned",
+      "tokens": ["PathFuse", "残差分支", "图信号分支"]
+    },
+    {
+      "claim": "在三个公开数据集上 F1 较最优基线提升 6.2 个百分点",
+      "mapped_to": "Table 1（主结果）",
+      "status": "aligned",
+      "tokens": []
+    },
+    {
+      "claim": "在边缘设备上可实时运行",
+      "mapped_to": "Figure 4（边缘部署延迟曲线）",
+      "status": "aligned",
+      "tokens": []
+    },
+    {
+      "claim": "该框架可自然扩展到视频异常检测",
+      "mapped_to": "",
+      "status": "author_judgment",
+      "tokens": []
+    }
+  ]
+}

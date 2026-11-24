@@ -1,0 +1,22 @@
+{
+  "anchors": [
+    {
+      "ref": "liu2021arimad",
+      "field": "limitation",
+      "quote": "依赖平稳性假设，在趋势漂移场景下误报率显著上升",
+      "locator": {"section": "abstract"}
+    },
+    {
+      "ref": "chen2020mp",
+      "field": "limitation",
+      "quote": "窗口长度需人工设定，长\n序列计算开销大",
+      "locator": {"section": "abstract"}
+    },
+    {
+      "ref": "wang2022lstmae",
+      "field": "conclusion",
+      "quote": "在 10 条样本上即可完成训练",
+      "locator": {"section": "abstract"}
+    }
+  ]
+}

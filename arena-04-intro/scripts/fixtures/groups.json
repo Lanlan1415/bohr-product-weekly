@@ -1,0 +1,57 @@
+{
+  "groups": [
+    {
+      "group": "统计与距离基线",
+      "basis": "按方法路线分组：无需训练的统计模型与距离扫描方法，比较维度为检测精度与计算开销",
+      "papers": [
+        {
+          "ref": "liu2021arimad",
+          "conclusion": "平稳信号上统计基线 F1 与早期深度模型相当，训练开销低两个数量级",
+          "conditions": "平稳性假设成立的信号；训练资源有限",
+          "limitation": "趋势漂移场景误报率显著上升",
+          "anchor": {"quote": "依赖平稳性假设，在趋势漂移场景下误报率显著上升", "locator": {"section": "abstract"}}
+        },
+        {
+          "ref": "chen2020mp",
+          "conclusion": "无需训练即可检测点异常与片段异常，周期振动数据召回 0.97",
+          "conditions": "周期结构明显、窗口长度可人工调定",
+          "limitation": "窗口需人工设定；长序列计算开销大",
+          "anchor": {"quote": "窗口长度需人工设定，长序列计算开销大", "locator": {"section": "abstract"}}
+        }
+      ]
+    },
+    {
+      "group": "深度序列模型",
+      "basis": "按方法路线分组：需要训练的重构/注意力深度模型，比较维度为精度上限与训练/推理资源",
+      "papers": [
+        {
+          "ref": "wang2022lstmae",
+          "conclusion": "多变量基准 F1 达 0.91",
+          "conditions": "至少五万条正常样本可供训练",
+          "limitation": "未见过的故障类型泛化弱，小样本性能下降",
+          "anchor": {"quote": "训练需要至少五万条正常样本", "locator": {"section": "abstract"}}
+        },
+        {
+          "ref": "zhao2023transc",
+          "conclusion": "稀疏注意力建模长程依赖，把最优 F1 提升 4.3 个百分点",
+          "conditions": "8 张 GPU 训练资源",
+          "limitation": "单卡推理延迟 180 毫秒，在线检测受限",
+          "anchor": {"quote": "单卡推理延迟达 180 毫秒", "locator": {"section": "abstract"}}
+        }
+      ]
+    },
+    {
+      "group": "图拓扑方法",
+      "basis": "按方法路线分组：以传感器拓扑为先验的图模型（仅 1 篇，无法组内比较）",
+      "papers": [
+        {
+          "ref": "li2021gdnx",
+          "conclusion": "站点级数据上优于独立通道基线",
+          "conditions": "需要给定传感器拓扑图",
+          "limitation": "拓扑缺失或频繁变更时需重新标定",
+          "anchor": {"quote": "当拓扑缺失或频繁变更时需要重新标定", "locator": {"section": "abstract"}}
+        }
+      ]
+    }
+  ]
+}

@@ -13,7 +13,10 @@
         {
           "key": "doe2020",
           "quote": "The coating increased the uptake rate three-fold.",
-          "locator": "p.7"
+          "locator": "p.7",
+          "support_relation": "supports",
+          "support_strength": "strong",
+          "support_basis": "The controlled source directly reports the claimed three-fold uptake change."
         }
       ]
     },
@@ -28,7 +31,10 @@
           "key": "roe2021",
           "quote": "Uptake gain vanished at 4 °C.",
           "locator": "Fig 2, p.5",
-          "quote_variants": ["Uptake gain vanished at 4 °C."]
+          "quote_variants": ["Uptake gain vanished at 4 °C."],
+          "support_relation": "supports",
+          "support_strength": "weak",
+          "support_basis": "The preprint directly reports the low-temperature boundary, but only one OCR-extracted preprint is available."
         }
       ]
     }
@@ -40,7 +46,8 @@
       "year": 2020,
       "source_type": "primary",
       "text_quality": "native",
-      "text": "The coating increased the uptake rate three-fold."
+      "text": "The coating increased the uptake rate three-fold.",
+      "passages": [{"locator": "p.7", "text": "The coating increased the uptake rate three-fold."}]
     },
     {
       "key": "roe2021",
@@ -49,7 +56,8 @@
       "source_type": "preprint",
       "text_quality": "ocr",
       "ocr_note": "ocr-tool p.1-9, confidence 0.96, layout checked p.5",
-      "text": "Uptake gain vanished at 4 °C."
+      "text": "Uptake gain vanished at 4 °C.",
+      "passages": [{"locator": "Fig 2, p.5", "text": "Uptake gain vanished at 4 °C."}]
     }
   ],
   "output_contract": ["deliverables", "fact_source_map", "pending_confirmation", "gaps"],

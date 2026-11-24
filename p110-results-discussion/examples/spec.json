@@ -5,30 +5,55 @@
     "deliverable_text": "auto",
     "trace_ledger": "auto"
   },
+  "deliverable_text": {
+    "results": "Coated uptake averaged 3.0 mmol versus 2.0 mmol for control, a 1.0 mmol difference (95% CI 0.5 to 1.5; p = 0.01, t-test). Arm B showed a higher response but did not reach significance.",
+    "discussion": "The coated samples showed higher uptake, consistent with earlier work [doe2020]. The mechanism may involve increased surface area [doe2020]. Arm B did not reach significance. Roe reports a conflicting result [roe2021]. Alternative explanations include measurement drift, monitored with calibration samples [doe2020]."
+  },
+  "trace_ledger": [
+    {"item": "1.0 mmol difference", "source_ref": "Table 1, coated-control row", "derivation": "3.0 - 2.0 mmol"},
+    {"item": "Arm B effect", "status": "not_computable", "reason": "group means and CI/SE/SD absent"}
+  ],
   "design": "experimental",
-  "results_text": "Uptake rose three-fold in the coated group (p < 0.01, t-test). Arm B showed no change.",
-  "discussion_text": "The coated samples showed higher uptake, consistent with earlier work [doe2020]. The mechanism may involve increased surface area [doe2020]. Arm B did not reach significance. Roe reports a conflicting result [roe2021].",
+  "results_text": "Coated uptake averaged 3.0 mmol versus 2.0 mmol for control, a 1.0 mmol difference (95% CI 0.5 to 1.5; p = 0.01, t-test). Arm B showed a higher response but did not reach significance.",
+  "discussion_text": "The coated samples showed higher uptake, consistent with earlier work [doe2020]. The mechanism may involve increased surface area [doe2020]. Arm B did not reach significance. Roe reports a conflicting result [roe2021]. Alternative explanations include measurement drift, monitored with calibration samples [doe2020].",
   "figures": [
     {
-      "id": "Fig 1",
+      "id": "Table 1",
       "values": [
-        "3",
-        "three-fold",
-        "0.01"
+        "3.0",
+        "2.0",
+        "1.0",
+        "0.5",
+        "1.5",
+        "0.01",
+        "95"
       ],
       "has_errorbar": true,
-      "errorbar": "SD"
+      "errorbar": "95% CI"
     }
   ],
   "comparisons": [
     {
+      "id": "cmp-coated-control",
       "name": "coated vs control",
       "significant": true,
-      "strength": "strong"
+      "strength": "strong",
+      "mean_treatment": 3.0,
+      "mean_control": 2.0,
+      "effect_type": "difference",
+      "effect_size": 1.0,
+      "ci_low": 0.5,
+      "ci_high": 1.5,
+      "p_value": 0.01,
+      "alpha": 0.05,
+      "source_ref": "Table 1, coated-control row"
     },
     {
+      "id": "cmp-arm-b",
       "name": "Arm B",
-      "significant": false
+      "significant": false,
+      "effect_not_computable": "Arm B group means are not supplied; no effect estimate is inferred from a direction adjective.",
+      "uncertainty_not_computable": "Arm B CI/SE/SD are absent; no uncertainty is reconstructed from non-significance."
     }
   ],
   "literature": [
@@ -50,6 +75,10 @@
     {
       "level": "measurement",
       "text": "one coating thickness measured"
+    },
+    {
+      "level": "sample",
+      "text": "Findings are limited to this material and should not be extrapolated to other materials or populations."
     }
   ],
   "section": "results_discussion",

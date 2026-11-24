@@ -1,0 +1,23 @@
+# intro-related-work-writer 资源清单
+# 入口约定：所有捆绑文件相对本目录（environment/ 的上级，即 Skill 根目录）。
+# 运行环境：Python >= 3.8，纯标准库；无网络访问；无第三方依赖。
+entry_point: SKILL.md
+files:
+  - SKILL.md                        # 主入口：6 步工作流、输出契约摘要、异常与降级、自查清单
+  - USAGE.md                        # 使用与方法说明（步骤/输入输出/方法/限制/失败处理/自查）
+  - references/grouping-rules.md    # 分组规则：分组依据类型、"分得清"准则、组级比较句
+  - references/claim-rules.md       # 断言分级：空白推导链四段结构、evidence/author_judgment 判据
+  - references/rubric-checklist.md  # "立得住/分得清/说得实/对得上"自查 + 5 评分维度对照
+  - references/output-contract.md   # result.json 信封与专属结构、错误码表、交付物
+  - scripts/parse_library.py        # 文献库解析（bib/json/编号列表自动识别）
+  - scripts/coverage_check.py       # 成稿核验：编造引用/覆盖率/单篇组/工件名存在性
+  - scripts/anchor_check.py         # 转述锚点 quote 逐字回查
+  - scripts/gap_chain_check.py      # 空白推导链完整性校验（basis/链尾/author_judgment 登记）
+  - scripts/write_matrix.py         # groups → 分组比较矩阵 CSV
+  - scripts/selftest.py             # 本地自测（42 项，含反向检出）
+  - scripts/fixtures/               # 自测夹具（library.bib/groups/gap_chain/contributions/draft 等）
+  - examples/example-01.md          # 最小调用示例（标注为示例，非正式案例结果）
+runtime:
+  python: ">=3.8"
+  stdlib_only: true
+  network: false

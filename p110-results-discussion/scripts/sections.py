@@ -15,6 +15,7 @@ missing one — it teaches the author to ignore the audit.
 
 from __future__ import annotations
 
+import math
 import re
 
 import guard as G
@@ -128,15 +129,22 @@ _STAT_EXPR = re.compile(
     re.IGNORECASE)
 
 
+_CI_RANGE = re.compile(
+    r"(?:\bCI|置信区间)\s*[\(\[]?\s*[-+]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?"
+    r"\s*(?:,|;|to|至|[-–—])\s*[-+]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?",
+    re.IGNORECASE)
+
+
 def _stat_values(sentence: str) -> set[float]:
     """The numbers that belong to a statistics expression in this sentence."""
     vals: set[float] = set()
-    for m in _STAT_EXPR.finditer(G.normalise(sentence)):
-        for num in re.findall(r"\d+(?:\.\d+)?", m.group(0)):
-            try:
-                vals.add(float(num))
-            except ValueError:
-                pass
+    for expression in (_STAT_EXPR, _CI_RANGE):
+        for m in expression.finditer(G.normalise(sentence)):
+            for num in re.findall(r"\d+(?:\.\d+)?", m.group(0)):
+                try:
+                    vals.add(float(num))
+                except ValueError:
+                    pass
     return vals
 
 
@@ -1827,6 +1835,132 @@ _EBAR_MEANING = re.compile(
 
 
 
+NONSIGNIFICANT_TEXT = re.compile(
+    r"\b(?:not|non[- ]?)\s*(?:statistically\s+)?significant\b|\bno\s+significant\b|"
+    r"\bdid\s+not\s+reach\s+(?:statistical\s+)?significance\b|\bp\s*[>=]\s*0?\.0?5\b|"
+    r"不显著|无显著|未达显著", re.I)
+ALTERNATIVE_EXPLANATION = re.compile(
+    r"\b(?:alternative|another|other)\s+explanations?\b|\balternatively\b|\bconfound(?:ing|ers?)?\b|"
+    r"\breverse\s+causation\b|\bmeasurement\s+(?:bias|error)\b|\bselection\s+bias\b|"
+    r"替代解释|另一种解释|混杂|反向因果|测量偏倚|测量误差|选择偏倚", re.I)
+EXTRAPOLATION_BOUNDARY = re.compile(
+    r"\b(?:limited\s+to|generaliz(?:e|ed|able|ability)|extrapolat\w*|external\s+validity|"
+    r"applies\s+only|other\s+(?:populations|materials|cohorts|settings)|scope\s+conditions?)\b|"
+    r"限于|仅适用|外推|适用边界|其他人群|其他材料|外部效度", re.I)
+
+
+def _bool3(value):
+    """Three-valued significance parsing; malformed strings never become truthy."""
+    if isinstance(value, bool) or value in (0, 1):
+        return bool(value)
+    if isinstance(value, str):
+        folded = value.strip().casefold()
+        if folded in {True, 1, "1", "true", "yes", "significant", "显著"}:
+            return True
+        if folded in {False, 0, "0", "false", "no", "non-significant", "nonsignificant",
+                      "not significant", "不显著"}:
+            return False
+    return None
+
+
+def _float(value):
+    """Parse a finite scalar, never a number embedded in prose or a boolean."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        return None
+    if isinstance(value, str):
+        value = value.strip().replace(",", "")
+        if not re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?", value):
+            return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _number_in_text(value: float, text: str) -> bool:
+    for match in re.finditer(r"(?<![\w.])[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?(?![\w.])",
+                             text or ""):
+        found = _float(match.group(0))
+        if found is not None and math.isclose(value, found, rel_tol=1e-9, abs_tol=1e-9):
+            return True
+    return False
+
+
+def _close(a: float, b: float, tolerance: float = 0.0) -> bool:
+    return math.isclose(a, b, rel_tol=tolerance, abs_tol=tolerance)
+
+
+def _effect_parts(comparison: dict) -> tuple[float | None, float | None, float | None]:
+    raw = comparison.get("effect_size")
+    if isinstance(raw, dict):
+        estimate = _float(raw.get("value", raw.get("estimate")))
+        ci = raw.get("ci")
+        low = _float(raw.get("ci_low", raw.get("lower")))
+        high = _float(raw.get("ci_high", raw.get("upper")))
+    else:
+        estimate = _float(raw if raw is not None else comparison.get("estimate"))
+        ci = comparison.get("ci")
+        low = _float(comparison.get("ci_low", comparison.get("lower")))
+        high = _float(comparison.get("ci_high", comparison.get("upper")))
+    if isinstance(ci, (list, tuple)) and len(ci) == 2:
+        low = _float(ci[0]) if low is None else low
+        high = _float(ci[1]) if high is None else high
+    return estimate, low, high
+
+
+def _expected_effect(comparison: dict) -> tuple[float | None, str | None]:
+    """Compute only a declared difference or ratio from explicit group means."""
+    left = next((_float(comparison.get(key)) for key in
+                 ("mean_treatment", "treatment_mean", "group_a_mean", "mean_a")
+                 if _float(comparison.get(key)) is not None), None)
+    right = next((_float(comparison.get(key)) for key in
+                  ("mean_control", "control_mean", "group_b_mean", "mean_b")
+                  if _float(comparison.get(key)) is not None), None)
+    if left is None or right is None:
+        return None, None
+    kind = str(comparison.get("effect_type") or "difference").strip().lower()
+    if kind in ("difference", "mean_difference", "absolute_difference"):
+        return left - right, "mean_treatment - mean_control"
+    if kind in ("ratio", "fold", "fold_change"):
+        if right == 0:
+            return None, "undefined ratio (zero control mean)"
+        return left / right, "mean_treatment / mean_control"
+    if kind in ("percent_change", "percent_difference"):
+        if right == 0:
+            return None, "undefined percent change (zero control mean)"
+        return (left - right) / abs(right) * 100.0, "(mean_treatment - mean_control) / abs(mean_control) * 100"
+    return None, f"unsupported effect_type: {kind}"
+
+
+def numeric_ledger(spec: dict) -> dict:
+    """A deterministic, auditable projection; it never invents a missing estimate."""
+    rows = []
+    for index, comparison in enumerate(_records(spec.get("comparisons"))):
+        estimate, low, high = _effect_parts(comparison)
+        expected, formula = _expected_effect(comparison)
+        entry = {"comparison_id": str(comparison.get("id") or f"cmp-{index + 1}"),
+                 "name": str(comparison.get("name") or ""),
+                 "source_ref": comparison.get("source_ref", comparison.get("source_locator")),
+                 "effect_estimate": estimate, "ci_low": low, "ci_high": high,
+                 "expected_effect": expected, "derivation": formula,
+                 "p_value": _float(comparison.get("p_value", comparison.get("p"))),
+                 "significant": _bool3(comparison.get("significant")),
+                 "n": comparison.get("n", comparison.get("n_per_group")),
+                 "effect_not_computable": str(comparison.get("effect_not_computable") or "").strip(),
+                 "uncertainty_not_computable": str(
+                     comparison.get("uncertainty_not_computable") or "").strip(),
+                 "se": _float(comparison.get("se")), "sd": _float(comparison.get("sd"))}
+        rows.append(entry)
+    return {"comparisons": rows,
+            "effect_estimates": sum(row["effect_estimate"] is not None for row in rows),
+            "uncertainties": sum(row["ci_low"] is not None or row["se"] is not None or
+                                 row["sd"] is not None for row in rows),
+            "uncomputable_effects": [row["comparison_id"] for row in rows
+                                     if row["effect_estimate"] is None and row["effect_not_computable"]],
+            "scope": "explicit values and declared formulas only; no effect or CI is inferred from significance alone"}
+
+
 def results_discussion(spec: dict, findings: list[dict]) -> None:
     """Audit a results section and a discussion section written from given data.
 
@@ -1877,6 +2011,20 @@ def results_discussion(spec: dict, findings: list[dict]) -> None:
 
     # --- text values must match the given figures -------------------------
     fig_values = " ".join(str(v) for f in figures for v in (f.get("values") or []))
+    figure_numbers = [number for f in figures for value in (f.get("values") or [])
+                      if (number := _float(value)) is not None]
+    derived_numbers = []
+    for derivation in _records(spec.get("derivations")):
+        value = _float(derivation.get("value"))
+        formula = str(derivation.get("formula") or "").strip()
+        has_inputs = bool(derivation.get("inputs") or derivation.get("source_values") or
+                          derivation.get("source_ref") or derivation.get("source_locator"))
+        if value is not None and formula and has_inputs:
+            derived_numbers.append(value)
+        else:
+            _add(findings, "rd.derivation_not_reproducible", "medium",
+                 "a derived value lacks a formula or source inputs/locator", value=value,
+                 derivation_id=derivation.get("id"))
     if results and figures and fig_values:
         stats = _stat_values(results)
         for q in G.extract_quantities(results):
@@ -1891,7 +2039,9 @@ def results_discussion(spec: dict, findings: list[dict]) -> None:
             # either deleting the statistic or inventing a figure entry for it.
             if q.value in stats:
                 continue
-            if token not in fig_values:
+            if token not in fig_values and not any(_close(q.value, value, 0.0)
+                                                   for value in figure_numbers) and \
+                    not any(_close(q.value, value, 0.0) for value in derived_numbers):
                 _add(findings, "rd.value_not_in_figures", "high",
                      "a number in the results text does not appear in the figure or table data, "
                      "so the prose and the figure disagree", value=q.value, unit=q.unit)
@@ -1927,7 +2077,7 @@ def results_discussion(spec: dict, findings: list[dict]) -> None:
     # --- statistics and inference strength -------------------------------
     for c in comparisons:
         name = str(c.get("name") or "")
-        sig = c.get("significant")
+        sig = _bool3(c.get("significant"))
         if sig is None:
             _add(findings, "rd.comparison_no_verdict", "high",
                  "a comparison does not state whether it reached significance", comparison=name)
@@ -1945,10 +2095,83 @@ def results_discussion(spec: dict, findings: list[dict]) -> None:
             # first occurrence picks up whatever the next sentence says about a different
             # comparison, which is how a clean draft got flagged.
             named = [x for x in G.split_sentences(both) if name and name in x]
-            if any(effect_words.search(x) for x in named):
+            if any(effect_words.search(x) and not NONSIGNIFICANT_TEXT.search(x) for x in named):
                 _add(findings, "rd.non_significant_claimed_as_effect", "high",
                      "a comparison reported as not significant is described in the text as an "
                      "increase or decrease, so the strength is overstated", comparison=name)
+
+    # --- effect sizes, uncertainty and numerical caliber -------------------
+    for index, c in enumerate(comparisons):
+        name = str(c.get("name") or c.get("id") or f"cmp-{index + 1}")
+        estimate, low, high = _effect_parts(c)
+        expected, formula = _expected_effect(c)
+        effect_reason = str(c.get("effect_not_computable") or "").strip()
+        uncertainty_reason = str(c.get("uncertainty_not_computable") or "").strip()
+        tolerance = _float(c.get("tolerance", spec.get("numeric_tolerance", 1e-9)))
+        tolerance = max(0.0, tolerance) if tolerance is not None else 1e-9
+        if expected is not None and estimate is None and not effect_reason:
+            _add(findings, "rd.effect_size_missing", "high",
+                 "group means permit a declared effect estimate but none is reported; report the "
+                 "computed effect or explain why the selected effect is not computable",
+                 comparison=name, derivation=formula)
+        if expected is None and formula and estimate is None and not effect_reason:
+            _add(findings, "rd.effect_not_computable_unexplained", "medium",
+                 "the effect inputs are degenerate/unsupported and no effect_not_computable reason "
+                 "is given", comparison=name, derivation=formula)
+        if estimate is not None and expected is not None and not _close(estimate, expected, tolerance):
+            _add(findings, "rd.effect_value_mismatch", "high",
+                 "the reported effect does not equal the declared formula applied to group means",
+                 comparison=name, reported=estimate, expected=expected, derivation=formula,
+                 tolerance=tolerance)
+        if estimate is None and (low is not None or high is not None) and not effect_reason:
+            _add(findings, "rd.effect_size_missing", "high",
+                 "a confidence interval is supplied without its point estimate", comparison=name)
+        has_ci = low is not None or high is not None
+        has_spread = has_ci or _float(c.get("se")) is not None or _float(c.get("sd")) is not None
+        if estimate is not None and not has_spread and not uncertainty_reason:
+            _add(findings, "rd.uncertainty_missing", "high",
+                 "an effect estimate has no CI/SE/SD and no uncertainty_not_computable reason; do "
+                 "not infer one from the p-value", comparison=name)
+        if has_ci and (low is None or high is None or low > high):
+            _add(findings, "rd.uncertainty_inconsistent", "high",
+                 "a confidence interval is incomplete or has reversed bounds", comparison=name,
+                 ci_low=low, ci_high=high)
+        elif has_ci and estimate is not None and not (low <= estimate <= high):
+            _add(findings, "rd.uncertainty_inconsistent", "high",
+                 "the effect estimate lies outside its own confidence interval", comparison=name,
+                 effect=estimate, ci_low=low, ci_high=high)
+        if estimate is not None and results.strip() and not _number_in_text(estimate, results):
+            _add(findings, "rd.effect_size_absent_from_results", "medium",
+                 "the declared effect estimate is not written in the results section",
+                 comparison=name, effect=estimate)
+        for bound in (low, high):
+            if bound is not None and not _number_in_text(bound, both):
+                _add(findings, "rd.uncertainty_absent_from_text", "medium",
+                     "a declared confidence bound appears in neither Results nor Discussion",
+                     comparison=name, bound=bound)
+        p_value = _float(c.get("p_value", c.get("p")))
+        significance = _bool3(c.get("significant"))
+        alpha_raw = c.get("alpha", spec.get("alpha", 0.05))
+        alpha = _float(alpha_raw)
+        if p_value is not None and significance is not None:
+            if alpha is None or not (0 < alpha < 1):
+                _add(findings, "rd.alpha_invalid", "medium",
+                     "a significance verdict has a p-value but an invalid alpha threshold",
+                     comparison=name, alpha=alpha_raw)
+            elif (p_value < alpha) != significance:
+                _add(findings, "rd.significance_misclassified", "high",
+                     "the significant/non-significant verdict disagrees with its p-value and alpha",
+                     comparison=name, p_value=p_value, alpha=alpha, significant=significance)
+        effect_type = str(c.get("effect_type") or "").strip().lower()
+        linked_ci = str(c.get("ci_inference_relation") or "same_two_sided_test").lower()
+        if (estimate is not None and low is not None and high is not None and
+                significance is not None and effect_type in ("difference", "mean_difference") and
+                linked_ci == "same_two_sided_test"):
+            excludes_null = low > 0 or high < 0
+            if excludes_null != significance:
+                _add(findings, "rd.significance_ci_conflict", "high",
+                     "the two-sided difference CI and significance verdict imply different null decisions",
+                     comparison=name, ci_low=low, ci_high=high, significant=significance)
 
     # --- description must stay description in the results section --------
     for i, s in enumerate(G.split_sentences(results)):
@@ -1986,8 +2209,14 @@ def results_discussion(spec: dict, findings: list[dict]) -> None:
                  "correlational, cross-sectional, retrospective or survey data)",
                  design=design)
 
+        if (MECHANISM.search(discussion) or design in CAUSAL_DESIGNS) and \
+                not ALTERNATIVE_EXPLANATION.search(discussion) and not list(_records(spec.get("alternative_explanations"))):
+            _add(findings, "rd.alternative_explanations_missing", "medium",
+                 "a mechanism or non-causal design is discussed without a named alternative "
+                 "explanation (confounding, measurement, selection or reverse causation)")
+
     # --- negative results and conflicting literature ---------------------
-    negatives = [c for c in comparisons if c.get("significant") is False]
+    negatives = [c for c in comparisons if _bool3(c.get("significant")) is False]
     if negatives and discussion:
         mentioned = [c for c in negatives if str(c.get("name") or "") in discussion]
         if len(mentioned) < len(negatives):
@@ -2049,7 +2278,8 @@ def results_discussion(spec: dict, findings: list[dict]) -> None:
             if q.unit is None and float(q.value).is_integer() and not re.search(
                     rf"{re.escape(token)}\s*(?:-?\s*fold|×|%|倍)", discussion):
                 continue
-            if token in fig_values or token in results:
+            if token in fig_values or token in results or _number_in_text(q.value, results) or \
+                    any(_close(q.value, value, 0.0) for value in figure_numbers + derived_numbers):
                 continue
             _add(findings, "rd.discussion_value_unsourced", "medium",
                  "a number in the discussion appears in neither the figure data nor the results "
@@ -2078,6 +2308,12 @@ def results_discussion(spec: dict, findings: list[dict]) -> None:
             _add(findings, "rd.limitation_level_narrow", "medium",
                  "limitations are confined to a single level of the study, so the account is one-"
                  "sided", covered=sorted(covered))
+    boundary_text = discussion + "\n" + "\n".join(str(l.get("text") or "") for l in limitations)
+    if discussion and not EXTRAPOLATION_BOUNDARY.search(boundary_text) and \
+            not str(spec.get("extrapolation_boundary") or "").strip():
+        _add(findings, "rd.extrapolation_boundary_missing", "medium",
+             "limitations do not state the population/material/measurement scope beyond which "
+             "the findings must not be extrapolated")
 
     # --- unitless numbers, overclaims ------------------------------------
     for i, s in enumerate(G.split_sentences(results)):
@@ -3113,6 +3349,8 @@ def evidence_map(spec: dict, section: str) -> list[dict]:
     discussion = str(spec.get("discussion_text") or "")
     figures = list(_records(spec.get("figures")))
     fig_values = " ".join(str(v) for f in figures for v in (f.get("values") or []))
+    fig_numbers = [number for f in figures for value in (f.get("values") or [])
+                   if (number := _float(value)) is not None]
     stats = _stat_values(results + " " + discussion)
     for q in G.extract_quantities(results):
         if q.value in stats:
@@ -3120,7 +3358,8 @@ def evidence_map(spec: dict, section: str) -> list[dict]:
             continue
         token = f"{q.value:g}"
         out.append({"kind": "value", "value": q.value, "unit": q.unit or None,
-                    "verdict": "in_figures" if token in fig_values else "unmatched"})
+                    "verdict": "in_figures" if token in fig_values or
+                               any(_close(q.value, value, 0.0) for value in fig_numbers) else "unmatched"})
     for c in _records(spec.get("comparisons")):
         out.append({"kind": "comparison", "name": str(c.get("name") or ""),
                     "significant": c.get("significant"),
@@ -3142,7 +3381,7 @@ def open_questions(spec: dict, section: str) -> list[dict]:
     if section != "results_discussion":
         return out
     for c in _records(spec.get("comparisons")):
-        if c.get("significant") is None:
+        if _bool3(c.get("significant")) is None:
             out.append({"type": "human_review",
                         "what": f"comparison '{c.get('name')}' carries no significance verdict"})
     for f in _records(spec.get("figures")):

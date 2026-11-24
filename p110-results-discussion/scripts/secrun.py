@@ -23,52 +23,51 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sections as S  # noqa: E402
 
-# Fields that are bulky inputs rather than results: never copied wholesale into
-# the result by the contract echo (the deliverable section carries the artifact).
-_BULKY = {"output_contract", "section", "spec", "text", "manuscript_text", "results_text",
-          "discussion_text", "figures", "comparisons", "literature", "limitations",
-          "references", "evidence", "claims", "conclusions", "documents", "rows",
-          "records", "materials", "paragraphs", "nodes", "edges", "answers", "chapters"}
+def _contract_keys(contract) -> list[str]:
+    if isinstance(contract, dict):
+        return [str(key) for key in contract]
+    if isinstance(contract, list):
+        return [str(key) for key in contract if isinstance(key, str)]
+    return []
 
 
-def _refused(out_dir, message: str) -> dict:
-    """The undetermined refusal every unrunnable case gets: an exit code, not a crash.
-
-    Contract echo is deliberately NOT applied here: the spec never parsed, so
-    there is no case_id or output_contract to echo.
-    """
-    result = {"schema_version": "secrun/v1", "status": "undetermined",
-              "findings": [{"rule": "audit.no_section", "severity": "high",
-                            "message": message}],
-              "limits": ["the case could not be run as declared"]}
-    out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+def _write_result(out_dir, result: dict) -> dict:
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
                                          encoding="utf-8")
     return result
 
 
+def _refused(out_dir, message: str, spec: dict | None = None,
+             rule: str = "audit.no_section") -> dict:
+    """A structured refusal; a readable spec still gets complete contract echo."""
+    result = {"schema_version": "secrun/v1", "status": "undetermined",
+              "findings": [{"rule": rule, "severity": "high", "message": message}],
+              "limits": ["the case could not be run as declared"]}
+    _echo_contract(result, spec or {})
+    return _write_result(out_dir, result)
+
+
 def _echo_contract(result: dict, spec: dict) -> dict:
-    """Echo case_id and every output_contract field into the result."""
+    """Echo identity and every declared value, regardless of payload shape/size."""
     if not isinstance(spec, dict):
-        return result
-    cid = spec.get("case_id")
-    if cid is not None and "case_id" not in result:
-        result["case_id"] = cid
+        spec = {}
+    result.setdefault("case_id", spec.get("case_id"))
     limits = result.setdefault("limits", [])
-    contract = spec.get("output_contract")
-    if contract is None:
-        return result
-    if not isinstance(contract, dict):
-        limits.append("output_contract is not an object, so no field was echoed")
-        return result
-    for key in contract:
+    keys = _contract_keys(spec.get("output_contract"))
+    if spec.get("output_contract") is not None and not isinstance(
+            spec.get("output_contract"), (dict, list)):
+        limits.append("output_contract is neither an object nor an array; fields were read as empty")
+    for key in keys:
         if key in result:
             continue
-        if key in spec and key not in _BULKY:
+        if key in spec:
             result[key] = spec[key]
-            continue
-        result[key] = None
-        limits.append(f"output_contract field '{key}' was not derivable by this audit")
+        else:
+            result[key] = None
+            limits.append(f"output_contract field '{key}' was not derivable by this audit")
+    result["output_contract_fields"] = keys
     return result
 
 
@@ -87,7 +86,7 @@ def _deliverable(spec: dict, section: str) -> dict:
 
 def build_and_audit(spec_path, out_dir, section=None) -> dict:
     try:
-        spec = json.loads(Path(spec_path).read_text(encoding="utf-8"))
+        spec = json.loads(Path(spec_path).read_text(encoding="utf-8-sig"))
     except (json.JSONDecodeError, UnicodeDecodeError, OSError) as exc:
         # An unreadable spec is a refusal with the usual exit code, not a traceback.
         return _refused(out_dir, f"the spec file is not readable JSON: {exc}")
@@ -97,11 +96,17 @@ def build_and_audit(spec_path, out_dir, section=None) -> dict:
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
 
     if not sec:
-        return _refused(out_dir, "no section declared, so no rules apply")
-    if sec not in S.SECTIONS:
-        return _refused(out_dir, f"unknown section '{sec}', so no rules apply")
+        return _refused(out_dir, "no section declared, so no rules apply", spec)
+    if not isinstance(sec, str) or sec not in S.SECTIONS:
+        return _refused(out_dir, f"unknown section '{sec}', so no rules apply", spec,
+                        "audit.section_unknown")
 
-    findings, status, counts = S.run(spec, sec)
+    try:
+        findings, status, counts = S.run(spec, sec)
+    except Exception as exc:
+        return _refused(out_dir,
+                        f"the audit could not complete: {type(exc).__name__}: {exc}",
+                        spec, "audit.section_error")
 
     checked = {"section": sec, "items": _count(spec, sec)}
     if sec == "results_discussion":
@@ -118,6 +123,7 @@ def build_and_audit(spec_path, out_dir, section=None) -> dict:
                            if isinstance(spec.get("limitations"), (list, tuple)) else 0,
             "results_words": len(results.split()),
             "discussion_words": len(discussion.split()),
+            "numeric_ledger": S.numeric_ledger(spec),
         })
     if sec == "compare_docs":
         # completeness summary for the comparison matrix: which declared field each
@@ -132,9 +138,7 @@ def build_and_audit(spec_path, out_dir, section=None) -> dict:
                            "declared_limits": spec.get("limits")
                            if isinstance(spec.get("limits"), list) else []}}
     _echo_contract(result, spec)
-    (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2),
-                                         encoding="utf-8")
-    return result
+    return _write_result(out_dir, result)
 
 
 def _count(spec: dict, section: str) -> int:

@@ -38,7 +38,8 @@ BASE = {
     "discussion_text": ("The coated samples showed higher uptake, consistent with earlier work "
                         "[doe2020]. The mechanism may involve increased surface area [doe2020]. "
                         "Arm B did not reach significance. Roe reports a conflicting result "
-                        "[roe2021]."),
+                        "[roe2021]. Alternative explanations include measurement drift, which "
+                        "was monitored with the same calibration samples [doe2020]."),
     "figures": [{"id": "Fig 1", "values": ["3", "three-fold", "0.01"],
                  "has_errorbar": True, "errorbar": "SD"}],
     "comparisons": [{"name": "coated vs control", "significant": True, "strength": "strong"},
@@ -46,7 +47,8 @@ BASE = {
     "literature": [{"key": "doe2020", "agrees": True},
                    {"key": "roe2021", "agrees": False, "finding": "no effect at low dose"}],
     "limitations": [{"level": "sample", "text": "single material system tested"},
-                    {"level": "measurement", "text": "one coating thickness measured"}],
+                    {"level": "measurement", "text": "one coating thickness measured"},
+                    {"level": "sample", "text": "Findings are limited to this material and should not be extrapolated to other materials."}],
 }
 
 
@@ -56,7 +58,39 @@ def d(**over):
     return s
 
 
+def rich():
+    s = d()
+    s["results_text"] = ("Coated mean was 3.0 mmol versus 2.0 mmol for control; the difference was "
+                         "1.0 mmol (95% CI 0.5 to 1.5; p = 0.01, t-test). "
+                         "Arm B showed a higher response but did not reach significance.")
+    s["figures"] = [{"id": "Table 1", "values": ["3", "2", "1", "0.5", "1.5", "0.01", "95"],
+                     "has_errorbar": True, "errorbar": "95% CI"}]
+    s["comparisons"] = [
+        {"name": "coated vs control", "significant": True, "strength": "strong",
+         "mean_treatment": 3.0, "mean_control": 2.0, "effect_type": "difference",
+         "effect_size": 1.0, "ci_low": 0.5, "ci_high": 1.5, "p_value": 0.01,
+         "source_ref": "Table 1, coated-control row"},
+        {"name": "Arm B", "significant": False},
+    ]
+    return s
+
+
 SCEN = [
+    ("effect_uncertainty_clean", lambda: (rich(), [])),
+    ("number_format_equivalent_clean", lambda: (d(
+        figures=[{"id": "Fig 1", "values": ["3.0", "three-fold", "0.010"],
+                  "has_errorbar": True, "errorbar": "SD"}]), [])),
+    ("rounded_effect_clean", lambda: (d(
+        results_text="Coated mean was 3.0004 mmol versus 2.0 mmol; the difference was 1.0 mmol "
+                     "(95% CI 0.5 to 1.5; p = 0.01, t-test). Arm B showed no change.",
+        figures=[{"id": "Table 1", "values": ["3.0004", "2", "1", "0.5", "1.5", "0.01", "95"],
+                  "has_errorbar": True, "errorbar": "95% CI"}],
+        comparisons=[{"name": "coated vs control", "significant": True, "strength": "strong",
+                      "mean_treatment": 3.0004, "mean_control": 2.0,
+                      "effect_type": "difference", "effect_size": 1.0,
+                      "ci_low": 0.5, "ci_high": 1.5, "p_value": 0.01, "tolerance": 0.0005},
+                     {"name": "Arm B", "significant": False}]), [])),
+
     ("clean", lambda: (d(), [])),
 
     # the two sections
@@ -83,6 +117,44 @@ SCEN = [
      lambda: (d(results_text="Uptake rose three-fold in the coated group (p < 0.01, t-test). "
                             "Arm B showed a higher response."),
               ["rd.non_significant_claimed_as_effect"])),
+
+    # effect size, uncertainty and numeric caliber
+    ("effect_value_mismatch", lambda: (d(
+        results_text="Coated mean was 3.0 mmol versus 2.0 mmol; the difference was 1.2 mmol "
+                     "(95% CI 0.5 to 1.5; p = 0.01, t-test). Arm B showed no change.",
+        figures=[{"id": "Table 1", "values": ["3", "2", "1.2", "0.5", "1.5", "0.01", "95"],
+                  "has_errorbar": True, "errorbar": "95% CI"}],
+        comparisons=[dict(rich()["comparisons"][0], effect_size=1.2),
+                     {"name": "Arm B", "significant": False}]), ["rd.effect_value_mismatch"])),
+    ("effect_size_missing", lambda: (d(
+        comparisons=[{key: value for key, value in rich()["comparisons"][0].items()
+                      if key != "effect_size"}, {"name": "Arm B", "significant": False}]),
+        ["rd.effect_size_missing"])),
+    ("uncertainty_missing", lambda: (d(
+        comparisons=[{key: value for key, value in rich()["comparisons"][0].items()
+                      if key not in ("ci_low", "ci_high")}, {"name": "Arm B", "significant": False}]),
+        ["rd.uncertainty_missing"])),
+    ("uncertainty_inconsistent", lambda: (d(
+        comparisons=[dict(rich()["comparisons"][0], ci_low=1.2), {"name": "Arm B", "significant": False}]),
+        ["rd.uncertainty_inconsistent"])),
+    ("significance_misclassified", lambda: (d(
+        comparisons=[dict(rich()["comparisons"][0], significant=False),
+                     {"name": "Arm B", "significant": False}]), ["rd.significance_misclassified"])),
+    ("significance_ci_conflict", lambda: (d(
+        comparisons=[dict(rich()["comparisons"][0], ci_low=-0.5, ci_high=2.5),
+                     {"name": "Arm B", "significant": False}]), ["rd.significance_ci_conflict"])),
+    ("malformed_significance_degrades", lambda: (d(
+        comparisons=[{"name": "coated vs control", "significant": "perhaps"},
+                     {"name": "Arm B", "significant": False}]), ["rd.comparison_no_verdict"])),
+    ("alternative_explanations_missing", lambda: (d(
+        discussion_text="The coated samples showed higher uptake, consistent with earlier work [doe2020]. "
+                        "The mechanism may involve increased surface area [doe2020]. Arm B did not reach "
+                        "significance. Roe reports a conflicting result [roe2021]."),
+        ["rd.alternative_explanations_missing"])),
+    ("extrapolation_boundary_missing", lambda: (d(limitations=BASE["limitations"][:2]),
+        ["rd.extrapolation_boundary_missing"])),
+    ("derivation_not_reproducible", lambda: (d(derivations=[{"value": 1.0, "formula": ""}]),
+        ["rd.derivation_not_reproducible"])),
 
     # description vs interpretation
     ("interpretation_in_results",

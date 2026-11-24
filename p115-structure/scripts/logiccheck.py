@@ -20,7 +20,10 @@ import review_common as C  # noqa: E402
 
 ALIASES = {"审查报告": "audit_report", "依据与边界": "evidence_bounds", "结果状态": "result_state",
            "review_report": "audit_report", "evidence_and_boundaries": "evidence_bounds",
-           "result_status": "result_state", "logic_results": "argument_map", "reasoning_results": "reasoning_gaps"}
+           "result_status": "result_state", "logic_results": "argument_map",
+           "reasoning_results": "reasoning_gaps", "research_chains": "research_chains",
+           "editorial_plan": "editorial_plan", "论证闭环": "research_chains",
+           "结构优化方案": "editorial_plan"}
 CAUSAL_RX = re.compile(r"\b(?:caus(?:e|es|ed|ing)|leads?\s+to|drives?|results?\s+in|improv(?:e|es|ed)|reduc(?:e|es|ed)|increas(?:e|es|ed)|decreas(?:e|es|ed)|effect\s+of)\b|导致|引起|改善|降低|提高", re.I)
 STRONG_RX = re.compile(r"\b(?:prove[sd]?|demonstrat(?:e|es|ed)|establish(?:es|ed)|confirm(?:s|ed)|guarantee[sd]?|universally|always|all\s+\w+)\b|证明|证实|所有|普遍|必然", re.I)
 HEDGE_RX = re.compile(r"\b(?:may|might|could|suggest(?:s|ed)?|consistent\s+with|associated\s+with|association|correlat(?:ed|ion)|appears?|seems?|possibly|potentially|limited\s+to)\b|可能|提示|相关|一致于|限于", re.I)
@@ -160,6 +163,185 @@ def build_map(doc: C.Document, case: dict, design: str) -> tuple[list[dict], lis
     return argument_map, cross_checks
 
 
+QUESTION_RX = re.compile(
+    r"\b(?:we\s+(?:aim|ask|sought|investigate|compare|evaluate)|this\s+study\s+(?:aims|sought)|"
+    r"research\s+question|whether|unknown|unresolved|knowledge\s+gap|remains\s+unclear)\b|"
+    r"旨在|拟探讨|是否|未知|缺口|尚未|待解决", re.I)
+SECTION_ROLE_PATTERNS = (
+    ("problem", r"introduction|引言|前言"),
+    ("method", r"methods?|methodology|方法|材料与方法"),
+    ("result", r"results?|analysis|结果|分析"),
+    ("conclusion", r"discussion|conclusions?|讨论|结论"),
+)
+SECTION_ORDER = {"abstract": 0, "introduction": 1, "methods": 2, "results": 3,
+                 "discussion": 4, "conclusion": 5, "references": 6}
+
+
+def _role_spans(doc: C.Document, pattern: str) -> list[dict]:
+    return [span for span in doc.spans if span["kind"] != "heading"
+            and re.search(pattern, span["section"], re.I)]
+
+
+def _chain_link(question: dict, candidates: list[dict], doc: C.Document) -> dict:
+    """Expose a lexical candidate and its score; never turn it into entailment."""
+    if not candidates:
+        return {"status": "missing_section", "quote": None, "locator": None,
+                "claim_coverage": 0.0}
+    ranked = sorted(((C.overlap(question["text"], candidate["text"]), -candidate["start"], candidate)
+                     for candidate in candidates), key=lambda row: (row[0], row[1]), reverse=True)
+    score, _, best = ranked[0]
+    link = doc.evidence(best)
+    link.update({"status": "linked_candidate" if score >= 0.08 else "weak_or_missing_candidate",
+                 "claim_coverage": round(score, 4), "relation": "lexical_alignment_not_entailment"})
+    return link
+
+
+def build_research_chains(doc: C.Document) -> list[dict]:
+    """Build a question -> method -> result -> conclusion trace for each aim/gap.
+
+    The chain is intentionally non-authoritative: every link carries both quotes and
+    a coverage score, so the author can accept or reject it without a hidden rewrite.
+    """
+    introduction = _role_spans(doc, SECTION_ROLE_PATTERNS[0][1])
+    questions = [span for span in introduction if QUESTION_RX.search(span["text"])][:4]
+    if not questions and introduction:
+        questions = introduction[:1]
+    role_spans = {role: _role_spans(doc, pattern) for role, pattern in SECTION_ROLE_PATTERNS}
+    chains = []
+    for pos, question in enumerate(questions, 1):
+        steps = {"problem": doc.evidence(question)}
+        steps["problem"].update({"status": "declared_question_or_gap",
+                                 "relation": "source_declared_problem"})
+        for role in ("method", "result", "conclusion"):
+            steps[role] = _chain_link(question, role_spans[role], doc)
+        missing = [role for role in ("method", "result", "conclusion")
+                   if steps[role]["status"] != "linked_candidate"]
+        repairs = []
+        actions = {"method": "Add the exact design, material, comparison and analysis that answer this question in Methods; if already present elsewhere, move that paragraph next to the first method step that addresses the question.",
+                   "result": "Add a named result with source value, effect estimate and uncertainty answering this question, or narrow the question to the analyses actually reported.",
+                   "conclusion": "Move or rewrite the conclusion sentence so it answers only this question, cites the corresponding result locator, and keeps the measured population/time-window boundary."}
+        for role in missing:
+            repairs.append({"action": actions[role], "role": role,
+                            "after": steps["problem"]["locator"] if role == "method" else
+                                     steps["method" if role == "result" else "result"].get("locator"),
+                            "basis": f"No {role} link reached the lexical candidate threshold; this is a review item, not proof of absence."})
+        chains.append({"chain_id": f"RQ{pos:02d}", "steps": steps,
+                       "missing_or_weak_roles": missing, "status": "complete_candidate" if not missing else "incomplete_candidate",
+                       "repair_actions": repairs,
+                       "interpretation_limit": "Lexical links expose possible cross-section correspondence, never proof of scientific entailment."})
+    return chains
+
+
+def _paragraph_function(span: dict) -> str:
+    section = span["section"]
+    text = span["text"]
+    if re.search(r"introduction|引言|前言", section, re.I):
+        if HYPOTHESIS_RX.search(text) or QUESTION_RX.search(text):
+            return "question_or_objective"
+        if re.search(r"gap|unknown|unresolved|limitation|缺口|未知|局限", text, re.I):
+            return "gap"
+        return "context"
+    if re.search(r"methods?|methodology|方法", section, re.I):
+        return "design_or_procedure"
+    if re.search(r"results?|结果", section, re.I):
+        return "observation_or_estimate"
+    if re.search(r"discussion|讨论", section, re.I):
+        if LIMITATION_RX.search(text):
+            return "limitation_or_boundary"
+        return "interpretation_or_comparison"
+    if re.search(r"conclusions?|结论", section, re.I):
+        return "answer_and_scope"
+    if re.search(r"abstract|摘要", section, re.I):
+        return "paper_summary"
+    return "supporting_detail"
+
+
+def _section_rank(section: str) -> int | None:
+    plain = re.sub(r"^\d+(?:\.\d+)*\s*", "", section).strip().lower()
+    for name, rank in SECTION_ORDER.items():
+        if plain == name or plain.startswith(name + " "):
+            return rank
+    zh = (("摘要", 0), ("引言", 1), ("前言", 1), ("方法", 2), ("结果", 3),
+          ("讨论", 4), ("结论", 5), ("参考文献", 6))
+    for name, rank in zh:
+        if plain.startswith(name):
+            return rank
+    return None
+
+
+def build_editorial_plan(doc: C.Document, chains: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Return paragraph functions plus source-located, executable edit candidates."""
+    groups = []
+    for span in doc.spans:
+        if span["kind"] == "heading" or re.search(r"references|参考文献", span["section"], re.I):
+            continue
+        current = next((group for group in groups if group["paragraph"] == span["paragraph"]), None)
+        if current is None:
+            current = {"paragraph": span["paragraph"], "section": span["section"], "spans": []}
+            groups.append(current)
+        current["spans"].append(span)
+    paragraphs = []
+    for group in groups:
+        first, last = group["spans"][0], group["spans"][-1]
+        text = " ".join(span["text"] for span in group["spans"])
+        paragraphs.append({"paragraph_id": f"P{group['paragraph']:03d}",
+                           "paragraph": group["paragraph"], "section": group["section"],
+                           "function": _paragraph_function(first), "quote": text,
+                           "locator": doc.locator(first), "end_locator": doc.locator(last),
+                           "start": first["start"], "end": last["end"],
+                           "locator_start": first["start"], "locator_end": last["end"],
+                           "proposed_function_is_heuristic": True})
+    edits = []
+    duplicate_pairs = set()
+    for left, right in zip(paragraphs, paragraphs[1:]):
+        left_rank, right_rank = _section_rank(left["section"]), _section_rank(right["section"])
+        if left_rank is not None and right_rank is not None and right_rank < left_rank:
+            edits.append({"action": "Move section block earlier", "edit_type": "reorder",
+                          "source_paragraphs": [right["paragraph_id"]], "source_quote": right["quote"],
+                          "source_locator": right["locator"], "target": f"before {left['paragraph_id']} ({left['locator']})",
+                          "rationale": f"A later {left['section']} block precedes {right['section']}. Move the whole block, not isolated sentences.",
+                          "requires_author_review": True})
+        similarity = C.f1(left["quote"], right["quote"])
+        token_count = len(set(C.tokenize(left["quote"])))
+        if token_count >= 6 and similarity >= 0.78:
+            duplicate_pairs.add((left["paragraph_id"], right["paragraph_id"]))
+            edits.append({"action": "Merge duplicate paragraphs", "edit_type": "duplicate",
+                          "source_paragraphs": [left["paragraph_id"], right["paragraph_id"]],
+                          "source_quotes": [left["quote"], right["quote"]],
+                          "source_locators": [left["locator"], right["locator"]],
+                          "target": f"merge into {left['paragraph_id']}, then delete the repeated wording from {right['paragraph_id']}",
+                          "rationale": f"Adjacent paragraphs are near-duplicate candidates (content F1={similarity:.3f}); preserve any unique evidence before merging.",
+                          "requires_author_review": True})
+        elif left["section"] == right["section"] and token_count >= 6 and similarity < 0.025:
+            edits.append({"action": "Add a bridge or split the section", "edit_type": "logic_jump",
+                          "source_paragraphs": [left["paragraph_id"], right["paragraph_id"]],
+                          "source_quotes": [left["quote"], right["quote"]],
+                          "source_locators": [left["locator"], right["locator"]],
+                          "target": f"after {left['paragraph_id']} and before {right['paragraph_id']}",
+                          "rationale": "Adjacent same-section paragraphs have no detectable shared content; add only a source-grounded transition or split at the actual sub-question, not an invented causal bridge.",
+                          "requires_author_review": True})
+    # Cross-chapter redundancy is usually non-adjacent; inspect all remaining pairs.
+    for index, left in enumerate(paragraphs):
+        for right in paragraphs[index + 1:]:
+            pair = (left["paragraph_id"], right["paragraph_id"])
+            if pair in duplicate_pairs or right["paragraph"] == left["paragraph"] + 1:
+                continue
+            similarity = C.f1(left["quote"], right["quote"])
+            if len(set(C.tokenize(left["quote"]))) >= 6 and similarity >= 0.82:
+                edits.append({"action": "Merge repeated cross-section content", "edit_type": "duplicate",
+                              "source_paragraphs": list(pair), "source_quotes": [left["quote"], right["quote"]],
+                              "source_locators": [left["locator"], right["locator"]],
+                              "target": f"keep the evidence-bearing version in {left['paragraph_id']} and remove/merge {right['paragraph_id']} after preserving unique limitations or results",
+                              "rationale": f"Non-adjacent sections repeat the same content candidate (F1={similarity:.3f}); do not delete a distinct result or limitation merely to lower similarity.",
+                              "requires_author_review": True})
+    for chain in chains:
+        for repair in chain["repair_actions"]:
+            edits.append({"action": "Close the question-method-result-conclusion chain",
+                          "edit_type": "cross_section_gap", "chain_id": chain["chain_id"],
+                          **repair, "requires_author_review": True})
+    return paragraphs, edits
+
+
 def executable_fix(claim: str, kind: str) -> tuple[str, str | None]:
     if kind == "causal":
         replacement = CAUSAL_RX.sub("is associated with", claim)
@@ -246,6 +428,11 @@ def audit(case: dict, materials: list[dict], material_errors: list[str]) -> dict
     doc = C.Document(primary["text"], primary["name"])
     design, design_spans = design_info(case, doc)
     argument_map, cross_checks = build_map(doc, case, design)
+    research_chains = build_research_chains(doc)
+    paragraph_functions, editorial_plan = build_editorial_plan(doc, research_chains)
+    cross_checks.extend({"chain_id": chain["chain_id"], "kind": "problem_method_result_conclusion",
+                         "status": chain["status"], "missing_or_weak_roles": chain["missing_or_weak_roles"]}
+                        for chain in research_chains)
     findings: list[dict] = []
     limitations_present = bool(LIMITATION_RX.search(doc.text))
     for claim in argument_map:
@@ -315,6 +502,12 @@ def audit(case: dict, materials: list[dict], material_errors: list[str]) -> dict
               "reasoning_gaps": reasoning_gaps, "cross_section_checks": cross_checks + promise_results + contradiction_results,
               "promise_checks": promise_results, "contradiction_checks": contradiction_results,
               "evidence_bounds": evidence_bounds, "uncertainty": pending,
+              "research_chains": research_chains, "paragraph_functions": paragraph_functions,
+              "editorial_plan": editorial_plan,
+              "structure_coverage": {"research_questions": len(research_chains),
+                                     "complete_chain_candidates": sum(c["status"] == "complete_candidate" for c in research_chains),
+                                     "paragraphs": len(paragraph_functions),
+                                     "executable_edit_candidates": len(editorial_plan)},
               "result_state": C.result_state(findings,
                                              [c["claim_id"] for c in argument_map if c["evidence"] and not any(f.get("claim_id") == c["claim_id"] for f in findings)],
                                              pending, not_checked),
@@ -325,11 +518,17 @@ def audit(case: dict, materials: list[dict], material_errors: list[str]) -> dict
                           "facets": {"claim_extraction": "checked", "evidence_links": "checked",
                                      "causal_vs_correlation": "checked_when_design_determined",
                                      "sample_extrapolation": "checked", "alternative_explanations": "checked",
-                                     "cross_section_contradictions": "checked", "conclusion_scope": "checked"}},
-              "limits": limits,
+                                     "cross_section_contradictions": "checked", "conclusion_scope": "checked",
+                                     "problem_method_result_conclusion": "lexical_candidates_with_quotes",
+                                     "paragraph_function_and_order": "heuristic_candidates_not_defect_verdicts"}},
+              "limits": limits + ["Research chains and paragraph edit candidates are lexical/heuristic proposals with both source sides exposed; they require author review and never count as defects merely because alignment is weak."],
               "change_records": [{"stage": "claims", "action": "separate author claims from attribution, hypotheses and hedges",
                                   "claim_count": len(argument_map)},
                                  {"stage": "argument_map", "action": "link result evidence, qualifiers, warrant and alternative explanations"},
+                                 {"stage": "cross_section_chain", "action": "map each research question to method, result and conclusion candidates",
+                                  "chain_count": len(research_chains)},
+                                 {"stage": "editorial_plan", "action": "propose source-located paragraph reorder, merge, bridge and gap-closing actions",
+                                  "candidate_actions": len(editorial_plan)},
                                  {"stage": "review", "action": "emit source-located findings with executable revisions",
                                   "values_fabricated": False}]}
     return result

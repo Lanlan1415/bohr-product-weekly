@@ -33,6 +33,8 @@
         "ew.source_not_in_table"
       ],
       "fired": [
+        "ew.claim_no_direct_support",
+        "ew.link_support_undeclared",
         "ew.source_not_in_table",
         "ew.source_unused"
       ],
@@ -48,6 +50,7 @@
         "ew.evidence_table_missing"
       ],
       "fired": [
+        "ew.claim_no_direct_support",
         "ew.evidence_table_missing",
         "ew.source_not_in_table"
       ],

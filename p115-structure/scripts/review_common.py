@@ -463,7 +463,10 @@ def complete_contract(result: dict, case: dict, aliases: dict[str, str] | None =
         alias = aliases.get(field)
         if alias and result.get(alias) is not None:
             result[field] = copy.deepcopy(result[alias])
-        elif field in case and case.get(field) is not None and field not in BULKY_KEYS:
+        elif field in case and case.get(field) is not None:
+            # A declared contract field is authoritative even when it contains the
+            # editable manuscript, evidence or paragraph records.  "Bulky" is not
+            # a reason to silently replace a supplied value with null.
             result[field] = copy.deepcopy(case[field])
         else:
             result[field] = None

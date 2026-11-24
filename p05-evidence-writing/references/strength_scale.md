@@ -44,3 +44,22 @@ prove / proves / demonstrate / demonstrates / confirm / confirms / establish / e
 来源登记 `conflicts_with`（与其他证据冲突）或 `abstract_conflict`（自相矛盾）后，引用该来源
 的每条主张必须带 `conflict_note`：说明冲突方向、采信理由。未登记即报
 `ew.conflict_unregistered` / `ew.abstract_conflict_unregistered`。
+
+## 每条链接的关系与支持强度
+
+论断总体 `strength` 不能替代每条来源链接自己的判定。`support_relation` 取
+`supports`（正面支持）、`contradicts`（反驳结论）、`undercuts`（削弱由证据到结论的推理）
+或 `context`（仅背景，不构成支持）。该分层借用 Argdown 的论证关系，但书目元数据单独保留，
+绝不因 DOI/作者年份匹配成功就把关系记为 supports。
+
+支持链接还要有 `support_strength`（strong/moderate/weak）与一句 `support_basis`：说明这段
+原文怎样覆盖论断的对象、方向、幅度和适用条件。单条支持弱于论断总强度时，报
+`ew.support_weaker_than_claim`；两个独立 moderate 来源可以凭 convergence/triangulation
+支撑 strong 综合判断，不要把独立重复误报为单篇过度推断。contradicts/undercuts/context 的
+强度用 none，且它们不能替代一条 supports 链接。反驳/削弱链接必须附 quote+locator 和
+主张级 conflict_note，说明回应、范围收窄或仍保留主张的理由。
+
+`passages[]` 是可选的原文定位索引：`{locator, text}`。提供后，quote 不但要在全文中出现，
+还必须在同一 locator 的 text 中出现。没有该索引时只断言全文 quote 匹配，
+`checked.locator_indexed_links` 不把它计作定位已核验。脚本不会从词面重叠推导语义蕴含；
+support_basis 保留给独立科学复核。

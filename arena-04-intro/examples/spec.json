@@ -1,0 +1,143 @@
+{
+  "case_id": "intro-synthetic-clean-001",
+  "section": "introduction_related_work",
+  "output_contract": ["case_id", "status", "deliverables", "evidence_map", "uncertainty", "version_boundary"],
+  "deliverables": ["intro_related_work.md", "comparison_matrix.csv", "result.json"],
+  "evidence_map": [
+    {"item": "Liu et al. limitation", "source": "liu2021", "locator": "Results; paragraph 2"},
+    {"item": "This-work contribution", "source": "current paper", "locator": "方法章节 §3; Table 1"}
+  ],
+  "uncertainty": ["最相近工作仅在给定两篇文献中比较，不据此声称全领域首创。"],
+  "human_review_items": ["未来视频异常检测扩展仅为作者判断，尚无实验支持。"],
+  "version_boundary": {"draft_version": "v2", "method_anchors": ["方法章节 §3", "Figure 1"], "result_anchors": ["Table 1", "Figure 4"]},
+  "references": [
+    {
+      "key": "liu2021",
+      "citation": "Liu et al., 2021",
+      "authors": "Liu, A.; Chen, B.",
+      "year": 2021,
+      "title": "Statistical baselines for time-series anomaly detection",
+      "venue": "Journal of Signal Analysis",
+      "doi": "10.0000/synthetic.liu2021",
+      "text": "统计基线在平稳信号上表现可靠。训练开销低两个数量级。非平稳条件下误报率上升。训练需要五万条正常样本。该模型不处理动态拓扑。窗口长度需人工设定。在线延迟为180毫秒。"
+    },
+    {
+      "key": "wang2022",
+      "citation": "Wang et al., 2022",
+      "authors": "Wang, C.; Zhao, D.",
+      "year": 2022,
+      "title": "Deep attention for multivariate anomaly detection",
+      "venue": "Machine Learning for Sensors",
+      "doi": "10.0000/synthetic.wang2022",
+      "text": "深度注意力模型提高多变量检测F1。训练需要五十万条正常样本。对新故障类型泛化弱。推理依赖GPU。"
+    }
+  ],
+  "citation_labels": {"liu2021": "Liu et al., 2021", "wang2022": "Wang et al., 2022"},
+  "background": [
+    {"role": "context", "text": "时序异常检测需要同时控制误报与在线推理成本。", "ref": "liu2021"},
+    {"role": "problem", "text": "本文关注动态拓扑与非平稳信号下的异常检测。", "ref": "liu2021"},
+    {"role": "constraint", "text": "边缘推理场景要求限制在线延迟与训练资源。", "ref": "liu2021"}
+  ],
+  "problem_setting": "动态拓扑、非平稳信号与边缘时延约束",
+  "objective": "在已声明数据集与边缘预算内检验 PathFuse 是否降低误报并满足实时约束",
+  "groups": [
+    {
+      "group": "训练依赖型检测模型",
+      "basis": "按方法路线与数据评价约束分组：比较训练依赖、非平稳适用范围和在线成本",
+      "papers": [
+        {
+          "ref": "liu2021",
+          "conclusion": "统计基线在平稳信号上可靠",
+          "conditions": "平稳信号且具备五万条正常样本",
+          "limitation": "非平稳条件下误报率上升且不处理动态拓扑",
+          "support_relation": "supports",
+          "support_reason": "三个原文定位分别直接说明结论、数据条件和适用边界。",
+          "evidence_status": "verified_full_text",
+          "anchors": [
+            {"field": "conclusion", "quote": "统计基线在平稳信号上表现可靠", "locator": {"section": "Results", "paragraph": 1}},
+            {"field": "conditions", "quote": "训练需要五万条正常样本", "locator": {"section": "Experiments", "paragraph": 1}},
+            {"field": "limitation", "quote": "非平稳条件下误报率上升", "locator": {"section": "Results", "paragraph": 2}}
+          ]
+        },
+        {
+          "ref": "wang2022",
+          "conclusion": "深度注意力模型提高多变量检测F1",
+          "conditions": "需要五十万条正常样本与GPU推理",
+          "limitation": "对新故障类型泛化弱",
+          "support_relation": "supports",
+          "support_reason": "每个结论均有实际全文片段，未由题录猜测。",
+          "evidence_status": "verified_full_text",
+          "anchors": [
+            {"field": "conclusion", "quote": "深度注意力模型提高多变量检测F1", "locator": {"section": "Results", "paragraph": 1}},
+            {"field": "conditions", "quote": "训练需要五十万条正常样本", "locator": {"section": "Experiments", "paragraph": 1}},
+            {"field": "limitation", "quote": "对新故障类型泛化弱", "locator": {"section": "Discussion", "paragraph": 2}}
+          ]
+        }
+      ]
+    }
+  ],
+  "nearest_works": [
+    {
+      "ref": "liu2021",
+      "similarity_basis": "同样研究非平稳时序异常检测，并关注误报、训练资源和在线推理。",
+      "comparison_status": "verified",
+      "current_anchor": "方法章节 §3; Figure 1; Table 1; Figure 4",
+      "problem_setting": {
+        "prior": "平稳信号异常检测，不处理动态拓扑",
+        "this_work": "动态拓扑与非平稳信号的联合设定",
+        "difference": "本文新增动态拓扑约束，不声称首次研究非平稳检测。",
+        "evidence": {"quote": "该模型不处理动态拓扑", "locator": {"section": "Methods", "paragraph": 2}}
+      },
+      "method_route": {
+        "prior": "统计距离基线",
+        "this_work": "统计残差分支与图信号分支融合的 PathFuse",
+        "difference": "在保留统计残差的同时加入图拓扑传播。",
+        "evidence": {"quote": "统计基线在平稳信号上表现可靠", "locator": {"section": "Methods", "paragraph": 1}}
+      },
+      "data_evaluation": {
+        "prior": "五万条正常样本与180毫秒在线延迟",
+        "this_work": "相同公开数据集与边缘预算，报告Figure 4时延曲线",
+        "difference": "保持同任务评价，新增同预算下的延迟与误报联合报告。",
+        "evidence": {"quote": "在线延迟为180毫秒", "locator": {"section": "Results", "paragraph": 3}}
+      },
+      "scope": {
+        "prior": "非平稳条件下误报率上升",
+        "this_work": "结论仅覆盖当前数据集、拓扑和边缘设备",
+        "difference": "不将缓解误报外推为所有故障模型的普遍优势。",
+        "evidence": {"quote": "非平稳条件下误报率上升", "locator": {"section": "Results", "paragraph": 2}}
+      }
+    }
+  ],
+  "gap_chain": [
+    {
+      "step": 1,
+      "kind": "literature_gap",
+      "basis": "最相近统计方法在非平稳条件下误报上升。",
+      "evidence_or_author_judgment": "evidence",
+      "evidence": {"ref": "liu2021", "quote": "非平稳条件下误报率上升", "locator": {"section": "Results", "paragraph": 2}}
+    },
+    {
+      "step": 2,
+      "kind": "cross_gap",
+      "basis": "动态拓扑与边缘成本在同一评价中仍缺联合对照。",
+      "evidence_or_author_judgment": "author_judgment",
+      "marker": "作者判断："
+    },
+    {
+      "step": 3,
+      "kind": "this_work",
+      "basis": "PathFuse 结合统计残差和图信号分支，并在同一数据集/设备上同时报告误报与时延。",
+      "evidence_or_author_judgment": "author_judgment",
+      "marker": "作者判断：",
+      "mapped_to": "方法章节 §3; Table 1; Figure 4"
+    }
+  ],
+  "materials_text": "方法章节 §3 描述 PathFuse 的统计残差与图信号分支。Figure 1 为框架图。Table 1 报告三个公开数据集的主结果。Figure 4 为边缘设备延迟曲线。",
+  "contributions": [
+    {"claim": "提出统计残差与图信号分支融合的 PathFuse 方法。", "mapped_to": "方法章节 §3; Figure 1", "status": "aligned", "scope": "动态拓扑时序异常检测方法，非其他任务的一般框架。"},
+    {"claim": "在三个公开数据集的给定比较口径下报告F1与基线差异。", "mapped_to": "Table 1", "status": "aligned", "scope": "仅限三个公开数据集和当前基线/参数，不推断普遍提升。"},
+    {"claim": "报告边缘设备上的延迟曲线。", "mapped_to": "Figure 4", "status": "aligned", "scope": "仅限给定边缘设备与批量配置，不写全设备实时保证。"},
+    {"claim": "未来探索视频异常检测扩展。", "mapped_to": "", "status": "author_judgment", "reason": "尚无对应实验结果。", "scope": "未来工作，不属于已验证贡献。"}
+  ],
+  "draft": "## 研究背景\n时序异常检测需兼顾误报与在线推理成本；本文具体研究动态拓扑和非平稳信号下的检测 [Liu et al., 2021]。\n\n## 相关工作\n训练依赖型路线中，Liu 的统计基线在平稳信号上可靠，但不处理动态拓扑且在非平稳条件下误报上升 [Liu et al., 2021]。Wang 的注意力方法改善了F1，但需要更多正常样本且对未知故障泛化有限 [Wang et al., 2022]。\n\n## 研究空白\n已有结果指出了非平稳场景的适用限制 [Liu et al., 2021]。作者判断：动态拓扑与边缘成本的联合对照仍需在当前材料和设备上检验。本文目标是在既定数据集与预算内比较 PathFuse，而不是声称全领域首创。\n\n## 贡献\n方法贡献对应 §3 与 Figure 1；实验贡献对应 Table 1；在线评价对应 Figure 4，范围限于给定数据集、拓扑与边缘设备。\n"
+}

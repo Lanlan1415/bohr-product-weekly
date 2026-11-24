@@ -1,0 +1,50 @@
+% 自测夹具：以下 5 条文献均为虚构（作者/期刊/DOI 皆非真实），仅用于 selftest 与格式演示。
+% 内容主题：时序异常检测方法路线。
+@article{liu2021arimad,
+  author = {Liu, Yang and Chen, Hao},
+  title = {ARIMAD: 自回归统计基线在传感器时序异常检测中的再评估},
+  journal = {Journal of Time Series Practice (fictional)},
+  year = {2021},
+  volume = {12},
+  pages = {45--60},
+  doi = {10.0000/fake.2021.001},
+  abstract = {本文在三个公开传感器数据集上重新评估了自回归移动平均基线 ARIMAD。结果表明，在平稳信号上统计基线的 F1 与早期深度模型相当，且训练开销低两个数量级。作者指出该方法依赖平稳性假设，在趋势漂移场景下误报率显著上升。}
+}
+
+@inproceedings{chen2020mp,
+  author = {Chen, Ming and Das, Anirban},
+  title = {MP-Guard: 基于矩阵剖面的免训练时序异常扫描},
+  booktitle = {Proc. of Fictional PHM Symposium},
+  year = {2020},
+  pages = {101--112},
+  abstract = {MP-Guard 利用矩阵剖面进行自相似扫描，无需训练即可检测点异常与片段异常。实验显示在周期结构明显的振动数据上召回率达 0.97。但窗口长度需人工设定，长序列计算开销大，百万点序列单次扫描约需 2 小时。}
+}
+
+@article{wang2022lstmae,
+  author = {Wang, Lei and Sato, Yuki and Kumar, Raj},
+  title = {基于 LSTM 自编码器重构误差的多变量时序异常检测},
+  journal = {Transactions on Fictional Learning Systems},
+  year = {2022},
+  volume = {7},
+  pages = {11--29},
+  abstract = {LSTM-AE 通过重构误差检测多变量时序异常，在公开基准上取得 0.91 的 F1。模型训练需要至少五万条正常样本，对训练中未见过的故障类型泛化能力弱，小样本场景下性能明显下降。}
+}
+
+@inproceedings{zhao2023transc,
+  author = {Zhao, Qing and Rossi, Marco},
+  title = {TransC: 稀疏注意力建模长程依赖的时序异常检测},
+  booktitle = {Proc. of Fictional Conference on Dependable Learning},
+  year = {2023},
+  pages = {230--241},
+  abstract = {TransC 用稀疏注意力建模长程依赖，在两个公开基准上把最优 F1 提升 4.3 个百分点。但其训练需要 8 张 GPU，单卡推理延迟达 180 毫秒，难以满足在线检测的时延要求。}
+}
+
+@article{li2021gdnx,
+  author = {Li, Na and Park, Jiwoo},
+  title = {GDN-X: 以传感器拓扑为先验的图神经网络异常检测},
+  journal = {Journal of Sensor Networks (fictional)},
+  year = {2021},
+  volume = {9},
+  pages = {77--90},
+  abstract = {GDN-X 将传感器网络建模为图并用图卷积学习正常模式，在站点级数据上优于独立通道基线。其效果依赖给定的传感器拓扑图，当拓扑缺失或频繁变更时需要重新标定。}
+}

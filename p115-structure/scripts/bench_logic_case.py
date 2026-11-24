@@ -33,7 +33,8 @@ def rules(result):
 def record(name, passed, detail=""):
     RESULTS.append({"scenario": name, "passed": bool(passed), "detail": detail})
     if not passed:
-        print("FAIL", name, detail if isinstance(detail, str) else sorted(rules(detail)), detail.get("checked") if isinstance(detail, dict) else "")
+        readable = detail if isinstance(detail, str) else json.dumps(detail, ensure_ascii=False, default=str)[:5000]
+        print("FAIL", name, readable)
 
 
 def observational(case):
@@ -47,6 +48,48 @@ def main():
     record("clean_argument_map_zero_findings", clean["status"] == "clean" and not clean["findings"] and not clean["uncertainty"], clean)
     record("clean_promise_delivered", clean["promise_checks"] and all(x["status"] == "delivered" for x in clean["promise_checks"]), clean)
     record("argument_map_has_claim_evidence_locator", clean["argument_map"] and all(c["locator"] and "evidence" in c and "warrant" in c for c in clean["argument_map"]))
+    record("question_method_result_conclusion_chain", clean["research_chains"] and all(
+        set(c["steps"]) == {"problem", "method", "result", "conclusion"} and
+        c["steps"]["problem"]["quote"] in base()["manuscript_text"] and
+        all("claim_coverage" in c["steps"][role] for role in ("method", "result", "conclusion"))
+        for c in clean["research_chains"]), clean.get("research_chains"))
+    paragraph_functions_ok = all(p["function"] and p["quote"] and p["locator"] and p["proposed_function_is_heuristic"]
+                                 for p in clean["paragraph_functions"])
+    record("paragraph_function_inventory", bool(clean["paragraph_functions"]) and paragraph_functions_ok,
+           clean.get("paragraph_functions"))
+
+    case = base()
+    case["manuscript_text"] = case["manuscript_text"].replace("2 Methods", "2 Procedure")
+    result = run(case)
+    record("missing_method_chain_has_executable_gap", any(
+        "method" in c["missing_or_weak_roles"] and c["repair_actions"][0]["action"] and
+        c["repair_actions"][0]["after"] for c in result["research_chains"]), result.get("research_chains"))
+
+    case = base()
+    case["manuscript_text"] = (
+        "Abstract\nWe aim to compare wavelength drift in two coatings.\n\n"
+        "1 Introduction\nWe aim to compare wavelength drift between coating A and coating B.\n\n"
+        "3 Results\nCoating A drifted 2 nm and coating B drifted 1 nm in Table 1.\n\n"
+        "2 Methods\nWe measured wavelength drift in coating A and coating B with the same spectrometer.\n\n"
+        "4 Discussion\nThe wavelength drift may indicate a coating stability difference.\n\n"
+        "5 Conclusion\nThe wavelength result is limited to these two coatings.\n")
+    result = run(case)
+    reorder = [edit for edit in result["editorial_plan"] if edit["edit_type"] == "reorder"]
+    record("executable_section_reorder", bool(reorder) and all(
+        edit["action"].lower().startswith("move") and edit["target"] and
+        edit["source_quote"] in case["manuscript_text"] and edit["requires_author_review"]
+        for edit in reorder), result.get("editorial_plan"))
+
+    case = base()
+    duplicated = ("We aim to compare daily step counts between coached and self-directed walking. "
+                  "Prior studies motivate controlled measurement, but the appropriate population and follow-up window remain uncertain.")
+    case["manuscript_text"] = case["manuscript_text"].replace("4 Discussion", "4 Discussion\n" + duplicated + "\n\n")
+    result = run(case)
+    cross_duplicates = [edit for edit in result["editorial_plan"] if edit["edit_type"] == "duplicate"]
+    record("cross_section_duplicate_merge_plan", any(
+        edit["action"].startswith("Merge repeated cross-section content") and
+        len(edit["source_locators"]) == 2 and edit["target"] for edit in cross_duplicates),
+        result.get("editorial_plan"))
 
     case = observational(base())
     case["manuscript_text"] = case["manuscript_text"].replace("In this sample, coached walking was associated with 8,200 rather than 7,900 daily steps over seven days.", "Coached walking caused higher daily step counts and improved health.")

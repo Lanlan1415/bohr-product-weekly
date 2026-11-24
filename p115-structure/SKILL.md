@@ -5,8 +5,10 @@ description: >
   主张与贡献后按六个维度（研究问题、章节结构、论证链、段落关系、重复、结论范围）逐维
   审查，每条发现必须逐字引用稿件中真实存在的句子并给出定位，重大发现必须给出可执行的
   修改建议；引言承诺的问题必须在交付章节兑现（承诺-交付核查），摘要与结论口径必须一致，
-  观察性设计不得写因果结论。风格偏好被拒绝冒充结构缺陷，无法确认的条目进入待复核
-  而不是凭空补结论。结果回填案例的 output_contract 字段与 case_id。Use when a task asks
+  观察性设计不得写因果结论。逐项构建研究问题→方法→结果→结论链，标注段落功能并给出
+  跨章节重复、缺口、跳跃与错序的可执行移动/合并/桥接方案；候选判断保留双侧原句和定位。
+  风格偏好被拒绝冒充结构缺陷，无法确认的条目进入待复核而不是凭空补结论。结果回填案例
+  output_contract 字段与 case_id，包括稿件/证据/段落类型的显式字段值。Use when a task asks
   for a structural review, a logic diagnosis, or a revision plan for a manuscript, where
   every finding must be traceable to a sentence that actually exists in the paper.
 ---
@@ -75,6 +77,17 @@ python scripts/logiccheck.py --case /input/case.json \
 结果证据及 locator、warrant 状态和替代解释检查。`reasoning_gaps` 是实际逻辑发现；
 `cross_section_checks` 保存承诺—交付与矛盾两侧证据。
 
+`research_chains[]` 对每个真实 aim/gap 分别交付 problem、method、result、conclusion 四步：
+原句、page/section/paragraph/sentence locator、对齐分数和方法/结果/结论缺口。缺口对应的
+repair_actions 写清该补哪步、跟在哪个原始 locator 后面，而不是另写一篇新论文。
+`paragraph_functions[]` 逐段标 context/gap/question_or_objective/design_or_procedure/
+observation_or_estimate/interpretation_or_comparison/limitation_or_boundary/answer_and_scope。
+`editorial_plan[]` 把相邻/跨章节重复合并、低连接段桥接、IMRaD 错序整块移动、跨章节缺口
+关闭写成 `action + source_quote(s) + source_locator(s) + target + rationale`；提供明确 before/
+after/merge-into 目标，便于作者逐条采纳、部分采纳或驳回。所有对齐、重复和段落功能都是
+带原文的候选，不是自动 defect；这项机制借鉴 argdown 的前提—结论图和 IMRaD 的功能分工，
+但不把词汇相似当逻辑蕴含。`structure_coverage` 汇总研究问题、完整链候选、段落和动作数。
+
 退出码为 0 clean、3 review/partial、4 blocked（有 high）、5 undetermined。每个非命令行用法错误
 路径都写 `result.json`、`audit_report.md`、`run_log.json`，无 traceback。先核对原句，再把修改建议
 交给作者；不得把"证据尚未链接"升级成"结论已被证伪"。
@@ -109,23 +122,26 @@ python scripts/logiccheck.py --case /input/case.json \
 
 `audit_report[]` 每条包含 rule、category、kind、severity、severity_basis、location、excerpt、verdict、
 basis、fix，适用时带 `evidence_quote / evidence_locator / replacement_text`。另输出
-`argument_map`、`reasoning_gaps`、`promise_checks`、`contradiction_checks`、`evidence_bounds`、
-`result_state`、`sources`、`checked`、`severity_counts`、`uncertainty` 和 `change_records`。
+`argument_map`、`reasoning_gaps`、`research_chains`、`paragraph_functions`、`editorial_plan`、
+`structure_coverage`、`promise_checks`、`contradiction_checks`、`evidence_bounds`、`result_state`、
+`sources`、`checked`、`severity_counts`、`uncertainty` 和 `change_records`。
 
 原始 `case_id` 位于顶层；`output_contract` 每个字段原名保留，优先级严格为
-**引擎值 > case 显式值 > null + limits**。支持字符串/dict/field/name/key 对象；`审查报告 /
-依据与边界 / 结果状态` 原名直通实际三段。structured refusal 同样执行。离线同案重跑三个工件
+**引擎值 > case 显式值 > null + limits**。支持字符串/dict/field/name/key 对象；显式声明的
+manuscript_text/evidence/paragraphs 等大字段也逐字直通，不因 bulky 而丢弃；`审查报告 /
+依据与边界 / 结果状态 / 论证闭环 / 结构优化方案` 原名直通实际三段或新增链/编辑方案。structured refusal 同样执行。离线同案重跑三个工件
 逐字节一致，无时间戳。
 
 `examples/case.json` 为合成完整试验稿（非正式答案），clean 基线要求 0 finding、exit 0。
 
 ```bash
-python scripts/bench_logic_case.py   # 17 个功能/误报/跨章节场景
+python scripts/bench_logic_case.py   # 22 个功能/误报/跨章节/闭环/重排场景
 python scripts/probe_logic_case.py   # 14 个敌意、契约、拒绝、冷导入与幂等探针
 ```
 
-引擎只用 Python 标准库；`review_common.py` 在 review 新家族三包中保持字节一致，共享修改必须
-同步并回归。
+引擎只用 Python 标准库；本包 `review_common.py` 在当前轮次单独加入 output_contract 显式值
+全字段直通，未跨题覆盖其它家族包。结构链、段落方案和逻辑诊断的回归必须同时通过 22 + 14 +
+28 + 51 场景。
 
 ---
 
