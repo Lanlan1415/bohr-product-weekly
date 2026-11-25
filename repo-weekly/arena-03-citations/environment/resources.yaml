@@ -1,0 +1,27 @@
+entry_point: SKILL.md
+files:
+  - GITHUB_URL.txt
+  - SKILL.md
+  - examples/minimal_example.md
+  - examples/synthetic_case.md
+  - references/element_checklist.md
+  - references/failure_modes.md
+  - references/gbt7714_field_templates.md
+  - references/method_rules.md
+  - references/style_guide.md
+  - scripts/citation_check.py
+  - scripts/contract_check.py
+  - scripts/dedupe_refs.py
+  - scripts/inventory.py
+  - scripts/mapping_check.py
+  - scripts/roundtrip_check.py
+  - scripts/run_selftest.py
+  - scripts/selfcheck.py
+  - templates/evidence_map_template.md
+  - templates/numbering_map_template.md
+  - templates/output_skeleton.md
+  - templates/result_json_template.md
+runtime:
+  python: ">=3.9"
+  stdlib_only: false
+  network: false

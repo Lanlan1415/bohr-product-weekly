@@ -2,30 +2,25 @@
   "case_id": "EXAMPLE-NOT-A-CASE",
   "images": [
     {
-      "path": "figure.png",
-      "x_tick_values": [0, 2, 4, 6, 8, 10],
-      "x_unit": "time (s)",
-      "y_tick_values": [100, 80, 60, 40, 20, 0],
-      "y_unit": "potential (mV)",
-      "x_scale": "linear",
-      "y_scale": "linear",
-      "caption": "synthetic caption, not an official case",
-      "caption_locator": "synthetic#figure=1a",
-      "legend_entries": [
-        {"series_index": 0, "label": "treatment", "locator": "synthetic#legend"}
+      "path": "fig.png",
+      "x_tick_values": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
       ],
-      "other_axes": [],
-      "scale_bars": []
+      "x_unit": "time (s)",
+      "y_tick_values": [
+        100,
+        80,
+        60,
+        40,
+        20,
+        0
+      ],
+      "y_unit": "potential (mV)"
     }
-  ],
-  "tables": [
-    {"path": "table1.csv", "locator": "synthetic#table=S1"}
-  ],
-  "text_claims": [],
-  "output_contract": {
-    "case_id": "echo",
-    "status": "computed",
-    "readings": "digitised values",
-    "sources": "source locators"
-  }
+  ]
 }

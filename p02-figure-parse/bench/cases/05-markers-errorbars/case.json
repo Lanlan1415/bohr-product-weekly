@@ -1,0 +1,28 @@
+{
+  "case_id": "05-markers-errorbars",
+  "images": [
+    {
+      "path": "fig.png",
+      "x_tick_values": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "y_tick_values": [
+        100,
+        80,
+        60,
+        40,
+        20,
+        0
+      ],
+      "x_unit": "x",
+      "y_unit": "y",
+      "x_scale": "linear",
+      "y_scale": "linear"
+    }
+  ]
+}

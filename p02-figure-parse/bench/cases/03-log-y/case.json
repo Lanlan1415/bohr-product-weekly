@@ -1,0 +1,27 @@
+{
+  "case_id": "03-log-y",
+  "images": [
+    {
+      "path": "fig.png",
+      "x_tick_values": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10
+      ],
+      "y_tick_values": [
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "x_unit": "x",
+      "y_unit": "y",
+      "x_scale": "linear",
+      "y_scale": "log"
+    }
+  ]
+}

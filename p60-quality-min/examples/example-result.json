@@ -1,0 +1,32 @@
+{
+  "case_id": "example-quality-001",
+  "status": "partial",
+  "appraisals": [
+    {
+      "document_id": "example-study",
+      "design": "parallel-group randomised trial",
+      "appraisal_rows": [
+        {
+          "dimension": "sample and selection",
+          "judgment": "some_concerns",
+          "evidence_quote": "Sixty participants were randomised; six withdrew before outcome assessment.",
+          "locator": "Methods, paragraph 2",
+          "rationale": "The flow of participants is reported, but the reason for withdrawal is not.",
+          "risk_if_any": "Attrition could differ by group; direction unknown.",
+          "reviewer_note": "Check the participant-flow table."
+        }
+      ],
+      "overall_judgment": "some_concerns",
+      "overall_basis": "One prespecified dimension has incomplete reporting; no high-risk domain was established.",
+      "unresolved_gaps": ["withdrawal reasons"]
+    }
+  ],
+  "overall": {
+    "judgment": "some_concerns",
+    "basis": "Most core dimensions are reported; attrition details remain unresolved."
+  },
+  "sources": ["example-study, Methods paragraph 2"],
+  "uncertainty": ["The example is illustrative, not a real study."],
+  "limits": ["Only the supplied excerpt was appraised."],
+  "review_actions": ["Confirm withdrawal reasons against the flow diagram."]
+}

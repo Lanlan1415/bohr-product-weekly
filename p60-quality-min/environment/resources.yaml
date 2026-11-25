@@ -1,0 +1,10 @@
+entry_point: SKILL.md
+files:
+  - SKILL.md
+  - USAGE.md
+  - GITHUB_URL.txt
+  - examples/example-result.json
+runtime:
+  python: ">=3.9"
+  stdlib_only: true
+  network: false
